@@ -32,5 +32,12 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/api",
+      "statusCode": 308
+    }
   ]
 } 
