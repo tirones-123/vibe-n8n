@@ -101,14 +101,17 @@ Important guidelines:
 
     // Préparer les paramètres pour l'API Claude
     const claudeParams = {
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 4096,
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 8192,
       messages: [{ 
         role: 'user', 
         content: prompt 
       }],
       system: systemPrompt,
-      thinking: true,
+      thinking: {
+        type: "enabled",
+        budget_tokens: 6554
+      },
       stream: true,
     };
 
