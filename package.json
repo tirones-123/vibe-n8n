@@ -1,0 +1,32 @@
+{
+  "name": "n8n-ai-backend",
+  "version": "1.0.0",
+  "description": "Backend API for n8n AI Assistant Chrome Extension - Powered by Claude",
+  "type": "module",
+  "main": "api/claude.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "logs": "vercel logs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3"
+  },
+  "devDependencies": {
+    "vercel": "^34.2.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "n8n",
+    "ai",
+    "assistant",
+    "claude",
+    "anthropic",
+    "workflow",
+    "automation"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+} 
