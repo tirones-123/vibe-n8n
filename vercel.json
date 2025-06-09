@@ -1,4 +1,9 @@
 {
+  "build": {
+    "env": {
+      "VERCEL_PROTECTION_BYPASS": "false"
+    }
+  },
   "functions": {
     "api/claude.js": {
       "maxDuration": 30,
