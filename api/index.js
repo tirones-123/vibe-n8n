@@ -82,8 +82,8 @@ export default function handler(req, res) {
             
             <h2>🔧 Variables d'environnement</h2>
             <ul>
-                <li><strong>CLAUDE_API_KEY:</strong> ${process.env.CLAUDE_API_KEY ? '✅ Configurée' : '❌ Manquante!'}</li>
-                <li><strong>BACKEND_API_KEY:</strong> ${process.env.BACKEND_API_KEY ? '✅ Configurée' : '❌ Manquante!'}</li>
+                <li><strong>CLAUDE_API_KEY:</strong> ${process.env.CLAUDE_API_KEY ? '✅ Configurée' : '❌ Manquante'}</li>
+                <li><strong>BACKEND_API_KEY:</strong> ${process.env.BACKEND_API_KEY ? '✅ Configurée' : '❌ Manquante'}</li>
             </ul>
             
             <h2>📚 Documentation</h2>
