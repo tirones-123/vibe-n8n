@@ -99,8 +99,8 @@ Important guidelines:
 - Ensure connections flow logically from source to target
 - Provide clear explanations of each action taken`;
 
-    // Créer le stream avec l'API Claude
-    const stream = await anthropic.messages.create({
+    // Préparer les paramètres pour l'API Claude
+    const claudeParams = {
       model: 'claude-3-sonnet-20240229',
       max_tokens: 4096,
       messages: [{ 
@@ -108,10 +108,17 @@ Important guidelines:
         content: prompt 
       }],
       system: systemPrompt,
-      tools: tools,
-      tool_choice: { type: 'auto' },
       stream: true,
-    });
+    };
+
+    // Ajouter tools et tool_choice seulement s'il y a des outils
+    if (tools && tools.length > 0) {
+      claudeParams.tools = tools;
+      claudeParams.tool_choice = { type: 'auto' };
+    }
+
+    // Créer le stream avec l'API Claude
+    const stream = await anthropic.messages.create(claudeParams);
 
     // Configurer les headers pour Server-Sent Events
     res.writeHead(200, {
