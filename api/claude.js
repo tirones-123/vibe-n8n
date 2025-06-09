@@ -10,12 +10,19 @@ const corsHeaders = {
 export default async function handler(req, res) {
   // Gérer les requêtes OPTIONS pour CORS
   if (req.method === 'OPTIONS') {
-    return res.status(200).setHeaders(corsHeaders).end();
+    // Appliquer les en-têtes CORS puis répondre
+    for (const [key, value] of Object.entries(corsHeaders)) {
+      res.setHeader(key, value);
+    }
+    return res.status(200).end();
   }
 
   // Vérifier la méthode HTTP
   if (req.method !== 'POST') {
-    return res.status(405).setHeaders(corsHeaders).json({ 
+    for (const [key, value] of Object.entries(corsHeaders)) {
+      res.setHeader(key, value);
+    }
+    return res.status(405).json({ 
       error: 'Method not allowed',
       message: 'Only POST method is accepted'
     });
@@ -26,7 +33,10 @@ export default async function handler(req, res) {
   const token = authHeader?.split(' ')[1];
   
   if (!token || token !== process.env.BACKEND_API_KEY) {
-    return res.status(401).setHeaders(corsHeaders).json({ 
+    for (const [key, value] of Object.entries(corsHeaders)) {
+      res.setHeader(key, value);
+    }
+    return res.status(401).json({ 
       error: 'Unauthorized',
       message: 'Invalid or missing API key'
     });
@@ -36,21 +46,30 @@ export default async function handler(req, res) {
   const { prompt, context, tools } = req.body;
   
   if (!prompt || typeof prompt !== 'string') {
-    return res.status(400).setHeaders(corsHeaders).json({ 
+    for (const [key, value] of Object.entries(corsHeaders)) {
+      res.setHeader(key, value);
+    }
+    return res.status(400).json({ 
       error: 'Bad Request',
       message: 'Missing or invalid prompt field'
     });
   }
 
   if (!context || typeof context !== 'object') {
-    return res.status(400).setHeaders(corsHeaders).json({ 
+    for (const [key, value] of Object.entries(corsHeaders)) {
+      res.setHeader(key, value);
+    }
+    return res.status(400).json({ 
       error: 'Bad Request',
       message: 'Missing or invalid context field'
     });
   }
 
   if (!tools || !Array.isArray(tools)) {
-    return res.status(400).setHeaders(corsHeaders).json({ 
+    for (const [key, value] of Object.entries(corsHeaders)) {
+      res.setHeader(key, value);
+    }
+    return res.status(400).json({ 
       error: 'Bad Request',
       message: 'Missing or invalid tools field'
     });
@@ -137,7 +156,10 @@ Important guidelines:
       const statusCode = error.status || 500;
       const errorMessage = error.message || 'Internal server error';
       
-      return res.status(statusCode).setHeaders(corsHeaders).json({ 
+      for (const [key, value] of Object.entries(corsHeaders)) {
+        res.setHeader(key, value);
+      }
+      return res.status(statusCode).json({ 
         error: 'API Error',
         message: errorMessage,
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
