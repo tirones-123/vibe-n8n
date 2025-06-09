@@ -27,11 +27,5 @@
         }
       ]
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/api/claude"
-    }
   ]
 } 
