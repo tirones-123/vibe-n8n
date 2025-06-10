@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { searchN8nDocs } from './rag/pinecone-rag.js';
 
 // Configuration CORS
 const corsHeaders = {
@@ -76,6 +77,39 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Recherche dans la documentation n8n avec Pinecone
+    let ragContext = '';
+    let ragStats = null;
+    
+    try {
+      // Analyser le prompt pour détecter s'il concerne n8n
+      const isN8nRelated = /workflow|node|n8n|trigger|http|webhook|function|connection|automation|slack|google|api|integration/i.test(prompt);
+      
+      if (isN8nRelated && process.env.OPENAI_API_KEY && process.env.PINECONE_API_KEY) {
+        console.log('Recherche dans la documentation n8n via Pinecone...');
+        
+        // Déterminer le type de recherche basé sur le prompt
+        let searchOptions = {};
+        if (prompt.toLowerCase().includes('example') || prompt.toLowerCase().includes('exemple')) {
+          searchOptions.type = 'examples';
+        } else if (prompt.toLowerCase().includes('tip') || prompt.toLowerCase().includes('conseil')) {
+          searchOptions.type = 'tips';
+        }
+        
+        const ragResults = await searchN8nDocs(prompt, searchOptions);
+        ragContext = ragResults.context;
+        ragStats = ragResults.stats;
+        
+        console.log(`${ragResults.chunks.length} chunks pertinents trouvés`);
+        if (ragStats) {
+          console.log(`Index Pinecone: ${ragStats.totalVectors} vecteurs au total`);
+        }
+      }
+    } catch (ragError) {
+      console.error('Erreur RAG Pinecone:', ragError);
+      // Continuer sans le contexte RAG en cas d'erreur
+    }
+
     // Initialiser le client Anthropic
     const anthropic = new Anthropic({
       apiKey: process.env.CLAUDE_API_KEY,
@@ -84,7 +118,7 @@ export default async function handler(req, res) {
     // Préparer le system prompt avec le contexte actuel
     const isModification = mode === 'modify' && context && (context.nodes?.length > 0 || Object.keys(context).length > 1);
     
-    const systemPrompt = isModification ? 
+    const baseSystemPrompt = isModification ? 
     // Mode modification : utiliser les function calls
     `You are an AI assistant specialized in n8n workflow modifications. You can modify existing workflows using the available functions.
 
@@ -185,6 +219,11 @@ ALWAYS use the \`\`\`json markdown format.
 
 ---`;
 
+    // Enrichir le system prompt avec le contexte RAG si disponible
+    const systemPrompt = ragContext ? 
+      baseSystemPrompt + `\n\n## n8n Documentation Reference\nThe following documentation excerpts may help you create more accurate workflows:\n\n${ragContext}` :
+      baseSystemPrompt;
+
     // Préparer les paramètres pour l'API Claude
     const claudeParams = {
       model: 'claude-sonnet-4-20250514',
@@ -216,7 +255,7 @@ ALWAYS use the \`\`\`json markdown format.
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
-      'X-Accel-Buffering': 'no', // Désactiver le buffering pour Vercel
+      'X-Accel-Buffering': 'no', // Désactiver le buffering
     });
 
     // Transmettre le stream de Claude vers le client
