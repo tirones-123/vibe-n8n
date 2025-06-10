@@ -145,14 +145,29 @@ ${JSON.stringify(context, null, 2)}
 - Each workflow must conclude with a node marking it complete
 
 ## Output Format
-Return a complete n8n workflow JSON object with:
-- \`nodes\`: Array of all workflow nodes
-- \`connections\`: Object defining node connections
-- \`createdAt\`: Timestamp
-- \`updatedAt\`: Timestamp
-- \`name\`: Workflow name
-- \`active\`: Boolean (default: false)
-- \`id\`: Unique identifier
+CRITICAL: You MUST ALWAYS return the workflow JSON in this EXACT format:
+
+1. First, a brief explanation text in the user's language (optional but recommended)
+2. Then the JSON inside a markdown code block with \`\`\`json
+
+Example:
+Je vais créer un workflow qui envoie un email tous les matins à 9h.
+
+\`\`\`json
+{
+  "nodes": [...],
+  "connections": {...},
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "name": "Morning Email Workflow",
+  "active": false,
+  "id": "workflow_123"
+}
+\`\`\`
+
+NEVER send the JSON alone or without the markdown code block.
+NEVER send the JSON in plain text.
+ALWAYS use the \`\`\`json markdown format.
 
 ## Examples
 - Input: "When a Google Sheet is updated, send the row data to Discord and log it in Airtable."
@@ -166,7 +181,7 @@ Return a complete n8n workflow JSON object with:
 - Always ask clarifying questions if inputs are vague or missing key elements
 - Code must include error handling and avoid hard-coded credentials
 - Ensure all nodes are linked correctly in \`connections\`
-- Export and return a valid n8n JSON file only—no extra explanatory text outside the JSON
+- The JSON must be valid and importable in n8n
 
 ---`;
 
