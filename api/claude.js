@@ -226,7 +226,7 @@ ALWAYS use the \`\`\`json markdown format.
 
     // Préparer les paramètres pour l'API Claude
     const claudeParams = {
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-opus-4-20250514',
       max_tokens: 8192,
       messages: [{ 
         role: 'user', 

@@ -24,6 +24,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.18.2",
+    "node-fetch": "^3.3.2",
     "openai": "^4.73.0"
   },
   "engines": {
