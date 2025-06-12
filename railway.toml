@@ -5,13 +5,7 @@ builder = "NIXPACKS"
 startCommand = "npm start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-
-[[crons]]
-# Mise à jour hebdomadaire des node-types
-# Tous les lundis à 3h00 UTC
-name = "Update n8n Node Types"
-schedule = "0 3 * * 1"
-command = "npm run cron:weekly"
+cronCommand = "npm run cron"
 
 [healthcheck]
 path = "/api"
