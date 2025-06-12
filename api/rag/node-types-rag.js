@@ -94,8 +94,15 @@ class NodeTypesRAG {
   // Récupérer les node-types depuis n8n
   async fetchNodeTypes(n8nUrl = 'http://localhost:5678') {
     try {
+      // Construire l'en-tête Basic Auth si les variables sont définies
+      let headers = { 'accept': 'application/json' };
+      if (process.env.N8N_REST_USER && process.env.N8N_REST_PASSWORD) {
+        const token = Buffer.from(`${process.env.N8N_REST_USER}:${process.env.N8N_REST_PASSWORD}`).toString('base64');
+        headers['Authorization'] = `Basic ${token}`;
+      }
+
       console.log(`Récupération des node-types depuis ${n8nUrl}/rest/node-types...`);
-      const response = await fetch(`${n8nUrl}/rest/node-types`);
+      const response = await fetch(`${n8nUrl}/rest/node-types`, { headers });
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
