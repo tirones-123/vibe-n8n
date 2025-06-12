@@ -2,8 +2,15 @@
 
 import { spawn } from 'child_process';
 
-console.log('🕐 Cron job Railway démarré');
+console.log('');
+console.log('='.repeat(60));
+console.log('🕐 CRON JOB RAILWAY - DÉBUT');
+console.log('='.repeat(60));
 console.log(`📅 Date: ${new Date().toISOString()}`);
+console.log(`🔧 PID: ${process.pid}`);
+console.log(`📦 Environnement: ${process.env.RAILWAY_ENVIRONMENT || 'local'}`);
+console.log('='.repeat(60));
+console.log('');
 
 // Déterminer quelle commande exécuter basé sur les variables d'environnement
 const command = process.env.RAILWAY_CRON_COMMAND || 'update-nodes:docker';
@@ -17,6 +24,10 @@ const child = spawn('npm', ['run', command], {
 });
 
 child.on('exit', (code) => {
-  console.log(`✅ Cron job terminé avec le code: ${code}`);
+  console.log('');
+  console.log('='.repeat(60));
+  console.log(`✅ CRON JOB RAILWAY - FIN (code: ${code})`);
+  console.log('='.repeat(60));
+  console.log('');
   process.exit(code);
 }); 
