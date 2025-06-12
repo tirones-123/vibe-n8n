@@ -143,10 +143,14 @@ async function updateNodeTypes() {
 
 // Fonction alternative sans Docker (si n8n est déjà en cours d'exécution)
 async function updateNodeTypesLocal() {
-  console.log('🔄 Mise à jour des node-types depuis l\'instance locale\n');
+  console.log('🔄 Mise à jour des node-types\n');
   
   try {
-    const result = await updateNodeTypesIndex();
+    // Utiliser l'URL publique si disponible, sinon localhost
+    const n8nUrl = process.env.N8N_PUBLIC_URL || 'http://localhost:5678';
+    console.log(`📡 Utilisation de l\'instance n8n : ${n8nUrl}`);
+    
+    const result = await updateNodeTypesIndex(n8nUrl);
     
     console.log('\n✅ Mise à jour terminée !');
     console.log(`📊 Nodes indexés : ${result.nodesCount}`);
@@ -162,10 +166,17 @@ async function updateNodeTypesLocal() {
 // Déterminer quel mode utiliser
 const useDocker = process.argv.includes('--docker');
 const useLocal = process.argv.includes('--local');
+const isRailway = process.env.RAILWAY_ENVIRONMENT === 'production';
 
-if (useLocal) {
+if (useLocal || isRailway) {
+  // Sur Railway, on ne peut pas utiliser Docker
+  if (isRailway) {
+    console.log('🚂 Environnement Railway détecté - utilisation du mode sans Docker');
+    console.log('⚠️  IMPORTANT: Assurez-vous qu\'une instance n8n est accessible publiquement');
+    console.log('💡 Suggestion: Utilisez une instance n8n cloud ou exposez votre n8n local avec ngrok');
+  }
   updateNodeTypesLocal();
 } else {
-  // Par défaut, utiliser Docker
+  // Par défaut, utiliser Docker (seulement en local)
   updateNodeTypes();
 } 
