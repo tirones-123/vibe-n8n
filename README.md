@@ -19,6 +19,7 @@ Backend API pour l'extension Chrome n8n AI Assistant. Ce backend fait le pont en
 - (Optionnel mais recommandé) Un compte Pinecone pour le stockage vectoriel
 - Un compte Railway pour le déploiement
 
+
 ## 🛠️ Installation
 
 ### 1. Cloner le repository
