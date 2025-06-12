@@ -50,6 +50,8 @@ interface ClaudeRequest {
   prompt: string;           // Instruction en langage naturel
   context: WorkflowContext; // Contexte actuel du workflow
   tools: Tool[];           // Fonctions disponibles pour Claude
+  mode?: 'create' | 'modify'; // Mode de génération
+  versions?: Record<string, number>; // Mapping des versions des nodes
 }
 ```
 
@@ -344,8 +346,16 @@ function handleEvent(event) {
 }
 ```
 
-### Avec les outils n8n
+### Avec versions des nodes
 ```javascript
+const versions = {
+  "slack": 4,
+  "httpRequest": 5,
+  "gmail": 2,
+  "schedule": 1,
+  // ... récupéré depuis /rest/node-types de l'instance locale
+};
+
 const tools = [
   {
     name: "createNode",
@@ -393,7 +403,9 @@ const context = {
 handleClaudeStream(
   "Ajoute un nœud HTTP Request qui appelle l'API GitHub",
   context,
-  tools
+  tools,
+  'modify',
+  versions
 );
 ```
 

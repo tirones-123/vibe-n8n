@@ -111,5 +111,9 @@ jspm_packages/
 # TernJS port file
 .tern-port 
 
-.doc-n8n/doc-n8n/
+.doc-n8n/
+
 doc-n8n/
+
+# Archives
+archives/

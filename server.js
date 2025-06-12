@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import claudeHandler from './api/claude.js';
-import { n8nRAG } from './api/rag/pinecone-rag.js';
+import { nodeTypesRAG } from './api/rag/node-types-rag.js';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -47,24 +47,30 @@ app.get('/api', (req, res) => {
 // Initialiser les services au démarrage
 async function initializeServices() {
   try {
-    // Initialiser le RAG Pinecone si les clés sont disponibles
+    // Initialiser le NodeTypes RAG si les clés sont disponibles
     if (process.env.OPENAI_API_KEY && process.env.PINECONE_API_KEY) {
-      console.log('Initialisation du RAG Pinecone...');
-      await n8nRAG.initialize();
-      console.log('RAG Pinecone prêt !');
+      console.log('Initialisation du NodeTypes RAG...');
+      await nodeTypesRAG.initialize();
+      console.log('NodeTypes RAG prêt !');
+      
+      // Afficher les stats
+      const stats = await nodeTypesRAG.getStats();
+      if (stats) {
+        console.log(`📊 Index stats: ${stats.totalNodes} nodes indexés`);
+      }
     } else {
-      console.log('RAG Pinecone non configuré :');
+      console.log('NodeTypes RAG non configuré :');
       if (!process.env.OPENAI_API_KEY) {
         console.log('  - OPENAI_API_KEY manquante (nécessaire pour les embeddings)');
       }
       if (!process.env.PINECONE_API_KEY) {
         console.log('  - PINECONE_API_KEY manquante (nécessaire pour le stockage vectoriel)');
       }
-      console.log('Le backend fonctionnera sans enrichissement RAG.');
+      console.log('Le backend fonctionnera sans enrichissement des node-types.');
     }
   } catch (error) {
     console.error('Erreur initialisation services:', error);
-    console.log('Le serveur continue sans RAG.');
+    console.log('Le serveur continue sans NodeTypes RAG.');
   }
 }
 

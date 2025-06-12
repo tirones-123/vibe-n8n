@@ -6,7 +6,8 @@ Backend API pour l'extension Chrome n8n AI Assistant. Ce backend fait le pont en
 
 - **Génération de workflows n8n** : Création de workflows complets à partir de descriptions en langage naturel
 - **Modification intelligente** : Modification de workflows existants avec des commandes naturelles
-- **RAG avec Pinecone** : Recherche vectorielle dans 20k+ lignes de documentation n8n pour des réponses précises
+- **Node-Types dynamiques** : Synchronisation hebdomadaire avec n8n:latest pour toujours avoir les derniers nodes
+- **Compatibilité garantie** : Utilise les versions exactes des nodes de votre instance n8n
 - **Streaming en temps réel** : Réponses en streaming via Server-Sent Events
 - **Sécurisé** : Authentification par token Bearer
 
@@ -63,9 +64,9 @@ npm run dev
 
 L'API sera disponible sur `http://localhost:3000/api/claude`
 
-## 🔍 Configuration du RAG Pinecone
+## 🔍 Configuration du système Node-Types
 
-Le système RAG améliore considérablement la qualité des workflows générés en utilisant la documentation n8n complète (20k+ lignes).
+Le système Node-Types synchronise automatiquement les métadonnées des nodes n8n pour garantir la compatibilité.
 
 ### Étapes de configuration :
 
@@ -74,25 +75,29 @@ Le système RAG améliore considérablement la qualité des workflows générés
    - Le plan gratuit permet 100k vecteurs (largement suffisant)
 
 2. **Obtenir une clé OpenAI**
-   - Nécessaire uniquement pour générer les embeddings
-   - Coût minimal (~$0.02 pour indexer toute la documentation)
+   - Nécessaire pour générer les embeddings des nodes
+   - Coût minimal (~$0.01 pour indexer tous les nodes)
 
 3. **Première indexation**
-   - Au premier démarrage, le système indexera automatiquement la documentation
-   - Cela prend environ 2-3 minutes
-   - Les indexations suivantes utilisent le cache Pinecone
-
-4. **Réindexer manuellement** (si nécessaire)
    ```bash
-   npm run reindex
+   # Si vous avez n8n en local
+   npm run update-nodes
+   
+   # Sinon, avec Docker
+   npm run update-nodes:docker
    ```
 
-### Fonctionnement du RAG :
+4. **Mise à jour automatique**
+   - Railway exécute automatiquement `npm run cron:weekly` tous les lundis
+   - Les nodes sont toujours synchronisés avec n8n:latest
 
-1. **Découpage intelligent** : La documentation est découpée en ~1000 chunks contextuels
-2. **Embeddings** : Chaque chunk est converti en vecteur via OpenAI
-3. **Recherche** : Les 10 chunks les plus pertinents sont trouvés pour chaque requête
-4. **Contexte enrichi** : Claude reçoit les extraits pertinents pour générer de meilleurs workflows
+### Fonctionnement :
+
+1. **Récupération** : Appel à `/rest/node-types` de n8n pour obtenir tous les nodes
+2. **Indexation** : Chaque node est stocké avec son ID unique `nodeName|vX`
+3. **Identification** : Claude Haiku identifie les nodes mentionnés dans le prompt
+4. **Enrichissement** : Les métadonnées exactes sont ajoutées au contexte
+5. **Génération** : Claude Opus crée le workflow avec les bonnes versions
 
 ## 📦 Déploiement sur Railway
 
@@ -142,7 +147,13 @@ POST https://your-app.railway.app/api/claude
     "connections": {}
   },
   "tools": [],
-  "mode": "create"
+  "mode": "create",
+  "versions": {
+    "gmail": 2,
+    "schedule": 1,
+    "httpRequest": 5
+    // ... mapping complet des versions
+  }
 }
 ```
 
@@ -198,14 +209,18 @@ railway logs --follow
 
 ## 🚨 Troubleshooting
 
-### Le RAG ne fonctionne pas
+### Les node-types ne se chargent pas
 1. Vérifier que `OPENAI_API_KEY` et `PINECONE_API_KEY` sont configurées
-2. Vérifier les logs pour des erreurs d'indexation
-3. Essayer de réindexer : `npm run reindex`
+2. Exécuter `npm run update-nodes` pour indexer manuellement
+3. Vérifier que n8n est accessible sur le port configuré
 
 ### Erreur "Index not found" Pinecone
-- L'index sera créé automatiquement au premier démarrage
+- L'index sera créé automatiquement lors de la première mise à jour
 - Attendre 1-2 minutes que l'index soit prêt
+
+### Versions incorrectes
+- L'extension doit envoyer le mapping `versions` dans chaque requête
+- Vérifier que l'extension récupère bien les node-types au chargement
 
 ### Performances lentes
 - La première requête après déploiement peut être lente (cold start)

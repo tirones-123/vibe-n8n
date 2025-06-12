@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { searchN8nDocs } from './rag/pinecone-rag.js';
+import { getNodeTypesByNames } from './rag/node-types-rag.js';
 
 // Configuration CORS
 const corsHeaders = {
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
   }
 
   // Valider le body de la requête
-  const { prompt, context, tools, mode } = req.body;
+  const { prompt, context, tools, mode, versions } = req.body;
   
   if (!prompt || typeof prompt !== 'string') {
     for (const [key, value] of Object.entries(corsHeaders)) {
@@ -77,37 +77,69 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Recherche dans la documentation n8n avec Pinecone
-    let ragContext = '';
-    let ragStats = null;
+    // Nouveau système : identifier les nodes mentionnés et récupérer leurs fiches
+    let nodeTypesContext = '';
+    let identifiedNodes = [];
     
     try {
-      // Analyser le prompt pour détecter s'il concerne n8n
-      const isN8nRelated = /workflow|node|n8n|trigger|http|webhook|function|connection|automation|slack|google|api|integration/i.test(prompt);
-      
-      if (isN8nRelated && process.env.OPENAI_API_KEY && process.env.PINECONE_API_KEY) {
-        console.log('Recherche dans la documentation n8n via Pinecone...');
+      if (process.env.OPENAI_API_KEY && process.env.PINECONE_API_KEY) {
+        console.log('Identification des nodes n8n mentionnés...');
         
-        // Déterminer le type de recherche basé sur le prompt
-        let searchOptions = {};
-        if (prompt.toLowerCase().includes('example') || prompt.toLowerCase().includes('exemple')) {
-          searchOptions.type = 'examples';
-        } else if (prompt.toLowerCase().includes('tip') || prompt.toLowerCase().includes('conseil')) {
-          searchOptions.type = 'tips';
+        // Étape 1 : Identifier les nodes mentionnés dans le prompt
+        const anthropic = new Anthropic({
+          apiKey: process.env.CLAUDE_API_KEY,
+        });
+        
+        const identificationResponse = await anthropic.messages.create({
+          model: 'claude-3-haiku-20240307', // Modèle rapide pour l'identification
+          max_tokens: 500,
+          messages: [{
+            role: 'user',
+            content: `Analyze this user prompt and return ONLY a JSON array of n8n node names mentioned (canonical names only, e.g., "slack", "discord", "httpRequest", etc.):
+
+"${prompt}"
+
+Return format: ["node1", "node2", ...]
+If no specific nodes are mentioned, return: []`
+          }],
+          temperature: 0
+        });
+        
+        try {
+          const responseText = identificationResponse.content[0].text.trim();
+          identifiedNodes = JSON.parse(responseText);
+          console.log('Nodes identifiés:', identifiedNodes);
+        } catch (parseError) {
+          console.error('Erreur parsing nodes:', parseError);
+          identifiedNodes = [];
         }
         
-        const ragResults = await searchN8nDocs(prompt, searchOptions);
-        ragContext = ragResults.context;
-        ragStats = ragResults.stats;
-        
-        console.log(`${ragResults.chunks.length} chunks pertinents trouvés`);
-        if (ragStats) {
-          console.log(`Index Pinecone: ${ragStats.totalVectors} vecteurs au total`);
+        // Étape 2 : Récupérer les fiches des nodes depuis Pinecone
+        if (identifiedNodes.length > 0 && versions) {
+          const nodeDetails = await getNodeTypesByNames(identifiedNodes, versions);
+          
+          if (nodeDetails.length > 0) {
+            nodeTypesContext = '\n\n## Available Node Types Information\n\n';
+            nodeDetails.forEach(node => {
+              nodeTypesContext += `### ${node.nodeName} (v${node.version})\n`;
+              nodeTypesContext += `Display Name: ${node.metadata.displayName}\n`;
+              nodeTypesContext += `Description: ${node.metadata.description}\n`;
+              if (node.metadata.properties?.length > 0) {
+                nodeTypesContext += 'Properties:\n';
+                node.metadata.properties.forEach(prop => {
+                  nodeTypesContext += `- ${prop.displayName} (${prop.type}${prop.required ? ', required' : ''})\n`;
+                });
+              }
+              nodeTypesContext += '\n';
+            });
+            
+            console.log(`${nodeDetails.length} fiches de nodes récupérées`);
+          }
         }
       }
     } catch (ragError) {
-      console.error('Erreur RAG Pinecone:', ragError);
-      // Continuer sans le contexte RAG en cas d'erreur
+      console.error('Erreur système node-types:', ragError);
+      // Continuer sans le contexte des node-types
     }
 
     // Initialiser le client Anthropic
@@ -219,10 +251,18 @@ ALWAYS use the \`\`\`json markdown format.
 
 ---`;
 
-    // Enrichir le system prompt avec le contexte RAG si disponible
-    const systemPrompt = ragContext ? 
-      baseSystemPrompt + `\n\n## n8n Documentation Reference\nThe following documentation excerpts may help you create more accurate workflows:\n\n${ragContext}` :
-      baseSystemPrompt;
+    // Enrichir le system prompt avec les informations des node-types
+    let systemPrompt = baseSystemPrompt;
+    
+    // Ajouter le mapping des versions si disponible
+    if (versions && Object.keys(versions).length > 0) {
+      systemPrompt += `\n\n## Node Version Mapping\nThe user's n8n instance has the following node versions available:\n${JSON.stringify(versions, null, 2)}\n\nIMPORTANT: When creating nodes, use the appropriate typeVersion based on this mapping to ensure compatibility.`;
+    }
+    
+    // Ajouter les détails des node-types si disponibles
+    if (nodeTypesContext) {
+      systemPrompt += nodeTypesContext;
+    }
 
     // Préparer les paramètres pour l'API Claude
     const claudeParams = {

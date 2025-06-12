@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "reindex": "node scripts/reindex-rag.js"
+    "update-nodes": "node scripts/update-node-types.js --local",
+    "update-nodes:docker": "node scripts/update-node-types.js --docker",
+    "cron:weekly": "node scripts/update-node-types.js --docker"
   },
   "keywords": [
     "n8n",
