@@ -18,6 +18,18 @@ const command = process.env.RAILWAY_CRON_COMMAND || (isRailway ? 'update-nodes' 
 
 console.log(`🚀 Exécution de: npm run ${command}`);
 
+// Timeout de sécurité : 5 minutes max
+const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+const timeout = setTimeout(() => {
+  console.error('');
+  console.error('='.repeat(60));
+  console.error('❌ TIMEOUT: Le cron a dépassé 5 minutes !');
+  console.error('='.repeat(60));
+  console.error('');
+  child.kill('SIGTERM');
+  process.exit(1);
+}, TIMEOUT_MS);
+
 // Exécuter la commande
 const child = spawn('npm', ['run', command], {
   stdio: 'inherit',
@@ -25,6 +37,7 @@ const child = spawn('npm', ['run', command], {
 });
 
 child.on('exit', (code) => {
+  clearTimeout(timeout);
   console.log('');
   console.log('='.repeat(60));
   console.log(`✅ CRON JOB RAILWAY - FIN (code: ${code})`);

@@ -247,15 +247,24 @@ class NodeTypesRAG {
     const batchSize = 20;
     const vectors = [];
     
+    console.log(`🚀 Début de la génération des embeddings (${Math.ceil(nodes.length / batchSize)} batches)...`);
+    const startTime = Date.now();
+    
     for (let i = 0; i < nodes.length; i += batchSize) {
       const batch = nodes.slice(i, i + batchSize);
       const contents = batch.map(node => node.content);
       
       try {
+        const batchStartTime = Date.now();
+        console.log(`  Batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(nodes.length / batchSize)} - Génération...`);
+        
         const response = await this.openai.embeddings.create({
           model: EMBEDDING_MODEL,
           input: contents,
         });
+        
+        const batchTime = Date.now() - batchStartTime;
+        console.log(`  ✓ Batch terminé en ${(batchTime / 1000).toFixed(1)}s`);
         
         // Créer les vecteurs pour Pinecone
         batch.forEach((node, idx) => {
@@ -273,9 +282,13 @@ class NodeTypesRAG {
         
         console.log(`Embeddings générés: ${Math.min(i + batchSize, nodes.length)}/${nodes.length}`);
       } catch (error) {
-        console.error('Erreur batch embeddings:', error);
+        console.error(`❌ Erreur batch embeddings ${Math.floor(i / batchSize) + 1}:`, error.message);
+        // Continuer avec les autres batches
       }
     }
+    
+    const totalEmbeddingTime = Date.now() - startTime;
+    console.log(`✅ Génération des embeddings terminée en ${(totalEmbeddingTime / 1000).toFixed(1)}s`);
     
     // Supprimer l'ancien namespace et recréer avec les nouvelles données
     try {
@@ -286,13 +299,26 @@ class NodeTypesRAG {
     
     // Indexer par batch dans Pinecone
     const indexBatchSize = 100;
+    console.log(`\n🚀 Début de l'indexation dans Pinecone (${Math.ceil(vectors.length / indexBatchSize)} batches)...`);
+    const indexStartTime = Date.now();
+    
     for (let i = 0; i < vectors.length; i += indexBatchSize) {
       const batch = vectors.slice(i, i + indexBatchSize);
-      await this.index.namespace(NAMESPACE).upsert(batch);
-      console.log(`Indexé: ${Math.min(i + indexBatchSize, vectors.length)}/${vectors.length} nodes`);
+      const batchStartTime = Date.now();
+      console.log(`  Batch ${Math.floor(i / indexBatchSize) + 1}/${Math.ceil(vectors.length / indexBatchSize)} - Indexation...`);
+      
+      try {
+        await this.index.namespace(NAMESPACE).upsert(batch);
+        const batchTime = Date.now() - batchStartTime;
+        console.log(`  ✓ Batch indexé en ${(batchTime / 1000).toFixed(1)}s`);
+        console.log(`Indexé: ${Math.min(i + indexBatchSize, vectors.length)}/${vectors.length} nodes`);
+      } catch (error) {
+        console.error(`❌ Erreur indexation batch ${Math.floor(i / indexBatchSize) + 1}:`, error.message);
+      }
     }
     
-    console.log('Indexation terminée');
+    const totalIndexTime = Date.now() - indexStartTime;
+    console.log(`✅ Indexation terminée en ${(totalIndexTime / 1000).toFixed(1)}s`);
     
     // Retourner un mapping simple des versions
     const versionsMap = {};
