@@ -44,6 +44,27 @@ app.get('/api', (req, res) => {
   });
 });
 
+// Route pour consulter les logs du cron
+app.get('/api/cron-logs', async (req, res) => {
+  try {
+    const { readFileSync, existsSync } = await import('fs');
+    const { join } = await import('path');
+    const logFile = join(process.cwd(), 'cron-debug.log');
+    
+    if (existsSync(logFile)) {
+      const logs = readFileSync(logFile, 'utf-8');
+      res.type('text/plain').send(logs);
+    } else {
+      res.status(404).send('Aucun log de cron trouvé. Le cron n\'a pas encore été exécuté.');
+    }
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Erreur lecture logs', 
+      message: error.message 
+    });
+  }
+});
+
 // Initialiser les services au démarrage
 async function initializeServices() {
   try {

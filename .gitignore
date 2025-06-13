@@ -7,50 +7,28 @@ node_modules/
 .env.production
 
 # Logs
-logs
 *.log
+cron-debug.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# Build
-dist/
-build/
+# Test files
+test-output.txt
+workflow.json
 
-# Misc
-.vercel
-*.pem
-
-# Vercel
-.vercel
-
-# Build outputs
-.next/
-out/
+# Archives (optionnel, décommenter si vous ne voulez pas les versionner)
+# archives/
 
 # Environment variables
 .env.development
 .env.test
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
 
 # Logs
 logs
@@ -115,5 +93,16 @@ jspm_packages/
 
 doc-n8n/
 
-# Archives
-archives/
+# Build
+dist/
+build/
+
+# Misc
+.vercel
+*.pem
+
+# Vercel
+.vercel
+
+# Build outputs
+out/

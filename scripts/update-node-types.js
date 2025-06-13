@@ -184,12 +184,21 @@ async function updateNodeTypes() {
 // Fonction alternative sans Docker (si n8n est déjà en cours d'exécution)
 async function updateNodeTypesLocal() {
   console.log('🔄 Mise à jour des node-types\n');
+  console.log(`⏰ Début: ${new Date().toISOString()}`);
+  console.log(`🔍 Variables d'environnement:`);
+  console.log(`   - OPENAI_API_KEY: ${process.env.OPENAI_API_KEY ? '✓ Présente' : '✗ Manquante'}`);
+  console.log(`   - PINECONE_API_KEY: ${process.env.PINECONE_API_KEY ? '✓ Présente' : '✗ Manquante'}`);
+  console.log(`   - N8N_INSTANCE_URL: ${process.env.N8N_INSTANCE_URL || 'Non définie (utilisation par défaut)'}`);
   
   try {
-    // Utiliser l'URL publique si disponible, sinon localhost
-    const n8nUrl = process.env.N8N_PUBLIC_URL || 'http://localhost:5678';
-    console.log(`📡 Utilisation de l\'instance n8n : ${n8nUrl}`);
+    // Créer le dossier d'archives si nécessaire
+    await ensureArchiveDir();
     
+    // Utiliser l'URL publique si disponible, sinon localhost
+    const n8nUrl = process.env.N8N_PUBLIC_URL || process.env.N8N_INSTANCE_URL || 'https://primary-production-fc906.up.railway.app';
+    console.log(`\n📡 Utilisation de l\'instance n8n : ${n8nUrl}`);
+    
+    console.log('🚀 Appel de updateNodeTypesIndex...');
     const result = await updateNodeTypesIndex(n8nUrl);
     
     console.log('\n✅ Mise à jour terminée !');
