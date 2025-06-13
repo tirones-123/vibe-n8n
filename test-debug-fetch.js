@@ -81,3 +81,5 @@ async function debugFetch() {
 }
 
 debugFetch(); 
+
+// node test-debug-fetch.js
