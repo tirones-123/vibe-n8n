@@ -13,7 +13,8 @@ console.log('='.repeat(60));
 console.log('');
 
 // Déterminer quelle commande exécuter basé sur les variables d'environnement
-const command = process.env.RAILWAY_CRON_COMMAND || 'update-nodes:docker';
+const isRailway = process.env.RAILWAY_ENVIRONMENT === 'production';
+const command = process.env.RAILWAY_CRON_COMMAND || (isRailway ? 'update-nodes' : 'update-nodes:docker');
 
 console.log(`🚀 Exécution de: npm run ${command}`);
 

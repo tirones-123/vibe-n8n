@@ -1,6 +1,7 @@
 import { OpenAI } from 'openai';
 import { Pinecone } from '@pinecone-database/pinecone';
 import fetch from 'node-fetch';
+import axios from 'axios';
 
 // Configuration
 const EMBEDDING_MODEL = 'text-embedding-3-small';
@@ -92,26 +93,35 @@ class NodeTypesRAG {
   }
 
   // Récupérer les node-types depuis n8n
-  async fetchNodeTypes(n8nUrl = 'http://localhost:5678') {
+  async fetchNodeTypes() {
     try {
-      // Construire l'en-tête Basic Auth si les variables sont définies
-      let headers = { 'accept': 'application/json' };
-      if (process.env.N8N_REST_USER && process.env.N8N_REST_PASSWORD) {
-        const token = Buffer.from(`${process.env.N8N_REST_USER}:${process.env.N8N_REST_PASSWORD}`).toString('base64');
-        headers['Authorization'] = `Basic ${token}`;
-      }
-
-      console.log(`Récupération des node-types depuis ${n8nUrl}/rest/node-types...`);
-      const response = await fetch(`${n8nUrl}/rest/node-types`, { headers });
+      const n8nUrl = this.n8nInstanceUrl || process.env.N8N_INSTANCE_URL || 'https://primary-production-fc906.up.railway.app';
+      const endpoint = `${n8nUrl}/types/nodes.json`;
       
-      if (!response.ok) {
+      console.log(`Récupération des node-types depuis ${endpoint}...`);
+      
+      const response = await axios.get(endpoint, {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'n8n-node-types-updater/1.0'
+        },
+        timeout: 30000
+      });
+      
+      if (response.status !== 200) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const data = await response.json();
-      console.log(`${Object.keys(data).length} node-types récupérés`);
+      // The response is already an array of node types
+      const nodeTypes = response.data;
       
-      return data;
+      if (!Array.isArray(nodeTypes)) {
+        throw new Error('Expected an array of node types');
+      }
+      
+      console.log(`✅ ${nodeTypes.length} node-types récupérés`);
+      
+      return nodeTypes;
     } catch (error) {
       console.error('Erreur récupération node-types:', error);
       throw error;
@@ -119,60 +129,80 @@ class NodeTypesRAG {
   }
 
   // Formater les données d'un node pour l'indexation
-  formatNodeForIndexing(nodeName, nodeData) {
-    // Extraire la version la plus haute
-    const versions = Object.keys(nodeData).map(v => parseFloat(v)).sort((a, b) => b - a);
-    const latestVersion = versions[0];
-    const latestNodeData = nodeData[latestVersion];
+  formatNodeForIndexing(nodeData) {
+    const nodeName = nodeData.name;
+    const displayName = nodeData.displayName || nodeName;
+    const description = nodeData.description || 'No description';
+    // Gérer le cas où version peut être un tableau
+    const version = Array.isArray(nodeData.version) ? 
+                    Math.max(...nodeData.version) : 
+                    (nodeData.version || 1);
+    const group = nodeData.group || [];
     
     // Construire le contenu textuel pour l'embedding
     const content = [
       `Node: ${nodeName}`,
-      `Display Name: ${latestNodeData.displayName}`,
-      `Description: ${latestNodeData.description || 'No description'}`,
-      `Group: ${latestNodeData.group?.join(', ') || 'Uncategorized'}`,
-      `Version: ${latestVersion}`,
-      '',
-      'Properties:'
+      `Display Name: ${displayName}`,
+      `Description: ${description}`,
+      `Group: ${group.join(', ') || 'Uncategorized'}`,
+      `Version: ${version}`,
+      ''
     ];
     
     // Ajouter les propriétés importantes
-    if (latestNodeData.properties) {
-      latestNodeData.properties.forEach(prop => {
-        content.push(`- ${prop.displayName}: ${prop.description || prop.name}`);
+    if (nodeData.properties && Array.isArray(nodeData.properties)) {
+      content.push('Properties:');
+      nodeData.properties.forEach(prop => {
+        content.push(`- ${prop.displayName || prop.name}: ${prop.description || prop.type || ''}`);
       });
     }
     
-    // Ajouter les inputs/outputs
-    if (latestNodeData.inputs?.length) {
+    // Ajouter les inputs/outputs (gérer les différents formats)
+    if (nodeData.inputs) {
       content.push('', 'Inputs:');
-      content.push(latestNodeData.inputs.join(', '));
+      if (Array.isArray(nodeData.inputs)) {
+        content.push(nodeData.inputs.join(', '));
+      } else {
+        content.push(JSON.stringify(nodeData.inputs));
+      }
     }
     
-    if (latestNodeData.outputs?.length) {
+    if (nodeData.outputs) {
       content.push('', 'Outputs:');
-      content.push(latestNodeData.outputs.join(', '));
+      if (Array.isArray(nodeData.outputs)) {
+        content.push(nodeData.outputs.join(', '));
+      } else {
+        content.push(JSON.stringify(nodeData.outputs));
+      }
+    }
+    
+    // Ajouter les credentials si présentes
+    if (nodeData.credentials?.length) {
+      content.push('', 'Credentials:');
+      nodeData.credentials.forEach(cred => {
+        content.push(`- ${cred.displayName || cred.name}`);
+      });
     }
     
     return {
-      id: `${nodeName}|v${latestVersion}`,
+      id: `${nodeName}|v${version}`,
       content: content.join('\n'),
       metadata: {
         nodeName,
-        displayName: latestNodeData.displayName,
-        description: latestNodeData.description || '',
-        version: latestVersion,
-        group: latestNodeData.group || [],
-        icon: latestNodeData.icon,
-        documentationUrl: latestNodeData.documentationUrl,
-        properties: latestNodeData.properties?.map(p => ({
-          name: p.name,
-          displayName: p.displayName,
-          type: p.type,
-          required: p.required || false
-        })) || []
+        displayName,
+        description,
+        version,
+        group,
+        // Gérer le cas où icon peut être un objet ou une string
+        icon: typeof nodeData.icon === 'string' ? nodeData.icon : 
+              typeof nodeData.iconUrl === 'string' ? nodeData.iconUrl : 
+              nodeData.icon?.light || nodeData.icon?.dark || '',
+        documentationUrl: nodeData.documentationUrl || nodeData.codex?.resources?.primaryDocumentation?.[0]?.url || '',
+        // Simplifier les propriétés pour Pinecone (pas d'objets complexes)
+        propertiesCount: nodeData.properties?.length || 0,
+        hasCredentials: (nodeData.credentials?.length || 0) > 0
       },
-      rawData: latestNodeData
+      rawData: nodeData
     };
   }
 
@@ -192,19 +222,22 @@ class NodeTypesRAG {
   }
 
   // Indexer tous les node-types
-  async indexNodeTypes(nodeTypes) {
+  async indexNodeTypes(nodeTypesArray) {
     console.log('Indexation des node-types dans Pinecone...');
     
+    if (!Array.isArray(nodeTypesArray)) {
+      throw new Error('nodeTypesArray doit être un tableau');
+    }
+    
     const nodes = [];
-    const nodeNames = Object.keys(nodeTypes);
     
     // Préparer les données pour chaque node
-    for (const nodeName of nodeNames) {
+    for (const nodeData of nodeTypesArray) {
       try {
-        const formattedNode = this.formatNodeForIndexing(nodeName, nodeTypes[nodeName]);
+        const formattedNode = this.formatNodeForIndexing(nodeData);
         nodes.push(formattedNode);
       } catch (error) {
-        console.error(`Erreur formatage ${nodeName}:`, error);
+        console.error(`Erreur formatage ${nodeData.name}:`, error);
       }
     }
     
@@ -232,7 +265,8 @@ class NodeTypesRAG {
             metadata: {
               ...node.metadata,
               content: node.content.substring(0, 1000), // Limiter pour les métadonnées
-              fullData: JSON.stringify(node.rawData).substring(0, 3000) // Données complètes limitées
+              // Stocker les données complètes en JSON string (limite Pinecone: ~40KB par metadata)
+              fullData: JSON.stringify(node.rawData).substring(0, 35000)
             }
           });
         });
@@ -275,24 +309,46 @@ class NodeTypesRAG {
     
     for (const nodeName of nodeNames) {
       const version = versions[nodeName];
-      const nodeId = version ? `${nodeName}|v${version}` : null;
       
-      if (nodeId) {
-        try {
-          // Récupérer directement par ID
-          const response = await this.index.namespace(NAMESPACE).fetch([nodeId]);
-          
-          if (response.records && response.records[nodeId]) {
+      // Essayer plusieurs formats de noms
+      const possibleNames = [
+        nodeName, // nom court (ex: httpRequest)
+        `n8n-nodes-base.${nodeName}`, // nom standard n8n
+        `@n8n/n8n-nodes-langchain.${nodeName}`, // nodes langchain
+      ];
+      
+      for (const possibleName of possibleNames) {
+        const nodeId = version ? `${possibleName}|v${version}` : null;
+        
+        if (nodeId) {
+          try {
+            // Récupérer directement par ID
+            const response = await this.index.namespace(NAMESPACE).fetch([nodeId]);
+            
+            if (response.records && response.records[nodeId]) {
             const record = response.records[nodeId];
-            results.push({
-              nodeName,
-              version,
-              metadata: record.metadata,
-              fullData: record.metadata.fullData ? JSON.parse(record.metadata.fullData) : null
-            });
+            let fullData = null;
+            try {
+              if (record.metadata.fullData) {
+                fullData = JSON.parse(record.metadata.fullData);
+              }
+            } catch (error) {
+              console.error(`Erreur parsing fullData pour ${nodeName}:`, error.message);
+            }
+            
+              results.push({
+                nodeName,
+                version,
+                metadata: record.metadata,
+                fullData
+              });
+              
+              // On a trouvé le node, pas besoin de continuer
+              break;
+            }
+          } catch (error) {
+            console.error(`Erreur récupération ${nodeId}:`, error);
           }
-        } catch (error) {
-          console.error(`Erreur récupération ${nodeId}:`, error);
         }
       }
     }
@@ -313,12 +369,23 @@ class NodeTypesRAG {
       includeMetadata: true
     });
     
-    return searchResponse.matches.map(match => ({
-      nodeName: match.metadata.nodeName,
-      score: match.score,
-      metadata: match.metadata,
-      fullData: match.metadata.fullData ? JSON.parse(match.metadata.fullData) : null
-    }));
+    return searchResponse.matches.map(match => {
+      let fullData = null;
+      try {
+        if (match.metadata.fullData) {
+          fullData = JSON.parse(match.metadata.fullData);
+        }
+      } catch (error) {
+        console.error(`Erreur parsing fullData pour ${match.metadata.nodeName}:`, error.message);
+      }
+      
+      return {
+        nodeName: match.metadata.nodeName,
+        score: match.score,
+        metadata: match.metadata,
+        fullData
+      };
+    });
   }
 
   // Initialisation
@@ -349,11 +416,11 @@ class NodeTypesRAG {
 export const nodeTypesRAG = new NodeTypesRAG();
 
 // Fonction helper pour mettre à jour les node-types
-export async function updateNodeTypesIndex(n8nUrl = 'http://localhost:5678') {
+export async function updateNodeTypesIndex() {
   await nodeTypesRAG.initialize();
   
   // Récupérer les node-types
-  const nodeTypes = await nodeTypesRAG.fetchNodeTypes(n8nUrl);
+  const nodeTypes = await nodeTypesRAG.fetchNodeTypes();
   
   // Indexer dans Pinecone
   const versionsMap = await nodeTypesRAG.indexNodeTypes(nodeTypes);

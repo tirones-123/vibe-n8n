@@ -1,0 +1,382 @@
+🧪 Test du système RAG avec Claude...
+Requête : Workflow avec HTTP Request + Slack
+===========================================
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   377    0     0  100   377      0    311  0:00:01  0:00:01 --:--:--   312100   377    0     0  100   377      0    170  0:00:02  0:00:02 --:--:--   170100   377    0     0  100   377      0    117  0:00:03  0:00:03 --:--:--   117data: {"type":"message_start","message":{"id":"msg_01SgAdQddfDrzs63Y7v19R8o","type":"message","role":"assistant","model":"claude-opus-4-20250514","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":1073,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":8,"service_tier":"standard"}}}
+
+100   713    0   336  100   377     80     90  0:00:04  0:00:04 --:--:--   171data: {"type":"content_block_start","index":0,"content_block":{"type":"thinking","thinking":"","signature":""}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"L'utilisateur demande un"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" workflow avec :\n1. Un trigger"}}
+
+100  1073    0   696  100   377    150     81  0:00:04  0:00:04 --:--:--   232data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" (probablement manuel)"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"\n2. Un HTTP Request pour appeler l'API"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" GitHub\n3. Envoyer le résultat sur"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" Slack\n\nJe dois utiliser les versions"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" de nodes disponibles :\n- httpRequest: version"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" 5\n- slack: version "}}
+
+100  1853    0  1476  100   377    263     67  0:00:05  0:00:05 --:--:--   336data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"4\n- manualTrigger"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":": version 1\n\nJe vais"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" créer un workflow simple avec :"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"\n1. Un Manual Trigger pour dé"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"marrer\n2. Un HTTP Request node"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" pour appeler l'API GitHub"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"\n3. Un Slack node pour en"}}
+
+100  2712    0  2335  100   377    357     57  0:00:06  0:00:06 --:--:--   540data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"voyer le message\n\nJe dois m"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"'assurer d'utiliser le"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" format de sortie correct avec"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" les backticks json"}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"."}}
+
+data: {"type":"content_block_delta","index":0,"delta":{"type":"signature_delta","signature":"Er4FCkYIBBgCKkB6u6XsMCauXjg/tGCOCNWHYCGgw4MZCPMYMKRyj13myuFJpYXNIHlEdSiMQOZ/4VnOPWvYuvSMvIrI+EPHKbO+EgyD2RDPyMGicVuB+kMaDFMGLmBZbEAj8Y3MiSIwmEXsG1+cdAs5UhKQZufm1WegfeXrTgE8PCRl1UeqP23crGY5BkdFgBh8sW6GF2agKqUEjtvjpnjQApGYzJa5KE9DwXhJ7HMhOnOlc3MnYKTa2oZ4KxioshVnNqYqb+K329KO/hlcTz4+9l/1ea++bnduHz0aVZgNjMPZVBndroge/8phnraXNiHExS0JspH/Tk58ORGPKAceKpYfDsDwqjC+UJ+a5MCRlenqFYspFaU9cE/WK0lkeBqmGMKDVsauN+7zlEv49cp3Su3Fve8KdGIizM0hBDW9riJeMitJPY9PeakmZOELoXvxf0YRI1p4O5I6TKpcjd0vUKc3p/neHpLgD16+X4ypWoM8QvcNSPLkblSqbEHdsF5iAk6sh3vwxkPbmQ6iC/fYhTb95mkSbBmv1Th6efJgvsS4Wfg5cFbZ1hguKxvV0P+q64ROQfYnQ8m5PAOtaEmT+Ep3bdVSptPeFdsUAbwuwHI1wt066s53s1xDqvJY1ovMFU9NamaQCj6YzXb9vDTtylvATd31Bo002/y9yBH95sjMk+DQjQo7dINSkJ3Ta/pcsi6NrBcz2LQp1MtfQNvYBT2KayP2TxbyEyo64ADUzw1H+1hDh2gmZr9sUO9/qsG7X75NlIGLe/ljSahJaz//9Ha4yqGSIzQSHnY7ln4Gi9vXlzmAGTpbpYzMU4RHLH7QaG5IQIjdTh52a6awjOSehRcwB03vMoc+Cjm9pYk5mKOk61riBwJNHpSo+BgJvIvX0DzK4XF3B2LaTlvbfeqqOB1o2XzPQx7nANQBiRG7GAE="}}
+
+data: {"type":"content_block_stop","index":0}
+
+data: {"type":"content_block_start","index":1,"content_block":{"type":"text","text":""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Je vais créer un workflow"}}
+
+100  4586    0  4209  100   377    559     50  0:00:07  0:00:07 --:--:--   978data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" qui récupère les informations d'"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"un utilisateur GitHub via l'API et en"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"voie le résultat sur"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" Slack.\n\n```json\n{\n  \"name"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"GitHub User Info to Slack\",\n  \"nodes"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": [\n    {\n      \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"parameters\": {},\n      \"id\": \"3"}}
+
+100  5429    0  5052  100   377    562     41  0:00:09  0:00:08  0:00:01   977data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"c4b7f89-6d72"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"-4e23-8"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"c9a-1a2b3c4d5"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"e6f\",\n      \"name"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"Manual Trigger\",\n      "}}
+
+100  5952    0  5575  100   377    580     39  0:00:09  0:00:09 --:--:--   977data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\"type\": \"n8n-nodes-base.man"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ualTrigger\",\n      \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"typeVersion\": 1,\n      "}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\"position\": [\n        250"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":",\n        300\n      ]"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n    },\n    {\n      "}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\"parameters\": {\n        \"metho"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"d\": \"GET\",\n        \"url"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"https://api.github."}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"com/users/oc"}}
+
+100  7083    0  6706  100   377    637     35  0:00:10  0:00:10 --:--:--  1059data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"tocat\",\n        \"authentication"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"none\",\n        \"sen"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"dHeaders\": true,"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n        \"header"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Parameters\": {\n          \"parameters"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": [\n            {\n              \"name"}}
+
+100  7789    0  7412  100   377    627     31  0:00:12  0:00:11  0:00:01   963data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"User-Agent\",\n              \"value\":"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" \"n8n-workflow\""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n            },\n            {\n              \"name\":"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" \"Accept\",\n              \"value\":"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" \"application/vnd.github."}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"v3+json\"\n            }\n          ]"}}
+
+100  8536    0  8159  100   377    646     29  0:00:13  0:00:12  0:00:01   774data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n        },\n        \"options"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": {}\n      },\n      \"id\":"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" \"7f8a9b0c-1"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"d2e-3f4a"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"-5b6c-7"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"d8e9f0a1"}}
+
+100  9162    0  8785  100   377    649     27  0:00:13  0:00:13 --:--:--   822data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"b2c\",\n      \"name"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"Get GitHub User Info\",\n      \"type\":"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" \"n8n-nodes-base.httpRequest\",\n      \"type"}}
+
+100  9538    0  9161  100   377    628     25  0:00:15  0:00:14  0:00:01   721data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Version\": 5,\n      \"position\": [\n        450"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":",\n        300\n      ]"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n    },\n    {\n      \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"parameters\": {\n        \"resource\": \"message"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\",\n        \"operation\": \"post"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\",\n        \"channelId\": \"C0123456"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"789\",\n        \"messageType"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"block\",\n        \"bloc"}}
+
+100 10518    0 10141  100   377    648     24  0:00:15  0:00:15 --:--:--   671data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ksUi\": {\n          \"bloc"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ksValues\": [\n            {\n              \"type"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"section\",\n              \"text"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": {\n                \"type\": \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"mrkdwn\",\n                "}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\"text\": \"*Informations utilis"}}
+
+100 11255    0 10878  100   377    658     22  0:00:17  0:00:16  0:00:01   735data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ateur GitHub* :bust_in_silhouette:\\"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"n\\n*Nom:"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"* {{ $json[\\\"name\\\"] ||"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" \\\"Non renseigné\\\" }}\\n*"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Login:* {{ $json[\\\"login"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\\\"] }}\\n*Bio"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":":* {{ $json[\\\"bio"}}
+
+100 12033    0 11656  100   377    664     21  0:00:17  0:00:17 --:--:--   710data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\\\"] || \\\""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Aucune bio\\\" }}\\n*Entrepr"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ise:* {{ $json[\\\""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"company\\\"] || \\\"Non"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" renseignée\\\" }}\\n"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"*Localisation:* {{ $json[\\\""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"location\\\"] || \\\"Non rens"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"eignée\\\" }}\\n*"}}
+
+100 12918    0 12541  100   377    669     20  0:00:18  0:00:18 --:--:--   721data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Repos publics:* {{ $json[\\\""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"public_repos\\\"] }}\\n"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"*Followers:* {{ $json"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"[\\\"followers\\\"] }}\\n"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"*Following:* {{ $json["}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\\\"following\\\"] }}\"\n              }\n            },"}}
+
+100 13622    0 13245  100   377    672     19  0:00:19  0:00:19 --:--:--   795data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n            {\n              \"type\": \"section"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\",\n              \"text\": {"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n                \"type\": \"mrk"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"dwn\",\n                \"text\": \"*"}}
+
+100 14124    0 13747  100   377    669     18  0:00:20  0:00:20 --:--:--   737data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Profil GitHub:* <{{"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" $json[\\\"html_url\\"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\"] }}|Voir le profil>\"\n              },"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n              \"accessory\": {\n                \"type\": \"image"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\",\n                \"image_url\": \"{{ $json[\\\"avatar_"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"url\\\"] }}\",\n                \"alt_text\":"}}
+
+100 14904    0 14527  100   377    674     17  0:00:22  0:00:21  0:00:01   725data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" \"Avatar de {{ $json[\\\"login\\\"] }"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"}\"\n              }\n            }"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n          ]\n        },\n        \"authentication"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"oAuth2\"\n      },\n      \"id\":"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" \"9a8b7c6"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"d-5e4f-3a"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"2b-1c0d-9"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"e8f7a6b5c4d\","}}
+
+100 15813    0 15436  100   377    683     16  0:00:23  0:00:22  0:00:01   752data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n      \"name\": \"Send to"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" Slack\",\n      \"type\": \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"n8n-nodes-base."}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"slack\",\n      \"typeVersion\":"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" 4,\n      \"position\":"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" [\n        650,\n        300\n      ],"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n      \"credentials\": {\n        "}}
+
+100 16631    0 16254  100   377    691     16  0:00:23  0:00:23 --:--:--   775data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\"slackOAuth2Api"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": {\n          \"id\": \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"slack_placeholder\",\n          \"name\": \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Slack OAuth2 API\"\n        }\n      }\n    "}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"},\n    {\n      \"parameters\":"}}
+
+100 17234    0 16857  100   377    683     15  0:00:25  0:00:24  0:00:01   730data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" {\n        \"content\": \"##"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" Configuration requise\\n\\n**1"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":". HTTP Request:**\\n- Modifier"}}
+
+100 17588    0 17211  100   377    670     14  0:00:26  0:00:25  0:00:01   675data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" l'URL pour changer l'utilisateur GitHub"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" (actuellement: octocat)\\n- "}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Aucune authentification requise pour l'API publ"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ique\\n\\n**2. Slack:**\\"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"n- Configurer les credentials OAuth2\\"}}
+
+100 18207    0 17830  100   377    669     14  0:00:26  0:00:26 --:--:--   650data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"n- Remplacer le chann"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"elId par l'ID de"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" votre canal\\n- Le"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" message utilise des blocks pour un meilleur format"}}
+
+100 18666    0 18289  100   377    664     13  0:00:29  0:00:27  0:00:02   574data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"age\\n\\n**Note:** L"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"'API GitHub a une limite de 60"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" requêtes/heure sans"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" authentification\",\n        \"height\": 250"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":",\n        \"width\": 300\n      },\n      \"id\":"}}
+
+100 19272    0 18895  100   377    660     13  0:00:29  0:00:28  0:00:01   519data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" \"sticky_note_1\",\n      \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"name\": \"Configuration Guide\",\n      \"type\": \"n"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"8n-nodes-base.s"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"tickyNote\",\n      \"typeVersion\": 1,\n      \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"position\": [\n        200,\n        100\n      ]"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n    }\n  ],\n  \"connections\": {\n    \"Manual"}}
+
+100 20044    0 19667  100   377    665     12  0:00:31  0:00:29  0:00:02   571data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" Trigger\": {\n      \"main"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": [\n        [\n          {\n            \"node\": \"Get"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" GitHub User Info\",\n            \"type\": \"main"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\",\n            \"index\": 0\n          }\n        ]\n      "}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"]\n    },\n    \"Get GitHub User Info\": {\n      \""}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"main\": [\n        [\n          {\n            \"node\": \"Sen"}}
+
+100 20882    0 20505  100   377    671     12  0:00:31  0:00:30  0:00:01   673data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"d to Slack\",\n            \"type"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": \"main\",\n            \"index"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": 0\n          }\n        ]\n      ]\n    }"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n  },\n  \"active\": false"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":",\n  \"settings\": {\n    \"execut"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ionOrder\": \"v1\"\n  },\n  \"v"}}
+
+100 21614    0 21237  100   377    671     11  0:00:34  0:00:31  0:00:03   684data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"ersionId\": \"01234567-89ab-cdef"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"-0123-456789abcdef\",\n  \"meta"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": {\n    \"templateCreds"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"SetupCompleted\": true"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":",\n    \"instanceId\": \"6"}}
+
+100 22191    0 21814  100   377    660     11  0:00:34  0:00:33  0:00:01   643data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"275622211432a7b4358"}}
+
+100 22298    0 21921  100   377    653     11  0:00:34  0:00:33  0:00:01   611data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"e9302f4e3e8d127"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"dd5b343434344f4b5"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"299ce7868a7c\"\n  },"}}
+
+100 22614    0 22237  100   377    642     10  0:00:37  0:00:34  0:00:03   508data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n  \"id\": \"workflow_github"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"_slack_123\",\n  \"tags"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\": [],\n  \"createdAt\": \"2024-01-01"}}
+
+100 22968    0 22591  100   377    633     10  0:00:37  0:00:35  0:00:02   407data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"T10:00:00.000Z\","}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"\n  \"updatedAt\": \"2024-01-01T10"}}
+
+data: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":":00:00.000Z\"\n}\n```"}}
+
+data: {"type":"content_block_stop","index":1}
+
+data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":1713}}
+
+data: {"type":"message_stop"}
+
+data: {"type":"stream_end"}
+
+100 23530    0 23153  100   377    640     10  0:00:37  0:00:36  0:00:01   423

@@ -5,6 +5,7 @@ import { spawn } from 'child_process';
 import { updateNodeTypesIndex } from '../api/rag/node-types-rag.js';
 import fs from 'fs/promises';
 import path from 'path';
+import axios from 'axios';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -81,6 +82,45 @@ async function archiveNodeTypes(versionsMap) {
     console.log(`📁 Archive sauvegardée: ${filename}`);
   } catch (error) {
     console.error('Erreur archivage:', error);
+  }
+}
+
+async function fetchNodeTypes() {
+  try {
+    console.log('Fetching node types from n8n...');
+    
+    const n8nUrl = process.env.N8N_INSTANCE_URL || 'https://primary-production-fc906.up.railway.app';
+    const endpoint = `${n8nUrl}/types/nodes.json`;
+    
+    console.log(`Fetching from: ${endpoint}`);
+    
+    const response = await axios.get(endpoint, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'n8n-node-types-updater/1.0'
+      },
+      timeout: 30000
+    });
+    
+    console.log(`Response status: ${response.status}`);
+    
+    // The response is already an array of node types
+    const nodeTypes = response.data;
+    
+    if (!Array.isArray(nodeTypes)) {
+      throw new Error('Expected an array of node types');
+    }
+    
+    console.log(`Fetched ${nodeTypes.length} node types`);
+    
+    return nodeTypes;
+  } catch (error) {
+    console.error('Error fetching node types:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
+    throw error;
   }
 }
 

@@ -122,18 +122,21 @@ If no specific nodes are mentioned, return: []`
             nodeTypesContext = '\n\n## Available Node Types Information\n\n';
             nodeDetails.forEach(node => {
               nodeTypesContext += `### ${node.nodeName} (v${node.version})\n`;
-              nodeTypesContext += `Display Name: ${node.metadata.displayName}\n`;
-              nodeTypesContext += `Description: ${node.metadata.description}\n`;
-              if (node.metadata.properties?.length > 0) {
-                nodeTypesContext += 'Properties:\n';
-                node.metadata.properties.forEach(prop => {
-                  nodeTypesContext += `- ${prop.displayName} (${prop.type}${prop.required ? ', required' : ''})\n`;
-                });
+              
+              // Si on a les données complètes, les utiliser
+              if (node.fullData) {
+                nodeTypesContext += '```json\n';
+                nodeTypesContext += JSON.stringify(node.fullData, null, 2);
+                nodeTypesContext += '\n```\n\n';
+              } else {
+                // Fallback sur les métadonnées basiques
+                nodeTypesContext += `Display Name: ${node.metadata.displayName}\n`;
+                nodeTypesContext += `Description: ${node.metadata.description}\n`;
+                nodeTypesContext += '\n';
               }
-              nodeTypesContext += '\n';
             });
             
-            console.log(`${nodeDetails.length} fiches de nodes récupérées`);
+            console.log(`${nodeDetails.length} fiches de nodes récupérées avec leurs métadonnées complètes`);
           }
         }
       }
@@ -209,6 +212,15 @@ ${JSON.stringify(context, null, 2)}
 - Include basic error handling using IF or Try/Catch nodes
 - Avoid hard-coded credentials - use placeholder values
 - Each workflow must conclude with a node marking it complete
+
+## IMPORTANT: Using Node Type Specifications
+When node specifications are provided in the "Available Node Types Information" section:
+- Use the EXACT property names and structures from the JSON specifications
+- Configure nodes with ALL required properties as defined in the specification
+- Respect property types, options, and default values
+- Use the correct resources/operations/actions as specified
+- Follow the displayConditions and dependencies between properties
+- The JSON specification is the authoritative source for node configuration
 
 ## Output Format
 CRITICAL: You MUST ALWAYS return the workflow JSON in this EXACT format:
