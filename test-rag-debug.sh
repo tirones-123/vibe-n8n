@@ -21,4 +21,4 @@ curl -X POST http://localhost:3000/api/claude \
   }' \
   --no-buffer 2>&1 | grep -E "(fiches de nodes|Available Node Types|httpRequest)"
 
-  #jeklmz
+  #jeklmzjkfedlmfze
