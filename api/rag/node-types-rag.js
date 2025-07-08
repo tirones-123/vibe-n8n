@@ -428,7 +428,7 @@ class NodeTypesRAG {
     try {
       const stats = await this.index.namespace(NAMESPACE).describeIndexStats();
       return {
-        totalNodes: stats.namespaces?.[NAMESPACE]?.vectorCount || 0,
+        totalNodes: stats.namespaces?.[NAMESPACE]?.recordCount || stats.namespaces?.[NAMESPACE]?.vectorCount || 0,
         lastUpdate: new Date().toISOString()
       };
     } catch (error) {

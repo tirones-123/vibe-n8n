@@ -80,8 +80,8 @@ async function testNodeTypesRAG() {
     console.log('\nTest de recherche...');
     const { getNodeTypesByNames } = await import('../api/rag/node-types-rag.js');
     const results = await getNodeTypesByNames(['httpRequest', 'slack'], {
-      slack: 4,
-      httpRequest: 5
+      slack: 1,
+      httpRequest: 1
     });
     
     console.log(`${colors.green}✓ Recherche fonctionnelle${colors.reset}`);
