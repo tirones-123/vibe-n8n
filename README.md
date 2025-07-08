@@ -63,7 +63,7 @@ PINECONE_API_KEY=...   # Stockage vectoriel (gratuit jusqu'à 100k vecteurs)
 npm run dev
 ```
 
-L'API sera disponible sur `http://localhost:3000/api/claude` et https://vibe-n8n.vercel.app/api/claude
+L'API sera disponible sur `http://localhost:3000/api/claude`
 
 ## 🔍 Configuration du système Node-Types
 
@@ -122,7 +122,7 @@ git push origin main
 Dans Railway, ajouter toutes les variables de votre `.env`
 
 4. **URL publique**
-Railway génère automatiquement une URL `https://vibe-n8n.vercel.app/`
+Railway génère automatiquement une URL `https://your-app.railway.app/`
 
 ## 💾 Configuration du Volume Railway (IMPORTANT)
 

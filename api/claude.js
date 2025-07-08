@@ -9,6 +9,22 @@ const corsHeaders = {
 };
 
 export default async function handler(req, res) {
+  // Logger la requête entrante
+  console.log('\n=== NOUVELLE REQUÊTE CLAUDE ===');
+  console.log('Timestamp:', new Date().toISOString());
+  console.log('Method:', req.method);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  
+  if (req.method === 'POST' && req.body) {
+    console.log('Body:', JSON.stringify({
+      prompt: req.body.prompt,
+      mode: req.body.mode,
+      hasContext: !!req.body.context,
+      hasTools: !!req.body.tools && req.body.tools.length > 0,
+      versions: req.body.versions ? Object.keys(req.body.versions).length + ' nodes' : 'none'
+    }, null, 2));
+  }
+
   // Gérer les requêtes OPTIONS pour CORS
   if (req.method === 'OPTIONS') {
     // Appliquer les en-têtes CORS puis répondre
@@ -107,18 +123,28 @@ If no specific nodes are mentioned, return: []`
         
         try {
           const responseText = identificationResponse.content[0].text.trim();
+          console.log('Réponse Haiku brute:', responseText);
           identifiedNodes = JSON.parse(responseText);
           console.log('Nodes identifiés:', identifiedNodes);
         } catch (parseError) {
           console.error('Erreur parsing nodes:', parseError);
+          console.error('Texte reçu:', identificationResponse.content[0].text);
           identifiedNodes = [];
         }
         
         // Étape 2 : Récupérer les fiches des nodes depuis Pinecone
         if (identifiedNodes.length > 0 && versions) {
+          console.log('Récupération des fiches pour:', identifiedNodes);
+          console.log('Avec versions:', versions);
+          
           const nodeDetails = await getNodeTypesByNames(identifiedNodes, versions);
           
           if (nodeDetails.length > 0) {
+            console.log(`✅ ${nodeDetails.length} fiches récupérées:`);
+            nodeDetails.forEach(node => {
+              console.log(`  - ${node.nodeName} v${node.version} (${node.fullData ? 'données complètes' : 'métadonnées uniquement'})`);
+            });
+            
             nodeTypesContext = '\n\n## Available Node Types Information\n\n';
             nodeDetails.forEach(node => {
               nodeTypesContext += `### ${node.nodeName} (v${node.version})\n`;
@@ -137,6 +163,8 @@ If no specific nodes are mentioned, return: []`
             });
             
             console.log(`${nodeDetails.length} fiches de nodes récupérées avec leurs métadonnées complètes`);
+          } else {
+            console.log('❌ Aucune fiche trouvée pour ces nodes');
           }
         }
       }
@@ -297,6 +325,17 @@ ALWAYS use the \`\`\`json markdown format.
       claudeParams.tools = tools;
       claudeParams.tool_choice = { type: 'auto' };
     }
+    
+    // Logger le contexte final envoyé à Claude
+    console.log('\n--- CONTEXTE ENVOYÉ À CLAUDE OPUS ---');
+    console.log('Model:', claudeParams.model);
+    console.log('Mode:', isModification ? 'modification' : 'création');
+    console.log('Nodes enrichis:', identifiedNodes.length > 0 ? identifiedNodes.join(', ') : 'aucun');
+    console.log('Taille du system prompt:', systemPrompt.length, 'caractères');
+    if (nodeTypesContext) {
+      console.log('Contexte node-types inclus:', nodeTypesContext.length, 'caractères');
+    }
+    console.log('-----------------------------------\n');
 
     // Créer le stream avec l'API Claude
     const stream = await anthropic.messages.create(claudeParams);

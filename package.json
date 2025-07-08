@@ -6,15 +6,17 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js",
+    "dev": "nodemon server.js",
+    "logs": "node scripts/watch-logs.js",
     "test": "node scripts/test-system.js",
     "test:quick": "node scripts/quick-test.js",
     "test:volume": "node test-volume-storage.js",
     "migrate:volume": "node scripts/migrate-to-volume.js",
-    "update-nodes": "node scripts/update-node-types.js --local",
+    "update-nodes": "node scripts/update-node-types.js",
     "update-nodes:docker": "node scripts/update-node-types.js --docker",
-    "cron:weekly": "node scripts/update-node-types.js --docker",
-    "cron": "node cron.js"
+    "cron:weekly": "node cron.js --weekly",
+    "cron": "node cron.js",
+    "test:system": "node scripts/test-system.js"
   },
   "keywords": [
     "n8n",
@@ -37,5 +39,9 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "chalk": "^5.4.1",
+    "nodemon": "^3.1.10"
   }
 }

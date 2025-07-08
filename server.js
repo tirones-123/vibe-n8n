@@ -65,6 +65,46 @@ app.get('/api/cron-logs', async (req, res) => {
   }
 });
 
+// Route pour consulter les logs récents du serveur
+app.get('/api/logs', (req, res) => {
+  const { limit = 100 } = req.query;
+  
+  // Stocker les logs en mémoire (simple pour le dev)
+  if (!global.serverLogs) {
+    global.serverLogs = [];
+  }
+  
+  const recentLogs = global.serverLogs.slice(-parseInt(limit));
+  
+  res.json({
+    total: global.serverLogs.length,
+    limit: parseInt(limit),
+    logs: recentLogs
+  });
+});
+
+// Intercepter console.log pour stocker les logs
+const originalLog = console.log;
+console.log = function(...args) {
+  // Appeler le console.log original
+  originalLog.apply(console, args);
+  
+  // Stocker dans notre buffer
+  if (!global.serverLogs) {
+    global.serverLogs = [];
+  }
+  
+  global.serverLogs.push({
+    timestamp: new Date().toISOString(),
+    message: args.join(' ')
+  });
+  
+  // Limiter à 1000 entrées max
+  if (global.serverLogs.length > 1000) {
+    global.serverLogs = global.serverLogs.slice(-1000);
+  }
+};
+
 // Initialiser les services au démarrage
 async function initializeServices() {
   try {

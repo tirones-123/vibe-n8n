@@ -16,7 +16,7 @@ Le backend vient d'être mis à jour avec des améliorations majeures pour gére
 
 ### 3. **Backend API**
 - URL locale : `http://localhost:3000/api/claude`
-- URL production : `https://vibe-n8n.vercel.app/api/claude`
+- URL production : `https://your-app.railway.app/api/claude` (remplacer 'your-app' par votre nom d'app Railway)
 - Headers requis : `Authorization: Bearer ${API_KEY}`
 
 ## 📋 Checklist de Vérification
