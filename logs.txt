@@ -1,0 +1,60 @@
+Starting Container
+npm warn config production Use `--omit=dev` instead.
+
+> n8n-ai-backend@1.0.0 start
+> node server.js
+
+📁 Stockage des node-types: /app/data/node-types
+(node:15) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+🚀 Server running on port 8080
+📡 Claude endpoint: http://localhost:8080/api/claude
+Initialisation du NodeTypes RAG...
+Initialisation du NodeTypes RAG...
+Index Pinecone 'n8n-node-types' prêt
+NodeTypes RAG prêt !
+📊 Index stats: 732 nodes indexés
+
+=== NOUVELLE REQUÊTE CLAUDE ===
+Timestamp: 2025-07-08T17:56:43.031Z
+Method: POST
+Headers: {
+  "host": "vibe-n8n-production.up.railway.app",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+  "content-length": "269",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+  "x-request-start": "1751997403017"
+  "authorization": "Bearer d5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2",
+  "content-type": "application/json",
+}
+Body: {
+  "origin": "chrome-extension://idfdhdlngfmjdakobboknommonkdalhe",
+  "priority": "u=1, i",
+  "prompt": "fais moi un workflow qui fais que quand maxime.marsal18@gmail.com m'envoi un mail sur ma boite gmail minfreestyle@gmail.com ça m'envoi un message sur slack avec son contenu",
+  "sec-fetch-dest": "empty",
+  "mode": "create",
+  "hasContext": true,
+  "sec-fetch-mode": "cors",
+  "hasTools": false,
+  "sec-fetch-site": "cross-site",
+  "versions": "none"
+}
+  "x-forwarded-for": "194.65.139.14",
+Identification des nodes n8n mentionnés...
+  "x-forwarded-host": "vibe-n8n-production.up.railway.app",
+Réponse Haiku brute: ["gmail", "slack"]
+  "x-forwarded-proto": "https",
+Nodes identifiés: [ 'gmail', 'slack' ]
+
+  "x-railway-edge": "railway/europe-west4-drams3a",
+--- CONTEXTE ENVOYÉ À CLAUDE OPUS ---
+  "x-railway-request-id": "YUJtXUV5Q3aCpNIrss7a6g",
+Model: claude-opus-4-20250514
+Mode: création
+  "x-real-ip": "194.65.139.14",
+Nodes enrichis: gmail, slack
+Taille du system prompt: 3882 caractères
+-----------------------------------
+

@@ -133,11 +133,14 @@ If no specific nodes are mentioned, return: []`
         }
         
         // Étape 2 : Récupérer les fiches des nodes depuis Pinecone
-        if (identifiedNodes.length > 0 && versions) {
+        if (identifiedNodes.length > 0) {
           console.log('Récupération des fiches pour:', identifiedNodes);
           console.log('Avec versions:', versions);
           
-          const nodeDetails = await getNodeTypesByNames(identifiedNodes, versions);
+          // Gérer le cas où versions est "none" ou pas un objet valide
+          const versionsObject = (versions === 'none' || typeof versions !== 'object') ? {} : versions;
+          
+          const nodeDetails = await getNodeTypesByNames(identifiedNodes, versionsObject);
           
           if (nodeDetails.length > 0) {
             console.log(`✅ ${nodeDetails.length} fiches récupérées:`);

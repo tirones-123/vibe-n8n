@@ -412,9 +412,85 @@ class NodeTypesRAG {
       let found = false;
       
       for (const possibleName of possibleNames) {
-        const nodeId = version ? `${possibleName}|v${version}` : null;
-        
-        if (nodeId) {
+        // Si pas de version spécifiée, essayer de trouver la dernière version
+        if (!version) {
+          try {
+            // Rechercher toutes les versions de ce node
+            const searchPattern = `${possibleName}|v`;
+            const allRecords = await this.index.namespace(NAMESPACE).list({
+              prefix: searchPattern
+            });
+            
+            if (allRecords && allRecords.vectors && allRecords.vectors.length > 0) {
+              // Extraire les versions et prendre la plus haute
+              const versions = allRecords.vectors.map(v => {
+                const match = v.id.match(/\|v(\d+)$/);
+                return match ? parseInt(match[1]) : 0;
+              }).filter(v => v > 0);
+              
+              if (versions.length > 0) {
+                const maxVersion = Math.max(...versions);
+                const nodeId = `${possibleName}|v${maxVersion}`;
+                
+                console.log(`📌 Pas de version spécifiée pour ${nodeName}, utilisation de v${maxVersion}`);
+                
+                // Récupérer le node avec cette version
+                const response = await this.index.namespace(NAMESPACE).fetch([nodeId]);
+                
+                if (response.records && response.records[nodeId]) {
+                  const record = response.records[nodeId];
+                  
+                  // Charger les données complètes depuis le volume
+                  let fullData = null;
+                  
+                  if (record.metadata.hasFullDataOnVolume) {
+                    // Charger depuis le volume
+                    fullData = await this.loadNodeFromVolume(nodeId);
+                    
+                    if (fullData) {
+                      console.log(`✅ Données complètes chargées depuis le volume pour ${nodeName} v${maxVersion} (${JSON.stringify(fullData).length} caractères)`);
+                    } else {
+                      console.warn(`⚠️  Données non trouvées sur le volume pour ${nodeId}, utilisation des métadonnées Pinecone`);
+                      // Fallback: essayer de reconstruire depuis les métadonnées
+                      fullData = {
+                        name: record.metadata.nodeName,
+                        displayName: record.metadata.displayName,
+                        description: record.metadata.description,
+                        version: record.metadata.version,
+                        group: record.metadata.group
+                      };
+                    }
+                  } else {
+                    // Ancien système: essayer de parser depuis fullData si présent
+                    try {
+                      if (record.metadata.fullData) {
+                        fullData = JSON.parse(record.metadata.fullData);
+                        console.log(`📦 Données récupérées depuis Pinecone pour ${nodeName} v${maxVersion} (legacy)`);
+                      }
+                    } catch (error) {
+                      console.error(`Erreur parsing fullData pour ${nodeName}:`, error.message);
+                    }
+                  }
+                  
+                  results.push({
+                    nodeName,
+                    version: maxVersion,
+                    metadata: record.metadata,
+                    fullData
+                  });
+                  
+                  found = true;
+                  break;
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Erreur recherche versions pour ${possibleName}:`, error);
+          }
+        } else {
+          // Version spécifiée, utiliser l'ancien code
+          const nodeId = `${possibleName}|v${version}`;
+          
           try {
             // Récupérer directement par ID depuis Pinecone
             const response = await this.index.namespace(NAMESPACE).fetch([nodeId]);
@@ -471,7 +547,7 @@ class NodeTypesRAG {
       }
       
       if (!found) {
-        console.warn(`⚠️  Node non trouvé: ${nodeName} v${version}`);
+        console.warn(`⚠️  Node non trouvé: ${nodeName} v${version || 'any'}`);
       }
     }
     
