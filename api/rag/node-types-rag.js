@@ -412,70 +412,72 @@ class NodeTypesRAG {
       let found = false;
       
       for (const possibleName of possibleNames) {
-        // Si pas de version spécifiée, essayer de trouver la dernière version
+        // Si pas de version spécifiée, essayer de trouver la dernière version depuis le volume
         if (!version) {
           try {
-            // Rechercher toutes les versions de ce node
-            const searchPattern = `${possibleName}|v`;
-            const allRecords = await this.index.namespace(NAMESPACE).list({
-              prefix: searchPattern
+            // Lister les fichiers du volume pour ce node
+            const files = await fs.readdir(this.storageDir);
+            const nodeFiles = files.filter(f => {
+              const prefix = possibleName.replace(/[|:]/g, '_') + '_v';
+              return f.startsWith(prefix) && f.endsWith('.json');
             });
             
-            if (allRecords && allRecords.vectors && allRecords.vectors.length > 0) {
+            if (nodeFiles.length > 0) {
               // Extraire les versions et prendre la plus haute
-              const versions = allRecords.vectors.map(v => {
-                const match = v.id.match(/\|v(\d+)$/);
-                return match ? parseInt(match[1]) : 0;
-              }).filter(v => v > 0);
+              const versions = nodeFiles.map(f => {
+                const match = f.match(/_v([\d.]+)\.json$/);
+                return match ? match[1] : null;
+              }).filter(v => v !== null);
               
               if (versions.length > 0) {
-                const maxVersion = Math.max(...versions);
+                // Trier les versions pour prendre la plus haute
+                // Comparer les versions en tenant compte des points (ex: 2.3 > 2.1 > 1)
+                const maxVersion = versions.sort((a, b) => {
+                  const aParts = a.split('.').map(Number);
+                  const bParts = b.split('.').map(Number);
+                  
+                  for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+                    const aPart = aParts[i] || 0;
+                    const bPart = bParts[i] || 0;
+                    if (aPart !== bPart) {
+                      return bPart - aPart; // Ordre décroissant
+                    }
+                  }
+                  return 0;
+                })[0];
+                
                 const nodeId = `${possibleName}|v${maxVersion}`;
                 
-                console.log(`📌 Pas de version spécifiée pour ${nodeName}, utilisation de v${maxVersion}`);
+                console.log(`📌 Pas de version spécifiée pour ${nodeName}, utilisation de v${maxVersion} (trouvée sur le volume)`);
                 
-                // Récupérer le node avec cette version
-                const response = await this.index.namespace(NAMESPACE).fetch([nodeId]);
+                // Charger les données depuis le volume
+                const fullData = await this.loadNodeFromVolume(nodeId);
                 
-                if (response.records && response.records[nodeId]) {
-                  const record = response.records[nodeId];
+                if (fullData) {
+                  console.log(`✅ Données complètes chargées depuis le volume pour ${nodeName} v${maxVersion} (${JSON.stringify(fullData).length} caractères)`);
                   
-                  // Charger les données complètes depuis le volume
-                  let fullData = null;
+                  // Essayer de récupérer les métadonnées depuis Pinecone si possible
+                  let metadata = {
+                    nodeName: possibleName,
+                    displayName: fullData.displayName || possibleName,
+                    description: fullData.description || '',
+                    version: maxVersion,
+                    group: fullData.group || []
+                  };
                   
-                  if (record.metadata.hasFullDataOnVolume) {
-                    // Charger depuis le volume
-                    fullData = await this.loadNodeFromVolume(nodeId);
-                    
-                    if (fullData) {
-                      console.log(`✅ Données complètes chargées depuis le volume pour ${nodeName} v${maxVersion} (${JSON.stringify(fullData).length} caractères)`);
-                    } else {
-                      console.warn(`⚠️  Données non trouvées sur le volume pour ${nodeId}, utilisation des métadonnées Pinecone`);
-                      // Fallback: essayer de reconstruire depuis les métadonnées
-                      fullData = {
-                        name: record.metadata.nodeName,
-                        displayName: record.metadata.displayName,
-                        description: record.metadata.description,
-                        version: record.metadata.version,
-                        group: record.metadata.group
-                      };
+                  try {
+                    const response = await this.index.namespace(NAMESPACE).fetch([nodeId]);
+                    if (response.records && response.records[nodeId]) {
+                      metadata = response.records[nodeId].metadata || metadata;
                     }
-                  } else {
-                    // Ancien système: essayer de parser depuis fullData si présent
-                    try {
-                      if (record.metadata.fullData) {
-                        fullData = JSON.parse(record.metadata.fullData);
-                        console.log(`📦 Données récupérées depuis Pinecone pour ${nodeName} v${maxVersion} (legacy)`);
-                      }
-                    } catch (error) {
-                      console.error(`Erreur parsing fullData pour ${nodeName}:`, error.message);
-                    }
+                  } catch (error) {
+                    // Ignorer l'erreur, utiliser les métadonnées par défaut
                   }
                   
                   results.push({
                     nodeName,
                     version: maxVersion,
-                    metadata: record.metadata,
+                    metadata,
                     fullData
                   });
                   
