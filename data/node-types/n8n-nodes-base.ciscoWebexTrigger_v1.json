@@ -1,0 +1,680 @@
+{
+  "displayName": "Webex by Cisco Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"resource\"] + \":\" + $parameter[\"event\"]}}",
+  "description": "Starts the workflow when Cisco Webex events occur.",
+  "defaults": {
+    "name": "Webex by Cisco Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "ciscoWebexOAuth2Api",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "[All]",
+          "value": "all"
+        },
+        {
+          "name": "Attachment Action",
+          "value": "attachmentAction"
+        },
+        {
+          "name": "Meeting",
+          "value": "meeting"
+        },
+        {
+          "name": "Membership",
+          "value": "membership"
+        },
+        {
+          "name": "Message",
+          "value": "message"
+        },
+        {
+          "name": "Recording",
+          "value": "recording"
+        },
+        {
+          "name": "Room",
+          "value": "room"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "meeting",
+      "required": true
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachmentAction"
+          ]
+        }
+      },
+      "options": [
+        {
+          "value": "created",
+          "name": "Created"
+        },
+        {
+          "value": "deleted",
+          "name": "Deleted"
+        },
+        {
+          "value": "updated",
+          "name": "Updated"
+        },
+        {
+          "value": "all",
+          "name": "*"
+        }
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "membership"
+          ]
+        }
+      },
+      "options": [
+        {
+          "value": "created",
+          "name": "Created"
+        },
+        {
+          "value": "deleted",
+          "name": "Deleted"
+        },
+        {
+          "value": "updated",
+          "name": "Updated"
+        },
+        {
+          "value": "all",
+          "name": "*"
+        }
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "options": [
+        {
+          "value": "created",
+          "name": "Created"
+        },
+        {
+          "value": "deleted",
+          "name": "Deleted"
+        },
+        {
+          "value": "updated",
+          "name": "Updated"
+        },
+        {
+          "value": "all",
+          "name": "*"
+        }
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ]
+        }
+      },
+      "options": [
+        {
+          "value": "created",
+          "name": "Created"
+        },
+        {
+          "value": "deleted",
+          "name": "Deleted"
+        },
+        {
+          "value": "updated",
+          "name": "Updated"
+        },
+        {
+          "value": "all",
+          "name": "*"
+        }
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "meeting"
+          ]
+        }
+      },
+      "options": [
+        {
+          "value": "created",
+          "name": "Created"
+        },
+        {
+          "value": "deleted",
+          "name": "Deleted"
+        },
+        {
+          "value": "updated",
+          "name": "Updated"
+        },
+        {
+          "value": "started",
+          "name": "Started"
+        },
+        {
+          "value": "ended",
+          "name": "Ended"
+        },
+        {
+          "value": "all",
+          "name": "*"
+        }
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "recording"
+          ]
+        }
+      },
+      "options": [
+        {
+          "value": "created",
+          "name": "Created"
+        },
+        {
+          "value": "deleted",
+          "name": "Deleted"
+        },
+        {
+          "value": "updated",
+          "name": "Updated"
+        },
+        {
+          "value": "all",
+          "name": "*"
+        }
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "telephonyCall"
+          ]
+        }
+      },
+      "options": [
+        {
+          "value": "created",
+          "name": "Created"
+        },
+        {
+          "value": "deleted",
+          "name": "Deleted"
+        },
+        {
+          "value": "updated",
+          "name": "Updated"
+        }
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "all"
+          ]
+        }
+      },
+      "options": [
+        {
+          "value": "created",
+          "name": "Created"
+        },
+        {
+          "value": "updated",
+          "name": "Updated"
+        },
+        {
+          "value": "deleted",
+          "name": "Deleted"
+        },
+        {
+          "value": "all",
+          "name": "*"
+        }
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Resolve Data",
+      "name": "resolveData",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachmentAction"
+          ]
+        }
+      },
+      "default": true,
+      "description": "By default the response only contain a reference to the data the user inputed. If this option gets activated, it will resolve the data automatically."
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Has Files",
+          "name": "hasFiles",
+          "type": "boolean",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "message"
+              ],
+              "/event": [
+                "created",
+                "deleted"
+              ]
+            }
+          },
+          "default": false,
+          "description": "Whether to limit to messages which contain file content attachments"
+        },
+        {
+          "displayName": "Is Locked",
+          "name": "isLocked",
+          "type": "boolean",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "room"
+              ],
+              "/event": [
+                "created",
+                "updated"
+              ]
+            }
+          },
+          "default": false,
+          "description": "Whether to limit to rooms that are locked"
+        },
+        {
+          "displayName": "Is Moderator",
+          "name": "isModerator",
+          "type": "boolean",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "membership"
+              ],
+              "/event": [
+                "created",
+                "updated",
+                "deleted"
+              ]
+            }
+          },
+          "default": false,
+          "description": "Whether to limit to moderators of a room"
+        },
+        {
+          "displayName": "Mentioned People",
+          "name": "mentionedPeople",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "message"
+              ],
+              "/event": [
+                "created",
+                "deleted"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to messages which contain these mentioned people, by person ID; accepts me as a shorthand for your own person ID; separate multiple values with commas"
+        },
+        {
+          "displayName": "Message ID",
+          "name": "messageId",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "attachmentAction"
+              ],
+              "/event": [
+                "created"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular message, by ID"
+        },
+        {
+          "displayName": "Owned By",
+          "name": "ownedBy",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "meeting"
+              ]
+            }
+          },
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Person Email",
+          "name": "personEmail",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "membership"
+              ],
+              "/event": [
+                "created",
+                "updated",
+                "deleted"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular person, by email"
+        },
+        {
+          "displayName": "Person Email",
+          "name": "personEmail",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "message"
+              ],
+              "/event": [
+                "created",
+                "deleted"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular person, by email"
+        },
+        {
+          "displayName": "Person ID",
+          "name": "personId",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "attachmentAction"
+              ],
+              "/event": [
+                "created"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular person, by ID"
+        },
+        {
+          "displayName": "Person ID",
+          "name": "personId",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "membership"
+              ],
+              "/event": [
+                "created",
+                "updated",
+                "deleted"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular person, by ID"
+        },
+        {
+          "displayName": "Person ID",
+          "name": "personId",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "message"
+              ],
+              "/event": [
+                "created",
+                "deleted"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular person, by ID"
+        },
+        {
+          "displayName": "Room ID",
+          "name": "roomId",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "attachmentAction"
+              ],
+              "/event": [
+                "created"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular room, by ID"
+        },
+        {
+          "displayName": "Room ID",
+          "name": "roomId",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "membership"
+              ],
+              "/event": [
+                "created",
+                "updated",
+                "deleted"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular room, by ID"
+        },
+        {
+          "displayName": "Room ID",
+          "name": "roomId",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "message"
+              ],
+              "/event": [
+                "created",
+                "updated"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular room, by ID"
+        },
+        {
+          "displayName": "Room Type",
+          "name": "roomType",
+          "type": "options",
+          "options": [
+            {
+              "name": "Direct",
+              "value": "direct"
+            },
+            {
+              "name": "Group",
+              "value": "group"
+            }
+          ],
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "message"
+              ],
+              "/event": [
+                "created",
+                "deleted"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular room type"
+        },
+        {
+          "displayName": "Type",
+          "name": "type",
+          "type": "options",
+          "options": [
+            {
+              "name": "Direct",
+              "value": "direct"
+            },
+            {
+              "name": "Group",
+              "value": "group"
+            }
+          ],
+          "displayOptions": {
+            "show": {
+              "/resource": [
+                "room"
+              ],
+              "/event": [
+                "created",
+                "updated"
+              ]
+            }
+          },
+          "default": "",
+          "description": "Limit to a particular room type"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Communication"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.ciscowebextrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/ciscoWebex/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Cisco/Webex/ciscoWebex.png",
+  "name": "n8n-nodes-base.ciscoWebexTrigger"
+}

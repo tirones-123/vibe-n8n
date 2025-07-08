@@ -1,0 +1,378 @@
+{
+  "displayName": "GraphQL Tool",
+  "group": [
+    "input"
+  ],
+  "version": [
+    1,
+    1.1
+  ],
+  "description": "Makes a GraphQL request and returns the received data",
+  "defaults": {
+    "name": "GraphQL"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "httpBasicAuth",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "basicAuth"
+          ]
+        }
+      }
+    },
+    {
+      "name": "httpCustomAuth",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "customAuth"
+          ]
+        }
+      }
+    },
+    {
+      "name": "httpDigestAuth",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "digestAuth"
+          ]
+        }
+      }
+    },
+    {
+      "name": "httpHeaderAuth",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "headerAuth"
+          ]
+        }
+      }
+    },
+    {
+      "name": "httpQueryAuth",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "queryAuth"
+          ]
+        }
+      }
+    },
+    {
+      "name": "oAuth1Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "oAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ]
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Makes a GraphQL request and returns the received data",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often"
+    },
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "Basic Auth",
+          "value": "basicAuth"
+        },
+        {
+          "name": "Custom Auth",
+          "value": "customAuth"
+        },
+        {
+          "name": "Digest Auth",
+          "value": "digestAuth"
+        },
+        {
+          "name": "Header Auth",
+          "value": "headerAuth"
+        },
+        {
+          "name": "None",
+          "value": "none"
+        },
+        {
+          "name": "OAuth1",
+          "value": "oAuth1"
+        },
+        {
+          "name": "OAuth2",
+          "value": "oAuth2"
+        },
+        {
+          "name": "Query Auth",
+          "value": "queryAuth"
+        }
+      ],
+      "default": "none",
+      "description": "The way to authenticate"
+    },
+    {
+      "displayName": "HTTP Request Method",
+      "name": "requestMethod",
+      "type": "options",
+      "options": [
+        {
+          "name": "GET",
+          "value": "GET"
+        },
+        {
+          "name": "POST",
+          "value": "POST"
+        }
+      ],
+      "default": "POST",
+      "description": "The underlying HTTP request method to use"
+    },
+    {
+      "displayName": "Endpoint",
+      "name": "endpoint",
+      "type": "string",
+      "default": "",
+      "placeholder": "http://example.com/graphql",
+      "description": "The GraphQL endpoint",
+      "required": true
+    },
+    {
+      "displayName": "Ignore SSL Issues (Insecure)",
+      "name": "allowUnauthorizedCerts",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to download the response even if SSL certificate validation is not possible"
+    },
+    {
+      "displayName": "Request Format",
+      "name": "requestFormat",
+      "type": "options",
+      "required": true,
+      "options": [
+        {
+          "name": "GraphQL (Raw)",
+          "value": "graphql"
+        },
+        {
+          "name": "JSON",
+          "value": "json"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "requestMethod": [
+            "POST"
+          ],
+          "@version": [
+            1
+          ]
+        }
+      },
+      "default": "graphql",
+      "description": "The format for the query payload"
+    },
+    {
+      "displayName": "Request Format",
+      "name": "requestFormat",
+      "type": "options",
+      "required": true,
+      "options": [
+        {
+          "name": "JSON (Recommended)",
+          "value": "json",
+          "description": "JSON object with query, variables, and operationName properties. The standard and most widely supported format for GraphQL requests."
+        },
+        {
+          "name": "GraphQL (Raw)",
+          "value": "graphql",
+          "description": "Raw GraphQL query string. Not all servers support this format. Use JSON for better compatibility."
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "requestMethod": [
+            "POST"
+          ],
+          "@version": [
+            {
+              "_cnd": {
+                "gte": 1.1
+              }
+            }
+          ]
+        }
+      },
+      "default": "json",
+      "description": "The request format for the query payload"
+    },
+    {
+      "displayName": "Query",
+      "name": "query",
+      "type": "string",
+      "default": "",
+      "description": "GraphQL query",
+      "required": true,
+      "typeOptions": {
+        "rows": 6
+      }
+    },
+    {
+      "displayName": "Variables",
+      "name": "variables",
+      "type": "json",
+      "default": "",
+      "description": "Query variables as JSON object",
+      "displayOptions": {
+        "show": {
+          "requestFormat": [
+            "json"
+          ],
+          "requestMethod": [
+            "POST"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation Name",
+      "name": "operationName",
+      "type": "string",
+      "default": "",
+      "description": "Name of operation to execute",
+      "displayOptions": {
+        "show": {
+          "requestFormat": [
+            "json"
+          ],
+          "requestMethod": [
+            "POST"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Response Format",
+      "name": "responseFormat",
+      "type": "options",
+      "options": [
+        {
+          "name": "JSON",
+          "value": "json"
+        },
+        {
+          "name": "String",
+          "value": "string"
+        }
+      ],
+      "default": "json",
+      "description": "The format in which the data gets returned from the URL"
+    },
+    {
+      "displayName": "Response Data Property Name",
+      "name": "dataPropertyName",
+      "type": "string",
+      "default": "data",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "responseFormat": [
+            "string"
+          ]
+        }
+      },
+      "description": "Name of the property to which to write the response data"
+    },
+    {
+      "displayName": "Headers",
+      "name": "headerParametersUi",
+      "placeholder": "Add Header",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "description": "The headers to send",
+      "default": {},
+      "options": [
+        {
+          "name": "parameter",
+          "displayName": "Header",
+          "values": [
+            {
+              "displayName": "Name",
+              "name": "name",
+              "type": "string",
+              "default": "",
+              "description": "Name of the header"
+            },
+            {
+              "displayName": "Value",
+              "name": "value",
+              "type": "string",
+              "default": "",
+              "description": "Value to set for the header"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.graphql/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/GraphQL/graphql.png",
+  "name": "n8n-nodes-base.graphqlTool"
+}

@@ -1,0 +1,135 @@
+{
+  "displayName": "Linear Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"triggerOn\"]}}",
+  "description": "Starts the workflow when Linear events occur",
+  "defaults": {
+    "name": "Linear Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "linearApi",
+      "required": true,
+      "testedBy": "linearApiTest",
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "apiToken"
+          ]
+        }
+      }
+    },
+    {
+      "name": "linearOAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ]
+        }
+      }
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "API Token",
+          "value": "apiToken"
+        },
+        {
+          "name": "OAuth2",
+          "value": "oAuth2"
+        }
+      ],
+      "default": "apiToken"
+    },
+    {
+      "displayName": "Make sure your credential has the \"Admin\" scope to create webhooks.",
+      "name": "notice",
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Team Name or ID",
+      "name": "teamId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getTeams"
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Listen to Resources",
+      "name": "resources",
+      "type": "multiOptions",
+      "options": [
+        {
+          "name": "Comment Reaction",
+          "value": "reaction"
+        },
+        {
+          "name": "Cycle",
+          "value": "cycle"
+        },
+        {
+          "name": "Issue",
+          "value": "issue"
+        },
+        {
+          "name": "Issue Comment",
+          "value": "comment"
+        },
+        {
+          "name": "Issue Label",
+          "value": "issueLabel"
+        },
+        {
+          "name": "Project",
+          "value": "project"
+        }
+      ],
+      "default": [],
+      "required": true
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Productivity"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.lineartrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/linear/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Linear/linear.svg",
+  "name": "n8n-nodes-base.linearTrigger"
+}

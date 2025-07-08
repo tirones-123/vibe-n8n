@@ -1,0 +1,62 @@
+{
+  "displayName": "Read Binary File",
+  "icon": "fa:file-import",
+  "group": [
+    "input"
+  ],
+  "version": 1,
+  "hidden": true,
+  "description": "Reads a binary file from disk",
+  "defaults": {
+    "name": "Read Binary File",
+    "color": "#449922"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "File Path",
+      "name": "filePath",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "placeholder": "/data/example.jpg",
+      "description": "Path of the file to read"
+    },
+    {
+      "displayName": "Property Name",
+      "name": "dataPropertyName",
+      "type": "string",
+      "default": "data",
+      "required": true,
+      "description": "Name of the binary property to which to write the data of the read file"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Files"
+      ]
+    },
+    "alias": [
+      "Text",
+      "Open",
+      "Import"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.readwritefile/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.readBinaryFile"
+}

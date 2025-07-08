@@ -1,0 +1,579 @@
+{
+  "displayName": "E-goi Tool",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume E-goi API",
+  "defaults": {
+    "name": "E-goi"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "egoiApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume E-goi API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "required": true,
+      "options": [
+        {
+          "name": "Contact",
+          "value": "contact"
+        }
+      ],
+      "default": "contact"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "required": true,
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a member",
+          "action": "Create a member"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a member",
+          "action": "Get a member"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many members",
+          "action": "Get many members"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a member",
+          "action": "Update a member"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "List Name or ID",
+      "name": "list",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getLists"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll",
+            "create",
+            "update",
+            "get"
+          ]
+        }
+      },
+      "default": "",
+      "description": "ID of list to operate on. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Email address for a subscriber"
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Contact ID of the subscriber"
+    },
+    {
+      "displayName": "Resolve Data",
+      "name": "resolveData",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create",
+            "update"
+          ]
+        }
+      },
+      "default": true,
+      "description": "By default the response just includes the contact ID. If this option gets activated, it will resolve the data automatically."
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Birth Date",
+          "name": "birth_date",
+          "type": "dateTime",
+          "default": "",
+          "description": "Birth date of a subscriber"
+        },
+        {
+          "displayName": "Cellphone",
+          "name": "cellphone",
+          "type": "string",
+          "default": "",
+          "description": "Cellphone of a subscriber"
+        },
+        {
+          "displayName": "Extra Fields",
+          "name": "extraFieldsUi",
+          "type": "fixedCollection",
+          "placeholder": "Add Field",
+          "default": {},
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "displayName": "Extra Field",
+              "name": "extraFieldValues",
+              "typeOptions": {
+                "multipleValueButtonText": "Add Field"
+              },
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "field_id",
+                  "type": "options",
+                  "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getExtraFields",
+                    "loadOptionsDependsOn": [
+                      "list"
+                    ]
+                  },
+                  "default": ""
+                },
+                {
+                  "displayName": "Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": "",
+          "description": "Name of a subscriber"
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": "",
+          "description": "Name of a subscriber"
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Unconfirmed",
+              "value": "unconfirmed"
+            },
+            {
+              "name": "Active",
+              "value": "active"
+            },
+            {
+              "name": "Inactive",
+              "value": "inactive"
+            },
+            {
+              "name": "Removed",
+              "value": "removed"
+            }
+          ],
+          "default": "active",
+          "description": "Subscriber's current status"
+        },
+        {
+          "displayName": "Tag Names or IDs",
+          "name": "tagIds",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getListTags"
+          },
+          "default": [],
+          "description": "List of tag IDs to be added. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        }
+      ]
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Birth Date",
+          "name": "birth_date",
+          "type": "dateTime",
+          "default": "",
+          "description": "Birth date of subscriber"
+        },
+        {
+          "displayName": "Cellphone",
+          "name": "cellphone",
+          "type": "string",
+          "default": "",
+          "description": "Cellphone of subscriber"
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "Email address for subscriber"
+        },
+        {
+          "displayName": "Extra Fields",
+          "name": "extraFieldsUi",
+          "type": "fixedCollection",
+          "placeholder": "Add Field",
+          "default": {},
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "displayName": "Extra Field",
+              "name": "extraFieldValues",
+              "typeOptions": {
+                "multipleValueButtonText": "Add Field"
+              },
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "field_id",
+                  "type": "options",
+                  "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getExtraFields",
+                    "loadOptionsDependsOn": [
+                      "list"
+                    ]
+                  },
+                  "default": ""
+                },
+                {
+                  "displayName": "Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": "",
+          "description": "Name of subscriber"
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": "",
+          "description": "Name of subscriber"
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Unconfirmed",
+              "value": "unconfirmed"
+            },
+            {
+              "name": "Active",
+              "value": "active"
+            },
+            {
+              "name": "Inactive",
+              "value": "inactive"
+            },
+            {
+              "name": "Removed",
+              "value": "removed"
+            }
+          ],
+          "default": "active",
+          "description": "Subscriber's current status"
+        },
+        {
+          "displayName": "Tag Names or IDs",
+          "name": "tagIds",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getListTags"
+          },
+          "default": [],
+          "description": "List of tag IDs to be added. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        }
+      ]
+    },
+    {
+      "displayName": "By",
+      "name": "by",
+      "type": "options",
+      "options": [
+        {
+          "name": "Contact ID",
+          "value": "id"
+        },
+        {
+          "name": "Email",
+          "value": "email"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": "id",
+      "description": "Search by"
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "get"
+          ],
+          "by": [
+            "id"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Contact ID of the subscriber"
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "get"
+          ],
+          "by": [
+            "email"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Email address for subscriber"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "contact"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get",
+            "getAll"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.egoi/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/egoi/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Egoi/egoi.svg",
+  "name": "n8n-nodes-base.egoiTool"
+}

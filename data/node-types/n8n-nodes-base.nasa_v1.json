@@ -1,0 +1,912 @@
+{
+  "displayName": "NASA",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \":\" + $parameter[\"resource\"]}}",
+  "description": "Retrieve data from the NASA API",
+  "defaults": {
+    "name": "NASA"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "nasaApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Asteroid Neo-Browse",
+          "value": "asteroidNeoBrowse"
+        },
+        {
+          "name": "Asteroid Neo-Feed",
+          "value": "asteroidNeoFeed"
+        },
+        {
+          "name": "Asteroid Neo-Lookup",
+          "value": "asteroidNeoLookup"
+        },
+        {
+          "name": "Astronomy Picture of the Day",
+          "value": "astronomyPictureOfTheDay"
+        },
+        {
+          "name": "DONKI Coronal Mass Ejection",
+          "value": "donkiCoronalMassEjection"
+        },
+        {
+          "name": "DONKI High Speed Stream",
+          "value": "donkiHighSpeedStream"
+        },
+        {
+          "name": "DONKI Interplanetary Shock",
+          "value": "donkiInterplanetaryShock"
+        },
+        {
+          "name": "DONKI Magnetopause Crossing",
+          "value": "donkiMagnetopauseCrossing"
+        },
+        {
+          "name": "DONKI Notification",
+          "value": "donkiNotifications"
+        },
+        {
+          "name": "DONKI Radiation Belt Enhancement",
+          "value": "donkiRadiationBeltEnhancement"
+        },
+        {
+          "name": "DONKI Solar Energetic Particle",
+          "value": "donkiSolarEnergeticParticle"
+        },
+        {
+          "name": "DONKI Solar Flare",
+          "value": "donkiSolarFlare"
+        },
+        {
+          "name": "DONKI WSA+EnlilSimulation",
+          "value": "donkiWsaEnlilSimulation"
+        },
+        {
+          "name": "Earth Asset",
+          "value": "earthAssets"
+        },
+        {
+          "name": "Earth Imagery",
+          "value": "earthImagery"
+        }
+      ],
+      "default": "astronomyPictureOfTheDay"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "astronomyPictureOfTheDay"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get the Astronomy Picture of the Day",
+          "action": "Get the astronomy picture of the day"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "asteroidNeoFeed"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a list of asteroids based on their closest approach date to Earth",
+          "action": "Get an asteroid neo feed"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "asteroidNeoLookup"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Look up an asteroid based on its NASA SPK-ID",
+          "action": "Get an asteroid neo lookup"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "asteroidNeoBrowse"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Browse the overall asteroid dataset",
+          "action": "Get many asteroid neos"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiCoronalMassEjection"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve DONKI coronal mass ejection data",
+          "action": "Get a DONKI coronal mass ejection"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiGeomagneticStorm"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve DONKI geomagnetic storm data",
+          "action": "Get a DONKI geomagnetic storm"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiInterplanetaryShock"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve DONKI interplanetary shock data",
+          "action": "Get a DONKI interplanetary shock"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiSolarFlare"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve DONKI solar flare data",
+          "action": "Get a DONKI solar flare"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiSolarEnergeticParticle"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve DONKI solar energetic particle data",
+          "action": "Get a DONKI solar energetic particle"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiMagnetopauseCrossing"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve data on DONKI magnetopause crossings",
+          "action": "Get a DONKI magnetopause crossing"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiRadiationBeltEnhancement"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve DONKI radiation belt enhancement data",
+          "action": "Get a DONKI radiation belt enhancement"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiHighSpeedStream"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve DONKI high speed stream data",
+          "action": "Get a DONKI high speed stream"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiWsaEnlilSimulation"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve DONKI WSA+EnlilSimulation data",
+          "action": "Get a DONKI wsa enlil simulation"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiNotifications"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve DONKI notifications data",
+          "action": "Get a DONKI notifications"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earthImagery"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve Earth imagery",
+          "action": "Get Earth imagery"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earthAssets"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve Earth assets",
+          "action": "Get Earth assets"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "inSightMarsWeatherService"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve Insight Mars Weather Service data",
+          "action": "Get Insight Mars Weather Service"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "imageAndVideoLibrary"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve Image and Video Library data",
+          "action": "Get image and video library data"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "techTransfer"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve TechTransfer data",
+          "action": "Get a TechTransfer data"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "twoLineElementSet"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve Two-Line Element Set data",
+          "action": "Get a Two-Line Element Set"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Asteroid ID",
+      "name": "asteroidId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "placeholder": "3542519",
+      "description": "The ID of the asteroid to be returned",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "asteroidNeoLookup"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "asteroidNeoLookup"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Close Approach Data",
+          "name": "includeCloseApproachData",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include all the close approach data in the asteroid lookup"
+        }
+      ]
+    },
+    {
+      "displayName": "Download Image",
+      "name": "download",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "astronomyPictureOfTheDay"
+          ]
+        }
+      },
+      "default": true,
+      "description": "By default just the URL of the image is returned. When set to true the image will be downloaded."
+    },
+    {
+      "displayName": "Put Output File in Field",
+      "name": "binaryPropertyName",
+      "type": "string",
+      "required": true,
+      "default": "data",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "astronomyPictureOfTheDay"
+          ],
+          "download": [
+            true
+          ]
+        }
+      },
+      "hint": "The name of the output binary field to put the file in"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "default": {},
+      "placeholder": "Add field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "astronomyPictureOfTheDay"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Date",
+          "name": "date",
+          "type": "dateTime",
+          "default": "",
+          "placeholder": "YYYY-MM-DD"
+        }
+      ]
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "default": {},
+      "placeholder": "Add field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "asteroidNeoFeed",
+            "donkiCoronalMassEjection",
+            "donkiGeomagneticStorm",
+            "donkiSolarFlare",
+            "donkiSolarEnergeticParticle",
+            "donkiMagnetopauseCrossing",
+            "donkiRadiationBeltEnhancement",
+            "donkiHighSpeedStream",
+            "donkiWsaEnlilSimulation",
+            "donkiNotifications"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Start Date",
+          "name": "startDate",
+          "type": "dateTime",
+          "default": "",
+          "placeholder": "YYYY-MM-DD"
+        },
+        {
+          "displayName": "End Date",
+          "name": "endDate",
+          "type": "dateTime",
+          "default": "",
+          "placeholder": "YYYY-MM-DD"
+        }
+      ]
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "default": {},
+      "placeholder": "Add field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "donkiInterplanetaryShock"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Start Date",
+          "name": "startDate",
+          "type": "dateTime",
+          "default": "",
+          "placeholder": "YYYY-MM-DD"
+        },
+        {
+          "displayName": "End Date",
+          "name": "endDate",
+          "type": "dateTime",
+          "default": "",
+          "placeholder": "YYYY-MM-DD"
+        },
+        {
+          "displayName": "Location",
+          "name": "location",
+          "type": "options",
+          "default": "ALL",
+          "description": "The location of the geomagnetic storm",
+          "options": [
+            {
+              "name": "All",
+              "value": "ALL"
+            },
+            {
+              "name": "Earth",
+              "value": "earth"
+            },
+            {
+              "name": "Messenger",
+              "value": "MESSENGER"
+            },
+            {
+              "name": "Stereo A",
+              "value": "STEREO A"
+            },
+            {
+              "name": "Stereo B",
+              "value": "STEREO B"
+            }
+          ]
+        },
+        {
+          "displayName": "Catalog",
+          "name": "catalog",
+          "type": "options",
+          "default": "ALL",
+          "description": "The catalog of the geomagnetic storm",
+          "options": [
+            {
+              "name": "All",
+              "value": "ALL"
+            },
+            {
+              "name": "SWRC Catalog",
+              "value": "SWRC_CATALOG"
+            },
+            {
+              "name": "Winslow Messenger ICME Catalog",
+              "value": "WINSLOW_MESSENGER_ICME_CATALOG"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Latitude",
+      "name": "lat",
+      "type": "number",
+      "default": "",
+      "placeholder": "47.751076",
+      "description": "Latitude for the location of the image",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earthImagery",
+            "earthAssets"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Longitude",
+      "name": "lon",
+      "type": "number",
+      "default": "",
+      "placeholder": "-120.740135",
+      "description": "Longitude for the location of the image",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earthImagery",
+            "earthAssets"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Put Output File in Field",
+      "name": "binaryPropertyName",
+      "type": "string",
+      "required": true,
+      "default": "data",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "earthImagery"
+          ]
+        }
+      },
+      "hint": "The name of the output binary field to put the file in"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "default": {},
+      "placeholder": "Add field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "earthImagery",
+            "earthAssets"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Date",
+          "name": "date",
+          "type": "dateTime",
+          "default": "",
+          "placeholder": "YYYY-MM-DD",
+          "description": "Date of the image"
+        },
+        {
+          "displayName": "Degrees",
+          "name": "dim",
+          "type": "number",
+          "default": "",
+          "placeholder": "0.025",
+          "description": "Width and height of the image in degrees"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "description": "Max number of results to return",
+      "default": 20,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Miscellaneous"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.nasa/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/nasa/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Nasa/nasa.png",
+  "name": "n8n-nodes-base.nasa"
+}

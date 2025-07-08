@@ -1,0 +1,519 @@
+{
+  "displayName": "Microsoft Outlook Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Fetches emails from Microsoft Outlook and starts the workflow on specified polling intervals.",
+  "subtitle": "={{\"Microsoft Outlook Trigger\"}}",
+  "defaults": {
+    "name": "Microsoft Outlook Trigger"
+  },
+  "credentials": [
+    {
+      "name": "microsoftOutlookOAuth2Api",
+      "required": true
+    }
+  ],
+  "polling": true,
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "Poll Times",
+      "name": "pollTimes",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true,
+        "multipleValueButtonText": "Add Poll Time"
+      },
+      "default": {
+        "item": [
+          {
+            "mode": "everyMinute"
+          }
+        ]
+      },
+      "description": "Time at which polling should occur",
+      "placeholder": "Add Poll Time",
+      "options": [
+        {
+          "name": "item",
+          "displayName": "Item",
+          "values": [
+            {
+              "displayName": "Mode",
+              "name": "mode",
+              "type": "options",
+              "options": [
+                {
+                  "name": "Every Minute",
+                  "value": "everyMinute"
+                },
+                {
+                  "name": "Every Hour",
+                  "value": "everyHour"
+                },
+                {
+                  "name": "Every Day",
+                  "value": "everyDay"
+                },
+                {
+                  "name": "Every Week",
+                  "value": "everyWeek"
+                },
+                {
+                  "name": "Every Month",
+                  "value": "everyMonth"
+                },
+                {
+                  "name": "Every X",
+                  "value": "everyX"
+                },
+                {
+                  "name": "Custom",
+                  "value": "custom"
+                }
+              ],
+              "default": "everyDay",
+              "description": "How often to trigger."
+            },
+            {
+              "displayName": "Hour",
+              "name": "hour",
+              "type": "number",
+              "typeOptions": {
+                "minValue": 0,
+                "maxValue": 23
+              },
+              "displayOptions": {
+                "hide": {
+                  "mode": [
+                    "custom",
+                    "everyHour",
+                    "everyMinute",
+                    "everyX"
+                  ]
+                }
+              },
+              "default": 14,
+              "description": "The hour of the day to trigger (24h format)"
+            },
+            {
+              "displayName": "Minute",
+              "name": "minute",
+              "type": "number",
+              "typeOptions": {
+                "minValue": 0,
+                "maxValue": 59
+              },
+              "displayOptions": {
+                "hide": {
+                  "mode": [
+                    "custom",
+                    "everyMinute",
+                    "everyX"
+                  ]
+                }
+              },
+              "default": 0,
+              "description": "The minute of the day to trigger"
+            },
+            {
+              "displayName": "Day of Month",
+              "name": "dayOfMonth",
+              "type": "number",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyMonth"
+                  ]
+                }
+              },
+              "typeOptions": {
+                "minValue": 1,
+                "maxValue": 31
+              },
+              "default": 1,
+              "description": "The day of the month to trigger"
+            },
+            {
+              "displayName": "Weekday",
+              "name": "weekday",
+              "type": "options",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyWeek"
+                  ]
+                }
+              },
+              "options": [
+                {
+                  "name": "Monday",
+                  "value": "1"
+                },
+                {
+                  "name": "Tuesday",
+                  "value": "2"
+                },
+                {
+                  "name": "Wednesday",
+                  "value": "3"
+                },
+                {
+                  "name": "Thursday",
+                  "value": "4"
+                },
+                {
+                  "name": "Friday",
+                  "value": "5"
+                },
+                {
+                  "name": "Saturday",
+                  "value": "6"
+                },
+                {
+                  "name": "Sunday",
+                  "value": "0"
+                }
+              ],
+              "default": "1",
+              "description": "The weekday to trigger"
+            },
+            {
+              "displayName": "Cron Expression",
+              "name": "cronExpression",
+              "type": "string",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "custom"
+                  ]
+                }
+              },
+              "default": "* * * * * *",
+              "description": "Use custom cron expression. Values and ranges as follows:<ul><li>Seconds: 0-59</li><li>Minutes: 0 - 59</li><li>Hours: 0 - 23</li><li>Day of Month: 1 - 31</li><li>Months: 0 - 11 (Jan - Dec)</li><li>Day of Week: 0 - 6 (Sun - Sat)</li></ul>"
+            },
+            {
+              "displayName": "Value",
+              "name": "value",
+              "type": "number",
+              "typeOptions": {
+                "minValue": 0,
+                "maxValue": 1000
+              },
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyX"
+                  ]
+                }
+              },
+              "default": 2,
+              "description": "All how many X minutes/hours it should trigger"
+            },
+            {
+              "displayName": "Unit",
+              "name": "unit",
+              "type": "options",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyX"
+                  ]
+                }
+              },
+              "options": [
+                {
+                  "name": "Minutes",
+                  "value": "minutes"
+                },
+                {
+                  "name": "Hours",
+                  "value": "hours"
+                }
+              ],
+              "default": "hours",
+              "description": "If it should trigger all X minutes or hours"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Trigger On",
+      "name": "event",
+      "type": "options",
+      "default": "messageReceived",
+      "options": [
+        {
+          "name": "Message Received",
+          "value": "messageReceived"
+        }
+      ]
+    },
+    {
+      "displayName": "Output",
+      "name": "output",
+      "type": "options",
+      "default": "simple",
+      "options": [
+        {
+          "name": "Simplified",
+          "value": "simple"
+        },
+        {
+          "name": "Raw",
+          "value": "raw"
+        },
+        {
+          "name": "Select Included Fields",
+          "value": "fields"
+        }
+      ]
+    },
+    {
+      "displayName": "Fields",
+      "name": "fields",
+      "type": "multiOptions",
+      "description": "The fields to add to the output",
+      "displayOptions": {
+        "show": {
+          "output": [
+            "fields"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "bccRecipients",
+          "value": "bccRecipients"
+        },
+        {
+          "name": "body",
+          "value": "body"
+        },
+        {
+          "name": "bodyPreview",
+          "value": "bodyPreview"
+        },
+        {
+          "name": "categories",
+          "value": "categories"
+        },
+        {
+          "name": "ccRecipients",
+          "value": "ccRecipients"
+        },
+        {
+          "name": "changeKey",
+          "value": "changeKey"
+        },
+        {
+          "name": "conversationId",
+          "value": "conversationId"
+        },
+        {
+          "name": "createdDateTime",
+          "value": "createdDateTime"
+        },
+        {
+          "name": "flag",
+          "value": "flag"
+        },
+        {
+          "name": "from",
+          "value": "from"
+        },
+        {
+          "name": "hasAttachments",
+          "value": "hasAttachments"
+        },
+        {
+          "name": "importance",
+          "value": "importance"
+        },
+        {
+          "name": "inferenceClassification",
+          "value": "inferenceClassification"
+        },
+        {
+          "name": "internetMessageId",
+          "value": "internetMessageId"
+        },
+        {
+          "name": "isDeliveryReceiptRequested",
+          "value": "isDeliveryReceiptRequested"
+        },
+        {
+          "name": "isDraft",
+          "value": "isDraft"
+        },
+        {
+          "name": "isRead",
+          "value": "isRead"
+        },
+        {
+          "name": "isReadReceiptRequested",
+          "value": "isReadReceiptRequested"
+        },
+        {
+          "name": "lastModifiedDateTime",
+          "value": "lastModifiedDateTime"
+        },
+        {
+          "name": "parentFolderId",
+          "value": "parentFolderId"
+        },
+        {
+          "name": "receivedDateTime",
+          "value": "receivedDateTime"
+        },
+        {
+          "name": "replyTo",
+          "value": "replyTo"
+        },
+        {
+          "name": "sender",
+          "value": "sender"
+        },
+        {
+          "name": "sentDateTime",
+          "value": "sentDateTime"
+        },
+        {
+          "name": "subject",
+          "value": "subject"
+        },
+        {
+          "name": "toRecipients",
+          "value": "toRecipients"
+        },
+        {
+          "name": "webLink",
+          "value": "webLink"
+        }
+      ],
+      "default": []
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Filter Query",
+          "name": "custom",
+          "type": "string",
+          "default": "",
+          "placeholder": "e.g. isRead eq false",
+          "hint": "Search query to filter messages. <a href=\"https://learn.microsoft.com/en-us/graph/filter-query-parameter\">More info</a>."
+        },
+        {
+          "displayName": "Has Attachments",
+          "name": "hasAttachments",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Folders to Exclude",
+          "name": "foldersToExclude",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getFolders"
+          },
+          "default": [],
+          "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>"
+        },
+        {
+          "displayName": "Folders to Include",
+          "name": "foldersToInclude",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getFolders"
+          },
+          "default": [],
+          "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>"
+        },
+        {
+          "displayName": "Read Status",
+          "name": "readStatus",
+          "type": "options",
+          "default": "unread",
+          "hint": "Filter messages by whether they have been read or not",
+          "options": [
+            {
+              "name": "Unread and read messages",
+              "value": "both"
+            },
+            {
+              "name": "Unread messages only",
+              "value": "unread"
+            },
+            {
+              "name": "Read messages only",
+              "value": "read"
+            }
+          ]
+        },
+        {
+          "displayName": "Sender",
+          "name": "sender",
+          "type": "string",
+          "default": "",
+          "description": "Sender name or email to filter by"
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Attachments Prefix",
+          "name": "attachmentsPrefix",
+          "type": "string",
+          "default": "attachment_",
+          "description": "Prefix for name of the output fields to put the binary files data in. An index starting from 0 will be added. So if name is \"attachment_\" the first attachment is saved to \"attachment_0\"."
+        },
+        {
+          "displayName": "Download Attachments",
+          "name": "downloadAttachments",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the message's attachments will be downloaded and included in the output"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Communication"
+    ],
+    "alias": [
+      "email"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.microsoftoutlooktrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/microsoft/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Microsoft/Outlook/outlook.svg",
+  "name": "n8n-nodes-base.microsoftOutlookTrigger"
+}

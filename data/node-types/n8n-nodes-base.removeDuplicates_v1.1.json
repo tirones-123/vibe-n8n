@@ -1,0 +1,138 @@
+{
+  "displayName": "Remove Duplicates",
+  "group": [
+    "transform"
+  ],
+  "defaultVersion": 2,
+  "description": "Delete items with matching field values",
+  "subtitle": "",
+  "version": [
+    1,
+    1.1
+  ],
+  "defaults": {
+    "name": "Remove Duplicates"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "Compare",
+      "name": "compare",
+      "type": "options",
+      "options": [
+        {
+          "name": "All Fields",
+          "value": "allFields"
+        },
+        {
+          "name": "All Fields Except",
+          "value": "allFieldsExcept"
+        },
+        {
+          "name": "Selected Fields",
+          "value": "selectedFields"
+        }
+      ],
+      "default": "allFields",
+      "description": "The fields of the input items to compare to see if they are the same"
+    },
+    {
+      "displayName": "Fields To Exclude",
+      "name": "fieldsToExclude",
+      "type": "string",
+      "placeholder": "e.g. email, name",
+      "requiresDataPath": "multiple",
+      "description": "Fields in the input to exclude from the comparison",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "compare": [
+            "allFieldsExcept"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Fields To Compare",
+      "name": "fieldsToCompare",
+      "type": "string",
+      "placeholder": "e.g. email, name",
+      "requiresDataPath": "multiple",
+      "description": "Fields in the input to add to the comparison",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "compare": [
+            "selectedFields"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "compare": [
+            "allFieldsExcept",
+            "selectedFields"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Disable Dot Notation",
+          "name": "disableDotNotation",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to disallow referencing child fields using `parent.child` in the field name"
+        },
+        {
+          "displayName": "Remove Other Fields",
+          "name": "removeOtherFields",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to remove any fields that are not being compared. If disabled, will keep the values from the first of the duplicates."
+        }
+      ]
+    }
+  ],
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Transform/RemoveDuplicates/removeDuplicates.svg",
+  "codex": {
+    "categories": [
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Data Transformation"
+      ]
+    },
+    "alias": [
+      "Dedupe",
+      "Deduplicate",
+      "Duplicates",
+      "Remove",
+      "Unique",
+      "Transform",
+      "Array",
+      "List",
+      "Item"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.removeduplicates/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.removeDuplicates"
+}

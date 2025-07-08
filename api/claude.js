@@ -279,7 +279,7 @@ ALWAYS use the \`\`\`json markdown format.
     // Préparer les paramètres pour l'API Claude
     const claudeParams = {
       model: 'claude-opus-4-20250514',
-      max_tokens: 8192,
+      max_tokens: 16384, // Augmenté de 8192 à 16384 pour workflows complexes
       messages: [{ 
         role: 'user', 
         content: prompt 

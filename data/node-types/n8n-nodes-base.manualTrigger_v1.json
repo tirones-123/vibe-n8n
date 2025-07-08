@@ -1,0 +1,40 @@
+{
+  "displayName": "Manual Trigger",
+  "icon": "fa:mouse-pointer",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Runs the flow on clicking a button in n8n",
+  "eventTriggerDescription": "",
+  "maxNodes": 1,
+  "defaults": {
+    "name": "When clicking ‘Execute workflow’",
+    "color": "#909298"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "This node is where the workflow execution starts (when you click the ‘test’ button on the canvas).<br><br> <a data-action=\"showNodeCreator\">Explore other ways to trigger your workflow</a> (e.g on a schedule, or a webhook)",
+      "name": "notice",
+      "type": "notice",
+      "default": ""
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Core Nodes"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.manualworkflowtrigger/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.manualTrigger"
+}

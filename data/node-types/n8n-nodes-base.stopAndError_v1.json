@@ -1,0 +1,95 @@
+{
+  "displayName": "Stop and Error",
+  "icon": "fa:exclamation-triangle",
+  "iconColor": "red",
+  "group": [
+    "input"
+  ],
+  "version": 1,
+  "description": "Throw an error in the workflow",
+  "defaults": {
+    "name": "Stop and Error",
+    "color": "#ff0000"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [],
+  "properties": [
+    {
+      "displayName": "Error Type",
+      "name": "errorType",
+      "type": "options",
+      "options": [
+        {
+          "name": "Error Message",
+          "value": "errorMessage"
+        },
+        {
+          "name": "Error Object",
+          "value": "errorObject"
+        }
+      ],
+      "default": "errorMessage",
+      "description": "Type of error to throw"
+    },
+    {
+      "displayName": "Error Message",
+      "name": "errorMessage",
+      "type": "string",
+      "placeholder": "An error occurred!",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "errorType": [
+            "errorMessage"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Error Object",
+      "name": "errorObject",
+      "type": "json",
+      "description": "Object containing error properties",
+      "default": "",
+      "typeOptions": {
+        "alwaysOpenEditWindow": true
+      },
+      "placeholder": "{\n\t\"code\": \"404\",\n\t\"description\": \"The resource could not be fetched\"\n}",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "errorType": [
+            "errorObject"
+          ]
+        }
+      }
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Core Nodes",
+      "Utility"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Flow"
+      ]
+    },
+    "alias": [
+      "Throw error",
+      "Error",
+      "Exception"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.stopanderror/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.stopAndError"
+}

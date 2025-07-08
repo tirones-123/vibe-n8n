@@ -1,0 +1,468 @@
+{
+  "displayName": "APITemplate.io Tool",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "description": "Consume the APITemplate.io API",
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "defaults": {
+    "name": "APITemplate.io"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "apiTemplateIoApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume the APITemplate.io API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Account",
+          "value": "account"
+        },
+        {
+          "name": "Image",
+          "value": "image"
+        },
+        {
+          "name": "PDF",
+          "value": "pdf"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "create",
+      "required": true,
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create an image"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "image"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "create",
+      "required": true,
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a pdf"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "pdf"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "get",
+      "required": true,
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get an account"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "account"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Template Name or ID",
+      "name": "imageTemplateId",
+      "type": "options",
+      "required": true,
+      "default": "",
+      "description": "ID of the image template to use. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "typeOptions": {
+        "loadOptionsMethod": "getImageTemplates"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "image"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Template Name or ID",
+      "name": "pdfTemplateId",
+      "type": "options",
+      "required": true,
+      "default": "",
+      "description": "ID of the PDF template to use. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "typeOptions": {
+        "loadOptionsMethod": "getPdfTemplates"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "pdf"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "JSON Parameters",
+      "name": "jsonParameters",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "pdf",
+            "image"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Download",
+      "name": "download",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "pdf",
+            "image"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "description": "Name of the binary property to which to write the data of the read file"
+    },
+    {
+      "displayName": "Put Output File in Field",
+      "name": "binaryProperty",
+      "type": "string",
+      "required": true,
+      "default": "data",
+      "hint": "The name of the output binary field to put the file in",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "pdf",
+            "image"
+          ],
+          "operation": [
+            "create"
+          ],
+          "download": [
+            true
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Overrides (JSON)",
+      "name": "overridesJson",
+      "type": "json",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "image"
+          ],
+          "operation": [
+            "create"
+          ],
+          "jsonParameters": [
+            true
+          ]
+        }
+      },
+      "placeholder": "[ {\"name\": \"text_1\", \"text\": \"hello world\", \"textBackgroundColor\": \"rgba(246, 243, 243, 0)\" } ]"
+    },
+    {
+      "displayName": "Properties (JSON)",
+      "name": "propertiesJson",
+      "type": "json",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "pdf"
+          ],
+          "operation": [
+            "create"
+          ],
+          "jsonParameters": [
+            true
+          ]
+        }
+      },
+      "placeholder": "{ \"name\": \"text_1\" }"
+    },
+    {
+      "displayName": "Overrides",
+      "name": "overridesUi",
+      "placeholder": "Add Override",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "image"
+          ],
+          "operation": [
+            "create"
+          ],
+          "jsonParameters": [
+            false
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "name": "overrideValues",
+          "displayName": "Override",
+          "values": [
+            {
+              "displayName": "Properties",
+              "name": "propertiesUi",
+              "placeholder": "Add Property",
+              "type": "fixedCollection",
+              "typeOptions": {
+                "multipleValues": true
+              },
+              "default": {},
+              "options": [
+                {
+                  "name": "propertyValues",
+                  "displayName": "Property",
+                  "values": [
+                    {
+                      "displayName": "Key",
+                      "name": "key",
+                      "type": "string",
+                      "default": "",
+                      "description": "Name of the property"
+                    },
+                    {
+                      "displayName": "Value",
+                      "name": "value",
+                      "type": "string",
+                      "default": "",
+                      "description": "Value to the property"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Properties",
+      "name": "propertiesUi",
+      "placeholder": "Add Property",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "pdf"
+          ],
+          "operation": [
+            "create"
+          ],
+          "jsonParameters": [
+            false
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "propertyValues",
+          "displayName": "Property",
+          "values": [
+            {
+              "displayName": "Key",
+              "name": "key",
+              "type": "string",
+              "default": "",
+              "description": "Name of the property"
+            },
+            {
+              "displayName": "Value",
+              "name": "value",
+              "type": "string",
+              "default": "",
+              "description": "Value to the property"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "pdf",
+            "image"
+          ],
+          "download": [
+            true
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "File Name",
+          "name": "fileName",
+          "type": "string",
+          "default": "",
+          "description": "The name of the downloaded image/pdf. It has to include the extension. For example: report.pdf"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.apitemplateio/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/apiTemplateIo/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/ApiTemplateIo/apiTemplateIo.svg",
+  "name": "n8n-nodes-base.apiTemplateIoTool"
+}

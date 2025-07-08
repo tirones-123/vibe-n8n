@@ -1,0 +1,1713 @@
+{
+  "displayName": "SyncroMSP Tool",
+  "group": [
+    "output"
+  ],
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Gets data from SyncroMSP",
+  "defaultVersion": 1,
+  "version": 1,
+  "defaults": {
+    "name": "SyncroMSP"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "syncroMspApi",
+      "required": true,
+      "testedBy": "syncroMspApiCredentialTest"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Gets data from SyncroMSP",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Contact",
+          "value": "contact"
+        },
+        {
+          "name": "Customer",
+          "value": "customer"
+        },
+        {
+          "name": "RMM",
+          "value": "rmm"
+        },
+        {
+          "name": "Ticket",
+          "value": "ticket"
+        }
+      ],
+      "default": "contact"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create new customer",
+          "action": "Create a customer"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete customer",
+          "action": "Delete a customer"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve customer",
+          "action": "Get a customer"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many customers",
+          "action": "Get many customers"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update customer",
+          "action": "Update a customer"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "noDataExpression": true,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "default": 25,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Business Name",
+          "name": "businessName",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": ""
+        },
+        {
+          "displayName": "First Name",
+          "name": "firstName",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Include Disabled",
+          "name": "includeDisabled",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Last Name",
+          "name": "lastname",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Search Query",
+          "name": "query",
+          "type": "string",
+          "default": "",
+          "placeholder": "John Doe",
+          "description": "Search query, it can be anything related to customer data like name etc"
+        },
+        {
+          "displayName": "Sort",
+          "name": "sort",
+          "type": "string",
+          "default": "",
+          "placeholder": "firstname ASC",
+          "description": "Customer field to order by, eg: \"firstname ASC\", \"city DESC\" etc"
+        }
+      ]
+    },
+    {
+      "displayName": "Cutomer ID",
+      "name": "customerId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Get specific customer by ID"
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "placeholder": "Add Address Fields",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Address Fields",
+              "name": "addressFields",
+              "values": [
+                {
+                  "displayName": "Line 1",
+                  "name": "address",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Line 2",
+                  "name": "address2",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "City",
+                  "name": "city",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "State",
+                  "name": "state",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "ZIP",
+                  "name": "zip",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Business Name",
+          "name": "businessName",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "First Name",
+          "name": "firstName",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Get SMS",
+          "name": "getSms",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Invoice Emails",
+          "name": "invoiceCcEmails",
+          "type": "string",
+          "typeOptions": {
+            "multipleValues": true,
+            "multipleValueButtonText": "Add Email"
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Last Name",
+          "name": "lastname",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "No Email",
+          "name": "noEmail",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Notes",
+          "name": "notes",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Notification Email",
+          "name": "notificationEmail",
+          "type": "string",
+          "default": "",
+          "displayOptions": {
+            "show": {
+              "noEmail": [
+                false
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Phone",
+          "name": "phone",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Referred By",
+          "name": "referredBy",
+          "type": "string",
+          "default": "",
+          "description": "Source from which customer is referred to the platform like Linkedin, Google, Customer name etc"
+        }
+      ]
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "customerId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Delete a specific customer by ID"
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "customerId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "customer"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "placeholder": "Add Address Fields",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Address Fields",
+              "name": "addressFields",
+              "values": [
+                {
+                  "displayName": "Line 1",
+                  "name": "address",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Line 2",
+                  "name": "address2",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "City",
+                  "name": "city",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "State",
+                  "name": "state",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "ZIP",
+                  "name": "zip",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Business Name",
+          "name": "businessName",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": ""
+        },
+        {
+          "displayName": "First Name",
+          "name": "firstName",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Get SMS",
+          "name": "getSms",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "displayName": "Invoice Emails",
+          "name": "invoiceCcEmails",
+          "type": "string",
+          "typeOptions": {
+            "multipleValues": true,
+            "multipleValueButtonText": "Add Email"
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Last Name",
+          "name": "lastName",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "No Email",
+          "name": "noEmail",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Notes",
+          "name": "notes",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Notification Email",
+          "name": "notificationEmail",
+          "type": "string",
+          "default": "",
+          "displayOptions": {
+            "show": {
+              "noEmail": [
+                false
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Phone",
+          "name": "phone",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Referred By",
+          "name": "referredBy",
+          "type": "string",
+          "default": "",
+          "description": "Source from which customer is referred to the platform like Linkedin, Google, Customer name etc"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create new ticket",
+          "action": "Create a ticket"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete ticket",
+          "action": "Delete a ticket"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve ticket",
+          "action": "Get a ticket"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many tickets",
+          "action": "Get many tickets"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update ticket",
+          "action": "Update a ticket"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "noDataExpression": true,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "default": 25,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Search Query",
+          "name": "query",
+          "type": "string",
+          "default": "",
+          "placeholder": "John Doe",
+          "description": "Search query, it can be anything related to ticket data like user etc"
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Customer Reply",
+              "value": "Customer Reply"
+            },
+            {
+              "name": "In Progress",
+              "value": "In Progress"
+            },
+            {
+              "name": "New",
+              "value": "New"
+            },
+            {
+              "name": "Resolved",
+              "value": "Resolved"
+            },
+            {
+              "name": "Scheduled",
+              "value": "Scheduled"
+            },
+            {
+              "name": "Waiting for Parts",
+              "value": "Waiting for Parts"
+            },
+            {
+              "name": "Waiting on Customer",
+              "value": "Waiting on Customer"
+            }
+          ],
+          "default": "New"
+        }
+      ]
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "customerId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Asset ID",
+          "name": "assetId",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Assign to Contact",
+          "name": "contactId",
+          "type": "string",
+          "default": "",
+          "description": "The ID of the contact you want to assign the ticket to"
+        },
+        {
+          "displayName": "Issue Type",
+          "name": "issueType",
+          "type": "options",
+          "options": [
+            {
+              "name": "Contract Work",
+              "value": "Contract Work"
+            },
+            {
+              "name": "Network Project",
+              "value": "Network Project"
+            },
+            {
+              "name": "Other",
+              "value": "Other"
+            },
+            {
+              "name": "Regular Maintenance",
+              "value": "Regular Maintenance"
+            },
+            {
+              "name": "Remote Support",
+              "value": "Remote Support"
+            }
+          ],
+          "default": ""
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Customer Reply",
+              "value": "Customer Reply"
+            },
+            {
+              "name": "In Progress",
+              "value": "In Progress"
+            },
+            {
+              "name": "New",
+              "value": "New"
+            },
+            {
+              "name": "Resolved",
+              "value": "Resolved"
+            },
+            {
+              "name": "Scheduled",
+              "value": "Scheduled"
+            },
+            {
+              "name": "Waiting for Parts",
+              "value": "Waiting for Parts"
+            },
+            {
+              "name": "Waiting on Customer",
+              "value": "Waiting on Customer"
+            }
+          ],
+          "default": "New",
+          "description": "If used along the parameter Search Query, only Search Query will be applied"
+        }
+      ]
+    },
+    {
+      "displayName": "Ticket ID",
+      "name": "ticketId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Get specific customer by ID"
+    },
+    {
+      "displayName": "Ticket ID",
+      "name": "ticketId",
+      "required": true,
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Delete a specific customer by ID"
+    },
+    {
+      "displayName": "Ticket ID",
+      "name": "ticketId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Asset ID",
+          "name": "assetId",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Assign to Contact",
+          "name": "contactId",
+          "type": "string",
+          "default": "",
+          "description": "The ID of the contact you want to assign the ticket to"
+        },
+        {
+          "displayName": "Customer ID",
+          "name": "customerId",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Due Date",
+          "name": "dueDate",
+          "type": "dateTime",
+          "default": ""
+        },
+        {
+          "displayName": "Issue Type",
+          "name": "issueType",
+          "type": "options",
+          "options": [
+            {
+              "name": "Contract Work",
+              "value": "Contract Work"
+            },
+            {
+              "name": "Network Project",
+              "value": "Network Project"
+            },
+            {
+              "name": "Other",
+              "value": "Other"
+            },
+            {
+              "name": "Regular Maintenance",
+              "value": "Regular Maintenance"
+            },
+            {
+              "name": "Remote Support",
+              "value": "Remote Support"
+            }
+          ],
+          "default": ""
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Customer Reply",
+              "value": "Customer Reply"
+            },
+            {
+              "name": "In Progress",
+              "value": "In Progress"
+            },
+            {
+              "name": "New",
+              "value": "New"
+            },
+            {
+              "name": "Resolved",
+              "value": "Resolved"
+            },
+            {
+              "name": "Scheduled",
+              "value": "Scheduled"
+            },
+            {
+              "name": "Waiting for Parts",
+              "value": "Waiting for Parts"
+            },
+            {
+              "name": "Waiting on Customer",
+              "value": "Waiting on Customer"
+            }
+          ],
+          "default": "New"
+        },
+        {
+          "displayName": "Subject",
+          "name": "subject",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create new contact",
+          "action": "Create a contact"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete contact",
+          "action": "Delete a contact"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve contact",
+          "action": "Get a contact"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many contacts",
+          "action": "Get many contacts"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update contact",
+          "action": "Update a contact"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "noDataExpression": true,
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "description": "Max number of results to return",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "default": 25
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "customerId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "placeholder": "Add Address Fields",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Address Fields",
+              "name": "addressFields",
+              "values": [
+                {
+                  "displayName": "Line 1",
+                  "name": "address",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Line 2",
+                  "name": "address2",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "City",
+                  "name": "city",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "State",
+                  "name": "state",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "ZIP",
+                  "name": "zip",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Notes",
+          "name": "notes",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Phone",
+          "name": "phone",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Get specific contact by ID"
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "placeholder": "Add Address Fields",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Address Fields",
+              "name": "addressFields",
+              "values": [
+                {
+                  "displayName": "Line 1",
+                  "name": "address",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Line 2",
+                  "name": "address2",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "City",
+                  "name": "city",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "State",
+                  "name": "state",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "ZIP",
+                  "name": "zip",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Customer ID",
+          "name": "customerId",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": ""
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Notes",
+          "name": "notes",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Phone",
+          "name": "phone",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Delete a specific contact by ID"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create new RMM Alert",
+          "action": "Create an RMM alert"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete RMM Alert",
+          "action": "Delete an RMM alert"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve RMM Alert",
+          "action": "Get an RMM alert"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many RMM Alerts",
+          "action": "Get many RMM alerts"
+        },
+        {
+          "name": "Mute",
+          "value": "mute",
+          "description": "Mute RMM Alert",
+          "action": "Mute an RMM alert"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "noDataExpression": true,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "default": 25,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Active",
+              "value": "active"
+            },
+            {
+              "name": "All",
+              "value": "all"
+            },
+            {
+              "name": "Resolved",
+              "value": "resolved"
+            }
+          ],
+          "default": "all"
+        }
+      ]
+    },
+    {
+      "displayName": "RMM Alert ID",
+      "name": "alertId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Get specific RMM alert by ID"
+    },
+    {
+      "displayName": "Asset ID",
+      "name": "assetId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "customerId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Description",
+      "name": "description",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Resolved",
+          "name": "resolved",
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    {
+      "displayName": "RMM Alert ID",
+      "name": "alertId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Delete the RMM alert by ID"
+    },
+    {
+      "displayName": "RMM Alert ID",
+      "name": "alertId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "mute"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Mute the RMM alert by ID"
+    },
+    {
+      "displayName": "Mute Period",
+      "name": "muteFor",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "rmm"
+          ],
+          "operation": [
+            "mute"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "1 Hour",
+          "value": "1-hour"
+        },
+        {
+          "name": "1 Day",
+          "value": "1-day"
+        },
+        {
+          "name": "2 Days",
+          "value": "2-days"
+        },
+        {
+          "name": "1 Week",
+          "value": "1-week"
+        },
+        {
+          "name": "2 Weeks",
+          "value": "2-weeks"
+        },
+        {
+          "name": "1 Month",
+          "value": "1-month"
+        },
+        {
+          "name": "Forever",
+          "value": "forever"
+        }
+      ],
+      "default": "",
+      "description": "Length of time to mute alert for"
+    }
+  ],
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/SyncroMSP/syncromsp.png",
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.syncromsp/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/syncroMsp/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.syncroMspTool"
+}

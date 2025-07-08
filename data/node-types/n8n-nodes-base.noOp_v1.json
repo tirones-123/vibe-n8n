@@ -1,0 +1,42 @@
+{
+  "displayName": "No Operation, do nothing",
+  "icon": "fa:arrow-right",
+  "iconColor": "gray",
+  "group": [
+    "organization"
+  ],
+  "version": 1,
+  "description": "No Operation",
+  "defaults": {
+    "name": "No Operation, do nothing",
+    "color": "#b0b0b0"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "properties": [],
+  "codex": {
+    "categories": [
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Helpers"
+      ]
+    },
+    "alias": [
+      "nothing"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.noop/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.noOp"
+}

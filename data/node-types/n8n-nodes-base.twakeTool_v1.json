@@ -1,0 +1,193 @@
+{
+  "displayName": "Twake Tool",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume Twake API",
+  "defaults": {
+    "name": "Twake"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "twakeCloudApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume Twake API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Message",
+          "value": "message",
+          "description": "Send data to the message app"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "message"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Send",
+          "value": "send",
+          "description": "Send a message",
+          "action": "Send a message"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "send"
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Channel's ID. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Content",
+      "name": "content",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Message content"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Sender Icon",
+          "name": "senderIcon",
+          "type": "string",
+          "default": "",
+          "description": "URL of the image/icon"
+        },
+        {
+          "displayName": "Sender Name",
+          "name": "senderName",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.twake/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/twake/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Twake/twake.png",
+  "name": "n8n-nodes-base.twakeTool"
+}

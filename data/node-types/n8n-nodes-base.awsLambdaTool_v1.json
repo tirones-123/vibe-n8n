@@ -1,0 +1,181 @@
+{
+  "displayName": "AWS Lambda Tool",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"function\"]}}",
+  "description": "Invoke functions on AWS Lambda",
+  "defaults": {
+    "name": "AWS Lambda"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "aws",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Invoke functions on AWS Lambda",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Invoke",
+          "value": "invoke",
+          "description": "Invoke a function",
+          "action": "Invoke a function"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "invoke"
+    },
+    {
+      "displayName": "Function Name or ID",
+      "name": "function",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getFunctions"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "invoke"
+          ]
+        }
+      },
+      "options": [],
+      "default": "",
+      "required": true,
+      "description": "The function you want to invoke. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Qualifier",
+      "name": "qualifier",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "invoke"
+          ]
+        }
+      },
+      "required": true,
+      "default": "$LATEST",
+      "description": "Specify a version or alias to invoke a published version of the function"
+    },
+    {
+      "displayName": "Invocation Type",
+      "name": "invocationType",
+      "type": "options",
+      "options": [
+        {
+          "name": "Wait for Results",
+          "value": "RequestResponse",
+          "description": "Invoke the function synchronously and wait for the response"
+        },
+        {
+          "name": "Continue Workflow",
+          "value": "Event",
+          "description": "Invoke the function and immediately continue the workflow"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "invoke"
+          ]
+        }
+      },
+      "default": "RequestResponse",
+      "description": "Specify if the workflow should wait for the function to return the results"
+    },
+    {
+      "displayName": "JSON Input",
+      "name": "payload",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "invoke"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The JSON that you want to provide to your Lambda function as input"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.awslambda/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/aws/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Aws/lambda.svg",
+  "name": "n8n-nodes-base.awsLambdaTool"
+}

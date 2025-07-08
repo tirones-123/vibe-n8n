@@ -1,0 +1,189 @@
+{
+  "displayName": "Email Trigger (IMAP) Tool",
+  "icon": "fa:inbox",
+  "group": [
+    "trigger"
+  ],
+  "description": "Triggers the workflow when a new email is received",
+  "defaultVersion": 2,
+  "iconColor": "green",
+  "version": 2,
+  "eventTriggerDescription": "Waiting for you to receive an email",
+  "defaults": {
+    "name": "Email Trigger (IMAP)",
+    "color": "#44AA22"
+  },
+  "triggerPanel": {
+    "header": "",
+    "executionsHelp": {
+      "inactive": "<b>While building your workflow</b>, click the 'execute step' button, then send an email to make an event happen. This will trigger an execution, which will show up in this editor.<br /> <br /><b>Once you're happy with your workflow</b>, <a data-key='activate'>activate</a> it. Then every time an email is received, the workflow will execute. These executions will show up in the <a data-key='executions'>executions list</a>, but not in the editor.",
+      "active": "<b>While building your workflow</b>, click the 'execute step' button, then send an email to make an event happen. This will trigger an execution, which will show up in this editor.<br /> <br /><b>Your workflow will also execute automatically</b>, since it's activated. Every time an email is received, this node will trigger an execution. These executions will show up in the <a data-key='executions'>executions list</a>, but not in the editor."
+    },
+    "activationHint": "Once you’ve finished building your workflow, <a data-key='activate'>activate</a> it to have it also listen continuously (you just won’t see those executions here)."
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "imap",
+      "required": true,
+      "testedBy": "imapConnectionTest"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Triggers the workflow when a new email is received",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often"
+    },
+    {
+      "displayName": "Mailbox Name",
+      "name": "mailbox",
+      "type": "string",
+      "default": "INBOX"
+    },
+    {
+      "displayName": "Action",
+      "name": "postProcessAction",
+      "type": "options",
+      "options": [
+        {
+          "name": "Mark as Read",
+          "value": "read"
+        },
+        {
+          "name": "Nothing",
+          "value": "nothing"
+        }
+      ],
+      "default": "read",
+      "description": "What to do after the email has been received. If \"nothing\" gets selected it will be processed multiple times."
+    },
+    {
+      "displayName": "Download Attachments",
+      "name": "downloadAttachments",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "format": [
+            "simple"
+          ]
+        }
+      },
+      "description": "Whether attachments of emails should be downloaded. Only set if needed as it increases processing."
+    },
+    {
+      "displayName": "Format",
+      "name": "format",
+      "type": "options",
+      "options": [
+        {
+          "name": "RAW",
+          "value": "raw",
+          "description": "Returns the full email message data with body content in the raw field as a base64url encoded string; the payload field is not used"
+        },
+        {
+          "name": "Resolved",
+          "value": "resolved",
+          "description": "Returns the full email with all data resolved and attachments saved as binary data"
+        },
+        {
+          "name": "Simple",
+          "value": "simple",
+          "description": "Returns the full email; do not use if you wish to gather inline attachments"
+        }
+      ],
+      "default": "simple",
+      "description": "The format to return the message in"
+    },
+    {
+      "displayName": "Property Prefix Name",
+      "name": "dataPropertyAttachmentsPrefixName",
+      "type": "string",
+      "default": "attachment_",
+      "displayOptions": {
+        "show": {
+          "format": [
+            "resolved"
+          ]
+        }
+      },
+      "description": "Prefix for name of the binary property to which to write the attachments. An index starting with 0 will be added. So if name is \"attachment_\" the first attachment is saved to \"attachment_0\""
+    },
+    {
+      "displayName": "Property Prefix Name",
+      "name": "dataPropertyAttachmentsPrefixName",
+      "type": "string",
+      "default": "attachment_",
+      "displayOptions": {
+        "show": {
+          "format": [
+            "simple"
+          ],
+          "downloadAttachments": [
+            true
+          ]
+        }
+      },
+      "description": "Prefix for name of the binary property to which to write the attachments. An index starting with 0 will be added. So if name is \"attachment_\" the first attachment is saved to \"attachment_0\""
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Custom Email Rules",
+          "name": "customEmailConfig",
+          "type": "string",
+          "default": "[\"UNSEEN\"]",
+          "description": "Custom email fetching rules. See <a href=\"https://github.com/mscdex/node-imap\">node-imap</a>'s search function for more details."
+        },
+        {
+          "displayName": "Force Reconnect Every Minutes",
+          "name": "forceReconnect",
+          "type": "number",
+          "default": 60,
+          "description": "Sets an interval (in minutes) to force a reconnection"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.emailimap/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/imap/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.emailReadImapTool"
+}

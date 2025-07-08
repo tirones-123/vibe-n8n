@@ -1,0 +1,94 @@
+{
+  "displayName": "AI Transform",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "description": "Modify data based on instructions written in plain english",
+  "defaults": {
+    "name": "AI Transform"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "parameterPane": "wide",
+  "hints": [
+    {
+      "message": "This node doesn't have access to the contents of binary files. To use those contents here, use the 'Extract from File' node first.",
+      "displayCondition": "={{ $input.all().some(i => i.binary) }}",
+      "location": "outputPane"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Instructions",
+      "name": "instructions",
+      "type": "button",
+      "default": "",
+      "description": "Provide instructions on how you want to transform the data, then click 'Generate code'. Use dot notation to refer to nested fields (e.g. address.street).",
+      "placeholder": "Example: Merge 'firstname' and 'lastname' into a field 'details.name' and sort by 'email'",
+      "typeOptions": {
+        "buttonConfig": {
+          "label": "Generate code",
+          "hasInputField": true,
+          "inputFieldMaxLength": 500,
+          "action": {
+            "type": "askAiCodeGeneration",
+            "target": "jsCode"
+          }
+        }
+      }
+    },
+    {
+      "displayName": "Code Generated For Prompt",
+      "name": "codeGeneratedForPrompt",
+      "type": "hidden",
+      "default": ""
+    },
+    {
+      "displayName": "Generated JavaScript",
+      "name": "jsCode",
+      "type": "string",
+      "typeOptions": {
+        "editor": "jsEditor",
+        "editorIsReadOnly": true
+      },
+      "default": "",
+      "hint": "Read-only. To edit this code, adjust the instructions or copy and paste it into a Code node.",
+      "noDataExpression": true
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development",
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Data Transformation"
+      ]
+    },
+    "alias": [
+      "code",
+      "Javascript",
+      "JS",
+      "Script",
+      "Custom Code",
+      "Function",
+      "AI",
+      "LLM"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.aitransform/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/AiTransform/aitransform.svg",
+  "name": "n8n-nodes-base.aiTransform"
+}

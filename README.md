@@ -63,7 +63,7 @@ PINECONE_API_KEY=...   # Stockage vectoriel (gratuit jusqu'à 100k vecteurs)
 npm run dev
 ```
 
-L'API sera disponible sur `http://localhost:3000/api/claude`
+L'API sera disponible sur `http://localhost:3000/api/claude` et https://vibe-n8n.vercel.app/api/claude
 
 ## 🔍 Configuration du système Node-Types
 
@@ -122,7 +122,51 @@ git push origin main
 Dans Railway, ajouter toutes les variables de votre `.env`
 
 4. **URL publique**
-Railway génère automatiquement une URL comme `https://your-app.railway.app`
+Railway génère automatiquement une URL `https://vibe-n8n.vercel.app/`
+
+## 💾 Configuration du Volume Railway (IMPORTANT)
+
+Le système utilise un volume persistant pour stocker les données complètes des nodes n8n sans limite de taille. Ceci est crucial pour les nodes volumineux comme Slack qui dépassent la limite de 40KB de Pinecone.
+
+### Configuration du volume :
+
+1. **Dans Railway Dashboard** :
+   - Aller dans votre projet
+   - Cliquer sur votre service
+   - Onglet "Volumes"
+   - Cliquer "Create Volume"
+   - Nom : `node-types-storage`
+   - Mount path : `/data`
+   - Cliquer "Create"
+
+2. **Variable d'environnement** :
+   Railway configure automatiquement `RAILWAY_VOLUME_MOUNT_PATH=/data`
+
+3. **Structure du stockage** :
+   ```
+   /data/
+   └── node-types/
+       ├── n8n-nodes-base.slack_v4.json (80KB+)
+       ├── n8n-nodes-base.httpRequest_v5.json
+       └── ... (831+ fichiers JSON)
+   ```
+
+### Avantages du système hybride :
+
+- **Pinecone** : Recherche rapide par embeddings (métadonnées uniquement)
+- **Volume Railway** : Stockage illimité des données complètes
+- **Performance** : Les gros nodes comme Slack sont stockés intégralement
+- **Fiabilité** : Pas de troncature JSON, pas d'erreurs de parsing
+
+### Vérifier le bon fonctionnement :
+
+```bash
+# Tester le stockage des gros nodes
+npm run test:volume
+
+# Vérifier les logs Railway
+railway logs --filter="Node sauvegardé"
+```
 
 ## 📡 Utilisation de l'API
 

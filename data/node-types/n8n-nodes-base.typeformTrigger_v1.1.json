@@ -1,0 +1,121 @@
+{
+  "displayName": "Typeform Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": [
+    1,
+    1.1
+  ],
+  "subtitle": "=Form ID: {{$parameter[\"formId\"]}}",
+  "description": "Starts the workflow on a Typeform form submission",
+  "defaults": {
+    "name": "Typeform Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "typeformApi",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "accessToken"
+          ]
+        }
+      },
+      "testedBy": "testTypeformTokenAuth"
+    },
+    {
+      "name": "typeformOAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ]
+        }
+      }
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "Access Token",
+          "value": "accessToken"
+        },
+        {
+          "name": "OAuth2",
+          "value": "oAuth2"
+        }
+      ],
+      "default": "accessToken"
+    },
+    {
+      "displayName": "Form Name or ID",
+      "name": "formId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getForms"
+      },
+      "options": [],
+      "default": "",
+      "required": true,
+      "description": "Form which should trigger workflow on submission. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Simplify Answers",
+      "name": "simplifyAnswers",
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to convert the answers to a key:value pair (\"FIELD_TITLE\":\"USER_ANSER\") to be easily processable"
+    },
+    {
+      "displayName": "Only Answers",
+      "name": "onlyAnswers",
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to return only the answers of the form and not any of the other data"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Communication"
+    ],
+    "alias": [
+      "Form"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.typeformtrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/typeform/"
+        }
+      ]
+    }
+  },
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/Typeform/typeform.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/Typeform/typeform.dark.svg"
+  },
+  "name": "n8n-nodes-base.typeformTrigger"
+}

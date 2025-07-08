@@ -1,0 +1,146 @@
+{
+  "displayName": "Facebook Lead Ads Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"event\"]}}",
+  "description": "Handle Facebook Lead Ads events via webhooks",
+  "defaults": {
+    "name": "Facebook Lead Ads Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "facebookLeadAdsOAuth2Api",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "setup",
+      "httpMethod": "GET",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    },
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Due to Facebook API limitations, you can use just one Facebook Lead Ads trigger for each Facebook App",
+      "name": "facebookLeadAdsNotice",
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "required": true,
+      "default": "newLead",
+      "options": [
+        {
+          "name": "New Lead",
+          "value": "newLead"
+        }
+      ]
+    },
+    {
+      "displayName": "Page",
+      "name": "page",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "The page linked to the form for retrieving new leads",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "pageList"
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "121637951029080"
+        }
+      ]
+    },
+    {
+      "displayName": "Form",
+      "name": "form",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "The form to monitor for fetching lead details upon submission",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "formList"
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "121637951029080"
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Simplify Output",
+          "name": "simplifyOutput",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to return a simplified version of the webhook event instead of all fields"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Marketing"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.facebookleadadstrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/credentials/facebookleadads/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/FacebookLeadAds/facebook.svg",
+  "name": "n8n-nodes-base.facebookLeadAdsTrigger"
+}

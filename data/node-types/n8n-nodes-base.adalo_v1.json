@@ -1,0 +1,436 @@
+{
+  "displayName": "Adalo",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"collectionId\"]}}",
+  "description": "Consume Adalo API",
+  "defaults": {
+    "name": "Adalo"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "adaloApi",
+      "required": true
+    }
+  ],
+  "requestDefaults": {
+    "baseURL": "=https://api.adalo.com/v0/apps/{{$credentials.appId}}"
+  },
+  "requestOperations": {
+    "pagination": {
+      "type": "offset",
+      "properties": {
+        "limitParameter": "limit",
+        "offsetParameter": "offset",
+        "pageSize": 100,
+        "type": "query"
+      }
+    }
+  },
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "collection",
+      "options": [
+        {
+          "name": "Collection",
+          "value": "collection"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a row",
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            },
+            "request": {
+              "method": "POST",
+              "url": "=/collections/{{$parameter[\"collectionId\"]}}"
+            }
+          },
+          "action": "Create a row"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a row",
+          "routing": {
+            "request": {
+              "method": "DELETE",
+              "url": "=/collections/{{$parameter[\"collectionId\"]}}/{{$parameter[\"rowId\"]}}"
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"success\": true } }}"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Delete a row"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a row",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "=/collections/{{$parameter[\"collectionId\"]}}/{{$parameter[\"rowId\"]}}"
+            }
+          },
+          "action": "Retrieve a row"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many rows",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "=/collections/{{$parameter[\"collectionId\"]}}",
+              "qs": {
+                "limit": "={{$parameter[\"limit\"]}}"
+              }
+            },
+            "send": {
+              "paginate": "={{$parameter[\"returnAll\"]}}"
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "records"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Retrieve all rows"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a row",
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            },
+            "request": {
+              "method": "PUT",
+              "url": "=/collections/{{$parameter[\"collectionId\"]}}/{{$parameter[\"rowId\"]}}"
+            }
+          },
+          "action": "Update a row"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Collection ID",
+      "name": "collectionId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Open your Adalo application and click on the three buttons beside the collection name, then select API Documentation",
+      "hint": "You can find information about app's collections on https://app.adalo.com/apps/<strong>your-app-id</strong>/api-docs",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "collection"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Row ID",
+      "name": "rowId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get",
+            "delete",
+            "update"
+          ],
+          "resource": [
+            "collection"
+          ]
+        }
+      },
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Data to Send",
+      "name": "dataToSend",
+      "type": "options",
+      "options": [
+        {
+          "name": "Auto-Map Input Data to Columns",
+          "value": "autoMapInputData",
+          "description": "Use when node input properties match destination column names"
+        },
+        {
+          "name": "Define Below for Each Column",
+          "value": "defineBelow",
+          "description": "Set the value for each destination column"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create",
+            "update"
+          ],
+          "resource": [
+            "collection"
+          ]
+        }
+      },
+      "default": "defineBelow",
+      "description": "Whether to insert the input data this node receives in the new row"
+    },
+    {
+      "displayName": "Inputs to Ignore",
+      "name": "inputsToIgnore",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create",
+            "update"
+          ],
+          "dataToSend": [
+            "autoMapInputData"
+          ],
+          "resource": [
+            "collection"
+          ]
+        }
+      },
+      "default": "",
+      "description": "List of input properties to avoid sending, separated by commas. Leave empty to send all properties.",
+      "placeholder": "Enter properties..."
+    },
+    {
+      "displayName": "Fields to Send",
+      "name": "fieldsUi",
+      "placeholder": "Add Field",
+      "type": "fixedCollection",
+      "description": "Field must be defined in the collection, otherwise it will be ignored. If field defined in the collection is not set here, it will be set to null.",
+      "typeOptions": {
+        "multipleValueButtonText": "Add Field to Send",
+        "multipleValues": true
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create",
+            "update"
+          ],
+          "dataToSend": [
+            "defineBelow"
+          ],
+          "resource": [
+            "collection"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Field",
+          "name": "fieldValues",
+          "values": [
+            {
+              "displayName": "Field ID",
+              "name": "fieldId",
+              "type": "string",
+              "default": ""
+            },
+            {
+              "displayName": "Field Value",
+              "name": "fieldValue",
+              "type": "string",
+              "default": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "collection"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 100,
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "collection"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Request Options",
+      "name": "requestOptions",
+      "type": "collection",
+      "isNodeSetting": true,
+      "placeholder": "Add Option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Batching",
+          "name": "batching",
+          "placeholder": "Add Batching",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": false
+          },
+          "default": {
+            "batch": {}
+          },
+          "options": [
+            {
+              "displayName": "Batching",
+              "name": "batch",
+              "values": [
+                {
+                  "displayName": "Items per Batch",
+                  "name": "batchSize",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": -1
+                  },
+                  "default": 50,
+                  "description": "Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1."
+                },
+                {
+                  "displayName": "Batch Interval (ms)",
+                  "name": "batchInterval",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": 0
+                  },
+                  "default": 1000,
+                  "description": "Time (in milliseconds) between each batch of requests. 0 for disabled."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Ignore SSL Issues (Insecure)",
+          "name": "allowUnauthorizedCerts",
+          "type": "boolean",
+          "noDataExpression": true,
+          "default": false,
+          "description": "Whether to accept the response even if SSL certificate validation is not possible"
+        },
+        {
+          "displayName": "Proxy",
+          "name": "proxy",
+          "type": "string",
+          "default": "",
+          "placeholder": "e.g. http://myproxy:3128",
+          "description": "HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128"
+        },
+        {
+          "displayName": "Timeout",
+          "name": "timeout",
+          "type": "number",
+          "typeOptions": {
+            "minValue": 1
+          },
+          "default": 10000,
+          "description": "Time in ms to wait for the server to send response headers (and start the response body) before aborting the request"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Data & Storage"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.adalo/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/adalo/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Adalo/adalo.svg",
+  "name": "n8n-nodes-base.adalo"
+}

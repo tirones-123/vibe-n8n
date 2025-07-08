@@ -1,0 +1,92 @@
+{
+  "displayName": "ActiveCampaign Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Handle ActiveCampaign events via webhooks",
+  "defaults": {
+    "name": "ActiveCampaign Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "activeCampaignApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Event Names or IDs",
+      "name": "events",
+      "type": "multiOptions",
+      "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getEvents"
+      },
+      "default": [],
+      "options": []
+    },
+    {
+      "displayName": "Source",
+      "name": "sources",
+      "type": "multiOptions",
+      "options": [
+        {
+          "name": "Public",
+          "value": "public",
+          "description": "Run the hooks when a contact triggers the action"
+        },
+        {
+          "name": "Admin",
+          "value": "admin",
+          "description": "Run the hooks when an admin user triggers the action"
+        },
+        {
+          "name": "Api",
+          "value": "api",
+          "description": "Run the hooks when an API call triggers the action"
+        },
+        {
+          "name": "System",
+          "value": "system",
+          "description": "Run the hooks when automated systems triggers the action"
+        }
+      ],
+      "default": []
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Marketing"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.activecampaigntrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/activeCampaign/"
+        }
+      ]
+    }
+  },
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/ActiveCampaign/activeCampaign.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/ActiveCampaign/activeCampaign.dark.svg"
+  },
+  "name": "n8n-nodes-base.activeCampaignTrigger"
+}

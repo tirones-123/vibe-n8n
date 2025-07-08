@@ -1,0 +1,528 @@
+{
+  "displayName": "Redis",
+  "group": [
+    "input"
+  ],
+  "version": 1,
+  "description": "Get, send and update data in Redis",
+  "defaults": {
+    "name": "Redis"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "usableAsTool": true,
+  "credentials": [
+    {
+      "name": "redis",
+      "required": true,
+      "testedBy": "redisConnectionTest"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a key from Redis",
+          "action": "Delete a key from Redis"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get the value of a key from Redis",
+          "action": "Get the value of a key from Redis"
+        },
+        {
+          "name": "Increment",
+          "value": "incr",
+          "description": "Atomically increments a key by 1. Creates the key if it does not exist.",
+          "action": "Atomically increment a key by 1. Creates the key if it does not exist."
+        },
+        {
+          "name": "Info",
+          "value": "info",
+          "description": "Returns generic information about the Redis instance",
+          "action": "Return generic information about the Redis instance"
+        },
+        {
+          "name": "Keys",
+          "value": "keys",
+          "description": "Returns all the keys matching a pattern",
+          "action": "Return all keys matching a pattern"
+        },
+        {
+          "name": "Pop",
+          "value": "pop",
+          "description": "Pop data from a redis list",
+          "action": "Pop data from a redis list"
+        },
+        {
+          "name": "Publish",
+          "value": "publish",
+          "description": "Publish message to redis channel",
+          "action": "Publish message to redis channel"
+        },
+        {
+          "name": "Push",
+          "value": "push",
+          "description": "Push data to a redis list",
+          "action": "Push data to a redis list"
+        },
+        {
+          "name": "Set",
+          "value": "set",
+          "description": "Set the value of a key in redis",
+          "action": "Set the value of a key in redis"
+        }
+      ],
+      "default": "info"
+    },
+    {
+      "displayName": "Key",
+      "name": "key",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Name of the key to delete from Redis"
+    },
+    {
+      "displayName": "Name",
+      "name": "propertyName",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": "propertyName",
+      "required": true,
+      "description": "Name of the property to write received data to. Supports dot-notation. Example: \"data.person[0].name\"."
+    },
+    {
+      "displayName": "Key",
+      "name": "key",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Name of the key to get from Redis"
+    },
+    {
+      "displayName": "Key Type",
+      "name": "keyType",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Automatic",
+          "value": "automatic",
+          "description": "Requests the type before requesting the data (slower)"
+        },
+        {
+          "name": "Hash",
+          "value": "hash",
+          "description": "Data in key is of type 'hash'"
+        },
+        {
+          "name": "List",
+          "value": "list",
+          "description": "Data in key is of type 'lists'"
+        },
+        {
+          "name": "Sets",
+          "value": "sets",
+          "description": "Data in key is of type 'sets'"
+        },
+        {
+          "name": "String",
+          "value": "string",
+          "description": "Data in key is of type 'string'"
+        }
+      ],
+      "default": "automatic",
+      "description": "The type of the key to get"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Dot Notation",
+          "name": "dotNotation",
+          "type": "boolean",
+          "default": true,
+          "description": "<p>By default, dot-notation is used in property names. This means that \"a.b\" will set the property \"b\" underneath \"a\" so { \"a\": { \"b\": value} }.<p></p>If that is not intended this can be deactivated, it will then set { \"a.b\": value } instead.</p>."
+        }
+      ]
+    },
+    {
+      "displayName": "Key",
+      "name": "key",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "incr"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Name of the key to increment"
+    },
+    {
+      "displayName": "Expire",
+      "name": "expire",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "incr"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to set a timeout on key"
+    },
+    {
+      "displayName": "TTL",
+      "name": "ttl",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "incr"
+          ],
+          "expire": [
+            true
+          ]
+        }
+      },
+      "default": 60,
+      "description": "Number of seconds before key expiration"
+    },
+    {
+      "displayName": "Key Pattern",
+      "name": "keyPattern",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "keys"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The key pattern for the keys to return"
+    },
+    {
+      "displayName": "Get Values",
+      "name": "getValues",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "keys"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to get the value of matching keys"
+    },
+    {
+      "displayName": "Key",
+      "name": "key",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "set"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Name of the key to set in Redis"
+    },
+    {
+      "displayName": "Value",
+      "name": "value",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "set"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The value to write in Redis"
+    },
+    {
+      "displayName": "Key Type",
+      "name": "keyType",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "set"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Automatic",
+          "value": "automatic",
+          "description": "Tries to figure out the type automatically depending on the data"
+        },
+        {
+          "name": "Hash",
+          "value": "hash",
+          "description": "Data in key is of type 'hash'"
+        },
+        {
+          "name": "List",
+          "value": "list",
+          "description": "Data in key is of type 'lists'"
+        },
+        {
+          "name": "Sets",
+          "value": "sets",
+          "description": "Data in key is of type 'sets'"
+        },
+        {
+          "name": "String",
+          "value": "string",
+          "description": "Data in key is of type 'string'"
+        }
+      ],
+      "default": "automatic",
+      "description": "The type of the key to set"
+    },
+    {
+      "displayName": "Value Is JSON",
+      "name": "valueIsJSON",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "keyType": [
+            "hash"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether the value is JSON or key value pairs"
+    },
+    {
+      "displayName": "Expire",
+      "name": "expire",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "set"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to set a timeout on key"
+    },
+    {
+      "displayName": "TTL",
+      "name": "ttl",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "set"
+          ],
+          "expire": [
+            true
+          ]
+        }
+      },
+      "default": 60,
+      "description": "Number of seconds before key expiration"
+    },
+    {
+      "displayName": "Channel",
+      "name": "channel",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "publish"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Channel name"
+    },
+    {
+      "displayName": "Data",
+      "name": "messageData",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "publish"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Data to publish"
+    },
+    {
+      "displayName": "List",
+      "name": "list",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "push",
+            "pop"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Name of the list in Redis"
+    },
+    {
+      "displayName": "Data",
+      "name": "messageData",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "push"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Data to push"
+    },
+    {
+      "displayName": "Tail",
+      "name": "tail",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "push",
+            "pop"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to push or pop data from the end of the list"
+    },
+    {
+      "displayName": "Name",
+      "name": "propertyName",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "pop"
+          ]
+        }
+      },
+      "default": "propertyName",
+      "description": "Optional name of the property to write received data to. Supports dot-notation. Example: \"data.person[0].name\"."
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "pop"
+          ]
+        }
+      },
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Dot Notation",
+          "name": "dotNotation",
+          "type": "boolean",
+          "default": true,
+          "description": "<p>By default, dot-notation is used in property names. This means that \"a.b\" will set the property \"b\" underneath \"a\" so { \"a\": { \"b\": value} }.<p></p>If that is not intended this can be deactivated, it will then set { \"a.b\": value } instead.</p>."
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development",
+      "Data & Storage"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.redis/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/redis/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Redis/redis.svg",
+  "name": "n8n-nodes-base.redis"
+}

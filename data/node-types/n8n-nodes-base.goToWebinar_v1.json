@@ -1,0 +1,2003 @@
+{
+  "displayName": "GoToWebinar",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume the GoToWebinar API",
+  "defaults": {
+    "name": "GoToWebinar"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "goToWebinarOAuth2Api",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Attendee",
+          "value": "attendee"
+        },
+        {
+          "name": "Co-Organizer",
+          "value": "coorganizer"
+        },
+        {
+          "name": "Panelist",
+          "value": "panelist"
+        },
+        {
+          "name": "Registrant",
+          "value": "registrant"
+        },
+        {
+          "name": "Session",
+          "value": "session"
+        },
+        {
+          "name": "Webinar",
+          "value": "webinar"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "attendee"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "get",
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get an attendee"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many attendees"
+        },
+        {
+          "name": "Get Details",
+          "value": "getDetails",
+          "action": "Get details of an attendee"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendee"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": "",
+      "description": "Key of the webinar that the attendee attended. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendee"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Session Key Name or ID",
+      "name": "sessionKey",
+      "type": "options",
+      "required": true,
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinarSessions",
+        "loadOptionsDependsOn": [
+          "webinarKey"
+        ]
+      },
+      "default": "",
+      "description": "Key of the session that the attendee attended. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendee"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Registrant Key",
+      "name": "registrantKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Registrant key of the attendee at the webinar session",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendee"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Registrant Key",
+      "name": "registrantKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Registrant key of the attendee at the webinar session",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendee"
+          ],
+          "operation": [
+            "getDetails"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Details",
+      "name": "details",
+      "type": "options",
+      "required": true,
+      "default": "",
+      "description": "The details to retrieve for the attendee",
+      "options": [
+        {
+          "name": "Polls",
+          "value": "polls",
+          "description": "Poll answers from the attendee in a webinar session"
+        },
+        {
+          "name": "Questions",
+          "value": "questions",
+          "description": "Questions asked by the attendee in a webinar session"
+        },
+        {
+          "name": "Survey Answers",
+          "value": "surveyAnswers",
+          "description": "Survey answers from the attendee in a webinar session"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendee"
+          ],
+          "operation": [
+            "getDetails"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendee"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 10,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendee"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "get",
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a coorganizer"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a coorganizer"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many coorganizers"
+        },
+        {
+          "name": "Reinvite",
+          "value": "reinvite",
+          "action": "Reinvite a coorganizer"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar that the co-organizer is hosting. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Is External",
+      "name": "isExternal",
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "description": "Whether the co-organizer has no GoToWebinar account",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Organizer Key",
+      "name": "organizerKey",
+      "type": "string",
+      "default": "",
+      "description": "The co-organizer's organizer key for the webinar",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "create"
+          ],
+          "isExternal": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Given Name",
+      "name": "givenName",
+      "type": "string",
+      "default": "",
+      "description": "The co-organizer's given name",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "create"
+          ],
+          "isExternal": [
+            true
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "default": "",
+      "description": "The co-organizer's email address",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "create"
+          ],
+          "isExternal": [
+            true
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar to delete. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Co-Organizer Key",
+      "name": "coorganizerKey",
+      "type": "string",
+      "default": "",
+      "description": "Key of the co-organizer to delete",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Is External",
+      "name": "isExternal",
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "description": "By default only internal co-organizers (with a GoToWebinar account) can be deleted. If you want to use this call for external co-organizers you have to set this parameter to 'true'."
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar to retrieve all co-organizers from. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 10,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key",
+      "name": "webinarKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "By default only internal co-organizers (with a GoToWebinar account) can be deleted. If you want to use this call for external co-organizers you have to set this parameter to 'true'.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "reinvite"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Co-Organizer Key",
+      "name": "coorganizerKey",
+      "type": "string",
+      "default": "",
+      "description": "Key of the co-organizer to reinvite",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "reinvite"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Is External",
+      "name": "isExternal",
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "description": "Whether the co-organizer has no GoToWebinar account",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "coorganizer"
+          ],
+          "operation": [
+            "reinvite"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "get",
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a panelist"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a panelist"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many panelists"
+        },
+        {
+          "name": "Reinvite",
+          "value": "reinvite",
+          "action": "Reinvite a panelist"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Name of the panelist to create",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "required": true,
+      "default": "",
+      "description": "Email address of the panelist to create",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar that the panelist will present at. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar to retrieve all panelists from. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 10,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar to delete the panelist from. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Panelist Key",
+      "name": "panelistKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Key of the panelist to delete",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar to reinvite the panelist to. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "reinvite"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Panelist Key",
+      "name": "panelistKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Key of the panelist to reinvite",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "panelist"
+          ],
+          "operation": [
+            "reinvite"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "get",
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a registrant"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a registrant"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a registrant"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many registrants"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar of the registrant to create. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "First Name",
+      "name": "firstName",
+      "type": "string",
+      "default": "",
+      "description": "First name of the registrant to create",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Last Name",
+      "name": "lastName",
+      "type": "string",
+      "default": "",
+      "description": "Last name of the registrant to create",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "default": "",
+      "description": "Email address of the registrant to create",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Full Address",
+          "name": "fullAddress",
+          "placeholder": "Add Address Fields",
+          "type": "fixedCollection",
+          "description": "Full address of the registrant to create",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Details",
+              "name": "details",
+              "values": [
+                {
+                  "displayName": "Address",
+                  "name": "address",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "City",
+                  "name": "city",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "State",
+                  "name": "state",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Zip Code",
+                  "name": "zipCode",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Country",
+                  "name": "country",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Industry",
+          "name": "industry",
+          "type": "string",
+          "default": "",
+          "description": "The type of industry the registrant's organization belongs to"
+        },
+        {
+          "displayName": "Job Title",
+          "name": "jobTitle",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "MultiChoice Responses",
+          "name": "multiChoiceResponses",
+          "placeholder": "Add MultiChoice Response",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "description": "Set the answers to all questions",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Details",
+              "name": "details",
+              "values": [
+                {
+                  "displayName": "Question Key Name or ID",
+                  "name": "questionKey",
+                  "type": "options",
+                  "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getRegistranMultiChoiceQuestions",
+                    "loadOptionsDependsOn": [
+                      "webinarKey"
+                    ]
+                  },
+                  "default": ""
+                },
+                {
+                  "displayName": "Answer Key",
+                  "name": "AnswerKey",
+                  "type": "string",
+                  "default": "",
+                  "description": "Answer ID of the question"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Number of Employees",
+          "name": "numberOfEmployees",
+          "type": "string",
+          "default": "",
+          "description": "The size in employees of the registrant's organization"
+        },
+        {
+          "displayName": "Organization",
+          "name": "organization",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Telephone",
+          "name": "phone",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Purchasing Role",
+          "name": "purchasingRole",
+          "type": "string",
+          "default": "",
+          "description": "Registrant's role in purchasing the product"
+        },
+        {
+          "displayName": "Purchasing Time Frame",
+          "name": "purchasingTimeFrame",
+          "type": "string",
+          "default": "",
+          "description": "Time frame within which the product will be purchased"
+        },
+        {
+          "displayName": "Questions and Comments",
+          "name": "questionsAndComments",
+          "type": "string",
+          "default": "",
+          "description": "Questions or comments made by the registrant during registration"
+        },
+        {
+          "displayName": "Resend Confirmation",
+          "name": "resendConfirmation",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Simple Responses",
+          "name": "simpleResponses",
+          "placeholder": "Add Simple Response",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "description": "Set the answers to all questions",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Details",
+              "name": "details",
+              "values": [
+                {
+                  "displayName": "Question Key Name or ID",
+                  "name": "questionKey",
+                  "type": "options",
+                  "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getRegistranSimpleQuestions",
+                    "loadOptionsDependsOn": [
+                      "webinarKey"
+                    ]
+                  },
+                  "default": ""
+                },
+                {
+                  "displayName": "Response Text",
+                  "name": "responseText",
+                  "type": "string",
+                  "default": "",
+                  "description": "Text of the response to the question"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Source",
+          "name": "source",
+          "type": "string",
+          "default": "",
+          "description": "The source that led to the registration"
+        }
+      ]
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "The key of the webinar to retrieve registrants from. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 10,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar of the registrant to delete. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Registrant Key",
+      "name": "registrantKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Key of the registrant to delete",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar of the registrant to retrieve. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Registrant Key",
+      "name": "registrantKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Key of the registrant to retrieve",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "registrant"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "get",
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a session"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many sessions"
+        },
+        {
+          "name": "Get Details",
+          "value": "getDetails",
+          "action": "Get details on a session"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "session"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "session"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 10,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "session"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "session"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Time Range",
+          "name": "times",
+          "type": "fixedCollection",
+          "placeholder": "Add Time Range",
+          "required": true,
+          "default": {},
+          "options": [
+            {
+              "displayName": "Times Properties",
+              "name": "timesProperties",
+              "values": [
+                {
+                  "displayName": "Start Time",
+                  "name": "fromTime",
+                  "type": "dateTime",
+                  "description": "Start of the datetime range for the session",
+                  "default": ""
+                },
+                {
+                  "displayName": "End Time",
+                  "name": "toTime",
+                  "type": "dateTime",
+                  "description": "End of the datetime range for the session",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Webinar Key Name or ID",
+          "name": "webinarKey",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getWebinars"
+          },
+          "default": {},
+          "description": "Webinar by which to filter the sessions to retrieve. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        }
+      ]
+    },
+    {
+      "displayName": "Webinar Key Name or ID",
+      "name": "webinarKey",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getWebinars"
+      },
+      "required": true,
+      "default": [],
+      "description": "Key of the webinar to which the session belongs. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "session"
+          ],
+          "operation": [
+            "get",
+            "getDetails"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Session Key",
+      "name": "sessionKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "session"
+          ],
+          "operation": [
+            "get",
+            "getDetails"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Details",
+      "name": "details",
+      "type": "options",
+      "default": "performance",
+      "options": [
+        {
+          "name": "Performance",
+          "value": "performance",
+          "description": "Performance details for a webinar session"
+        },
+        {
+          "name": "Polls",
+          "value": "polls",
+          "description": "Questions and answers for polls from a webinar session"
+        },
+        {
+          "name": "Questions",
+          "value": "questions",
+          "description": "Questions and answers for a past webinar session"
+        },
+        {
+          "name": "Surveys",
+          "value": "surveys",
+          "description": "Surveys for a past webinar session"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "session"
+          ],
+          "operation": [
+            "getDetails"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "get",
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a webinar"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a webinar"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many webinars"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "action": "Update a webinar"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Time Range",
+      "name": "times",
+      "type": "fixedCollection",
+      "required": true,
+      "placeholder": "Add Time Range",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Times Properties",
+          "name": "timesProperties",
+          "values": [
+            {
+              "displayName": "Start Time",
+              "name": "startTime",
+              "type": "dateTime",
+              "required": true,
+              "default": ""
+            },
+            {
+              "displayName": "End Time",
+              "name": "endTime",
+              "type": "dateTime",
+              "required": true,
+              "default": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Experience Type",
+          "name": "experienceType",
+          "type": "options",
+          "default": "CLASSIC",
+          "options": [
+            {
+              "name": "Classic",
+              "value": "CLASSIC"
+            },
+            {
+              "name": "Broadcast",
+              "value": "BROADCAST"
+            },
+            {
+              "name": "Simulive",
+              "value": "SIMULIVE"
+            }
+          ]
+        },
+        {
+          "displayName": "Is On-Demand",
+          "name": "isOnDemand",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Is Password Protected",
+          "name": "isPasswordProtected",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Timezone Name or ID",
+          "name": "timezone",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "default": "",
+          "placeholder": "2020-12-11T09:00:00Z",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true,
+            "loadOptionsMethod": "getTimezones"
+          }
+        },
+        {
+          "displayName": "Webinar Type",
+          "name": "type",
+          "type": "options",
+          "default": "single_session",
+          "options": [
+            {
+              "name": "Single Session",
+              "value": "single_session",
+              "description": "Webinar with one single meeting"
+            },
+            {
+              "name": "Series",
+              "value": "series",
+              "description": "Webinar with multiple meetings times where attendees choose only one to attend"
+            },
+            {
+              "name": "Sequence",
+              "value": "sequence",
+              "description": "Webinar with multiple meeting times where attendees are expected to be the same for all sessions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Webinar Key",
+      "name": "webinarKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Key of the webinar to delete",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Send Cancellation E-Mails",
+          "name": "sendCancellationEmails",
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    {
+      "displayName": "Webinar Key",
+      "name": "webinarKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Key of the webinar to retrieve",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 10,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Time Range",
+          "name": "times",
+          "type": "fixedCollection",
+          "placeholder": "Add Time Range",
+          "required": true,
+          "default": {},
+          "options": [
+            {
+              "displayName": "Times Properties",
+              "name": "timesProperties",
+              "values": [
+                {
+                  "displayName": "Start Time",
+                  "name": "fromTime",
+                  "type": "dateTime",
+                  "description": "Start of the datetime range for the webinar",
+                  "default": ""
+                },
+                {
+                  "displayName": "End Time",
+                  "name": "toTime",
+                  "type": "dateTime",
+                  "description": "End of the datetime range for the webinar",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Webinar Key",
+      "name": "webinarKey",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Key of the webinar to update",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Notify Participants",
+      "name": "notifyParticipants",
+      "type": "boolean",
+      "required": true,
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "webinar"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Experience Type",
+          "name": "experienceType",
+          "type": "options",
+          "default": "CLASSIC",
+          "options": [
+            {
+              "name": "Classic",
+              "value": "CLASSIC"
+            },
+            {
+              "name": "Broadcast",
+              "value": "BROADCAST"
+            },
+            {
+              "name": "Simulive",
+              "value": "SIMULIVE"
+            }
+          ]
+        },
+        {
+          "displayName": "Is On-Demand",
+          "name": "isOnDemand",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the webinar may be watched anytime"
+        },
+        {
+          "displayName": "Is Password Protected",
+          "name": "isPasswordProtected",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the webinar requires a password for attendees to join"
+        },
+        {
+          "displayName": "Times",
+          "name": "times",
+          "type": "fixedCollection",
+          "default": {},
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "displayName": "Times Properties",
+              "name": "timesProperties",
+              "values": [
+                {
+                  "displayName": "Start Time",
+                  "name": "startTime",
+                  "type": "dateTime",
+                  "required": true,
+                  "default": ""
+                },
+                {
+                  "displayName": "End Time",
+                  "name": "endTime",
+                  "type": "dateTime",
+                  "required": true,
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Subject",
+          "name": "subject",
+          "type": "string",
+          "default": "",
+          "description": "Name or topic of the webinar"
+        },
+        {
+          "displayName": "Timezone Name or ID",
+          "name": "timezone",
+          "type": "options",
+          "default": "",
+          "placeholder": "2020-12-11T09:00:00Z",
+          "description": "Timezone where the webinar is to take place. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true,
+            "loadOptionsMethod": "getTimezones"
+          }
+        },
+        {
+          "displayName": "Webinar Type",
+          "name": "type",
+          "type": "options",
+          "default": "single_session",
+          "options": [
+            {
+              "name": "Single Session",
+              "value": "single_session",
+              "description": "Webinar with one single meeting"
+            },
+            {
+              "name": "Series",
+              "value": "series",
+              "description": "Webinar with multiple meetings times where attendees choose only one to attend"
+            },
+            {
+              "name": "Sequence",
+              "value": "sequence",
+              "description": "Webinar with multiple meeting times where attendees are expected to be the same for all sessions"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Communication"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.gotowebinar/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/goToWebinar/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/GoToWebinar/gotowebinar.svg",
+  "name": "n8n-nodes-base.goToWebinar"
+}

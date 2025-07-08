@@ -1,0 +1,75 @@
+{
+  "displayName": "Limit",
+  "group": [
+    "transform"
+  ],
+  "subtitle": "",
+  "version": 1,
+  "description": "Restrict the number of items",
+  "defaults": {
+    "name": "Limit"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "Max Items",
+      "name": "maxItems",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "default": 1,
+      "description": "If there are more items than this number, some are removed"
+    },
+    {
+      "displayName": "Keep",
+      "name": "keep",
+      "type": "options",
+      "options": [
+        {
+          "name": "First Items",
+          "value": "firstItems"
+        },
+        {
+          "name": "Last Items",
+          "value": "lastItems"
+        }
+      ],
+      "default": "firstItems",
+      "description": "When removing items, whether to keep the ones at the start or the ending"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Data Transformation"
+      ]
+    },
+    "alias": [
+      "Limit",
+      "Remove",
+      "Slice",
+      "Transform",
+      "Array",
+      "List",
+      "Item"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.limit/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Transform/Limit/limit.svg",
+  "name": "n8n-nodes-base.limit"
+}

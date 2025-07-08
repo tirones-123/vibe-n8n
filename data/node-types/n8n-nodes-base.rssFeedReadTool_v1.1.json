@@ -1,0 +1,79 @@
+{
+  "displayName": "RSS Read Tool",
+  "icon": "fa:rss",
+  "iconColor": "orange-red",
+  "group": [
+    "input"
+  ],
+  "version": [
+    1,
+    1.1
+  ],
+  "description": "Reads data from an RSS Feed",
+  "defaults": {
+    "name": "RSS Read",
+    "color": "#b02020"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "properties": [
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Reads data from an RSS Feed",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often"
+    },
+    {
+      "displayName": "URL",
+      "name": "url",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "description": "URL of the RSS feed"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Ignore SSL Issues (Insecure)",
+          "name": "ignoreSSL",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to ignore SSL/TLS certificate issues or not"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.rssfeedread/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.rssFeedReadTool"
+}

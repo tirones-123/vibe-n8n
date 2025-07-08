@@ -1,0 +1,2081 @@
+{
+  "displayName": "Clockify Tool",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume Clockify REST API",
+  "defaults": {
+    "name": "Clockify"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "clockifyApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume Clockify REST API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Client",
+          "value": "client"
+        },
+        {
+          "name": "Project",
+          "value": "project"
+        },
+        {
+          "name": "Tag",
+          "value": "tag"
+        },
+        {
+          "name": "Task",
+          "value": "task"
+        },
+        {
+          "name": "Time Entry",
+          "value": "timeEntry"
+        },
+        {
+          "name": "User",
+          "value": "user"
+        },
+        {
+          "name": "Workspace",
+          "value": "workspace"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "project"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "client"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a client",
+          "action": "Create a client"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a client",
+          "action": "Delete a client"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a client",
+          "action": "Get a client"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many clients",
+          "action": "Get many clients"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a client",
+          "action": "Update a client"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "project"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a project",
+          "action": "Create a project"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a project",
+          "action": "Delete a project"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a project",
+          "action": "Get a project"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many projects",
+          "action": "Get many projects"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a project",
+          "action": "Update a project"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a tag",
+          "action": "Create a tag"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a tag",
+          "action": "Delete a tag"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many tags",
+          "action": "Get many tags"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a tag",
+          "action": "Update a tag"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a task",
+          "action": "Create a task"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a task",
+          "action": "Delete a task"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a task",
+          "action": "Get a task"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many tasks",
+          "action": "Get many tasks"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a task",
+          "action": "Update a task"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "timeEntry"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a time entry",
+          "action": "Create a time entry"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a time entry",
+          "action": "Delete a time entry"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get time entrie",
+          "action": "Get a time entry"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a time entry",
+          "action": "Update a time entry"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many users",
+          "action": "Get many users"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "workspace"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many workspaces",
+          "action": "Get many workspaces"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "workspace"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "workspace"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Workspace Name or ID",
+      "name": "workspaceId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "listWorkspaces"
+      },
+      "required": true,
+      "default": [],
+      "displayOptions": {
+        "hide": {
+          "resource": [
+            "workspace"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Client Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Name of client being created",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "client"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Client ID",
+      "name": "clientId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "client"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Client ID",
+      "name": "clientId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "client"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "client"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "client"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "client"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Archived",
+          "name": "archived",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "If provided, clients will be filtered by name"
+        },
+        {
+          "displayName": "Sort Order",
+          "name": "sort-order",
+          "type": "options",
+          "options": [
+            {
+              "name": "Ascending",
+              "value": "ASCENDING"
+            },
+            {
+              "name": "Descending",
+              "value": "DESCENDING"
+            }
+          ],
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Client ID",
+      "name": "clientId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "client"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "client"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "client"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "type": "string",
+          "default": "",
+          "description": "Address of client being created/updated"
+        },
+        {
+          "displayName": "Archived",
+          "name": "archived",
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    {
+      "displayName": "Project Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Name of project being created",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "project"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "project"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Billable",
+          "name": "billable",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "displayName": "Color",
+          "name": "color",
+          "type": "color",
+          "default": "#0000FF"
+        },
+        {
+          "displayName": "Client Name or ID",
+          "name": "clientId",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "workspaceId"
+            ],
+            "loadOptionsMethod": "loadClientsForWorkspace"
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Estimate",
+          "name": "estimateUi",
+          "placeholder": "Add Estimate",
+          "type": "fixedCollection",
+          "default": {},
+          "typeOptions": {
+            "multipleValues": false
+          },
+          "options": [
+            {
+              "displayName": "Estimate",
+              "name": "estimateValues",
+              "values": [
+                {
+                  "displayName": "Estimate",
+                  "name": "estimate",
+                  "type": "number",
+                  "default": 0
+                },
+                {
+                  "displayName": "Type",
+                  "name": "type",
+                  "type": "options",
+                  "options": [
+                    {
+                      "name": "Auto",
+                      "value": "AUTO"
+                    },
+                    {
+                      "name": "Manual",
+                      "value": "MANUAL"
+                    }
+                  ],
+                  "default": "AUTO"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Is Public",
+          "name": "isPublic",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "displayName": "Note",
+          "name": "note",
+          "type": "string",
+          "default": "",
+          "description": "Note about the project"
+        }
+      ]
+    },
+    {
+      "displayName": "Project ID",
+      "name": "projectId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "project"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Project ID",
+      "name": "projectId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "project"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "project"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "project"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "project"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Archived",
+          "name": "archived",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "displayName": "Billable",
+          "name": "billable",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "displayName": "Client Names or IDs",
+          "name": "clients",
+          "type": "multiOptions",
+          "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "workspaceId"
+            ],
+            "loadOptionsMethod": "loadClientsForWorkspace"
+          },
+          "default": []
+        },
+        {
+          "displayName": "Contains Client",
+          "name": "contains-client",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to return only projects having a client"
+        },
+        {
+          "displayName": "Client Status",
+          "name": "client-status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Active",
+              "value": "ACTIVE"
+            },
+            {
+              "name": "Archived",
+              "value": "ARCHIVED"
+            }
+          ],
+          "default": "",
+          "description": "If provided, projects will be filtered by whether they have a client"
+        },
+        {
+          "displayName": "Contains User",
+          "name": "contains-user",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to return only projects having users"
+        },
+        {
+          "displayName": "Is Template",
+          "name": "is-template",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to return only projects as templates"
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Sort Column",
+          "name": "sort-column",
+          "type": "options",
+          "options": [
+            {
+              "name": "Name",
+              "value": "NAME"
+            },
+            {
+              "name": "Client Name",
+              "value": "CLIENT_NAME"
+            },
+            {
+              "name": "Duration",
+              "value": "DURATION"
+            }
+          ],
+          "default": ""
+        },
+        {
+          "displayName": "Sort Order",
+          "name": "sort-order",
+          "type": "options",
+          "options": [
+            {
+              "name": "Ascending",
+              "value": "ASCENDING"
+            },
+            {
+              "name": "Descending",
+              "value": "DESCENDING"
+            }
+          ],
+          "default": ""
+        },
+        {
+          "displayName": "User Name or ID",
+          "name": "users",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "workspaceId"
+            ],
+            "loadOptionsMethod": "loadUsersForWorkspace"
+          },
+          "default": ""
+        },
+        {
+          "displayName": "User Status",
+          "name": "user-status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Active",
+              "value": "ACTIVE"
+            },
+            {
+              "name": "Archived",
+              "value": "ARCHIVED"
+            }
+          ],
+          "default": "",
+          "description": "If provided, projects will be filtered by whether they have a client"
+        }
+      ]
+    },
+    {
+      "displayName": "Project ID",
+      "name": "projectId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "project"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "project"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Billable",
+          "name": "billable",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "displayName": "Color",
+          "name": "color",
+          "type": "color",
+          "default": "#0000FF"
+        },
+        {
+          "displayName": "Client Name or ID",
+          "name": "clientId",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "workspaceId"
+            ],
+            "loadOptionsMethod": "loadClientsForWorkspace"
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Estimate",
+          "name": "estimateUi",
+          "placeholder": "Add Estimate",
+          "type": "fixedCollection",
+          "default": {},
+          "typeOptions": {
+            "multipleValues": false
+          },
+          "options": [
+            {
+              "displayName": "Estimate",
+              "name": "estimateValues",
+              "values": [
+                {
+                  "displayName": "Estimate",
+                  "name": "estimate",
+                  "type": "number",
+                  "default": 0
+                },
+                {
+                  "displayName": "Type",
+                  "name": "type",
+                  "type": "options",
+                  "options": [
+                    {
+                      "name": "Auto",
+                      "value": "AUTO"
+                    },
+                    {
+                      "name": "Manual",
+                      "value": "MANUAL"
+                    }
+                  ],
+                  "default": "AUTO"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Is Public",
+          "name": "isPublic",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Note",
+          "name": "note",
+          "type": "string",
+          "default": "",
+          "description": "Note about the project"
+        }
+      ]
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Name of tag being created",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Tag ID",
+      "name": "tagId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "tag"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Archived",
+          "name": "archived",
+          "type": "boolean",
+          "default": true
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Sort Column",
+          "name": "sort-column",
+          "type": "options",
+          "options": [
+            {
+              "name": "Name",
+              "value": "NAME"
+            }
+          ],
+          "default": ""
+        },
+        {
+          "displayName": "Sort Order",
+          "name": "sort-order",
+          "type": "options",
+          "options": [
+            {
+              "name": "Ascending",
+              "value": "ASCENDING"
+            },
+            {
+              "name": "Descending",
+              "value": "DESCENDING"
+            }
+          ],
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Tag ID",
+      "name": "tagId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Archived",
+          "name": "archived",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Project Name or ID",
+      "name": "projectId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "workspaceId"
+        ],
+        "loadOptionsMethod": "loadProjectsForWorkspace"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ]
+        }
+      },
+      "required": true,
+      "default": ""
+    },
+    {
+      "displayName": "Task Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Name of task to create",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "task"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Assignee Names or IDs",
+          "name": "assigneeIds",
+          "type": "multiOptions",
+          "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "default": [],
+          "typeOptions": {
+            "loadOptionsMethod": "loadUsersForWorkspace"
+          }
+        },
+        {
+          "displayName": "Estimate",
+          "name": "estimate",
+          "type": "string",
+          "default": "",
+          "placeholder": "2:30",
+          "description": "Estimate time the task will take, e.x: 2:30 (2 hours and 30 minutes)"
+        }
+      ]
+    },
+    {
+      "displayName": "Task ID",
+      "name": "taskId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "description": "ID of task to delete"
+    },
+    {
+      "displayName": "Task ID",
+      "name": "taskId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "description": "ID of task to get"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "task"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "task"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "task"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Is Active",
+          "name": "is-active",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "Text to match in the task name"
+        },
+        {
+          "displayName": "Sort Column",
+          "name": "sort-column",
+          "type": "options",
+          "options": [
+            {
+              "name": "Name",
+              "value": "NAME"
+            }
+          ],
+          "default": "NAME"
+        },
+        {
+          "displayName": "Sort Order",
+          "name": "sort-order",
+          "type": "options",
+          "options": [
+            {
+              "name": "Ascending",
+              "value": "ASCENDING"
+            },
+            {
+              "name": "Descending",
+              "value": "DESCENDING"
+            }
+          ],
+          "default": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "displayName": "Task ID",
+      "name": "taskId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "description": "ID of task to update"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "task"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Assignee Names or IDs",
+          "name": "assigneeIds",
+          "type": "multiOptions",
+          "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "default": [],
+          "typeOptions": {
+            "loadOptionsMethod": "loadUsersForWorkspace"
+          }
+        },
+        {
+          "displayName": "Estimate",
+          "name": "estimate",
+          "type": "string",
+          "default": "",
+          "placeholder": "2:30",
+          "description": "Estimate time the task will take, e.x: 2:30 (2 hours and 30 minutes)"
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Active",
+              "value": "ACTIVE"
+            },
+            {
+              "name": "Done",
+              "value": "DONE"
+            }
+          ],
+          "default": "ACTIVE"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "user"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "If provided, you'll get a filtered list of users that contain the provided string in their email address"
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "If provided, you'll get a filtered list of users that contain the provided string in their name"
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Active",
+              "value": "ACTIVE"
+            },
+            {
+              "name": "Inactive",
+              "value": "INACTIVE"
+            },
+            {
+              "name": "Pending",
+              "value": "PENDING"
+            },
+            {
+              "name": "Declined",
+              "value": "DECLINED"
+            }
+          ],
+          "default": "",
+          "description": "If provided, you'll get a filtered list of users with the corresponding status"
+        },
+        {
+          "displayName": "Sort Column",
+          "name": "sort-column",
+          "type": "options",
+          "options": [
+            {
+              "name": "Email",
+              "value": "EMAIL"
+            },
+            {
+              "name": "Name",
+              "value": "NAME"
+            },
+            {
+              "name": "Hourly Rate",
+              "value": "HOURLYRATE"
+            }
+          ],
+          "default": ""
+        },
+        {
+          "displayName": "Sort Order",
+          "name": "sort-order",
+          "type": "options",
+          "options": [
+            {
+              "name": "Ascending",
+              "value": "ASCENDING"
+            },
+            {
+              "name": "Descending",
+              "value": "DESCENDING"
+            }
+          ],
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Start",
+      "name": "start",
+      "type": "dateTime",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "timeEntry"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "timeEntry"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Billable",
+          "name": "billable",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Custom Fields",
+          "name": "customFieldsUi",
+          "placeholder": "Add Custom Field",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "description": "Filter by custom fields",
+          "default": {},
+          "options": [
+            {
+              "name": "customFieldsValues",
+              "displayName": "Custom Field",
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "customFieldId",
+                  "type": "options",
+                  "typeOptions": {
+                    "loadOptionsDependsOn": [
+                      "workspaceId"
+                    ],
+                    "loadOptionsMethod": "loadCustomFieldsForWorkspace"
+                  },
+                  "default": "",
+                  "description": "The ID of the field to add custom field to. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+                },
+                {
+                  "displayName": "Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": "",
+                  "description": "The value to set on custom field"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "End",
+          "name": "end",
+          "type": "dateTime",
+          "default": ""
+        },
+        {
+          "displayName": "Project Name or ID",
+          "name": "projectId",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "workspaceId"
+            ],
+            "loadOptionsMethod": "loadProjectsForWorkspace"
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Tag Names or IDs",
+          "name": "tagIds",
+          "type": "multiOptions",
+          "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "workspaceId"
+            ],
+            "loadOptionsMethod": "loadTagsForWorkspace"
+          },
+          "default": []
+        },
+        {
+          "displayName": "Task ID",
+          "name": "taskId",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Time Entry ID",
+      "name": "timeEntryId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "timeEntry"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Time Entry ID",
+      "name": "timeEntryId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "timeEntry"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "timeEntry"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Consider Duration Format",
+          "name": "consider-duration-format",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to return the time entry's duration rounded to minutes or seconds based on duration format (hh:mm or hh:mm:ss) from workspace settings"
+        },
+        {
+          "displayName": "Hydrated",
+          "name": "hydrated",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to return the time entry's project, task and tags in full and not just their IDs"
+        }
+      ]
+    },
+    {
+      "displayName": "Time Entry ID",
+      "name": "timeEntryId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "timeEntry"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "timeEntry"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Billable",
+          "name": "billable",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "displayName": "Custom Fields",
+          "name": "customFieldsUi",
+          "placeholder": "Add Custom Field",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "description": "Filter by custom fields",
+          "default": {},
+          "options": [
+            {
+              "name": "customFieldsValues",
+              "displayName": "Custom Field",
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "customFieldId",
+                  "type": "options",
+                  "typeOptions": {
+                    "loadOptionsDependsOn": [
+                      "workspaceId"
+                    ],
+                    "loadOptionsMethod": "loadCustomFieldsForWorkspace"
+                  },
+                  "default": "",
+                  "description": "The ID of the field to add custom field to. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+                },
+                {
+                  "displayName": "Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": "",
+                  "description": "The value to set on custom field"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "End",
+          "name": "end",
+          "type": "dateTime",
+          "default": ""
+        },
+        {
+          "displayName": "Project Name or ID",
+          "name": "projectId",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "workspaceId"
+            ],
+            "loadOptionsMethod": "loadProjectsForWorkspace"
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Start",
+          "name": "start",
+          "type": "dateTime",
+          "default": ""
+        },
+        {
+          "displayName": "Tag Names or IDs",
+          "name": "tagIds",
+          "type": "multiOptions",
+          "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "workspaceId"
+            ],
+            "loadOptionsMethod": "loadTagsForWorkspace"
+          },
+          "default": []
+        },
+        {
+          "displayName": "Task ID",
+          "name": "taskId",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.clockify/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/clockify/"
+        }
+      ]
+    }
+  },
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/Clockify/clockify.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/Clockify/clockify.dark.svg"
+  },
+  "name": "n8n-nodes-base.clockifyTool"
+}

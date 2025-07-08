@@ -1,0 +1,2158 @@
+{
+  "displayName": "Microsoft SharePoint Tool",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{ $parameter[\"operation\"] + \": \" + $parameter[\"resource\"] }}",
+  "description": "Interact with Microsoft SharePoint API",
+  "defaults": {
+    "name": "Microsoft SharePoint"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "microsoftSharePointOAuth2Api",
+      "required": true
+    }
+  ],
+  "requestDefaults": {
+    "baseURL": "=https://{{ $credentials.subdomain }}.sharepoint.com/_api/v2.0/",
+    "ignoreHttpStatusErrors": true
+  },
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Interact with Microsoft SharePoint API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "File",
+          "value": "file"
+        },
+        {
+          "name": "Item",
+          "value": "item"
+        },
+        {
+          "name": "List",
+          "value": "list"
+        }
+      ],
+      "default": "file"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Download",
+          "value": "download",
+          "description": "Download a file",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/drive/items/{{ $parameter[\"file\"] }}/content",
+              "json": false,
+              "encoding": "arraybuffer"
+            },
+            "output": {
+              "postReceive": [
+                null,
+                null
+              ]
+            }
+          },
+          "action": "Download file"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a file",
+          "routing": {
+            "request": {
+              "method": "PATCH",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/drive/items/{{ $parameter[\"file\"] }}"
+            },
+            "output": {
+              "postReceive": [
+                null
+              ]
+            }
+          },
+          "action": "Update file"
+        },
+        {
+          "name": "Upload",
+          "value": "upload",
+          "description": "Upload an existing file",
+          "routing": {
+            "request": {
+              "method": "PUT",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/drive/items/{{ $parameter[\"folder\"] }}:/{{ $parameter[\"fileName\"] }}:/content"
+            },
+            "output": {
+              "postReceive": [
+                null
+              ]
+            }
+          },
+          "action": "Upload file"
+        }
+      ],
+      "default": "download"
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve folders from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "download"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Parent Folder",
+      "name": "folder",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the folder to download the file from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getFolders",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. myfolder",
+          "type": "string"
+        }
+      ],
+      "placeholder": "/ (Library root)",
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "download"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "File",
+      "name": "file",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the file to download",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getFiles",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "placeholder": "eg. my-file.pdf",
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "folder": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "download"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve folders from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Parent Folder",
+      "name": "folder",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the folder to update the file in",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getFolders",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. myfolder",
+          "type": "string"
+        }
+      ],
+      "placeholder": "/ (Library root)",
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "File",
+      "name": "file",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the file to update",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getFiles",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "placeholder": "eg. my-file.pdf",
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "folder": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Updated File Name",
+      "name": "fileName",
+      "default": "",
+      "description": "If not specified, the original file name will be used",
+      "placeholder": "e.g. My New File",
+      "routing": {
+        "send": {
+          "property": "name",
+          "type": "body",
+          "value": "={{ $value }}"
+        }
+      },
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Change File Content",
+      "name": "changeFileContent",
+      "default": false,
+      "description": "Whether to update the file contents",
+      "placeholder": "e.g. My New File",
+      "required": true,
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Updated File Contents",
+      "name": "fileContents",
+      "default": "",
+      "description": "Find the name of input field containing the binary data to update the file with in the Input panel on the left, in the Binary tab",
+      "displayOptions": {
+        "show": {
+          "changeFileContent": [
+            true
+          ],
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "hint": "The name of the input field containing the binary file data to update the file with",
+      "placeholder": "data",
+      "required": true,
+      "routing": {
+        "output": {
+          "postReceive": [
+            null
+          ]
+        }
+      },
+      "type": "string"
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve folders from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Parent Folder",
+      "name": "folder",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the folder to upload the file to",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getFolders",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. myfolder",
+          "type": "string"
+        }
+      ],
+      "placeholder": "/ (Library root)",
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "File Name",
+      "name": "fileName",
+      "default": "",
+      "description": "The name of the file being uploaded",
+      "placeholder": "e.g. My New File",
+      "required": true,
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "File Contents",
+      "name": "fileContents",
+      "default": "",
+      "description": "Find the name of input field containing the binary data to upload in the Input panel on the left, in the Binary tab",
+      "hint": "The name of the input field containing the binary file data to upload",
+      "placeholder": "data",
+      "required": true,
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create an item in an existing list",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/lists/{{ $parameter[\"list\"] }}/items"
+            },
+            "output": {
+              "postReceive": [
+                null
+              ]
+            }
+          },
+          "action": "Create item in a list"
+        },
+        {
+          "name": "Create or Update",
+          "value": "upsert",
+          "description": "Create a new item, or update the current one if it already exists (upsert)",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/lists/{{ $parameter[\"list\"] }}/items"
+            },
+            "output": {
+              "postReceive": [
+                null
+              ]
+            }
+          },
+          "action": "Create or update item (upsert)"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete an item from a list",
+          "routing": {
+            "request": {
+              "method": "DELETE",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/lists/{{ $parameter[\"list\"] }}/items/{{ $parameter[\"item\"] }}"
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"deleted\": true } }}"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Delete an item"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve an item from a list",
+          "routing": {
+            "request": {
+              "ignoreHttpStatusErrors": true,
+              "method": "GET",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/lists/{{ $parameter[\"list\"] }}/items/{{ $parameter[\"item\"] }}"
+            },
+            "output": {
+              "postReceive": [
+                null,
+                null
+              ]
+            }
+          },
+          "action": "Get an item"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get specific items in a list or list many items",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/lists/{{ $parameter[\"list\"] }}/items"
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "value"
+                  }
+                },
+                null
+              ]
+            }
+          },
+          "action": "Get many items"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update an item in an existing list",
+          "routing": {
+            "request": {
+              "method": "PATCH",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/lists/{{ $parameter[\"list\"] }}/items"
+            },
+            "output": {
+              "postReceive": [
+                null
+              ]
+            }
+          },
+          "action": "Update item in a list"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve lists from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "List",
+      "name": "list",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the list you want to create an item in",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getLists",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mylist",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Due to API restrictions, the following column types cannot be updated: Hyperlink, Location, Metadata",
+      "name": "noticeUnsupportedFields",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "list": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Columns",
+      "name": "columns",
+      "default": {
+        "mappingMode": "defineBelow",
+        "value": null
+      },
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "list": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "noDataExpression": true,
+      "required": true,
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "type": "resourceMapper",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "site.value",
+          "list.value"
+        ],
+        "resourceMapper": {
+          "resourceMapperMethod": "getMappingColumns",
+          "mode": "add",
+          "fieldWords": {
+            "singular": "column",
+            "plural": "columns"
+          },
+          "addAllFields": true,
+          "multiKeyMatch": false
+        }
+      }
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve lists from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "List",
+      "name": "list",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the list you want to delete an item in",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getLists",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mylist",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Item",
+      "name": "item",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the item you want to delete",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getItems",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. 1",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "list": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve lists from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "List",
+      "name": "list",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the list you want to retrieve an item from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getLists",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mylist",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Item",
+      "name": "item",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the item you want to get",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getItems",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. 1",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "list": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simplify",
+      "default": true,
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve lists from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "List",
+      "name": "list",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the list you want to search for items in",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getLists",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mylist",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filter by Formula",
+      "name": "filter",
+      "default": "",
+      "description": "The formula will be evaluated for each record. <a href=\"https://learn.microsoft.com/en-us/graph/filter-query-parameter\">More info</a>.",
+      "hint": "If empty, all the items will be returned",
+      "placeholder": "e.g. fields/Title eq 'item1'",
+      "routing": {
+        "send": {
+          "property": "$filter",
+          "type": "query",
+          "value": "={{ $value ? $value : undefined }}"
+        }
+      },
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "routing": {
+        "send": {
+          "paginate": "={{ $value }}"
+        },
+        "operations": {
+          "pagination": {
+            "type": "generic",
+            "properties": {
+              "continue": "={{ !!$response.body?.[\"@odata.nextLink\"] }}",
+              "request": {
+                "url": "={{ $response.body?.[\"@odata.nextLink\"] ?? $request.url }}",
+                "qs": {
+                  "$select": "={{ !!$response.body?.[\"@odata.nextLink\"] ? undefined : $request.qs?.$select }}"
+                }
+              }
+            }
+          }
+        }
+      },
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "default": 50,
+      "description": "Max number of results to return",
+      "displayOptions": {
+        "show": {
+          "returnAll": [
+            false
+          ],
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "property": "$top",
+          "type": "query",
+          "value": "={{ $value }}"
+        }
+      },
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "validateType": "number"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Fields",
+          "name": "fields",
+          "default": [],
+          "description": "The fields you want to include in the output",
+          "displayOptions": {
+            "hide": {
+              "/simplify": [
+                true
+              ]
+            }
+          },
+          "options": [
+            {
+              "name": "Content Type",
+              "value": "contentType"
+            },
+            {
+              "name": "Created At",
+              "value": "createdDateTime"
+            },
+            {
+              "name": "Created By",
+              "value": "createdBy"
+            },
+            {
+              "name": "Fields",
+              "value": "fields"
+            },
+            {
+              "name": "ID",
+              "value": "id"
+            },
+            {
+              "name": "Last Modified At",
+              "value": "lastModifiedDateTime"
+            },
+            {
+              "name": "Last Modified By",
+              "value": "lastModifiedBy"
+            },
+            {
+              "name": "Parent Reference",
+              "value": "parentReference"
+            },
+            {
+              "name": "Web URL",
+              "value": "webUrl"
+            }
+          ],
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          },
+          "type": "multiOptions"
+        }
+      ],
+      "placeholder": "Add option",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simplify",
+      "default": true,
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve lists from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "List",
+      "name": "list",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the list you want to update an item in",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getLists",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mylist",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Due to API restrictions, the following column types cannot be updated: Hyperlink, Location, Metadata",
+      "name": "noticeUnsupportedFields",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "list": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Columns",
+      "name": "columns",
+      "default": {
+        "mappingMode": "defineBelow",
+        "value": null
+      },
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "list": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "noDataExpression": true,
+      "required": true,
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "type": "resourceMapper",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "site.value",
+          "list.value"
+        ],
+        "resourceMapper": {
+          "resourceMapperMethod": "getMappingColumns",
+          "mode": "update",
+          "fieldWords": {
+            "singular": "column",
+            "plural": "columns"
+          },
+          "addAllFields": true,
+          "multiKeyMatch": false
+        }
+      }
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve lists from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "upsert"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "List",
+      "name": "list",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the list you want to create or update an item in",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getLists",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mylist",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "upsert"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Due to API restrictions, the following column types cannot be updated: Hyperlink, Location, Metadata",
+      "name": "noticeUnsupportedFields",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "list": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "upsert"
+          ]
+        }
+      },
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Columns",
+      "name": "columns",
+      "default": {
+        "mappingMode": "defineBelow",
+        "value": null
+      },
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ],
+          "list": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "item"
+          ],
+          "operation": [
+            "upsert"
+          ]
+        }
+      },
+      "noDataExpression": true,
+      "required": true,
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "type": "resourceMapper",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "site.value",
+          "list.value"
+        ],
+        "resourceMapper": {
+          "resourceMapperMethod": "getMappingColumns",
+          "mode": "upsert",
+          "fieldWords": {
+            "singular": "column",
+            "plural": "columns"
+          },
+          "addAllFields": true,
+          "multiKeyMatch": false
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "list"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve details of a single list",
+          "routing": {
+            "request": {
+              "ignoreHttpStatusErrors": true,
+              "method": "GET",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/lists/{{ $parameter[\"list\"] }}"
+            },
+            "output": {
+              "postReceive": [
+                null,
+                null
+              ]
+            }
+          },
+          "action": "Get list"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve a list of lists",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "=/sites/{{ $parameter[\"site\"] }}/lists"
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "value"
+                  }
+                },
+                null
+              ]
+            }
+          },
+          "action": "Get many lists"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve lists from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "list"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "List",
+      "name": "list",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the list you want to retrieve",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getLists",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mylist",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "hide": {
+          "site": [
+            ""
+          ]
+        },
+        "show": {
+          "resource": [
+            "list"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simplify",
+      "default": true,
+      "routing": {
+        "send": {
+          "property": "$select",
+          "type": "query",
+          "value": "={{ $value ? \"id,name,displayName,description,createdDateTime,lastModifiedDateTime,webUrl\" : undefined }}"
+        }
+      },
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "list"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Site",
+      "name": "site",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "Select the site to retrieve lists from",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "getSites",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "placeholder": "e.g. mysite",
+          "type": "string"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "list"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "routing": {
+        "send": {
+          "paginate": "={{ $value }}"
+        },
+        "operations": {
+          "pagination": {
+            "type": "generic",
+            "properties": {
+              "continue": "={{ !!$response.body?.[\"@odata.nextLink\"] }}",
+              "request": {
+                "url": "={{ $response.body?.[\"@odata.nextLink\"] ?? $request.url }}",
+                "qs": {
+                  "$select": "={{ !!$response.body?.[\"@odata.nextLink\"] ? undefined : $request.qs?.$select }}"
+                }
+              }
+            }
+          }
+        }
+      },
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "list"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "default": 50,
+      "description": "Max number of results to return",
+      "displayOptions": {
+        "show": {
+          "returnAll": [
+            false
+          ],
+          "resource": [
+            "list"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "property": "$top",
+          "type": "query",
+          "value": "={{ $value }}"
+        }
+      },
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "validateType": "number"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simplify",
+      "default": true,
+      "routing": {
+        "send": {
+          "property": "$select",
+          "type": "query",
+          "value": "={{ $value ? \"id,name,displayName,description,createdDateTime,lastModifiedDateTime,webUrl\" : undefined }}"
+        }
+      },
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "list"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Request Options",
+      "name": "requestOptions",
+      "type": "collection",
+      "isNodeSetting": true,
+      "placeholder": "Add Option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Batching",
+          "name": "batching",
+          "placeholder": "Add Batching",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": false
+          },
+          "default": {
+            "batch": {}
+          },
+          "options": [
+            {
+              "displayName": "Batching",
+              "name": "batch",
+              "values": [
+                {
+                  "displayName": "Items per Batch",
+                  "name": "batchSize",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": -1
+                  },
+                  "default": 50,
+                  "description": "Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1."
+                },
+                {
+                  "displayName": "Batch Interval (ms)",
+                  "name": "batchInterval",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": 0
+                  },
+                  "default": 1000,
+                  "description": "Time (in milliseconds) between each batch of requests. 0 for disabled."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Ignore SSL Issues (Insecure)",
+          "name": "allowUnauthorizedCerts",
+          "type": "boolean",
+          "noDataExpression": true,
+          "default": false,
+          "description": "Whether to accept the response even if SSL certificate validation is not possible"
+        },
+        {
+          "displayName": "Proxy",
+          "name": "proxy",
+          "type": "string",
+          "default": "",
+          "placeholder": "e.g. http://myproxy:3128",
+          "description": "HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128"
+        },
+        {
+          "displayName": "Timeout",
+          "name": "timeout",
+          "type": "number",
+          "typeOptions": {
+            "minValue": 1
+          },
+          "default": 10000,
+          "description": "Time in ms to wait for the server to send response headers (and start the response body) before aborting the request"
+        }
+      ]
+    }
+  ],
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/Microsoft/SharePoint/microsoftSharePoint.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/Microsoft/SharePoint/microsoftSharePoint.svg"
+  },
+  "name": "n8n-nodes-base.microsoftSharePointTool",
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {}
+  }
+}

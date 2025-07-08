@@ -1,0 +1,344 @@
+{
+  "displayName": "Marketstack Tool",
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "description": "Consume Marketstack API",
+  "defaults": {
+    "name": "Marketstack"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "marketstackApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume Marketstack API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "End-of-Day Data",
+          "value": "endOfDayData",
+          "description": "Stock market closing data"
+        },
+        {
+          "name": "Exchange",
+          "value": "exchange",
+          "description": "Stock market exchange"
+        },
+        {
+          "name": "Ticker",
+          "value": "ticker",
+          "description": "Stock market symbol"
+        }
+      ],
+      "default": "endOfDayData",
+      "required": true
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many EoD data"
+        }
+      ],
+      "default": "getAll",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "endOfDayData"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Ticker",
+      "name": "symbols",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "endOfDayData"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": "",
+      "description": "One or multiple comma-separated stock symbols (tickers) to retrieve, e.g. <code>AAPL</code> or <code>AAPL,MSFT</code>"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "endOfDayData"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "endOfDayData"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "endOfDayData"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Exchange",
+          "name": "exchange",
+          "type": "string",
+          "default": "",
+          "description": "Stock exchange to filter results by, specified by <a href=\"https://en.wikipedia.org/wiki/Market_Identifier_Code\">Market Identifier Code</a>, e.g. <code>XNAS</code>"
+        },
+        {
+          "displayName": "Latest",
+          "name": "latest",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to fetch the most recent stock market data"
+        },
+        {
+          "displayName": "Sort Order",
+          "name": "sort",
+          "description": "Order to sort results in",
+          "type": "options",
+          "options": [
+            {
+              "name": "Ascending",
+              "value": "ASC"
+            },
+            {
+              "name": "Descending",
+              "value": "DESC"
+            }
+          ],
+          "default": "DESC"
+        },
+        {
+          "displayName": "Specific Date",
+          "name": "specificDate",
+          "type": "dateTime",
+          "default": "",
+          "description": "Date in YYYY-MM-DD format, e.g. <code>2020-01-01</code>, or in ISO-8601 date format, e.g. <code>2020-05-21T00:00:00+0000</code>"
+        },
+        {
+          "displayName": "Timeframe Start Date",
+          "name": "dateFrom",
+          "type": "dateTime",
+          "default": "",
+          "description": "Timeframe start date in YYYY-MM-DD format, e.g. <code>2020-01-01</code>, or in ISO-8601 date format, e.g. <code>2020-05-21T00:00:00+0000</code>"
+        },
+        {
+          "displayName": "Timeframe End Date",
+          "name": "dateTo",
+          "type": "dateTime",
+          "default": "",
+          "description": "Timeframe end date in YYYY-MM-DD format, e.g. <code>2020-01-01</code>, or in ISO-8601 date format, e.g. <code>2020-05-21T00:00:00+0000</code>"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get an exchange"
+        }
+      ],
+      "default": "get",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "exchange"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Exchange",
+      "name": "exchange",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "exchange"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Stock exchange to retrieve, specified by <a href=\"https://en.wikipedia.org/wiki/Market_Identifier_Code\">Market Identifier Code</a>, e.g. <code>XNAS</code>"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a ticker"
+        }
+      ],
+      "default": "get",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticker"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Ticker",
+      "name": "symbol",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticker"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Stock symbol (ticker) to retrieve, e.g. <code>AAPL</code>"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.marketstack/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/marketstack/"
+        }
+      ]
+    }
+  },
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/Marketstack/marketstack.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/Marketstack/marketstack.dark.svg"
+  },
+  "name": "n8n-nodes-base.marketstackTool"
+}

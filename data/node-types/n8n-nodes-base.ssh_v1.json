@@ -1,0 +1,288 @@
+{
+  "displayName": "SSH",
+  "icon": "fa:terminal",
+  "iconColor": "black",
+  "group": [
+    "input"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Execute commands via SSH",
+  "defaults": {
+    "name": "SSH",
+    "color": "#000000"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "sshPassword",
+      "required": true,
+      "testedBy": "sshConnectionTest",
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "password"
+          ]
+        }
+      }
+    },
+    {
+      "name": "sshPrivateKey",
+      "required": true,
+      "testedBy": "sshConnectionTest",
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "privateKey"
+          ]
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "Password",
+          "value": "password"
+        },
+        {
+          "name": "Private Key",
+          "value": "privateKey"
+        }
+      ],
+      "default": "password"
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Command",
+          "value": "command"
+        },
+        {
+          "name": "File",
+          "value": "file"
+        }
+      ],
+      "default": "command"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "command"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Execute",
+          "value": "execute",
+          "description": "Execute a command",
+          "action": "Execute a command"
+        }
+      ],
+      "default": "execute"
+    },
+    {
+      "displayName": "Command",
+      "name": "command",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "command"
+          ],
+          "operation": [
+            "execute"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The command to be executed on a remote device"
+    },
+    {
+      "displayName": "Working Directory",
+      "name": "cwd",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "command"
+          ],
+          "operation": [
+            "execute"
+          ]
+        }
+      },
+      "default": "/",
+      "required": true
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Download",
+          "value": "download",
+          "description": "Download a file",
+          "action": "Download a file"
+        },
+        {
+          "name": "Upload",
+          "value": "upload",
+          "description": "Upload a file",
+          "action": "Upload a file"
+        }
+      ],
+      "default": "upload"
+    },
+    {
+      "displayName": "Input Binary Field",
+      "name": "binaryPropertyName",
+      "type": "string",
+      "default": "data",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "placeholder": "",
+      "hint": "The name of the input binary field containing the file to be uploaded"
+    },
+    {
+      "displayName": "Target Directory",
+      "name": "path",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "placeholder": "/home/user",
+      "description": "The directory to upload the file to. The name of the file does not need to be specified, it's taken from the binary data file name. To override this behavior, set the parameter \"File Name\" under options."
+    },
+    {
+      "displayName": "Path",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "download"
+          ]
+        }
+      },
+      "name": "path",
+      "type": "string",
+      "default": "",
+      "placeholder": "/home/user/invoice.txt",
+      "description": "The file path of the file to download. Has to contain the full path including file name.",
+      "required": true
+    },
+    {
+      "displayName": "File Property",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "download"
+          ]
+        }
+      },
+      "name": "binaryPropertyName",
+      "type": "string",
+      "default": "data",
+      "description": "Object property name which holds binary data",
+      "required": true
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "upload",
+            "download"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "File Name",
+          "name": "fileName",
+          "type": "string",
+          "default": "",
+          "description": "Overrides the binary data file name"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Core Nodes",
+      "Development"
+    ],
+    "subcategories": [
+      "Helpers"
+    ],
+    "alias": [
+      "remote"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.ssh/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.ssh"
+}

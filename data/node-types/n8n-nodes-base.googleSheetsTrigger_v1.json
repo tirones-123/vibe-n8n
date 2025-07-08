@@ -1,0 +1,631 @@
+{
+  "displayName": "Google Sheets Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{($parameter[\"event\"])}}",
+  "description": "Starts the workflow when Google Sheets events occur",
+  "defaults": {
+    "name": "Google Sheets Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "googleSheetsTriggerOAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "triggerOAuth2"
+          ]
+        }
+      }
+    }
+  ],
+  "polling": true,
+  "properties": [
+    {
+      "displayName": "Poll Times",
+      "name": "pollTimes",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true,
+        "multipleValueButtonText": "Add Poll Time"
+      },
+      "default": {
+        "item": [
+          {
+            "mode": "everyMinute"
+          }
+        ]
+      },
+      "description": "Time at which polling should occur",
+      "placeholder": "Add Poll Time",
+      "options": [
+        {
+          "name": "item",
+          "displayName": "Item",
+          "values": [
+            {
+              "displayName": "Mode",
+              "name": "mode",
+              "type": "options",
+              "options": [
+                {
+                  "name": "Every Minute",
+                  "value": "everyMinute"
+                },
+                {
+                  "name": "Every Hour",
+                  "value": "everyHour"
+                },
+                {
+                  "name": "Every Day",
+                  "value": "everyDay"
+                },
+                {
+                  "name": "Every Week",
+                  "value": "everyWeek"
+                },
+                {
+                  "name": "Every Month",
+                  "value": "everyMonth"
+                },
+                {
+                  "name": "Every X",
+                  "value": "everyX"
+                },
+                {
+                  "name": "Custom",
+                  "value": "custom"
+                }
+              ],
+              "default": "everyDay",
+              "description": "How often to trigger."
+            },
+            {
+              "displayName": "Hour",
+              "name": "hour",
+              "type": "number",
+              "typeOptions": {
+                "minValue": 0,
+                "maxValue": 23
+              },
+              "displayOptions": {
+                "hide": {
+                  "mode": [
+                    "custom",
+                    "everyHour",
+                    "everyMinute",
+                    "everyX"
+                  ]
+                }
+              },
+              "default": 14,
+              "description": "The hour of the day to trigger (24h format)"
+            },
+            {
+              "displayName": "Minute",
+              "name": "minute",
+              "type": "number",
+              "typeOptions": {
+                "minValue": 0,
+                "maxValue": 59
+              },
+              "displayOptions": {
+                "hide": {
+                  "mode": [
+                    "custom",
+                    "everyMinute",
+                    "everyX"
+                  ]
+                }
+              },
+              "default": 0,
+              "description": "The minute of the day to trigger"
+            },
+            {
+              "displayName": "Day of Month",
+              "name": "dayOfMonth",
+              "type": "number",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyMonth"
+                  ]
+                }
+              },
+              "typeOptions": {
+                "minValue": 1,
+                "maxValue": 31
+              },
+              "default": 1,
+              "description": "The day of the month to trigger"
+            },
+            {
+              "displayName": "Weekday",
+              "name": "weekday",
+              "type": "options",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyWeek"
+                  ]
+                }
+              },
+              "options": [
+                {
+                  "name": "Monday",
+                  "value": "1"
+                },
+                {
+                  "name": "Tuesday",
+                  "value": "2"
+                },
+                {
+                  "name": "Wednesday",
+                  "value": "3"
+                },
+                {
+                  "name": "Thursday",
+                  "value": "4"
+                },
+                {
+                  "name": "Friday",
+                  "value": "5"
+                },
+                {
+                  "name": "Saturday",
+                  "value": "6"
+                },
+                {
+                  "name": "Sunday",
+                  "value": "0"
+                }
+              ],
+              "default": "1",
+              "description": "The weekday to trigger"
+            },
+            {
+              "displayName": "Cron Expression",
+              "name": "cronExpression",
+              "type": "string",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "custom"
+                  ]
+                }
+              },
+              "default": "* * * * * *",
+              "description": "Use custom cron expression. Values and ranges as follows:<ul><li>Seconds: 0-59</li><li>Minutes: 0 - 59</li><li>Hours: 0 - 23</li><li>Day of Month: 1 - 31</li><li>Months: 0 - 11 (Jan - Dec)</li><li>Day of Week: 0 - 6 (Sun - Sat)</li></ul>"
+            },
+            {
+              "displayName": "Value",
+              "name": "value",
+              "type": "number",
+              "typeOptions": {
+                "minValue": 0,
+                "maxValue": 1000
+              },
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyX"
+                  ]
+                }
+              },
+              "default": 2,
+              "description": "All how many X minutes/hours it should trigger"
+            },
+            {
+              "displayName": "Unit",
+              "name": "unit",
+              "type": "options",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyX"
+                  ]
+                }
+              },
+              "options": [
+                {
+                  "name": "Minutes",
+                  "value": "minutes"
+                },
+                {
+                  "name": "Hours",
+                  "value": "hours"
+                }
+              ],
+              "default": "hours",
+              "description": "If it should trigger all X minutes or hours"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "hidden",
+      "options": [
+        {
+          "name": "OAuth2 (recommended)",
+          "value": "triggerOAuth2"
+        }
+      ],
+      "default": "triggerOAuth2"
+    },
+    {
+      "displayName": "Document",
+      "name": "documentId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "spreadSheetsSearch",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "extractValue": {
+            "type": "regex",
+            "regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)",
+                "errorMessage": "Not a valid Google Drive File URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9\\-_]{2,}",
+                "errorMessage": "Not a valid Google Drive File ID"
+              }
+            }
+          ],
+          "url": "=https://docs.google.com/spreadsheets/d/{{$value}}/edit"
+        }
+      ]
+    },
+    {
+      "displayName": "Sheet",
+      "name": "sheetName",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "documentId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "sheetsSearch",
+            "searchable": false
+          }
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "extractValue": {
+            "type": "regex",
+            "regex": "https:\\/\\/docs\\.google\\.com\\/spreadsheets\\/d\\/[0-9a-zA-Z\\-_]+.*\\#gid=([0-9]+)"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/docs\\.google\\.com\\/spreadsheets\\/d\\/[0-9a-zA-Z\\-_]+.*\\#gid=([0-9]+)",
+                "errorMessage": "Not a valid Sheet URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "((gid=)?[0-9]{1,})",
+                "errorMessage": "Not a valid Sheet ID"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Trigger On",
+      "name": "event",
+      "type": "options",
+      "description": "It will be triggered also by newly created columns (if the 'Columns to Watch' option is not set)",
+      "options": [
+        {
+          "name": "Row Added",
+          "value": "rowAdded"
+        },
+        {
+          "name": "Row Updated",
+          "value": "rowUpdate"
+        },
+        {
+          "name": "Row Added or Updated",
+          "value": "anyUpdate"
+        }
+      ],
+      "default": "anyUpdate",
+      "required": true
+    },
+    {
+      "displayName": "Include in Output",
+      "name": "includeInOutput",
+      "type": "options",
+      "default": "new",
+      "description": "This option will be effective only when automatically executing the workflow",
+      "options": [
+        {
+          "name": "New Version",
+          "value": "new"
+        },
+        {
+          "name": "Old Version",
+          "value": "old"
+        },
+        {
+          "name": "Both Versions",
+          "value": "both"
+        }
+      ],
+      "displayOptions": {
+        "hide": {
+          "event": [
+            "rowAdded"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Columns to Watch",
+          "name": "columnsToWatch",
+          "type": "multiOptions",
+          "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "sheetName.value"
+            ],
+            "loadOptionsMethod": "getSheetHeaderRowAndSkipEmpty"
+          },
+          "default": [],
+          "displayOptions": {
+            "show": {
+              "/event": [
+                "anyUpdate",
+                "rowUpdate"
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Data Location on Sheet",
+          "name": "dataLocationOnSheet",
+          "type": "fixedCollection",
+          "placeholder": "Select Range",
+          "default": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1"
+            }
+          },
+          "options": [
+            {
+              "displayName": "Values",
+              "name": "values",
+              "values": [
+                {
+                  "displayName": "Range Definition",
+                  "name": "rangeDefinition",
+                  "type": "options",
+                  "options": [
+                    {
+                      "name": "Specify Range (A1 Notation)",
+                      "value": "specifyRangeA1",
+                      "description": "Manually specify the data range"
+                    },
+                    {
+                      "name": "Specify Range (Rows)",
+                      "value": "specifyRange",
+                      "description": "Manually specify the data range"
+                    }
+                  ],
+                  "default": ""
+                },
+                {
+                  "displayName": "Header Row",
+                  "name": "headerRow",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": 1
+                  },
+                  "default": 1,
+                  "description": "Index of the row which contains the keys. Starts at 1. The incoming node data is matched to the keys for assignment. The matching is case sensitive.",
+                  "hint": "First row is row 1",
+                  "displayOptions": {
+                    "show": {
+                      "rangeDefinition": [
+                        "specifyRange"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "displayName": "First Data Row",
+                  "name": "firstDataRow",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": 1
+                  },
+                  "default": 2,
+                  "description": "Index of the first row which contains the actual data and not the keys. Starts with 1.",
+                  "hint": "First row is row 1",
+                  "displayOptions": {
+                    "show": {
+                      "rangeDefinition": [
+                        "specifyRange"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "displayName": "Range",
+                  "name": "range",
+                  "type": "string",
+                  "default": "",
+                  "placeholder": "A:Z",
+                  "description": "The table range to read from or to append data to. See the Google <a href=\"https://developers.google.com/sheets/api/guides/values#writing\">documentation</a> for the details.",
+                  "hint": "You can specify both the rows and the columns, e.g. C4:E7",
+                  "displayOptions": {
+                    "show": {
+                      "rangeDefinition": [
+                        "specifyRangeA1"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Value Render",
+          "name": "valueRender",
+          "type": "options",
+          "options": [
+            {
+              "name": "Unformatted",
+              "value": "UNFORMATTED_VALUE",
+              "description": "Values will be calculated, but not formatted in the reply"
+            },
+            {
+              "name": "Formatted",
+              "value": "FORMATTED_VALUE",
+              "description": "Values will be formatted and calculated according to the cell's formatting (based on the spreadsheet's locale)"
+            },
+            {
+              "name": "Formula",
+              "value": "FORMULA",
+              "description": "Values will not be calculated. The reply will include the formulas."
+            }
+          ],
+          "default": "UNFORMATTED_VALUE",
+          "description": "Determines how values will be rendered in the output. <a href=\"https://developers.google.com/sheets/api/reference/rest/v4/ValueRenderOption\" target=\"_blank\">More info</a>.",
+          "displayOptions": {
+            "hide": {
+              "/event": [
+                "anyUpdate",
+                "rowUpdate"
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "DateTime Render",
+          "name": "dateTimeRenderOption",
+          "type": "options",
+          "options": [
+            {
+              "name": "Serial Number",
+              "value": "SERIAL_NUMBER",
+              "description": "Fields will be returned as doubles in \"serial number\" format (as popularized by Lotus 1-2-3)"
+            },
+            {
+              "name": "Formatted String",
+              "value": "FORMATTED_STRING",
+              "description": "Fields will be rendered as strings in their given number format (which depends on the spreadsheet locale)"
+            }
+          ],
+          "default": "SERIAL_NUMBER",
+          "description": "Determines how dates should be rendered in the output.  <a href=\"https://developers.google.com/sheets/api/reference/rest/v4/DateTimeRenderOption\" target=\"_blank\">More info</a>.",
+          "displayOptions": {
+            "hide": {
+              "/event": [
+                "anyUpdate",
+                "rowUpdate"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Data & Storage",
+      "Productivity"
+    ],
+    "alias": [
+      "CSV",
+      "Spreadsheet",
+      "GS"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.googlesheetstrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/google/oauth-single-service/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Google/Sheet/googleSheets.svg",
+  "name": "n8n-nodes-base.googleSheetsTrigger"
+}

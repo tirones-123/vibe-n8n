@@ -1,0 +1,383 @@
+{
+  "displayName": "Google Ads",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Use the Google Ads API",
+  "defaults": {
+    "name": "Google Ads"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "googleAdsOAuth2Api",
+      "required": true,
+      "testedBy": {
+        "request": {
+          "method": "GET",
+          "url": "/v17/customers:listAccessibleCustomers"
+        }
+      }
+    }
+  ],
+  "requestDefaults": {
+    "returnFullResponse": true,
+    "baseURL": "https://googleads.googleapis.com",
+    "headers": {
+      "developer-token": "={{$credentials.developerToken}}"
+    }
+  },
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Campaign",
+          "value": "campaign"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "campaign"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "campaign"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many campaigns linked to the specified account",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "url": "={{\"/v17/customers/\" + $parameter[\"clientCustomerId\"].toString().replace(/-/g, \"\")  + \"/googleAds:search\"}}",
+              "body": {
+                "query": "={{ \"select campaign.id, campaign.name, campaign_budget.amount_micros, campaign_budget.period,campaign.status,campaign.optimization_score,campaign.advertising_channel_type,campaign.advertising_channel_sub_type,metrics.impressions,metrics.interactions,metrics.interaction_rate,metrics.average_cost,metrics.cost_micros,metrics.conversions,metrics.cost_per_conversion,metrics.conversions_from_interactions_rate,metrics.video_views,metrics.average_cpm,metrics.ctr from campaign where campaign.id > 0 \" + ([\"allTime\", undefined, \"\"].includes($parameter.additionalOptions?.dateRange) ? \"\" : \" and segments.date DURING \" + $parameter.additionalOptions.dateRange) + \" \" + ([\"all\", undefined, \"\"].includes($parameter.additionalOptions?.campaignStatus) ? \"\" : \" and campaign.status = '\" + $parameter.additionalOptions.campaignStatus + \"'\") + \"\" }}"
+              },
+              "headers": {
+                "login-customer-id": "={{$parameter[\"managerCustomerId\"].toString().replace(/-/g, \"\")}}"
+              }
+            },
+            "output": {
+              "postReceive": [
+                null
+              ]
+            }
+          },
+          "action": "Get many campaigns"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a specific campaign",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "url": "={{\"/v17/customers/\" + $parameter[\"clientCustomerId\"].toString().replace(/-/g, \"\") + \"/googleAds:search\"}}",
+              "returnFullResponse": true,
+              "body": {
+                "query": "={{ \"select campaign.id, campaign.name, campaign_budget.amount_micros, campaign_budget.period,campaign.status,campaign.optimization_score,campaign.advertising_channel_type,campaign.advertising_channel_sub_type,metrics.impressions,metrics.interactions,metrics.interaction_rate,metrics.average_cost,metrics.cost_micros,metrics.conversions,metrics.cost_per_conversion,metrics.conversions_from_interactions_rate,metrics.video_views,metrics.average_cpm,metrics.ctr from campaign where campaign.id = \" + $parameter[\"campaignId\"].toString().replace(/-/g, \"\")}}"
+              },
+              "headers": {
+                "login-customer-id": "={{$parameter[\"managerCustomerId\"].toString().replace(/-/g, \"\")}}"
+              }
+            },
+            "output": {
+              "postReceive": [
+                null
+              ]
+            }
+          },
+          "action": "Get a campaign"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Divide field names expressed with <i>micros</i> by 1,000,000 to get the actual value",
+      "name": "campaigsNotice",
+      "type": "notice",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "campaign"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Manager Customer ID",
+      "name": "managerCustomerId",
+      "type": "string",
+      "required": true,
+      "placeholder": "9998887777",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "campaign"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Client Customer ID",
+      "name": "clientCustomerId",
+      "type": "string",
+      "required": true,
+      "placeholder": "6665554444",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "campaign"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Campaign ID",
+      "name": "campaignId",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "campaign"
+          ]
+        }
+      },
+      "default": "",
+      "description": "ID of the campaign"
+    },
+    {
+      "displayName": "Additional Options",
+      "name": "additionalOptions",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "campaign"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Additional options for fetching campaigns",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Date Range",
+          "name": "dateRange",
+          "description": "Filters statistics by period",
+          "type": "options",
+          "options": [
+            {
+              "name": "All Time",
+              "value": "allTime",
+              "description": "Fetch statistics for all period"
+            },
+            {
+              "name": "Today",
+              "value": "TODAY",
+              "description": "Today only"
+            },
+            {
+              "name": "Yesterday",
+              "value": "YESTERDAY",
+              "description": "Yesterday only"
+            },
+            {
+              "name": "Last 7 Days",
+              "value": "LAST_7_DAYS",
+              "description": "Last 7 days, not including today"
+            },
+            {
+              "name": "Last Business Week",
+              "value": "LAST_BUSINESS_WEEK",
+              "description": "The 5 day business week, Monday through Friday, of the previous business week"
+            },
+            {
+              "name": "This Month",
+              "value": "THIS_MONTH",
+              "description": "All days in the current month"
+            },
+            {
+              "name": "Last Month",
+              "value": "LAST_MONTH",
+              "description": "All days in the previous month"
+            },
+            {
+              "name": "Last 14 Days",
+              "value": "LAST_14_DAYS",
+              "description": "The last 14 days not including today"
+            },
+            {
+              "name": "Last 30 Days",
+              "value": "LAST_30_DAYS",
+              "description": "The last 30 days not including today"
+            }
+          ],
+          "default": "allTime"
+        },
+        {
+          "displayName": "Show Campaigns by Status",
+          "name": "campaignStatus",
+          "description": "Filters campaigns by status",
+          "type": "options",
+          "options": [
+            {
+              "name": "All",
+              "value": "all",
+              "description": "Fetch all campaigns regardless of status"
+            },
+            {
+              "name": "Enabled",
+              "value": "ENABLED",
+              "description": "Filter only active campaigns"
+            },
+            {
+              "name": "Paused",
+              "value": "PAUSED",
+              "description": "Filter only paused campaigns"
+            },
+            {
+              "name": "Removed",
+              "value": "REMOVED",
+              "description": "Filter only removed campaigns"
+            }
+          ],
+          "default": "all"
+        }
+      ]
+    },
+    {
+      "displayName": "Request Options",
+      "name": "requestOptions",
+      "type": "collection",
+      "isNodeSetting": true,
+      "placeholder": "Add Option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Batching",
+          "name": "batching",
+          "placeholder": "Add Batching",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": false
+          },
+          "default": {
+            "batch": {}
+          },
+          "options": [
+            {
+              "displayName": "Batching",
+              "name": "batch",
+              "values": [
+                {
+                  "displayName": "Items per Batch",
+                  "name": "batchSize",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": -1
+                  },
+                  "default": 50,
+                  "description": "Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1."
+                },
+                {
+                  "displayName": "Batch Interval (ms)",
+                  "name": "batchInterval",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": 0
+                  },
+                  "default": 1000,
+                  "description": "Time (in milliseconds) between each batch of requests. 0 for disabled."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Ignore SSL Issues (Insecure)",
+          "name": "allowUnauthorizedCerts",
+          "type": "boolean",
+          "noDataExpression": true,
+          "default": false,
+          "description": "Whether to accept the response even if SSL certificate validation is not possible"
+        },
+        {
+          "displayName": "Proxy",
+          "name": "proxy",
+          "type": "string",
+          "default": "",
+          "placeholder": "e.g. http://myproxy:3128",
+          "description": "HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128"
+        },
+        {
+          "displayName": "Timeout",
+          "name": "timeout",
+          "type": "number",
+          "typeOptions": {
+            "minValue": 1
+          },
+          "default": 10000,
+          "description": "Time in ms to wait for the server to send response headers (and start the response body) before aborting the request"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Analytics"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.googleads/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/google/oauth-single-service/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Google/Ads/googleAds.svg",
+  "name": "n8n-nodes-base.googleAds"
+}

@@ -1,0 +1,123 @@
+{
+  "displayName": "Strava Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Starts the workflow when Strava events occur",
+  "defaults": {
+    "name": "Strava Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "stravaOAuth2Api",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "setup",
+      "httpMethod": "GET",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    },
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Object",
+      "name": "object",
+      "type": "options",
+      "options": [
+        {
+          "name": "[All]",
+          "value": "*"
+        },
+        {
+          "name": "Activity",
+          "value": "activity"
+        },
+        {
+          "name": "Athlete",
+          "value": "athlete"
+        }
+      ],
+      "default": "*"
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "options": [
+        {
+          "name": "[All]",
+          "value": "*"
+        },
+        {
+          "name": "Created",
+          "value": "create"
+        },
+        {
+          "name": "Deleted",
+          "value": "delete"
+        },
+        {
+          "name": "Updated",
+          "value": "update"
+        }
+      ],
+      "default": "*"
+    },
+    {
+      "displayName": "Resolve Data",
+      "name": "resolveData",
+      "type": "boolean",
+      "default": true,
+      "description": "By default the webhook-data only contain the Object ID. If this option gets activated, it will resolve the data automatically."
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Delete If Exist",
+          "name": "deleteIfExist",
+          "type": "boolean",
+          "default": false,
+          "description": "Strava allows just one subscription at all times. If you want to delete the current subscription to make room for a new subscription with the current parameters, set this parameter to true. Keep in mind this is a destructive operation."
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Productivity"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.stravatrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/strava/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Strava/strava.svg",
+  "name": "n8n-nodes-base.stravaTrigger"
+}

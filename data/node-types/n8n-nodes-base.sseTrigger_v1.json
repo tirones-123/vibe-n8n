@@ -1,0 +1,58 @@
+{
+  "displayName": "SSE Trigger",
+  "icon": "fa:cloud-download-alt",
+  "iconColor": "dark-blue",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Triggers the workflow when Server-Sent Events occur",
+  "eventTriggerDescription": "",
+  "activationMessage": "You can now make calls to your SSE URL to trigger executions.",
+  "defaults": {
+    "name": "SSE Trigger",
+    "color": "#225577"
+  },
+  "triggerPanel": {
+    "header": "",
+    "executionsHelp": {
+      "inactive": "<b>While building your workflow</b>, click the 'execute step' button, then trigger an SSE event. This will trigger an execution, which will show up in this editor.<br /> <br /><b>Once you're happy with your workflow</b>, <a data-key='activate'>activate</a> it. Then every time a change is detected, the workflow will execute. These executions will show up in the <a data-key='executions'>executions list</a>, but not in the editor.",
+      "active": "<b>While building your workflow</b>, click the 'execute step' button, then trigger an SSE event. This will trigger an execution, which will show up in this editor.<br /> <br /><b>Your workflow will also execute automatically</b>, since it's activated. Every time a change is detected, this node will trigger an execution. These executions will show up in the <a data-key='executions'>executions list</a>, but not in the editor."
+    },
+    "activationHint": "Once you’ve finished building your workflow, <a data-key='activate'>activate</a> it to have it also listen continuously (you just won’t see those executions here)."
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "URL",
+      "name": "url",
+      "type": "string",
+      "default": "",
+      "placeholder": "http://example.com",
+      "description": "The URL to receive the SSE from",
+      "required": true
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development",
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Other Trigger Nodes"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.ssetrigger/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.sseTrigger"
+}

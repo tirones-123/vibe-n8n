@@ -1,0 +1,214 @@
+{
+  "displayName": "Brandfetch Tool",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"]}}",
+  "description": "Consume Brandfetch API",
+  "defaults": {
+    "name": "Brandfetch"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "brandfetchApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume Brandfetch API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Color",
+          "value": "color",
+          "description": "Return a company's colors",
+          "action": "Return a company's colors"
+        },
+        {
+          "name": "Company",
+          "value": "company",
+          "description": "Return a company's data",
+          "action": "Return a company's data"
+        },
+        {
+          "name": "Font",
+          "value": "font",
+          "description": "Return a company's fonts",
+          "action": "Return a company's fonts"
+        },
+        {
+          "name": "Industry",
+          "value": "industry",
+          "description": "Return a company's industry",
+          "action": "Return a company's industry"
+        },
+        {
+          "name": "Logo",
+          "value": "logo",
+          "description": "Return a company's logo & icon",
+          "action": "Return a company's logo & icon"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "logo"
+    },
+    {
+      "displayName": "Domain",
+      "name": "domain",
+      "type": "string",
+      "default": "",
+      "description": "The domain name of the company",
+      "required": true
+    },
+    {
+      "displayName": "Download",
+      "name": "download",
+      "type": "boolean",
+      "default": false,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "logo"
+          ]
+        }
+      },
+      "description": "Name of the binary property to which to write the data of the read file"
+    },
+    {
+      "displayName": "Image Type",
+      "name": "imageTypes",
+      "type": "multiOptions",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "logo"
+          ],
+          "download": [
+            true
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Icon",
+          "value": "icon"
+        },
+        {
+          "name": "Logo",
+          "value": "logo"
+        }
+      ],
+      "default": [
+        "logo",
+        "icon"
+      ],
+      "required": true
+    },
+    {
+      "displayName": "Image Format",
+      "name": "imageFormats",
+      "type": "multiOptions",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "logo"
+          ],
+          "download": [
+            true
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "PNG",
+          "value": "png"
+        },
+        {
+          "name": "SVG",
+          "value": "svg"
+        }
+      ],
+      "default": [
+        "png"
+      ],
+      "description": "The image format in which the logo should be returned as",
+      "required": true
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.brandfetch/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/brandfetch/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Brandfetch/brandfetch.png",
+  "name": "n8n-nodes-base.BrandfetchTool"
+}

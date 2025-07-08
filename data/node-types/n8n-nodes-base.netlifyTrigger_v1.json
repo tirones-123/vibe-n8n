@@ -1,0 +1,119 @@
+{
+  "displayName": "Netlify Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"event\"]}}",
+  "description": "Handle netlify events via webhooks",
+  "defaults": {
+    "name": "Netlify Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "netlifyApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Site Name or ID",
+      "name": "siteId",
+      "required": true,
+      "type": "options",
+      "default": "",
+      "typeOptions": {
+        "loadOptionsMethod": "getSites"
+      },
+      "description": "Select the Site ID. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "required": true,
+      "default": "",
+      "options": [
+        {
+          "name": "Deploy Building",
+          "value": "deployBuilding"
+        },
+        {
+          "name": "Deploy Failed",
+          "value": "deployFailed"
+        },
+        {
+          "name": "Deploy Created",
+          "value": "deployCreated"
+        },
+        {
+          "name": "Form Submitted",
+          "value": "submissionCreated"
+        }
+      ]
+    },
+    {
+      "displayName": "Form Name or ID",
+      "name": "formId",
+      "type": "options",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "event": [
+            "submissionCreated"
+          ]
+        }
+      },
+      "default": "",
+      "typeOptions": {
+        "loadOptionsMethod": "getForms"
+      },
+      "description": "Select a form. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "event": [
+            "submissionCreated"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.netlifytrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/netlify/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Netlify/netlify.svg",
+  "name": "n8n-nodes-base.netlifyTrigger"
+}

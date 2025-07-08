@@ -1,0 +1,2721 @@
+{
+  "displayName": "AWS Cognito",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Sends data to AWS Cognito",
+  "defaults": {
+    "name": "AWS Cognito"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "aws",
+      "required": true
+    }
+  ],
+  "requestDefaults": {
+    "headers": {
+      "Content-Type": "application/x-amz-json-1.1"
+    },
+    "qs": {
+      "service": "cognito-idp",
+      "_region": "={{$credentials.region}}"
+    }
+  },
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "user",
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Group",
+          "value": "group"
+        },
+        {
+          "name": "User",
+          "value": "user"
+        },
+        {
+          "name": "User Pool",
+          "value": "userPool"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "getAll",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a new group",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.CreateGroup"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "Group"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Create group"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete an existing group",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.DeleteGroup"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"deleted\": true } }}"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Delete group"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve details of an existing group",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.GetGroup"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                null
+              ]
+            }
+          },
+          "action": "Get group"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve a list of groups",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.ListGroups"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                null,
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "Groups"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Get many groups"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update an existing group",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.UpdateGroup"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"updated\": true } }}"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Update group"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ]
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Group Name",
+      "name": "newGroupName",
+      "default": "",
+      "placeholder": "e.g. MyNewGroup",
+      "description": "The name of the new group to create",
+      "required": true,
+      "type": "string",
+      "validateType": "string",
+      "routing": {
+        "send": {
+          "property": "GroupName",
+          "type": "body",
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "default": "",
+          "placeholder": "e.g. New group description",
+          "description": "A description for the new group",
+          "type": "string",
+          "routing": {
+            "send": {
+              "type": "body",
+              "property": "Description"
+            }
+          }
+        },
+        {
+          "displayName": "Precedence",
+          "name": "precedence",
+          "default": "",
+          "placeholder": "e.g. 10",
+          "description": "Precedence value for the group. Lower values indicate higher priority.",
+          "type": "number",
+          "routing": {
+            "send": {
+              "type": "body",
+              "property": "Precedence"
+            }
+          },
+          "validateType": "number"
+        },
+        {
+          "displayName": "Role ARN",
+          "name": "arn",
+          "default": "",
+          "placeholder": "e.g. arn:aws:iam::123456789012:role/GroupRole",
+          "description": "The role ARN for the group, used for setting claims in tokens",
+          "type": "string",
+          "routing": {
+            "send": {
+              "type": "body",
+              "property": "Arn",
+              "preSend": [
+                null
+              ]
+            }
+          }
+        }
+      ],
+      "placeholder": "Add Option",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Group",
+      "name": "group",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "GroupName"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchGroups",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By Name",
+          "name": "groupName",
+          "type": "string",
+          "hint": "Enter the group name",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w+=,.@-]+$",
+                "errorMessage": "The group name must follow the allowed pattern."
+              }
+            }
+          ],
+          "placeholder": "e.g. Admins"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "description": "Select the group you want to delete",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Group",
+      "name": "group",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "GroupName"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchGroups",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By Name",
+          "name": "groupName",
+          "type": "string",
+          "hint": "Enter the group name",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w+=,.@-]+$",
+                "errorMessage": "The group name must follow the allowed pattern."
+              }
+            }
+          ],
+          "placeholder": "e.g. Admins"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "description": "Select the group you want to retrieve",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Include Users",
+      "name": "includeUsers",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to include a list of users in the group",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "type": "boolean",
+      "routing": {
+        "operations": {
+          "pagination": {
+            "type": "generic",
+            "properties": {
+              "continue": "={{ !!$response.body?.NextToken }}",
+              "request": {
+                "body": {
+                  "NextToken": "={{ $response.body?.NextToken }}"
+                }
+              }
+            }
+          }
+        }
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "required": true,
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 60
+      },
+      "default": 50,
+      "description": "Max number of results to return",
+      "displayOptions": {
+        "show": {
+          "returnAll": [
+            false
+          ],
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "Limit"
+        }
+      }
+    },
+    {
+      "displayName": "Include Users",
+      "name": "includeUsers",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to include a list of users in the group",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Group",
+      "name": "group",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "GroupName"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchGroups",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By Name",
+          "name": "groupName",
+          "type": "string",
+          "hint": "Enter the group name",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w+=,.@-]+$",
+                "errorMessage": "The group name must follow the allowed pattern."
+              }
+            }
+          ],
+          "placeholder": "e.g. Admins"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "description": "Select the group you want to update",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "placeholder": "Add Option",
+      "type": "collection",
+      "default": {},
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "default": "",
+          "placeholder": "e.g. Updated group description",
+          "description": "A new description for the group",
+          "type": "string",
+          "routing": {
+            "send": {
+              "type": "body",
+              "property": "Description"
+            }
+          }
+        },
+        {
+          "displayName": "Precedence",
+          "name": "precedence",
+          "default": "",
+          "placeholder": "e.g. 10",
+          "description": "The new precedence value for the group. Lower values indicate higher priority.",
+          "type": "number",
+          "routing": {
+            "send": {
+              "type": "body",
+              "property": "Precedence"
+            }
+          },
+          "validateType": "number"
+        },
+        {
+          "displayName": "Role ARN",
+          "name": "arn",
+          "default": "",
+          "placeholder": "e.g. arn:aws:iam::123456789012:role/GroupRole",
+          "description": "A new role Amazon Resource Name (ARN) for the group. Used for setting claims in tokens.",
+          "type": "string",
+          "routing": {
+            "send": {
+              "type": "body",
+              "property": "Arn",
+              "preSend": [
+                null
+              ]
+            }
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "group"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "default": "getAll",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add to Group",
+          "value": "addToGroup",
+          "description": "Add an existing user to a group",
+          "action": "Add user to group",
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            },
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.AdminAddUserToGroup"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"addedToGroup\": true } }}"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a new user",
+          "action": "Create user",
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            },
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.AdminCreateUser"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "User"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a user",
+          "action": "Delete user",
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            },
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.AdminDeleteUser"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"deleted\": true } }}"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve information of an existing user",
+          "action": "Get user",
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            },
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.AdminGetUser"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                null
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve a list of users",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.ListUsers"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                null,
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "Users"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Get many users"
+        },
+        {
+          "name": "Remove From Group",
+          "value": "removeFromGroup",
+          "description": "Remove a user from a group",
+          "action": "Remove user from group",
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            },
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.AdminRemoveUserFromGroup"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"removedFromGroup\": true } }}"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update an existing user",
+          "action": "Update user",
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            },
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.AdminUpdateUserAttributes"
+              },
+              "ignoreHttpStatusErrors": true
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"updated\": true } }}"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ]
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to retrieve",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Name",
+      "name": "newUserName",
+      "default": "",
+      "description": "Depending on the user pool settings, this parameter requires the username, the email, or the phone number. No whitespace is allowed.",
+      "placeholder": "e.g. JohnSmith",
+      "required": true,
+      "routing": {
+        "send": {
+          "property": "Username",
+          "type": "body"
+        }
+      },
+      "type": "string",
+      "validateType": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Message Action",
+          "name": "messageAction",
+          "default": "RESEND",
+          "type": "options",
+          "options": [
+            {
+              "name": "Resend",
+              "value": "RESEND",
+              "description": "Resend the invitation message to a user that already exists and reset the expiration limit on the user's account"
+            },
+            {
+              "name": "Suppress",
+              "value": "SUPPRESS",
+              "description": "Suppress sending the message"
+            }
+          ],
+          "routing": {
+            "send": {
+              "property": "MessageAction",
+              "type": "body"
+            }
+          }
+        },
+        {
+          "displayName": "Force Alias Creation",
+          "name": "forceAliasCreation",
+          "type": "boolean",
+          "validateType": "boolean",
+          "default": false,
+          "description": "Whether this parameter is used only if the phone_number_verified or email_verified attribute is set to true. Otherwise, it is ignored. If set to true, and the phone number or email address specified in the UserAttributes parameter already exists as an alias with a different user, the alias will be migrated. If set to false, an AliasExistsException error is thrown if the alias already exists.",
+          "routing": {
+            "send": {
+              "type": "body",
+              "property": "ForceAliasCreation"
+            }
+          }
+        },
+        {
+          "displayName": "User Attributes",
+          "name": "userAttributes",
+          "type": "fixedCollection",
+          "placeholder": "Add Attribute",
+          "default": {
+            "attributes": []
+          },
+          "required": true,
+          "description": "Attributes to update for the user",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          },
+          "options": [
+            {
+              "displayName": "Attributes",
+              "name": "attributes",
+              "values": [
+                {
+                  "displayName": "Attribute Type",
+                  "name": "attributeType",
+                  "type": "options",
+                  "default": "standard",
+                  "options": [
+                    {
+                      "name": "Standard Attribute",
+                      "value": "standard"
+                    },
+                    {
+                      "name": "Custom Attribute",
+                      "value": "custom"
+                    }
+                  ]
+                },
+                {
+                  "displayName": "Standard Attribute",
+                  "name": "standardName",
+                  "type": "options",
+                  "default": "address",
+                  "options": [
+                    {
+                      "name": "Address",
+                      "value": "address"
+                    },
+                    {
+                      "name": "Birthdate",
+                      "value": "birthdate"
+                    },
+                    {
+                      "name": "Email",
+                      "value": "email"
+                    },
+                    {
+                      "name": "Email Verified",
+                      "value": "email_verified"
+                    },
+                    {
+                      "name": "Family Name",
+                      "value": "family_name"
+                    },
+                    {
+                      "name": "Gender",
+                      "value": "gender"
+                    },
+                    {
+                      "name": "Given Name",
+                      "value": "given_name"
+                    },
+                    {
+                      "name": "Locale",
+                      "value": "locale"
+                    },
+                    {
+                      "name": "Middle Name",
+                      "value": "middle_name"
+                    },
+                    {
+                      "name": "Name",
+                      "value": "name"
+                    },
+                    {
+                      "name": "Nickname",
+                      "value": "nickname"
+                    },
+                    {
+                      "name": "Phone Number",
+                      "value": "phone_number"
+                    },
+                    {
+                      "name": "Phone Number Verified",
+                      "value": "phone_number_verified"
+                    },
+                    {
+                      "name": "Preferred Username",
+                      "value": "preferred_username"
+                    },
+                    {
+                      "name": "Profile Picture",
+                      "value": "profilepicture"
+                    },
+                    {
+                      "name": "Updated At",
+                      "value": "updated_at"
+                    },
+                    {
+                      "name": "User Sub",
+                      "value": "sub"
+                    },
+                    {
+                      "name": "Website",
+                      "value": "website"
+                    },
+                    {
+                      "name": "Zone Info",
+                      "value": "zoneinfo"
+                    }
+                  ],
+                  "displayOptions": {
+                    "show": {
+                      "attributeType": [
+                        "standard"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "displayName": "Custom Attribute Name",
+                  "name": "customName",
+                  "type": "string",
+                  "default": "",
+                  "placeholder": "custom:myAttribute",
+                  "description": "The name of the custom attribute (must start with \"custom:\")",
+                  "displayOptions": {
+                    "show": {
+                      "attributeType": [
+                        "custom"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "displayName": "Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": "",
+                  "description": "The value of the attribute"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Desired Delivery Mediums",
+          "name": "desiredDeliveryMediums",
+          "default": [
+            "SMS"
+          ],
+          "description": "Specify how to send the welcome message",
+          "type": "multiOptions",
+          "options": [
+            {
+              "name": "SMS",
+              "value": "SMS"
+            },
+            {
+              "name": "Email",
+              "value": "EMAIL"
+            }
+          ],
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ],
+              "property": "DesiredDeliveryMediums",
+              "type": "body"
+            }
+          }
+        },
+        {
+          "displayName": "Temporary Password",
+          "name": "temporaryPasswordOptions",
+          "type": "string",
+          "typeOptions": {
+            "password": true
+          },
+          "default": "",
+          "description": "The user's temporary password that will be valid only once. If not set, Amazon Cognito will automatically generate one for you.",
+          "routing": {
+            "send": {
+              "property": "TemporaryPassword",
+              "type": "body"
+            }
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "hint": "Enter the user ID",
+          "placeholder": "e.g. 02bd9fd6-8f93-4758-87c3-1fb73740a315",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+-[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx-xxxxxxxxxxx\""
+              }
+            }
+          ]
+        }
+      ],
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "Username"
+        }
+      },
+      "required": true,
+      "type": "resourceLocator",
+      "description": "Select the user you want to delete",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "hint": "Enter the user ID",
+          "placeholder": "e.g. 02bd9fd6-8f93-4758-87c3-1fb73740a315",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+-[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx-xxxxxxxxxxx\""
+              }
+            }
+          ]
+        }
+      ],
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "Username"
+        }
+      },
+      "required": true,
+      "type": "resourceLocator",
+      "description": "Select the user you want to retrieve",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "type": "boolean",
+      "routing": {
+        "operations": {
+          "pagination": {
+            "type": "generic",
+            "properties": {
+              "continue": "={{ !!$response.body?.PaginationToken }}",
+              "request": {
+                "body": {
+                  "PaginationToken": "={{ $response.body?.PaginationToken }}"
+                }
+              }
+            }
+          }
+        }
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "required": true,
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 60
+      },
+      "default": 50,
+      "description": "Max number of results to return",
+      "displayOptions": {
+        "show": {
+          "returnAll": [
+            false
+          ],
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "Limit"
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "fixedCollection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Filter",
+          "name": "filter",
+          "values": [
+            {
+              "displayName": "Attribute",
+              "name": "attribute",
+              "type": "options",
+              "default": "email",
+              "description": "The attribute to search for",
+              "options": [
+                {
+                  "name": "Cognito User Status",
+                  "value": "cognito:user_status"
+                },
+                {
+                  "name": "Email",
+                  "value": "email"
+                },
+                {
+                  "name": "Family Name",
+                  "value": "family_name"
+                },
+                {
+                  "name": "Given Name",
+                  "value": "given_name"
+                },
+                {
+                  "name": "Name",
+                  "value": "name"
+                },
+                {
+                  "name": "Phone Number",
+                  "value": "phone_number"
+                },
+                {
+                  "name": "Preferred Username",
+                  "value": "preferred_username"
+                },
+                {
+                  "name": "Status (Enabled)",
+                  "value": "status"
+                },
+                {
+                  "name": "Sub",
+                  "value": "sub"
+                },
+                {
+                  "name": "Username",
+                  "value": "username"
+                }
+              ]
+            },
+            {
+              "displayName": "Value",
+              "name": "value",
+              "type": "string",
+              "default": "",
+              "description": "The value of the attribute to search for"
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "hint": "Enter the user ID",
+          "placeholder": "e.g. 02bd9fd6-8f93-4758-87c3-1fb73740a315",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+-[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx-xxxxxxxxxxx\""
+              }
+            }
+          ]
+        }
+      ],
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "Username"
+        }
+      },
+      "required": true,
+      "type": "resourceLocator",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Attributes",
+      "name": "userAttributes",
+      "type": "fixedCollection",
+      "placeholder": "Add Attribute",
+      "default": {
+        "attributes": []
+      },
+      "required": true,
+      "description": "Attributes to update for the user",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Attributes",
+          "name": "attributes",
+          "values": [
+            {
+              "displayName": "Attribute Type",
+              "name": "attributeType",
+              "type": "options",
+              "default": "standard",
+              "options": [
+                {
+                  "name": "Standard Attribute",
+                  "value": "standard"
+                },
+                {
+                  "name": "Custom Attribute",
+                  "value": "custom"
+                }
+              ]
+            },
+            {
+              "displayName": "Standard Attribute",
+              "name": "standardName",
+              "type": "options",
+              "default": "address",
+              "options": [
+                {
+                  "name": "Address",
+                  "value": "address"
+                },
+                {
+                  "name": "Birthdate",
+                  "value": "birthdate"
+                },
+                {
+                  "name": "Email",
+                  "value": "email"
+                },
+                {
+                  "name": "Family Name",
+                  "value": "family_name"
+                },
+                {
+                  "name": "Gender",
+                  "value": "gender"
+                },
+                {
+                  "name": "Given Name",
+                  "value": "given_name"
+                },
+                {
+                  "name": "Locale",
+                  "value": "locale"
+                },
+                {
+                  "name": "Middle Name",
+                  "value": "middle_name"
+                },
+                {
+                  "name": "Name",
+                  "value": "name"
+                },
+                {
+                  "name": "Nickname",
+                  "value": "nickname"
+                },
+                {
+                  "name": "Phone Number",
+                  "value": "phone_number"
+                },
+                {
+                  "name": "Preferred Username",
+                  "value": "preferred_username"
+                },
+                {
+                  "name": "Profile Picture",
+                  "value": "profilepicture"
+                },
+                {
+                  "name": "Updated At",
+                  "value": "updated_at"
+                },
+                {
+                  "name": "User Sub",
+                  "value": "sub"
+                },
+                {
+                  "name": "Website",
+                  "value": "website"
+                },
+                {
+                  "name": "Zone Info",
+                  "value": "zoneinfo"
+                }
+              ],
+              "displayOptions": {
+                "show": {
+                  "attributeType": [
+                    "standard"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Custom Attribute Name",
+              "name": "customName",
+              "type": "string",
+              "default": "",
+              "placeholder": "custom:myAttribute",
+              "description": "The name of the custom attribute (must start with \"custom:\")",
+              "displayOptions": {
+                "show": {
+                  "attributeType": [
+                    "custom"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Value",
+              "name": "value",
+              "type": "string",
+              "default": "",
+              "description": "The value of the attribute"
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "addToGroup"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "hint": "Enter the user ID",
+          "placeholder": "e.g. 02bd9fd6-8f93-4758-87c3-1fb73740a315",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+-[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx-xxxxxxxxxxx\""
+              }
+            }
+          ]
+        }
+      ],
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "Username"
+        }
+      },
+      "required": true,
+      "type": "resourceLocator",
+      "description": "Select the user you want to add to the group",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "addToGroup"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Group",
+      "name": "group",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "GroupName"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchGroups",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By Name",
+          "name": "groupName",
+          "type": "string",
+          "hint": "Enter the group name",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w+=,.@-]+$",
+                "errorMessage": "The group name must follow the allowed pattern."
+              }
+            }
+          ],
+          "placeholder": "e.g. Admins"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "description": "Select the group you want to add the user to",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "addToGroup"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to use",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "removeFromGroup"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "hint": "Enter the user ID",
+          "placeholder": "e.g. 02bd9fd6-8f93-4758-87c3-1fb73740a315",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+-[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx-xxxxxxxxxxx\""
+              }
+            }
+          ]
+        }
+      ],
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "Username"
+        }
+      },
+      "required": true,
+      "type": "resourceLocator",
+      "description": "Select the user you want to remove from the group",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "removeFromGroup"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Group",
+      "name": "group",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "GroupName"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchGroupsForUser",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By Name",
+          "name": "groupName",
+          "type": "string",
+          "hint": "Enter the group name",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w+=,.@-]+$",
+                "errorMessage": "The group name must follow the allowed pattern."
+              }
+            }
+          ],
+          "placeholder": "e.g. Admins"
+        }
+      ],
+      "required": true,
+      "type": "resourceLocator",
+      "description": "Select the group you want to remove the user from",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "removeFromGroup"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userPool"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get user pool",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "headers": {
+                "X-Amz-Target": "AWSCognitoIdentityProviderService.DescribeUserPool"
+              }
+            },
+            "output": {
+              "postReceive": [
+                null,
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "UserPool"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "User Pool",
+      "name": "userPool",
+      "required": true,
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "UserPoolId"
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From list",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "searchUserPools",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^[\\w-]+_[0-9a-zA-Z]+$",
+                "errorMessage": "The ID must follow the pattern \"xxxxxx_xxxxxxxxxxx\""
+              }
+            }
+          ],
+          "placeholder": "e.g. eu-central-1_ab12cdefgh"
+        }
+      ],
+      "description": "Select the user pool to retrieve",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userPool"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userPool"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Request Options",
+      "name": "requestOptions",
+      "type": "collection",
+      "isNodeSetting": true,
+      "placeholder": "Add Option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Batching",
+          "name": "batching",
+          "placeholder": "Add Batching",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": false
+          },
+          "default": {
+            "batch": {}
+          },
+          "options": [
+            {
+              "displayName": "Batching",
+              "name": "batch",
+              "values": [
+                {
+                  "displayName": "Items per Batch",
+                  "name": "batchSize",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": -1
+                  },
+                  "default": 50,
+                  "description": "Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1."
+                },
+                {
+                  "displayName": "Batch Interval (ms)",
+                  "name": "batchInterval",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": 0
+                  },
+                  "default": 1000,
+                  "description": "Time (in milliseconds) between each batch of requests. 0 for disabled."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Ignore SSL Issues (Insecure)",
+          "name": "allowUnauthorizedCerts",
+          "type": "boolean",
+          "noDataExpression": true,
+          "default": false,
+          "description": "Whether to accept the response even if SSL certificate validation is not possible"
+        },
+        {
+          "displayName": "Proxy",
+          "name": "proxy",
+          "type": "string",
+          "default": "",
+          "placeholder": "e.g. http://myproxy:3128",
+          "description": "HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128"
+        },
+        {
+          "displayName": "Timeout",
+          "name": "timeout",
+          "type": "number",
+          "typeOptions": {
+            "minValue": 1
+          },
+          "default": 10000,
+          "description": "Time in ms to wait for the server to send response headers (and start the response body) before aborting the request"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.awscognito/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/aws/"
+        }
+      ]
+    }
+  },
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/Aws/Cognito/cognito.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/Aws/Cognito/cognito.svg"
+  },
+  "name": "n8n-nodes-base.awsCognito"
+}

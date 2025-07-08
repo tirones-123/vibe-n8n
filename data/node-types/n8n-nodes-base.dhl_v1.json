@@ -1,0 +1,107 @@
+{
+  "displayName": "DHL",
+  "group": [
+    "input"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume DHL API",
+  "defaults": {
+    "name": "DHL"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "dhlApi",
+      "required": true,
+      "testedBy": "dhlApiCredentialTest"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "noDataExpression": true,
+      "type": "hidden",
+      "options": [
+        {
+          "name": "Shipment",
+          "value": "shipment"
+        }
+      ],
+      "default": "shipment"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "shipment"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Tracking Details",
+          "value": "get",
+          "action": "Get tracking details for a shipment"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Tracking Number",
+      "name": "trackingNumber",
+      "type": "string",
+      "required": true,
+      "default": ""
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Recipient's Postal Code",
+          "name": "recipientPostalCode",
+          "type": "string",
+          "default": "",
+          "description": "DHL will return more detailed information on the shipment when you provide the Recipient's Postal Code - it acts as a verification step"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Miscellaneous"
+    ],
+    "alias": [
+      "Shipping"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.dhl/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/dhl/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Dhl/dhl.svg",
+  "name": "n8n-nodes-base.dhl"
+}

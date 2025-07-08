@@ -2,6 +2,8 @@ import { OpenAI } from 'openai';
 import { Pinecone } from '@pinecone-database/pinecone';
 import fetch from 'node-fetch';
 import axios from 'axios';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Configuration
 const EMBEDDING_MODEL = 'text-embedding-3-small';
@@ -15,6 +17,14 @@ class NodeTypesRAG {
     this.pinecone = null;
     this.index = null;
     this.initialized = false;
+    
+    // Configuration du stockage des données complètes
+    // Railway monte les volumes dans le path spécifié par RAILWAY_VOLUME_MOUNT_PATH
+    this.storageDir = process.env.RAILWAY_VOLUME_MOUNT_PATH 
+      ? path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'node-types')
+      : path.join(process.cwd(), 'data', 'node-types');
+    
+    console.log(`📁 Stockage des node-types: ${this.storageDir}`);
   }
 
   // Initialisation des clients
@@ -89,6 +99,46 @@ class NodeTypesRAG {
     
     if (!ready) {
       throw new Error('Timeout: l\'index n\'est pas prêt après 5 minutes');
+    }
+  }
+
+  // Sauvegarder les données complètes d'un node sur le volume
+  async saveNodeToVolume(nodeId, nodeData) {
+    try {
+      // Créer le dossier si nécessaire
+      await fs.mkdir(this.storageDir, { recursive: true });
+      
+      // Utiliser un nom de fichier sûr en remplaçant les caractères problématiques
+      const safeFilename = nodeId.replace(/[|:]/g, '_') + '.json';
+      const filepath = path.join(this.storageDir, safeFilename);
+      
+      // Sauvegarder les données complètes
+      await fs.writeFile(filepath, JSON.stringify(nodeData, null, 2));
+      
+      console.log(`💾 Node sauvegardé: ${nodeId} (${JSON.stringify(nodeData).length} caractères)`);
+      
+      return filepath;
+    } catch (error) {
+      console.error(`Erreur sauvegarde node ${nodeId}:`, error);
+      throw error;
+    }
+  }
+
+  // Charger les données complètes d'un node depuis le volume
+  async loadNodeFromVolume(nodeId) {
+    try {
+      const safeFilename = nodeId.replace(/[|:]/g, '_') + '.json';
+      const filepath = path.join(this.storageDir, safeFilename);
+      
+      const data = await fs.readFile(filepath, 'utf8');
+      const nodeData = JSON.parse(data);
+      
+      console.log(`📖 Node chargé: ${nodeId} (${data.length} caractères)`);
+      
+      return nodeData;
+    } catch (error) {
+      console.error(`Erreur chargement node ${nodeId}:`, error);
+      return null;
     }
   }
 
@@ -266,19 +316,35 @@ class NodeTypesRAG {
         const batchTime = Date.now() - batchStartTime;
         console.log(`  ✓ Batch terminé en ${(batchTime / 1000).toFixed(1)}s`);
         
-        // Créer les vecteurs pour Pinecone
-        batch.forEach((node, idx) => {
+        // Créer les vecteurs pour Pinecone ET sauvegarder sur le volume
+        for (let j = 0; j < batch.length; j++) {
+          const node = batch[j];
+          
+          // Sauvegarder les données complètes sur le volume
+          await this.saveNodeToVolume(node.id, node.rawData);
+          
+          // Créer le vecteur pour Pinecone avec des métadonnées minimales
           vectors.push({
             id: node.id,
-            values: response.data[idx].embedding,
+            values: response.data[j].embedding,
             metadata: {
-              ...node.metadata,
-              content: node.content.substring(0, 1000), // Limiter pour les métadonnées
-              // Stocker les données complètes en JSON string (limite Pinecone: ~40KB par metadata)
-              fullData: JSON.stringify(node.rawData).substring(0, 35000)
+              // Métadonnées essentielles pour la recherche
+              nodeName: node.metadata.nodeName,
+              displayName: node.metadata.displayName,
+              description: node.metadata.description,
+              version: node.metadata.version,
+              group: node.metadata.group,
+              icon: node.metadata.icon,
+              documentationUrl: node.metadata.documentationUrl,
+              propertiesCount: node.metadata.propertiesCount,
+              hasCredentials: node.metadata.hasCredentials,
+              // Contenu textuel limité pour la recherche
+              content: node.content.substring(0, 1000),
+              // Indicateur que les données complètes sont sur le volume
+              hasFullDataOnVolume: true
             }
           });
-        });
+        }
         
         console.log(`Embeddings générés: ${Math.min(i + batchSize, nodes.length)}/${nodes.length}`);
       } catch (error) {
@@ -343,25 +409,51 @@ class NodeTypesRAG {
         `@n8n/n8n-nodes-langchain.${nodeName}`, // nodes langchain
       ];
       
+      let found = false;
+      
       for (const possibleName of possibleNames) {
         const nodeId = version ? `${possibleName}|v${version}` : null;
         
         if (nodeId) {
           try {
-            // Récupérer directement par ID
+            // Récupérer directement par ID depuis Pinecone
             const response = await this.index.namespace(NAMESPACE).fetch([nodeId]);
             
             if (response.records && response.records[nodeId]) {
-            const record = response.records[nodeId];
-            let fullData = null;
-            try {
-              if (record.metadata.fullData) {
-                fullData = JSON.parse(record.metadata.fullData);
+              const record = response.records[nodeId];
+              
+              // Charger les données complètes depuis le volume
+              let fullData = null;
+              
+              if (record.metadata.hasFullDataOnVolume) {
+                // Charger depuis le volume
+                fullData = await this.loadNodeFromVolume(nodeId);
+                
+                if (fullData) {
+                  console.log(`✅ Données complètes chargées depuis le volume pour ${nodeName} v${version} (${JSON.stringify(fullData).length} caractères)`);
+                } else {
+                  console.warn(`⚠️  Données non trouvées sur le volume pour ${nodeId}, utilisation des métadonnées Pinecone`);
+                  // Fallback: essayer de reconstruire depuis les métadonnées
+                  fullData = {
+                    name: record.metadata.nodeName,
+                    displayName: record.metadata.displayName,
+                    description: record.metadata.description,
+                    version: record.metadata.version,
+                    group: record.metadata.group
+                  };
+                }
+              } else {
+                // Ancien système: essayer de parser depuis fullData si présent
+                try {
+                  if (record.metadata.fullData) {
+                    fullData = JSON.parse(record.metadata.fullData);
+                    console.log(`📦 Données récupérées depuis Pinecone pour ${nodeName} v${version} (legacy)`);
+                  }
+                } catch (error) {
+                  console.error(`Erreur parsing fullData pour ${nodeName}:`, error.message);
+                }
               }
-            } catch (error) {
-              console.error(`Erreur parsing fullData pour ${nodeName}:`, error.message);
-            }
-            
+              
               results.push({
                 nodeName,
                 version,
@@ -369,13 +461,17 @@ class NodeTypesRAG {
                 fullData
               });
               
-              // On a trouvé le node, pas besoin de continuer
-              break;
+              found = true;
+              break; // On a trouvé le node, pas besoin de continuer
             }
           } catch (error) {
             console.error(`Erreur récupération ${nodeId}:`, error);
           }
         }
+      }
+      
+      if (!found) {
+        console.warn(`⚠️  Node non trouvé: ${nodeName} v${version}`);
       }
     }
     
@@ -395,14 +491,34 @@ class NodeTypesRAG {
       includeMetadata: true
     });
     
-    return searchResponse.matches.map(match => {
+    return await Promise.all(searchResponse.matches.map(async (match) => {
       let fullData = null;
-      try {
-        if (match.metadata.fullData) {
-          fullData = JSON.parse(match.metadata.fullData);
+      
+      if (match.metadata.hasFullDataOnVolume) {
+        // Charger depuis le volume
+        const nodeId = match.id;
+        fullData = await this.loadNodeFromVolume(nodeId);
+        
+        if (!fullData) {
+          console.warn(`⚠️  Données non trouvées sur le volume pour ${nodeId}`);
+          // Fallback avec les métadonnées
+          fullData = {
+            name: match.metadata.nodeName,
+            displayName: match.metadata.displayName,
+            description: match.metadata.description,
+            version: match.metadata.version,
+            group: match.metadata.group
+          };
         }
-      } catch (error) {
-        console.error(`Erreur parsing fullData pour ${match.metadata.nodeName}:`, error.message);
+      } else {
+        // Ancien système: essayer de parser depuis fullData
+        try {
+          if (match.metadata.fullData) {
+            fullData = JSON.parse(match.metadata.fullData);
+          }
+        } catch (error) {
+          console.error(`Erreur parsing fullData pour ${match.metadata.nodeName}:`, error.message);
+        }
       }
       
       return {
@@ -411,7 +527,7 @@ class NodeTypesRAG {
         metadata: match.metadata,
         fullData
       };
-    });
+    }));
   }
 
   // Initialisation
@@ -434,6 +550,94 @@ class NodeTypesRAG {
     } catch (error) {
       console.error('Erreur stats:', error);
       return null;
+    }
+  }
+
+  // Fonction pour tronquer un JSON de manière sûre
+  truncateJsonSafely(jsonString, maxLength = 39900) {  // MAXIMUM Pinecone (~40KB)
+    if (jsonString.length <= maxLength) {
+      return jsonString;
+    }
+    
+    try {
+      const obj = JSON.parse(jsonString);
+      
+      // Essayer de réduire progressivement le contenu
+      const reducedObj = { ...obj };
+      
+      // Garder plus de propriétés (20 au lieu de 10)
+      if (reducedObj.properties && Array.isArray(reducedObj.properties)) {
+        // Garder plus de propriétés avec plus de détails
+        reducedObj.properties = reducedObj.properties.slice(0, 20).map(prop => ({
+          displayName: prop.displayName,
+          name: prop.name,
+          type: prop.type,
+          description: prop.description?.substring(0, 500) || '',  // Plus de description
+          required: prop.required,
+          default: prop.default,
+          options: prop.options ? (Array.isArray(prop.options) ? prop.options.slice(0, 10) : prop.options) : undefined,
+          typeOptions: prop.typeOptions,
+          displayOptions: prop.displayOptions
+        }));
+      }
+      
+      // Garder les options importantes au lieu de les supprimer
+      if (reducedObj.options && typeof reducedObj.options === 'object') {
+        // Garder les options mais limiter leur taille si nécessaire
+        if (JSON.stringify(reducedObj.options).length > 5000) {
+          reducedObj.options = { ...reducedObj.options };
+          // Simplifier seulement si vraiment nécessaire
+        }
+      }
+      
+      const reducedJson = JSON.stringify(reducedObj);
+      
+      if (reducedJson.length <= maxLength) {
+        return reducedJson;
+      }
+      
+      // Si c'est encore trop gros, réduire les descriptions mais garder la structure
+      if (reducedObj.properties) {
+        reducedObj.properties = reducedObj.properties.slice(0, 15).map(prop => ({
+          displayName: prop.displayName,
+          name: prop.name,
+          type: prop.type,
+          description: prop.description?.substring(0, 100) || '',  // Descriptions plus courtes
+          required: prop.required,
+          default: prop.default
+        }));
+      }
+      
+      const finalJson = JSON.stringify(reducedObj);
+      
+      if (finalJson.length <= maxLength) {
+        return finalJson;
+      }
+      
+      // Dernier recours : garder l'essentiel mais avec plus de propriétés
+      const minimal = {
+        name: obj.name,
+        displayName: obj.displayName,
+        description: obj.description,
+        version: obj.version,
+        group: obj.group,
+        inputs: obj.inputs,
+        outputs: obj.outputs,
+        credentials: obj.credentials,
+        properties: obj.properties?.slice(0, 10).map(prop => ({
+          displayName: prop.displayName,
+          name: prop.name,
+          type: prop.type,
+          required: prop.required
+        })) || []
+      };
+      
+      return JSON.stringify(minimal);
+      
+    } catch (error) {
+      console.error('Erreur lors de la troncature JSON:', error);
+      // Fallback: tronquer brutalement mais garder plus de contenu
+      return jsonString.substring(0, maxLength - 100) + '..."TRUNCATED"}';
     }
   }
 }

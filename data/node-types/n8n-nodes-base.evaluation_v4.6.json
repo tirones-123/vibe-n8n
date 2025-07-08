@@ -1,0 +1,326 @@
+{
+  "displayName": "Evaluation",
+  "icon": "fa:check-double",
+  "group": [
+    "transform"
+  ],
+  "version": 4.6,
+  "description": "Runs an evaluation",
+  "eventTriggerDescription": "",
+  "subtitle": "={{$parameter[\"operation\"]}}",
+  "defaults": {
+    "name": "Evaluation",
+    "color": "#c3c9d5"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": "={{(function setOutputs(parameters) {\n  if (parameters.operation === \"checkIfEvaluating\") {\n    return [\n      { type: \"main\", displayName: \"Evaluation\" },\n      { type: \"main\", displayName: \"Normal\" }\n    ];\n  }\n  return [{ type: \"main\" }];\n})($parameter)}}",
+  "codex": {
+    "alias": [
+      "Test",
+      "Metrics",
+      "Evals",
+      "Set Output",
+      "Set Metrics"
+    ]
+  },
+  "credentials": [
+    {
+      "name": "googleApi",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "serviceAccount"
+          ],
+          "operation": [
+            "setOutputs"
+          ]
+        }
+      },
+      "testedBy": "googleApiCredentialTest"
+    },
+    {
+      "name": "googleSheetsOAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ],
+          "operation": [
+            "setOutputs"
+          ]
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Outputs",
+          "value": "setOutputs"
+        },
+        {
+          "name": "Set Metrics",
+          "value": "setMetrics"
+        },
+        {
+          "name": "Check If Evaluating",
+          "value": "checkIfEvaluating"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "setOutputs"
+    },
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "Service Account",
+          "value": "serviceAccount"
+        },
+        {
+          "name": "OAuth2 (recommended)",
+          "value": "oAuth2"
+        }
+      ],
+      "default": "oAuth2"
+    },
+    {
+      "displayName": "Credentials",
+      "name": "credentials",
+      "type": "credentials",
+      "default": ""
+    },
+    {
+      "displayName": "Document Containing Dataset",
+      "name": "documentId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "spreadSheetsSearch",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "extractValue": {
+            "type": "regex",
+            "regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)",
+                "errorMessage": "Not a valid Google Drive File URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9\\-_]{2,}",
+                "errorMessage": "Not a valid Google Drive File ID"
+              }
+            }
+          ],
+          "url": "=https://docs.google.com/spreadsheets/d/{{$value}}/edit"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setOutputs"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Sheet Containing Dataset",
+      "name": "sheetName",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "documentId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "typeOptions": {
+            "searchListMethod": "sheetsSearch",
+            "searchable": false
+          }
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "extractValue": {
+            "type": "regex",
+            "regex": "https:\\/\\/docs\\.google\\.com\\/spreadsheets\\/d\\/[0-9a-zA-Z\\-_]+.*\\#gid=([0-9]+)"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/docs\\.google\\.com\\/spreadsheets\\/d\\/[0-9a-zA-Z\\-_]+.*\\#gid=([0-9]+)",
+                "errorMessage": "Not a valid Sheet URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "((gid=)?[0-9]{1,})",
+                "errorMessage": "Not a valid Sheet ID"
+              }
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setOutputs"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Outputs",
+      "name": "outputs",
+      "placeholder": "Add Output",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValueButtonText": "Add Output",
+        "multipleValues": true
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Filter",
+          "name": "values",
+          "values": [
+            {
+              "displayName": "Name",
+              "name": "outputName",
+              "type": "string",
+              "default": ""
+            },
+            {
+              "displayName": "Value",
+              "name": "outputValue",
+              "type": "string",
+              "default": ""
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setOutputs"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Calculate the score(s) for the evaluation, then map them into this node. They will be displayed in the ‘evaluations’ tab, not the Google Sheet. <a href='https://docs.n8n.io/advanced-ai/evaluations/metric-based-evaluations/#2-calculate-metrics' target='_blank'>View metric examples</a>",
+      "name": "notice",
+      "type": "notice",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setMetrics"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Metrics to Return",
+      "name": "metrics",
+      "type": "assignmentCollection",
+      "default": {
+        "assignments": [
+          {
+            "name": "",
+            "value": "",
+            "type": "number"
+          }
+        ]
+      },
+      "typeOptions": {
+        "assignment": {
+          "disableType": true,
+          "defaultType": "number"
+        }
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setMetrics"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Routes to the ‘evaluation’ branch if the execution started from an evaluation trigger. Otherwise routes to the ‘normal’ branch.",
+      "name": "notice",
+      "type": "notice",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "checkIfEvaluating"
+          ]
+        }
+      }
+    }
+  ],
+  "name": "n8n-nodes-base.evaluation"
+}

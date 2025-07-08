@@ -1,0 +1,175 @@
+{
+  "displayName": "Facebook Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"appId\"] +\"/\"+ $parameter[\"object\"]}}",
+  "description": "Starts the workflow when Facebook events occur",
+  "defaults": {
+    "name": "Facebook Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "facebookGraphAppApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "setup",
+      "httpMethod": "GET",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    },
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "APP ID",
+      "name": "appId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Facebook APP ID"
+    },
+    {
+      "displayName": "To watch Whatsapp business account events use the Whatsapp trigger node",
+      "name": "whatsappBusinessAccountNotice",
+      "type": "notice",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "object": [
+            "whatsappBusinessAccount"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Object",
+      "name": "object",
+      "type": "options",
+      "options": [
+        {
+          "name": "Ad Account",
+          "value": "adAccount",
+          "description": "Get updates about Ad Account"
+        },
+        {
+          "name": "Application",
+          "value": "application",
+          "description": "Get updates about the app"
+        },
+        {
+          "name": "Certificate Transparency",
+          "value": "certificateTransparency",
+          "description": "Get updates about Certificate Transparency"
+        },
+        {
+          "name": "Group",
+          "value": "group",
+          "description": "Get updates about activity in groups and events in groups for Workplace"
+        },
+        {
+          "name": "Instagram",
+          "value": "instagram",
+          "description": "Get updates about comments on your media"
+        },
+        {
+          "name": "Link",
+          "value": "link",
+          "description": "Get updates about links for rich previews by an external provider"
+        },
+        {
+          "name": "Page",
+          "value": "page",
+          "description": "Page updates"
+        },
+        {
+          "name": "Permissions",
+          "value": "permissions",
+          "description": "Updates regarding granting or revoking permissions"
+        },
+        {
+          "name": "User",
+          "value": "user",
+          "description": "User profile updates"
+        },
+        {
+          "name": "Whatsapp Business Account",
+          "value": "whatsappBusinessAccount",
+          "description": "Get updates about Whatsapp business account"
+        },
+        {
+          "name": "Workplace Security",
+          "value": "workplaceSecurity",
+          "description": "Get updates about Workplace Security"
+        }
+      ],
+      "required": true,
+      "default": "user",
+      "description": "The object to subscribe to"
+    },
+    {
+      "displayName": "Field Names or IDs",
+      "name": "fields",
+      "type": "multiOptions",
+      "typeOptions": {
+        "loadOptionsMethod": "getObjectFields",
+        "loadOptionsDependsOn": [
+          "object"
+        ]
+      },
+      "default": [],
+      "description": "The set of fields in this object that are subscribed to. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "default": {},
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Include Values",
+          "name": "includeValues",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether change notifications should include the new values"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Marketing"
+    ],
+    "alias": [
+      "FB"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.facebooktrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/credentials/facebookapp/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Facebook/facebook.svg",
+  "name": "n8n-nodes-base.facebookTrigger"
+}

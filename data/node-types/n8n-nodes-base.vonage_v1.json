@@ -1,0 +1,223 @@
+{
+  "displayName": "Vonage",
+  "group": [
+    "input"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume Vonage API",
+  "defaults": {
+    "name": "Vonage"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "vonageApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "SMS",
+          "value": "sms"
+        }
+      ],
+      "default": "sms"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Send",
+          "value": "send",
+          "action": "Send an SMS"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sms"
+          ]
+        }
+      },
+      "default": "send"
+    },
+    {
+      "displayName": "From",
+      "name": "from",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sms"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The name or number the message should be sent from"
+    },
+    {
+      "displayName": "To",
+      "name": "to",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sms"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The number that the message should be sent to. Numbers are specified in E.164 format."
+    },
+    {
+      "displayName": "Message",
+      "name": "message",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sms"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The body of the message being sent"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sms"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Account Ref",
+          "name": "account-ref",
+          "type": "string",
+          "default": "",
+          "description": "An optional string used to identify separate accounts using the SMS endpoint for billing purposes. To use this feature, please email support@nexmo.com."
+        },
+        {
+          "displayName": "Callback",
+          "name": "callback",
+          "type": "string",
+          "default": "",
+          "description": "The webhook endpoint the delivery receipt for this sms is sent to. This parameter overrides the webhook endpoint you set in Dashboard."
+        },
+        {
+          "displayName": "Client Ref",
+          "name": "client-ref",
+          "type": "string",
+          "default": "",
+          "description": "You can optionally include your own reference of up to 40 characters"
+        },
+        {
+          "displayName": "Message Class",
+          "name": "message-class",
+          "type": "options",
+          "options": [
+            {
+              "name": "0",
+              "value": 0
+            },
+            {
+              "name": "1",
+              "value": 1
+            },
+            {
+              "name": "2",
+              "value": 2
+            },
+            {
+              "name": "3",
+              "value": 3
+            }
+          ],
+          "default": "",
+          "description": "The Data Coding Scheme value of the message"
+        },
+        {
+          "displayName": "Protocol ID",
+          "name": "protocol-id",
+          "type": "string",
+          "default": "",
+          "description": "The value of the protocol identifier to use. Ensure that the value is aligned with udh."
+        },
+        {
+          "displayName": "Status Report Req",
+          "name": "status-report-req",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to receive a Delivery Receipt"
+        },
+        {
+          "displayName": "TTL (in Minutes)",
+          "name": "ttl",
+          "type": "number",
+          "default": 4320,
+          "description": "By default Nexmo attempt delivery for 72 hours"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Communication"
+    ],
+    "alias": [
+      "SMS"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.vonage/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/vonage/"
+        }
+      ]
+    }
+  },
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/Vonage/vonage.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/Vonage/vonage.dark.svg"
+  },
+  "name": "n8n-nodes-base.vonage"
+}

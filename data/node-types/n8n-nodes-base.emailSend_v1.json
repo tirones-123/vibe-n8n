@@ -1,0 +1,155 @@
+{
+  "displayName": "Send Email",
+  "icon": "fa:envelope",
+  "group": [
+    "output"
+  ],
+  "defaultVersion": 2.1,
+  "description": "Sends an Email",
+  "version": 1,
+  "defaults": {
+    "name": "Send Email",
+    "color": "#00bb88"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "smtp",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "From Email",
+      "name": "fromEmail",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "placeholder": "admin@example.com",
+      "description": "Email address of the sender optional with name"
+    },
+    {
+      "displayName": "To Email",
+      "name": "toEmail",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "placeholder": "info@example.com",
+      "description": "Email address of the recipient"
+    },
+    {
+      "displayName": "CC Email",
+      "name": "ccEmail",
+      "type": "string",
+      "default": "",
+      "placeholder": "cc@example.com",
+      "description": "Email address of CC recipient"
+    },
+    {
+      "displayName": "BCC Email",
+      "name": "bccEmail",
+      "type": "string",
+      "default": "",
+      "placeholder": "bcc@example.com",
+      "description": "Email address of BCC recipient"
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "default": "",
+      "placeholder": "My subject line",
+      "description": "Subject line of the email"
+    },
+    {
+      "displayName": "Text",
+      "name": "text",
+      "type": "string",
+      "typeOptions": {
+        "rows": 5
+      },
+      "default": "",
+      "description": "Plain text message of email"
+    },
+    {
+      "displayName": "HTML",
+      "name": "html",
+      "type": "string",
+      "typeOptions": {
+        "rows": 5
+      },
+      "default": "",
+      "description": "HTML text message of email"
+    },
+    {
+      "displayName": "Attachments",
+      "name": "attachments",
+      "type": "string",
+      "default": "",
+      "description": "Name of the binary properties that contain data to add to email as attachment. Multiple ones can be comma-separated."
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Ignore SSL Issues (Insecure)",
+          "name": "allowUnauthorizedCerts",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to connect even if SSL certificate validation is not possible"
+        },
+        {
+          "displayName": "Reply To",
+          "name": "replyTo",
+          "type": "string",
+          "default": "",
+          "placeholder": "info@example.com",
+          "description": "The email address to send the reply to"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Communication",
+      "HITL",
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "HITL": [
+        "Human in the Loop"
+      ]
+    },
+    "alias": [
+      "SMTP",
+      "email",
+      "human",
+      "form",
+      "wait",
+      "hitl",
+      "approval"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.sendemail/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/credentials/sendemail/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.emailSend"
+}

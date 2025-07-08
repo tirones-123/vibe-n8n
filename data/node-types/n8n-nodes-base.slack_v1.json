@@ -1,0 +1,4003 @@
+{
+  "displayName": "Slack",
+  "group": [
+    "output"
+  ],
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume Slack API",
+  "defaultVersion": 2.3,
+  "version": 1,
+  "defaults": {
+    "name": "Slack"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "slackApi",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "accessToken"
+          ]
+        }
+      }
+    },
+    {
+      "name": "slackOAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ]
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "<strong>New node version available:</strong> get the latest version with added features from the nodes panel.",
+      "name": "oldVersionNotice",
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "Access Token",
+          "value": "accessToken"
+        },
+        {
+          "name": "OAuth2",
+          "value": "oAuth2"
+        }
+      ],
+      "default": "accessToken"
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Channel",
+          "value": "channel"
+        },
+        {
+          "name": "File",
+          "value": "file"
+        },
+        {
+          "name": "Message",
+          "value": "message"
+        },
+        {
+          "name": "Reaction",
+          "value": "reaction"
+        },
+        {
+          "name": "Star",
+          "value": "star"
+        },
+        {
+          "name": "User",
+          "value": "user"
+        },
+        {
+          "name": "User Group",
+          "value": "userGroup"
+        },
+        {
+          "name": "User Profile",
+          "value": "userProfile"
+        }
+      ],
+      "default": "message"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Archive",
+          "value": "archive",
+          "description": "Archives a conversation",
+          "action": "Archive a channel"
+        },
+        {
+          "name": "Close",
+          "value": "close",
+          "description": "Closes a direct message or multi-person direct message",
+          "action": "Close a channel"
+        },
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Initiates a public or private channel-based conversation",
+          "action": "Create a channel"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get information about a channel",
+          "action": "Get a channel"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many channels in a Slack team",
+          "action": "Get many channels"
+        },
+        {
+          "name": "History",
+          "value": "history",
+          "description": "Get a conversation's history of messages and events",
+          "action": "Get the history of a channel"
+        },
+        {
+          "name": "Invite",
+          "value": "invite",
+          "description": "Invite a user to a channel",
+          "action": "Invite a user to a channel"
+        },
+        {
+          "name": "Join",
+          "value": "join",
+          "description": "Joins an existing conversation",
+          "action": "Join a channel"
+        },
+        {
+          "name": "Kick",
+          "value": "kick",
+          "description": "Removes a user from a channel",
+          "action": "Kick a user from a channel"
+        },
+        {
+          "name": "Leave",
+          "value": "leave",
+          "description": "Leaves a conversation",
+          "action": "Leave a channel"
+        },
+        {
+          "name": "Member",
+          "value": "member",
+          "description": "List members of a conversation",
+          "action": "Get members of a channel"
+        },
+        {
+          "name": "Open",
+          "value": "open",
+          "description": "Opens or resumes a direct message or multi-person direct message",
+          "action": "Open a channel"
+        },
+        {
+          "name": "Rename",
+          "value": "rename",
+          "description": "Renames a conversation",
+          "action": "Rename a channel"
+        },
+        {
+          "name": "Replies",
+          "value": "replies",
+          "description": "Get a thread of messages posted to a channel",
+          "action": "Get a thread of messages posted to a channel"
+        },
+        {
+          "name": "Set Purpose",
+          "value": "setPurpose",
+          "description": "Sets the purpose for a conversation",
+          "action": "Set the purpose of a channel"
+        },
+        {
+          "name": "Set Topic",
+          "value": "setTopic",
+          "description": "Sets the topic for a conversation",
+          "action": "Set the topic of a channel"
+        },
+        {
+          "name": "Unarchive",
+          "value": "unarchive",
+          "description": "Unarchives a conversation",
+          "action": "Unarchive a channel"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "archive"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The name of the channel to archive. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "close"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The name of the channel to close. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "string",
+      "default": "",
+      "placeholder": "Channel name",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The name of the channel to create"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Is Private",
+          "name": "isPrivate",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to create a private channel instead of a public one"
+        }
+      ]
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "invite"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The ID of the channel to invite user to. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "User Names or IDs",
+      "name": "userIds",
+      "type": "multiOptions",
+      "typeOptions": {
+        "loadOptionsMethod": "getUsers"
+      },
+      "default": [],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "invite"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The ID of the user to invite into channel. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Channel ID to learn more about"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Num of Members",
+          "name": "includeNumMembers",
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "default": "",
+      "placeholder": "Channel name",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "kick"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The name of the channel to create. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "User Name or ID",
+      "name": "userId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getUsers"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "kick"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "default": "",
+      "placeholder": "Channel name",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "join"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Exclude Archived",
+          "name": "excludeArchived",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude archived channels from the list"
+        },
+        {
+          "displayName": "Types",
+          "name": "types",
+          "type": "multiOptions",
+          "options": [
+            {
+              "name": "Public Channel",
+              "value": "public_channel"
+            },
+            {
+              "name": "Private Channel",
+              "value": "private_channel"
+            },
+            {
+              "name": "mpim",
+              "value": "mpim"
+            },
+            {
+              "name": "im",
+              "value": "im"
+            }
+          ],
+          "default": [
+            "public_channel"
+          ],
+          "description": "Mix and match channel types"
+        }
+      ]
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "default": "",
+      "placeholder": "Channel name",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "history"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The name of the channel to create. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "history"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "history"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "history"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Inclusive",
+          "name": "inclusive",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include messages with latest or oldest timestamp in results only when either timestamp is specified"
+        },
+        {
+          "displayName": "Latest",
+          "name": "latest",
+          "type": "dateTime",
+          "default": "",
+          "description": "End of time range of messages to include in results"
+        },
+        {
+          "displayName": "Oldest",
+          "name": "oldest",
+          "type": "dateTime",
+          "default": "",
+          "description": "Start of time range of messages to include in results"
+        }
+      ]
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "leave"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The name of the channel to leave. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "member"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "member"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "description": "Max number of results to return",
+      "default": 100,
+      "placeholder": "Limit",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "member"
+          ],
+          "resource": [
+            "channel"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resolve Data",
+      "name": "resolveData",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "member"
+          ]
+        }
+      },
+      "description": "Whether to resolve the data automatically. By default the response only contain the ID to resource."
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "open"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Channel ID",
+          "name": "channelId",
+          "type": "string",
+          "default": "",
+          "description": "Resume a conversation by supplying an im or mpim's ID. Or provide the users field instead."
+        },
+        {
+          "displayName": "Return IM",
+          "name": "returnIm",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether you want the full IM channel definition in the response"
+        },
+        {
+          "displayName": "User Names or IDs",
+          "name": "users",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getUsers"
+          },
+          "default": [],
+          "description": "If only one user is included, this creates a 1:1 DM. The ordering of the users is preserved whenever a multi-person direct message is returned. Supply a channel when not supplying users. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        }
+      ]
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "rename"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The name of the channel to rename. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "rename"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "New name for conversation"
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "default": "",
+      "placeholder": "Channel name",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "replies"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The name of the channel to create. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "TS",
+      "name": "ts",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "replies"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of a thread's parent message"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "replies"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "replies"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "replies"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Inclusive",
+          "name": "inclusive",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include messages with latest or oldest timestamp in results only when either timestamp is specified"
+        },
+        {
+          "displayName": "Latest",
+          "name": "latest",
+          "type": "string",
+          "default": "",
+          "description": "End of time range of messages to include in results"
+        },
+        {
+          "displayName": "Oldest",
+          "name": "oldest",
+          "type": "string",
+          "default": "",
+          "description": "Start of time range of messages to include in results"
+        }
+      ]
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setPurpose"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Conversation to set the purpose of. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Purpose",
+      "name": "purpose",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setPurpose"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "A new, specialer purpose"
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setTopic"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Conversation to set the topic of. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Topic",
+      "name": "topic",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setTopic"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The new topic string. Does not support formatting or linkification."
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "unarchive"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The ID of the channel to unarchive. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Deletes a message",
+          "action": "Delete a message"
+        },
+        {
+          "name": "Get Permalink",
+          "value": "getPermalink",
+          "description": "Get Permanent Link of a message",
+          "action": "Get a message permalink"
+        },
+        {
+          "name": "Post",
+          "value": "post",
+          "description": "Post a message into a channel",
+          "action": "Post a message"
+        },
+        {
+          "name": "Post (Ephemeral)",
+          "value": "postEphemeral",
+          "description": "Post an ephemeral message to a user in channel",
+          "action": "Post an ephemeral message"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Updates a message",
+          "action": "Update a message"
+        }
+      ],
+      "default": "post"
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "getPermalink"
+          ]
+        }
+      },
+      "description": "Channel containing the message. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Timestamp",
+      "name": "timestamp",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "getPermalink"
+          ]
+        }
+      },
+      "description": "Timestamp of the message to get permanent link"
+    },
+    {
+      "displayName": "Channel",
+      "name": "channel",
+      "type": "string",
+      "default": "",
+      "placeholder": "Channel name",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post",
+            "postEphemeral"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The channel to send the message to"
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "type": "string",
+      "default": "",
+      "placeholder": "User ID",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "postEphemeral"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The user ID to send the message to"
+    },
+    {
+      "displayName": "Text",
+      "name": "text",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post",
+            "postEphemeral"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "description": "The text to send"
+    },
+    {
+      "displayName": "JSON Parameters",
+      "name": "jsonParameters",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post",
+            "postEphemeral"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "otherOptions",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post",
+            "postEphemeral"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Other options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Icon Emoji",
+          "name": "icon_emoji",
+          "type": "string",
+          "default": "",
+          "description": "Emoji to use as the icon for this message. Overrides icon_url."
+        },
+        {
+          "displayName": "Icon URL",
+          "name": "icon_url",
+          "type": "string",
+          "default": "",
+          "description": "URL to an image to use as the icon for this message"
+        },
+        {
+          "displayName": "Link Names",
+          "name": "link_names",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to find and link channel names and usernames"
+        },
+        {
+          "displayName": "Make Reply",
+          "name": "thread_ts",
+          "type": "string",
+          "default": "",
+          "description": "Provide another message's ts value to make this message a reply"
+        },
+        {
+          "displayName": "Markdown",
+          "name": "mrkdwn",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to use Slack Markdown parsing"
+        },
+        {
+          "displayName": "Reply Broadcast",
+          "name": "reply_broadcast",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the reply should be made visible to everyone in the channel or conversation. Use in conjunction with thread_ts."
+        },
+        {
+          "displayName": "Unfurl Links",
+          "name": "unfurl_links",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to enable unfurling of primarily text-based content"
+        },
+        {
+          "displayName": "Unfurl Media",
+          "name": "unfurl_media",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to disable unfurling of media content"
+        },
+        {
+          "displayName": "Send as User",
+          "name": "sendAsUser",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/authentication": [
+                "accessToken"
+              ]
+            }
+          },
+          "default": "",
+          "description": "The message will be sent from this username (i.e. as if this individual sent the message)."
+        }
+      ]
+    },
+    {
+      "displayName": "Attachments",
+      "name": "attachments",
+      "type": "collection",
+      "typeOptions": {
+        "multipleValues": true,
+        "multipleValueButtonText": "Add attachment"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post",
+            "postEphemeral"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "default": {},
+      "description": "The attachment to add",
+      "placeholder": "Add attachment item",
+      "options": [
+        {
+          "displayName": "Fallback Text",
+          "name": "fallback",
+          "type": "string",
+          "default": "",
+          "description": "Required plain-text summary of the attachment"
+        },
+        {
+          "displayName": "Text",
+          "name": "text",
+          "type": "string",
+          "default": "",
+          "description": "Text to send"
+        },
+        {
+          "displayName": "Title",
+          "name": "title",
+          "type": "string",
+          "default": "",
+          "description": "Title of the message"
+        },
+        {
+          "displayName": "Title Link",
+          "name": "title_link",
+          "type": "string",
+          "default": "",
+          "description": "Link of the title"
+        },
+        {
+          "displayName": "Color",
+          "name": "color",
+          "type": "color",
+          "default": "#ff0000",
+          "description": "Color of the line left of text"
+        },
+        {
+          "displayName": "Pretext",
+          "name": "pretext",
+          "type": "string",
+          "default": "",
+          "description": "Text which appears before the message block"
+        },
+        {
+          "displayName": "Author Name",
+          "name": "author_name",
+          "type": "string",
+          "default": "",
+          "description": "Name that should appear"
+        },
+        {
+          "displayName": "Author Link",
+          "name": "author_link",
+          "type": "string",
+          "default": "",
+          "description": "Link for the author"
+        },
+        {
+          "displayName": "Author Icon",
+          "name": "author_icon",
+          "type": "string",
+          "default": "",
+          "description": "Icon which should appear for the user"
+        },
+        {
+          "displayName": "Image URL",
+          "name": "image_url",
+          "type": "string",
+          "default": "",
+          "description": "URL of image"
+        },
+        {
+          "displayName": "Thumbnail URL",
+          "name": "thumb_url",
+          "type": "string",
+          "default": "",
+          "description": "URL of thumbnail"
+        },
+        {
+          "displayName": "Footer",
+          "name": "footer",
+          "type": "string",
+          "default": "",
+          "description": "Text of footer to add"
+        },
+        {
+          "displayName": "Footer Icon",
+          "name": "footer_icon",
+          "type": "string",
+          "default": "",
+          "description": "Icon which should appear next to footer"
+        },
+        {
+          "displayName": "Timestamp",
+          "name": "ts",
+          "type": "dateTime",
+          "default": "",
+          "description": "Time message relates to"
+        },
+        {
+          "displayName": "Fields",
+          "name": "fields",
+          "placeholder": "Add Fields",
+          "description": "Fields to add to message",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "options": [
+            {
+              "name": "item",
+              "displayName": "Item",
+              "values": [
+                {
+                  "displayName": "Title",
+                  "name": "title",
+                  "type": "string",
+                  "default": "",
+                  "description": "Title of the item"
+                },
+                {
+                  "displayName": "Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": "",
+                  "description": "Value of the item"
+                },
+                {
+                  "displayName": "Short",
+                  "name": "short",
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Whether items can be displayed next to each other"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "description": "Channel containing the message to be updated. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Text",
+      "name": "text",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "description": "New text for the message, using the default formatting rules. It's not required when presenting attachments."
+    },
+    {
+      "displayName": "TS",
+      "name": "ts",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "description": "Timestamp of the message to be updated"
+    },
+    {
+      "displayName": "JSON Parameters",
+      "name": "jsonParameters",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Link Names",
+          "name": "link_names",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to find and link channel names and usernames"
+        },
+        {
+          "displayName": "Parse",
+          "name": "parse",
+          "type": "options",
+          "options": [
+            {
+              "name": "Client",
+              "value": "client"
+            },
+            {
+              "name": "Full",
+              "value": "full"
+            },
+            {
+              "name": "None",
+              "value": "none"
+            }
+          ],
+          "default": "client",
+          "description": "Change how messages are treated"
+        }
+      ]
+    },
+    {
+      "displayName": "Attachments",
+      "name": "attachmentsJson",
+      "type": "json",
+      "default": "",
+      "typeOptions": {
+        "alwaysOpenEditWindow": true
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ],
+          "jsonParameters": [
+            true
+          ]
+        }
+      },
+      "description": "The attachments to add"
+    },
+    {
+      "displayName": "Blocks",
+      "name": "blocksJson",
+      "type": "json",
+      "default": "",
+      "typeOptions": {
+        "alwaysOpenEditWindow": true
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ],
+          "jsonParameters": [
+            true
+          ]
+        }
+      },
+      "description": "The blocks to add"
+    },
+    {
+      "displayName": "Blocks",
+      "name": "blocksUi",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true,
+        "multipleValueButtonText": "Add Block"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ],
+          "jsonParameters": [
+            false
+          ]
+        }
+      },
+      "default": {},
+      "description": "The blocks to add",
+      "placeholder": "Add Block",
+      "options": [
+        {
+          "name": "blocksValues",
+          "displayName": "Block",
+          "values": [
+            {
+              "displayName": "Type",
+              "name": "type",
+              "type": "options",
+              "options": [
+                {
+                  "name": "Actions",
+                  "value": "actions"
+                },
+                {
+                  "name": "Section",
+                  "value": "section"
+                }
+              ],
+              "default": "actions"
+            },
+            {
+              "displayName": "Block ID",
+              "name": "blockId",
+              "type": "string",
+              "displayOptions": {
+                "show": {
+                  "type": [
+                    "actions"
+                  ]
+                }
+              },
+              "default": "",
+              "description": "A string acting as a unique identifier for a block. You can use this block_id when you receive an interaction payload to identify the source of the action. If not specified, a block_id will be generated. Maximum length for this field is 255 characters."
+            },
+            {
+              "displayName": "Elements",
+              "name": "elementsUi",
+              "placeholder": "Add Element",
+              "type": "fixedCollection",
+              "typeOptions": {
+                "multipleValues": true
+              },
+              "displayOptions": {
+                "show": {
+                  "type": [
+                    "actions"
+                  ]
+                }
+              },
+              "default": {},
+              "options": [
+                {
+                  "name": "elementsValues",
+                  "displayName": "Element",
+                  "values": [
+                    {
+                      "displayName": "Type",
+                      "name": "type",
+                      "type": "options",
+                      "options": [
+                        {
+                          "name": "Button",
+                          "value": "button"
+                        }
+                      ],
+                      "default": "button",
+                      "description": "The type of element"
+                    },
+                    {
+                      "displayName": "Text",
+                      "name": "text",
+                      "type": "string",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "default": "",
+                      "description": "The text for the block"
+                    },
+                    {
+                      "displayName": "Emoji",
+                      "name": "emoji",
+                      "type": "boolean",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "default": false,
+                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                    },
+                    {
+                      "displayName": "Action ID",
+                      "name": "actionId",
+                      "type": "string",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "default": "",
+                      "description": "An identifier for this action. You can use this when you receive an interaction payload to identify the source of the action. Should be unique among all other action_ids used elsewhere by your app."
+                    },
+                    {
+                      "displayName": "URL",
+                      "name": "url",
+                      "type": "string",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "default": "",
+                      "description": "A URL to load in the user's browser when the button is clicked. Maximum length for this field is 3000 characters. If you're using URL, you'll still receive an interaction payload and will need to send an acknowledgement response."
+                    },
+                    {
+                      "displayName": "Value",
+                      "name": "value",
+                      "type": "string",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "default": "",
+                      "description": "The value to send along with the interaction payload"
+                    },
+                    {
+                      "displayName": "Style",
+                      "name": "style",
+                      "type": "options",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "options": [
+                        {
+                          "name": "Danger",
+                          "value": "danger"
+                        },
+                        {
+                          "name": "Default",
+                          "value": "default"
+                        },
+                        {
+                          "name": "Primary",
+                          "value": "primary"
+                        }
+                      ],
+                      "default": "default",
+                      "description": "Decorates buttons with alternative visual color schemes"
+                    },
+                    {
+                      "displayName": "Confirm",
+                      "name": "confirmUi",
+                      "placeholder": "Add Confirm",
+                      "type": "fixedCollection",
+                      "typeOptions": {
+                        "multipleValues": false
+                      },
+                      "default": {},
+                      "options": [
+                        {
+                          "name": "confirmValue",
+                          "displayName": "Confirm",
+                          "values": [
+                            {
+                              "displayName": "Title",
+                              "name": "titleUi",
+                              "placeholder": "Add Title",
+                              "type": "fixedCollection",
+                              "typeOptions": {
+                                "multipleValues": false
+                              },
+                              "default": {},
+                              "options": [
+                                {
+                                  "name": "titleValue",
+                                  "displayName": "Title",
+                                  "values": [
+                                    {
+                                      "displayName": "Text",
+                                      "name": "text",
+                                      "type": "string",
+                                      "default": "",
+                                      "description": "Text of the title"
+                                    },
+                                    {
+                                      "displayName": "Emoji",
+                                      "name": "emoji",
+                                      "type": "boolean",
+                                      "default": false,
+                                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "Defines the dialog's title"
+                            },
+                            {
+                              "displayName": "Text",
+                              "name": "textUi",
+                              "placeholder": "Add Text",
+                              "type": "fixedCollection",
+                              "typeOptions": {
+                                "multipleValues": false
+                              },
+                              "default": {},
+                              "options": [
+                                {
+                                  "name": "textValue",
+                                  "displayName": "Text",
+                                  "values": [
+                                    {
+                                      "displayName": "Text",
+                                      "name": "text",
+                                      "type": "string",
+                                      "default": "",
+                                      "description": "The text for the block"
+                                    },
+                                    {
+                                      "displayName": "Emoji",
+                                      "name": "emoji",
+                                      "type": "boolean",
+                                      "default": false,
+                                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "Defines the explanatory text that appears in the confirm dialog"
+                            },
+                            {
+                              "displayName": "Confirm",
+                              "name": "confirmTextUi",
+                              "placeholder": "Add Confirm",
+                              "type": "fixedCollection",
+                              "typeOptions": {
+                                "multipleValues": false
+                              },
+                              "default": {},
+                              "options": [
+                                {
+                                  "name": "confirmValue",
+                                  "displayName": "Confirm",
+                                  "values": [
+                                    {
+                                      "displayName": "Text",
+                                      "name": "text",
+                                      "type": "string",
+                                      "default": "",
+                                      "description": "Defines the explanatory text that appears in the confirm dialog"
+                                    },
+                                    {
+                                      "displayName": "Emoji",
+                                      "name": "emoji",
+                                      "type": "boolean",
+                                      "default": false,
+                                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "Defines the text of the button that confirms the action"
+                            },
+                            {
+                              "displayName": "Deny",
+                              "name": "denyUi",
+                              "placeholder": "Add Deny",
+                              "type": "fixedCollection",
+                              "typeOptions": {
+                                "multipleValues": false
+                              },
+                              "default": {},
+                              "options": [
+                                {
+                                  "name": "denyValue",
+                                  "displayName": "Deny",
+                                  "values": [
+                                    {
+                                      "displayName": "Text",
+                                      "name": "text",
+                                      "type": "string",
+                                      "default": "",
+                                      "description": "Defines the text of the button that cancels the action"
+                                    },
+                                    {
+                                      "displayName": "Emoji",
+                                      "name": "emoji",
+                                      "type": "boolean",
+                                      "default": false,
+                                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "Defines the text of the button that cancels the action"
+                            },
+                            {
+                              "displayName": "Style",
+                              "name": "style",
+                              "type": "options",
+                              "options": [
+                                {
+                                  "name": "Danger",
+                                  "value": "danger"
+                                },
+                                {
+                                  "name": "Default",
+                                  "value": "default"
+                                },
+                                {
+                                  "name": "Primary",
+                                  "value": "primary"
+                                }
+                              ],
+                              "default": "default",
+                              "description": "Defines the color scheme applied to the confirm button"
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "Defines an optional confirmation dialog after the button is clicked"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "displayName": "Block ID",
+              "name": "blockId",
+              "type": "string",
+              "displayOptions": {
+                "show": {
+                  "type": [
+                    "section"
+                  ]
+                }
+              },
+              "default": "",
+              "description": "A string acting as a unique identifier for a block. You can use this block_id when you receive an interaction payload to identify the source of the action. If not specified, a block_id will be generated. Maximum length for this field is 255 characters."
+            },
+            {
+              "displayName": "Text",
+              "name": "textUi",
+              "placeholder": "Add Text",
+              "type": "fixedCollection",
+              "typeOptions": {
+                "multipleValues": false
+              },
+              "displayOptions": {
+                "show": {
+                  "type": [
+                    "section"
+                  ]
+                }
+              },
+              "default": {},
+              "options": [
+                {
+                  "name": "textValue",
+                  "displayName": "Text",
+                  "values": [
+                    {
+                      "displayName": "Type",
+                      "name": "type",
+                      "type": "options",
+                      "options": [
+                        {
+                          "name": "Markdown",
+                          "value": "mrkwdn"
+                        },
+                        {
+                          "name": "Plain Text",
+                          "value": "plainText"
+                        }
+                      ],
+                      "default": "mrkwdn",
+                      "description": "The formatting to use for this text object"
+                    },
+                    {
+                      "displayName": "Text",
+                      "name": "text",
+                      "type": "string",
+                      "default": "",
+                      "description": "The text for the block. This field accepts any of the standard text formatting markup when type is mrkdwn."
+                    },
+                    {
+                      "displayName": "Emoji",
+                      "name": "emoji",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "plainText"
+                          ]
+                        }
+                      },
+                      "type": "boolean",
+                      "default": false,
+                      "description": "Whether emojis in a text field should be escaped into the colon emoji format. This field is only usable when type is plain_text."
+                    },
+                    {
+                      "displayName": "Verbatim",
+                      "name": "verbatim",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "mrkwdn"
+                          ]
+                        }
+                      },
+                      "type": "boolean",
+                      "default": false,
+                      "description": "Whether to set to false (as is default) URLs will be auto-converted into links, conversation names will be link-ified, and certain mentions will be automatically parsed"
+                    }
+                  ]
+                }
+              ],
+              "description": "Define the text of the button that cancels the action"
+            },
+            {
+              "displayName": "Fields",
+              "name": "fieldsUi",
+              "placeholder": "Add Fields",
+              "type": "fixedCollection",
+              "typeOptions": {
+                "multipleValues": true
+              },
+              "displayOptions": {
+                "show": {
+                  "type": [
+                    "section"
+                  ]
+                }
+              },
+              "default": {},
+              "options": [
+                {
+                  "name": "fieldsValues",
+                  "displayName": "Text",
+                  "values": [
+                    {
+                      "displayName": "Type",
+                      "name": "type",
+                      "type": "options",
+                      "options": [
+                        {
+                          "name": "Markdown",
+                          "value": "mrkwdn"
+                        },
+                        {
+                          "name": "Plain Text",
+                          "value": "plainText"
+                        }
+                      ],
+                      "default": "mrkwdn",
+                      "description": "The formatting to use for this text object"
+                    },
+                    {
+                      "displayName": "Text",
+                      "name": "text",
+                      "type": "string",
+                      "default": "",
+                      "description": "The text for the block. This field accepts any of the standard text formatting markup when type is mrkdwn."
+                    },
+                    {
+                      "displayName": "Emoji",
+                      "name": "emoji",
+                      "type": "boolean",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "plainText"
+                          ]
+                        }
+                      },
+                      "default": false,
+                      "description": "Whether emojis in a text field should be escaped into the colon emoji format. This field is only usable when type is plain_text."
+                    },
+                    {
+                      "displayName": "Verbatim",
+                      "name": "verbatim",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "mrkwdn"
+                          ]
+                        }
+                      },
+                      "type": "boolean",
+                      "default": false,
+                      "description": "When set to false (as is default) URLs will be auto-converted into links, conversation names will be link-ified, and certain mentions will be automatically parsed"
+                    }
+                  ]
+                }
+              ],
+              "description": "An array of text objects. Any text objects included with fields will be rendered in a compact format that allows for 2 columns of side-by-side text. Maximum number of items is 10."
+            },
+            {
+              "displayName": "Accessory",
+              "name": "accessoryUi",
+              "placeholder": "Add Accessory",
+              "type": "fixedCollection",
+              "typeOptions": {
+                "multipleValues": false
+              },
+              "displayOptions": {
+                "show": {
+                  "type": [
+                    "section"
+                  ]
+                }
+              },
+              "default": {},
+              "options": [
+                {
+                  "name": "accessoriesValues",
+                  "displayName": "Accessory",
+                  "values": [
+                    {
+                      "displayName": "Type",
+                      "name": "type",
+                      "type": "options",
+                      "options": [
+                        {
+                          "name": "Button",
+                          "value": "button"
+                        }
+                      ],
+                      "default": "button",
+                      "description": "The type of element"
+                    },
+                    {
+                      "displayName": "Text",
+                      "name": "text",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "type": "string",
+                      "default": "",
+                      "description": "The text for the block"
+                    },
+                    {
+                      "displayName": "Emoji",
+                      "name": "emoji",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "type": "boolean",
+                      "default": false,
+                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                    },
+                    {
+                      "displayName": "Action ID",
+                      "name": "actionId",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "type": "string",
+                      "default": "",
+                      "description": "An identifier for this action. You can use this when you receive an interaction payload to identify the source of the action. Should be unique among all other action_ids used elsewhere by your app."
+                    },
+                    {
+                      "displayName": "URL",
+                      "name": "url",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "type": "string",
+                      "default": "",
+                      "description": "A URL to load in the user's browser when the button is clicked. Maximum length for this field is 3000 characters. If you're using URL, you'll still receive an interaction payload and will need to send an acknowledgement response."
+                    },
+                    {
+                      "displayName": "Value",
+                      "name": "value",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "type": "string",
+                      "default": "",
+                      "description": "The value to send along with the interaction payload"
+                    },
+                    {
+                      "displayName": "Style",
+                      "name": "style",
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "type": "options",
+                      "options": [
+                        {
+                          "name": "Danger",
+                          "value": "danger"
+                        },
+                        {
+                          "name": "Default",
+                          "value": "default"
+                        },
+                        {
+                          "name": "Primary",
+                          "value": "primary"
+                        }
+                      ],
+                      "default": "default",
+                      "description": "Decorates buttons with alternative visual color schemes"
+                    },
+                    {
+                      "displayName": "Confirm",
+                      "name": "confirmUi",
+                      "placeholder": "Add Confirm",
+                      "type": "fixedCollection",
+                      "typeOptions": {
+                        "multipleValues": false
+                      },
+                      "displayOptions": {
+                        "show": {
+                          "type": [
+                            "button"
+                          ]
+                        }
+                      },
+                      "default": {},
+                      "options": [
+                        {
+                          "name": "confirmValue",
+                          "displayName": "Confirm",
+                          "values": [
+                            {
+                              "displayName": "Title",
+                              "name": "titleUi",
+                              "placeholder": "Add Title",
+                              "type": "fixedCollection",
+                              "typeOptions": {
+                                "multipleValues": false
+                              },
+                              "default": {},
+                              "options": [
+                                {
+                                  "name": "titleValue",
+                                  "displayName": "Title",
+                                  "values": [
+                                    {
+                                      "displayName": "Text",
+                                      "name": "text",
+                                      "type": "string",
+                                      "default": "",
+                                      "description": "Text of the title"
+                                    },
+                                    {
+                                      "displayName": "Emoji",
+                                      "name": "emoji",
+                                      "type": "boolean",
+                                      "default": false,
+                                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "Defines an optional confirmation dialog after the button is clicked"
+                            },
+                            {
+                              "displayName": "Text",
+                              "name": "textUi",
+                              "placeholder": "Add Text",
+                              "type": "fixedCollection",
+                              "typeOptions": {
+                                "multipleValues": false
+                              },
+                              "default": {},
+                              "options": [
+                                {
+                                  "name": "textValue",
+                                  "displayName": "Text",
+                                  "values": [
+                                    {
+                                      "displayName": "Text",
+                                      "name": "text",
+                                      "type": "string",
+                                      "default": "",
+                                      "description": "The text for the block"
+                                    },
+                                    {
+                                      "displayName": "Emoji",
+                                      "name": "emoji",
+                                      "type": "boolean",
+                                      "default": false,
+                                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "Defines the explanatory text that appears in the confirm dialog"
+                            },
+                            {
+                              "displayName": "Confirm",
+                              "name": "confirmTextUi",
+                              "placeholder": "Add Confirm",
+                              "type": "fixedCollection",
+                              "typeOptions": {
+                                "multipleValues": false
+                              },
+                              "default": {},
+                              "options": [
+                                {
+                                  "name": "confirmValue",
+                                  "displayName": "Confirm",
+                                  "values": [
+                                    {
+                                      "displayName": "Text",
+                                      "name": "text",
+                                      "type": "string",
+                                      "default": "",
+                                      "description": "Defines the explanatory text that appears in the confirm dialog"
+                                    },
+                                    {
+                                      "displayName": "Emoji",
+                                      "name": "emoji",
+                                      "type": "boolean",
+                                      "default": false,
+                                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "Defines the explanatory text that appears in the confirm dialog"
+                            },
+                            {
+                              "displayName": "Deny",
+                              "name": "denyUi",
+                              "placeholder": "Add Deny",
+                              "type": "fixedCollection",
+                              "typeOptions": {
+                                "multipleValues": false
+                              },
+                              "default": {},
+                              "options": [
+                                {
+                                  "name": "denyValue",
+                                  "displayName": "Deny",
+                                  "values": [
+                                    {
+                                      "displayName": "Text",
+                                      "name": "text",
+                                      "type": "string",
+                                      "default": "",
+                                      "description": "Define the text of the button that cancels the action"
+                                    },
+                                    {
+                                      "displayName": "Emoji",
+                                      "name": "emoji",
+                                      "type": "boolean",
+                                      "default": false,
+                                      "description": "Whether emojis in a text field should be escaped into the colon emoji format"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "Define the text of the button that cancels the action"
+                            },
+                            {
+                              "displayName": "Style",
+                              "name": "style",
+                              "type": "options",
+                              "options": [
+                                {
+                                  "name": "Danger",
+                                  "value": "danger"
+                                },
+                                {
+                                  "name": "Default",
+                                  "value": "default"
+                                },
+                                {
+                                  "name": "Primary",
+                                  "value": "primary"
+                                }
+                              ],
+                              "default": "default",
+                              "description": "Defines the color scheme applied to the confirm button"
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "Defines an optional confirmation dialog after the button is clicked"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Attachments",
+      "name": "attachmentsJson",
+      "type": "json",
+      "default": "",
+      "typeOptions": {
+        "alwaysOpenEditWindow": true
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "post"
+          ],
+          "jsonParameters": [
+            true
+          ]
+        }
+      },
+      "description": "The attachments to add"
+    },
+    {
+      "displayName": "Blocks",
+      "name": "blocksJson",
+      "type": "json",
+      "default": "",
+      "typeOptions": {
+        "alwaysOpenEditWindow": true
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "post"
+          ],
+          "jsonParameters": [
+            true
+          ]
+        }
+      },
+      "description": "The blocks to add"
+    },
+    {
+      "displayName": "Attachments",
+      "name": "attachments",
+      "type": "collection",
+      "typeOptions": {
+        "multipleValues": true,
+        "multipleValueButtonText": "Add attachment"
+      },
+      "displayOptions": {
+        "show": {
+          "jsonParameters": [
+            false
+          ],
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "default": {},
+      "description": "The attachment to add",
+      "placeholder": "Add attachment item",
+      "options": [
+        {
+          "displayName": "Fallback Text",
+          "name": "fallback",
+          "type": "string",
+          "default": "",
+          "description": "Required plain-text summary of the attachment"
+        },
+        {
+          "displayName": "Text",
+          "name": "text",
+          "type": "string",
+          "default": "",
+          "description": "Text to send"
+        },
+        {
+          "displayName": "Title",
+          "name": "title",
+          "type": "string",
+          "default": "",
+          "description": "Title of the message"
+        },
+        {
+          "displayName": "Title Link",
+          "name": "title_link",
+          "type": "string",
+          "default": "",
+          "description": "Link of the title"
+        },
+        {
+          "displayName": "Color",
+          "name": "color",
+          "type": "color",
+          "default": "#ff0000",
+          "description": "Color of the line left of text"
+        },
+        {
+          "displayName": "Pretext",
+          "name": "pretext",
+          "type": "string",
+          "default": "",
+          "description": "Text which appears before the message block"
+        },
+        {
+          "displayName": "Author Name",
+          "name": "author_name",
+          "type": "string",
+          "default": "",
+          "description": "Name that should appear"
+        },
+        {
+          "displayName": "Author Link",
+          "name": "author_link",
+          "type": "string",
+          "default": "",
+          "description": "Link for the author"
+        },
+        {
+          "displayName": "Author Icon",
+          "name": "author_icon",
+          "type": "string",
+          "default": "",
+          "description": "Icon which should appear for the user"
+        },
+        {
+          "displayName": "Image URL",
+          "name": "image_url",
+          "type": "string",
+          "default": "",
+          "description": "URL of image"
+        },
+        {
+          "displayName": "Thumbnail URL",
+          "name": "thumb_url",
+          "type": "string",
+          "default": "",
+          "description": "URL of thumbnail"
+        },
+        {
+          "displayName": "Footer",
+          "name": "footer",
+          "type": "string",
+          "default": "",
+          "description": "Text of footer to add"
+        },
+        {
+          "displayName": "Footer Icon",
+          "name": "footer_icon",
+          "type": "string",
+          "default": "",
+          "description": "Icon which should appear next to footer"
+        },
+        {
+          "displayName": "Timestamp",
+          "name": "ts",
+          "type": "dateTime",
+          "default": "",
+          "description": "Time message relates to"
+        },
+        {
+          "displayName": "Fields",
+          "name": "fields",
+          "placeholder": "Add Fields",
+          "description": "Fields to add to message",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "options": [
+            {
+              "name": "item",
+              "displayName": "Item",
+              "values": [
+                {
+                  "displayName": "Title",
+                  "name": "title",
+                  "type": "string",
+                  "default": "",
+                  "description": "Title of the item"
+                },
+                {
+                  "displayName": "Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": "",
+                  "description": "Value of the item"
+                },
+                {
+                  "displayName": "Short",
+                  "name": "short",
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Whether items can be displayed next to each other"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "description": "Channel containing the message to be deleted. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Timestamp",
+      "name": "timestamp",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "description": "Timestamp of the message to be deleted"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "star"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add",
+          "value": "add",
+          "description": "Add a star to an item",
+          "action": "Add a star"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a star from an item",
+          "action": "Delete a star"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many stars of autenticated user",
+          "action": "Get many stars"
+        }
+      ],
+      "default": "add"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "add"
+          ],
+          "resource": [
+            "star"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Channel Name or ID",
+          "name": "channelId",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "default": "",
+          "description": "Channel to add star to, or channel where the message to add star to was posted (used with timestamp). Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "File Comment",
+          "name": "fileComment",
+          "type": "string",
+          "default": "",
+          "description": "File comment to add star to"
+        },
+        {
+          "displayName": "File ID",
+          "name": "fileId",
+          "type": "string",
+          "default": "",
+          "description": "File to add star to"
+        },
+        {
+          "displayName": "Timestamp",
+          "name": "timestamp",
+          "type": "string",
+          "default": "",
+          "description": "Timestamp of the message to add star to"
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "star"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Channel Name or ID",
+          "name": "channelId",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "default": "",
+          "description": "Channel to add star to, or channel where the message to add star to was posted (used with timestamp). Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "File ID",
+          "name": "fileId",
+          "type": "string",
+          "default": "",
+          "description": "File to add star to"
+        },
+        {
+          "displayName": "File Comment",
+          "name": "fileComment",
+          "type": "string",
+          "default": "",
+          "description": "File comment to add star to"
+        },
+        {
+          "displayName": "Timestamp",
+          "name": "timestamp",
+          "type": "string",
+          "default": "",
+          "description": "Timestamp of the message to add star to"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "star"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "star"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a file info",
+          "action": "Get a file"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get & filters team files",
+          "action": "Get many files"
+        },
+        {
+          "name": "Upload",
+          "value": "upload",
+          "description": "Create or upload an existing file",
+          "action": "Upload a file"
+        }
+      ],
+      "default": "upload"
+    },
+    {
+      "displayName": "Binary File",
+      "name": "binaryData",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "description": "Whether the data to upload should be taken from binary field"
+    },
+    {
+      "displayName": "File Content",
+      "name": "fileContent",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ],
+          "binaryData": [
+            false
+          ]
+        }
+      },
+      "placeholder": "",
+      "description": "The text content of the file to upload"
+    },
+    {
+      "displayName": "Input Binary Field",
+      "name": "binaryPropertyName",
+      "type": "string",
+      "default": "data",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ],
+          "binaryData": [
+            true
+          ]
+        }
+      },
+      "placeholder": "",
+      "hint": "The name of the input binary field containing the file to be uploaded"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Other options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Channel Names or IDs",
+          "name": "channelIds",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "default": [],
+          "description": "The channels to send the file to. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "File Name",
+          "name": "fileName",
+          "type": "string",
+          "default": "",
+          "description": "Filename of file"
+        },
+        {
+          "displayName": "Initial Comment",
+          "name": "initialComment",
+          "type": "string",
+          "default": "",
+          "description": "The message text introducing the file in specified channels"
+        },
+        {
+          "displayName": "Thread TS",
+          "name": "threadTs",
+          "type": "string",
+          "default": "",
+          "description": "Provide another message's ts value to upload this file as a reply. Never use a reply's ts value; use its parent instead."
+        },
+        {
+          "displayName": "Title",
+          "name": "title",
+          "type": "string",
+          "default": "",
+          "description": "Title of file"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "default": {},
+      "placeholder": "Add Field",
+      "options": [
+        {
+          "displayName": "Channel Name or ID",
+          "name": "channelId",
+          "type": "options",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "description": "Channel containing the file to be listed. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Show Files Hidden By Limit",
+          "name": "showFilesHidden",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to show truncated file info for files hidden due to being too old, and the team who owns the file being over the file limit"
+        },
+        {
+          "displayName": "Timestamp From",
+          "name": "tsFrom",
+          "type": "string",
+          "default": "",
+          "description": "Filter files created after this timestamp (inclusive)"
+        },
+        {
+          "displayName": "Timestamp To",
+          "name": "tsTo",
+          "type": "string",
+          "default": "",
+          "description": "Filter files created before this timestamp (inclusive)"
+        },
+        {
+          "displayName": "Types",
+          "name": "types",
+          "type": "multiOptions",
+          "options": [
+            {
+              "name": "All",
+              "value": "all"
+            },
+            {
+              "name": "Google Docs",
+              "value": "gdocs"
+            },
+            {
+              "name": "Images",
+              "value": "images"
+            },
+            {
+              "name": "PDFs",
+              "value": "pdfs"
+            },
+            {
+              "name": "Snippets",
+              "value": "snippets"
+            },
+            {
+              "name": "Spaces",
+              "value": "spaces"
+            },
+            {
+              "name": "zips",
+              "value": "zips"
+            }
+          ],
+          "default": [
+            "all"
+          ],
+          "description": "Filter files by type"
+        },
+        {
+          "displayName": "User Name or ID",
+          "name": "userId",
+          "type": "options",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getUsers"
+          },
+          "description": "Filter files created by a single user. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        }
+      ]
+    },
+    {
+      "displayName": "File ID",
+      "name": "fileId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "reaction"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add",
+          "value": "add",
+          "description": "Adds a reaction to a message",
+          "action": "Add a reaction"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get the reactions of a message",
+          "action": "Get a reaction"
+        },
+        {
+          "name": "Remove",
+          "value": "remove",
+          "description": "Remove a reaction of a message",
+          "action": "Remove a reaction"
+        }
+      ],
+      "default": "add"
+    },
+    {
+      "displayName": "Channel Name or ID",
+      "name": "channelId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "reaction"
+          ],
+          "operation": [
+            "add",
+            "get",
+            "remove"
+          ]
+        }
+      },
+      "description": "Channel containing the message. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Emoji",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "reaction"
+          ],
+          "operation": [
+            "add",
+            "remove"
+          ]
+        }
+      },
+      "description": "Name of emoji",
+      "placeholder": "+1"
+    },
+    {
+      "displayName": "Timestamp",
+      "name": "timestamp",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "reaction"
+          ],
+          "operation": [
+            "add",
+            "get",
+            "remove"
+          ]
+        }
+      },
+      "description": "Timestamp of the message"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Info",
+          "value": "info",
+          "description": "Get information about a user",
+          "action": "Get information about a user"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get a list of many users",
+          "action": "Get many users"
+        },
+        {
+          "name": "Get Presence",
+          "value": "getPresence",
+          "description": "Get online status of a user",
+          "action": "Get a user's presence status"
+        }
+      ],
+      "default": "info"
+    },
+    {
+      "displayName": "User ID",
+      "name": "user",
+      "type": "string",
+      "typeOptions": {
+        "loadOptionsMethod": "getUsers"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "info"
+          ],
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The ID of the user to get information about"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "User ID",
+      "name": "user",
+      "type": "string",
+      "typeOptions": {
+        "loadOptionsMethod": "getUsers"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getPresence"
+          ],
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The ID of the user to get the online status of"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a user group",
+          "action": "Create a user group"
+        },
+        {
+          "name": "Disable",
+          "value": "disable",
+          "description": "Disable a user group",
+          "action": "Disable a user group"
+        },
+        {
+          "name": "Enable",
+          "value": "enable",
+          "description": "Enable a user group",
+          "action": "Enable a user group"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many user groups",
+          "action": "Get many user groups"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a user group",
+          "action": "Update a user group"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "required": true,
+      "description": "A name for the User Group. Must be unique among User Groups."
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Channel Names or IDs",
+          "name": "channelIds",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "default": [],
+          "description": "A comma-separated string of encoded channel IDs for which the User Group uses as a default. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "A short description of the User Group"
+        },
+        {
+          "displayName": "Handle",
+          "name": "handle",
+          "type": "string",
+          "default": "",
+          "description": "A mention handle. Must be unique among channels, users and User Groups."
+        },
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        }
+      ]
+    },
+    {
+      "displayName": "User Group ID",
+      "name": "userGroupId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "disable"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The encoded ID of the User Group to update"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "disable"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        }
+      ]
+    },
+    {
+      "displayName": "User Group ID",
+      "name": "userGroupId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "enable"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The encoded ID of the User Group to update"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "enable"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "userGroup"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        },
+        {
+          "displayName": "Include Disabled",
+          "name": "include_disabled",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include disabled User Groups"
+        },
+        {
+          "displayName": "Include Users",
+          "name": "include_users",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the list of users for each User Group"
+        }
+      ]
+    },
+    {
+      "displayName": "User Group ID",
+      "name": "userGroupId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The encoded ID of the User Group to update"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Channel Names or IDs",
+          "name": "channels",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "default": [],
+          "description": "A comma-separated string of encoded channel IDs for which the User Group uses as a default. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "A short description of the User Group"
+        },
+        {
+          "displayName": "Handle",
+          "name": "handle",
+          "type": "string",
+          "default": "",
+          "description": "A mention handle. Must be unique among channels, users and User Groups."
+        },
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "A name for the User Group. Must be unique among User Groups."
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userProfile"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get your user's profile",
+          "action": "Get a user profile"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update user's profile",
+          "action": "Update a user profile"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userProfile"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Custom Fields",
+          "name": "customFieldUi",
+          "placeholder": "Add Custom Fields",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "options": [
+            {
+              "name": "customFieldValues",
+              "displayName": "Custom Field",
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "id",
+                  "type": "options",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getTeamFields"
+                  },
+                  "default": "",
+                  "description": "ID of the field to set. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+                },
+                {
+                  "displayName": "Field Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": "",
+                  "description": "Value of the field to set"
+                },
+                {
+                  "displayName": "Alt",
+                  "name": "alt",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "This field can only be changed by admins for users on paid teams"
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Status Emoji",
+          "name": "status_emoji",
+          "type": "string",
+          "default": "",
+          "description": "Is a string referencing an emoji enabled for the Slack team, such as :mountain_railway:"
+        },
+        {
+          "displayName": "Status Expiration",
+          "name": "status_expiration",
+          "type": "dateTime",
+          "default": "",
+          "description": "Is an integer specifying seconds since the epoch, more commonly known as \"UNIX time\". Providing 0 or omitting this field results in a custom status that will not expire."
+        },
+        {
+          "displayName": "Status Text",
+          "name": "status_text",
+          "type": "string",
+          "default": "",
+          "description": "Allows up to 100 characters, though we strongly encourage brevity"
+        },
+        {
+          "displayName": "User ID",
+          "name": "user",
+          "type": "string",
+          "default": "",
+          "description": "ID of user to change. This argument may only be specified by team admins on paid teams."
+        }
+      ]
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userProfile"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Labels",
+          "name": "include_labels",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include labels for each ID in custom profile fields"
+        },
+        {
+          "displayName": "User ID",
+          "name": "user",
+          "type": "string",
+          "default": "",
+          "description": "User to retrieve profile info for"
+        }
+      ]
+    }
+  ],
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Slack/slack.svg",
+  "codex": {
+    "categories": [
+      "Communication",
+      "HITL"
+    ],
+    "subcategories": {
+      "HITL": [
+        "Human in the Loop"
+      ]
+    },
+    "alias": [
+      "human",
+      "form",
+      "wait",
+      "hitl",
+      "approval"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.slack/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/slack/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.slack"
+}

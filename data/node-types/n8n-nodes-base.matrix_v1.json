@@ -1,0 +1,907 @@
+{
+  "displayName": "Matrix",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "description": "Consume Matrix API",
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "defaults": {
+    "name": "Matrix"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "matrixApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Account",
+          "value": "account"
+        },
+        {
+          "name": "Event",
+          "value": "event"
+        },
+        {
+          "name": "Media",
+          "value": "media"
+        },
+        {
+          "name": "Message",
+          "value": "message"
+        },
+        {
+          "name": "Room",
+          "value": "room"
+        },
+        {
+          "name": "Room Member",
+          "value": "roomMember"
+        }
+      ],
+      "default": "message"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Me",
+          "value": "me",
+          "description": "Get current user's account information",
+          "action": "Get the current user's account information"
+        }
+      ],
+      "default": "me"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get single event by ID",
+          "action": "Get an event by ID"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Room ID",
+      "name": "roomId",
+      "type": "string",
+      "default": "",
+      "placeholder": "!123abc:matrix.org",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "event"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The room related to the event"
+    },
+    {
+      "displayName": "Event ID",
+      "name": "eventId",
+      "type": "string",
+      "default": "",
+      "placeholder": "$1234abcd:matrix.org",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "event"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The room related to the event"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "media"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Upload",
+          "value": "upload",
+          "description": "Send media to a chat room",
+          "action": "Upload media to a chatroom"
+        }
+      ],
+      "default": "upload"
+    },
+    {
+      "displayName": "Room Name or ID",
+      "name": "roomId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "media"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      },
+      "description": "Room ID to post. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "required": true
+    },
+    {
+      "displayName": "Input Binary Field",
+      "name": "binaryPropertyName",
+      "type": "string",
+      "default": "data",
+      "required": true,
+      "hint": "The name of the input binary field containing the file to be uploaded",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "media"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Media Type",
+      "name": "mediaType",
+      "type": "options",
+      "default": "image",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "media"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "File",
+          "value": "file",
+          "description": "General file"
+        },
+        {
+          "name": "Image",
+          "value": "image",
+          "description": "Image media type"
+        },
+        {
+          "name": "Audio",
+          "value": "audio",
+          "description": "Audio media type"
+        },
+        {
+          "name": "Video",
+          "value": "video",
+          "description": "Video media type"
+        }
+      ],
+      "description": "Type of file being uploaded",
+      "placeholder": "mxc://matrix.org/uploaded-media-uri",
+      "required": true
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "media"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "File Name",
+          "name": "fileName",
+          "type": "string",
+          "default": "",
+          "description": "Name of the file being uploaded"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Send a message to a room",
+          "action": "Create a message"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many messages from a room",
+          "action": "Get many messages"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Room Name or ID",
+      "name": "roomId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "default": "",
+      "placeholder": "!123abc:matrix.org",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The channel to send the message to. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Text",
+      "name": "text",
+      "type": "string",
+      "default": "",
+      "placeholder": "Hello from n8n!",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "description": "The text to send"
+    },
+    {
+      "displayName": "Message Type",
+      "name": "messageType",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "type": "options",
+      "options": [
+        {
+          "name": "Emote",
+          "value": "m.emote",
+          "description": "Perform an action (similar to /me in IRC)"
+        },
+        {
+          "name": "Notice",
+          "value": "m.notice",
+          "description": "Send a notice"
+        },
+        {
+          "name": "Text",
+          "value": "m.text",
+          "description": "Send a text message"
+        }
+      ],
+      "default": "m.text",
+      "description": "The type of message to send"
+    },
+    {
+      "displayName": "Message Format",
+      "name": "messageFormat",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "type": "options",
+      "options": [
+        {
+          "name": "Plain Text",
+          "value": "plain",
+          "description": "Text only"
+        },
+        {
+          "name": "HTML",
+          "value": "org.matrix.custom.html",
+          "description": "HTML-formatted text"
+        }
+      ],
+      "default": "plain",
+      "description": "The format of the message's body"
+    },
+    {
+      "displayName": "Fallback Text",
+      "name": "fallbackText",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "create"
+          ],
+          "messageFormat": [
+            "org.matrix.custom.html"
+          ]
+        }
+      },
+      "type": "string",
+      "description": "A plain text message to display in case the HTML cannot be rendered by the Matrix client"
+    },
+    {
+      "displayName": "Room Name or ID",
+      "name": "roomId",
+      "type": "options",
+      "default": "",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "description": "The token to start returning events from. This token can be obtained from a prev_batch token returned for each room by the sync API. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "required": true
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "description": "Whether to return all results or only up to a given limit",
+      "required": true
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Other Options",
+      "name": "otherOptions",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Filter",
+          "name": "filter",
+          "type": "string",
+          "default": "",
+          "description": "A JSON RoomEventFilter to filter returned events with. More information can be found on this <a href=\"https://matrix.org/docs/spec/client_server/r0.6.0\">page</a>.",
+          "placeholder": "{\"contains_url\":true,\"types\":[\"m.room.message\", \"m.sticker\"]}"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "New chat room with defined settings",
+          "action": "Create a room"
+        },
+        {
+          "name": "Invite",
+          "value": "invite",
+          "description": "Invite a user to a room",
+          "action": "Invite a room"
+        },
+        {
+          "name": "Join",
+          "value": "join",
+          "description": "Join a new room",
+          "action": "Join a room"
+        },
+        {
+          "name": "Kick",
+          "value": "kick",
+          "description": "Kick a user from a room",
+          "action": "Kick a user from a room"
+        },
+        {
+          "name": "Leave",
+          "value": "leave",
+          "description": "Leave a room",
+          "action": "Leave a room"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Room Name",
+      "name": "roomName",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": "",
+      "placeholder": "My new room",
+      "required": true
+    },
+    {
+      "displayName": "Preset",
+      "name": "preset",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Private Chat",
+          "value": "private_chat"
+        },
+        {
+          "name": "Public Chat",
+          "value": "public_chat",
+          "description": "Open and public chat"
+        }
+      ],
+      "default": "public_chat",
+      "placeholder": "My new room",
+      "required": true
+    },
+    {
+      "displayName": "Room Alias",
+      "name": "roomAlias",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": "",
+      "placeholder": "coolest-room-around"
+    },
+    {
+      "displayName": "Room ID or Alias",
+      "name": "roomIdOrAlias",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "join"
+          ]
+        }
+      },
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Room Name or ID",
+      "name": "roomId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "leave"
+          ]
+        }
+      },
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Room Name or ID",
+      "name": "roomId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "invite"
+          ]
+        }
+      },
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "User ID",
+      "name": "userId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "invite"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The fully qualified user ID of the invitee",
+      "placeholder": "@cheeky_monkey:matrix.org",
+      "required": true
+    },
+    {
+      "displayName": "Room Name or ID",
+      "name": "roomId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "kick"
+          ]
+        }
+      },
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "User ID",
+      "name": "userId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "kick"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The fully qualified user ID",
+      "placeholder": "@cheeky_monkey:matrix.org",
+      "required": true
+    },
+    {
+      "displayName": "Reason",
+      "name": "reason",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "room"
+          ],
+          "operation": [
+            "kick"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Reason for kick",
+      "placeholder": "Telling unfunny jokes"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "roomMember"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many members",
+          "action": "Get many room members"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Room Name or ID",
+      "name": "roomId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getChannels"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "roomMember"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "roomMember"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Filtering options",
+      "placeholder": "Add filter",
+      "options": [
+        {
+          "displayName": "Exclude Membership",
+          "name": "notMembership",
+          "type": "options",
+          "default": "",
+          "description": "Excludes members whose membership is other than selected (uses OR filter with membership)",
+          "options": [
+            {
+              "name": "Any",
+              "value": "",
+              "description": "Any user membership"
+            },
+            {
+              "name": "Ban",
+              "value": "ban",
+              "description": "Users removed from the room"
+            },
+            {
+              "name": "Invite",
+              "value": "invite",
+              "description": "Users invited to join"
+            },
+            {
+              "name": "Join",
+              "value": "join",
+              "description": "Users currently in the room"
+            },
+            {
+              "name": "Leave",
+              "value": "leave",
+              "description": "Users who left"
+            }
+          ]
+        },
+        {
+          "displayName": "Membership",
+          "name": "membership",
+          "type": "options",
+          "default": "",
+          "description": "Only fetch users with selected membership status (uses OR filter with exclude membership)",
+          "options": [
+            {
+              "name": "Any",
+              "value": "",
+              "description": "Any user membership"
+            },
+            {
+              "name": "Ban",
+              "value": "ban",
+              "description": "Users removed from the room"
+            },
+            {
+              "name": "Invite",
+              "value": "invite",
+              "description": "Users invited to join"
+            },
+            {
+              "name": "Join",
+              "value": "join",
+              "description": "Users currently in the room"
+            },
+            {
+              "name": "Leave",
+              "value": "leave",
+              "description": "Users who left"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Communication"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.matrix/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/matrix/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Matrix/matrix.png",
+  "name": "n8n-nodes-base.matrix"
+}

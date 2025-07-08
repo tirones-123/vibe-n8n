@@ -1,0 +1,212 @@
+{
+  "displayName": "Telegram Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": [
+    1,
+    1.1,
+    1.2
+  ],
+  "defaultVersion": 1.2,
+  "subtitle": "=Updates: {{$parameter[\"updates\"].join(\", \")}}",
+  "description": "Starts the workflow on a Telegram update",
+  "defaults": {
+    "name": "Telegram Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "telegramApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Due to Telegram API limitations, you can use just one Telegram trigger for each bot at a time",
+      "name": "telegramTriggerNotice",
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Trigger On",
+      "name": "updates",
+      "type": "multiOptions",
+      "options": [
+        {
+          "name": "*",
+          "value": "*",
+          "description": "All updates"
+        },
+        {
+          "name": "Callback Query",
+          "value": "callback_query",
+          "description": "Trigger on new incoming callback query"
+        },
+        {
+          "name": "Channel Post",
+          "value": "channel_post",
+          "description": "Trigger on new incoming channel post of any kind — text, photo, sticker, etc"
+        },
+        {
+          "name": "Edited Channel Post",
+          "value": "edited_channel_post",
+          "description": "Trigger on new version of a channel post that is known to the bot and was edited"
+        },
+        {
+          "name": "Edited Message",
+          "value": "edited_message",
+          "description": "Trigger on new version of a channel post that is known to the bot and was edited"
+        },
+        {
+          "name": "Inline Query",
+          "value": "inline_query",
+          "description": "Trigger on new incoming inline query"
+        },
+        {
+          "name": "Message",
+          "value": "message",
+          "description": "Trigger on new incoming message of any kind — text, photo, sticker, etc"
+        },
+        {
+          "name": "Poll",
+          "value": "poll",
+          "action": "On Poll Change",
+          "description": "Trigger on new poll state. Bots receive only updates about stopped polls and polls, which are sent by the bot."
+        },
+        {
+          "name": "Pre-Checkout Query",
+          "value": "pre_checkout_query",
+          "description": "Trigger on new incoming pre-checkout query. Contains full information about checkout."
+        },
+        {
+          "name": "Shipping Query",
+          "value": "shipping_query",
+          "description": "Trigger on new incoming shipping query. Only for invoices with flexible price."
+        }
+      ],
+      "required": true,
+      "default": []
+    },
+    {
+      "displayName": "Every uploaded attachment, even if sent in a group, will trigger a separate event. You can identify that an attachment belongs to a certain group by <code>media_group_id</code> .",
+      "name": "attachmentNotice",
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Download Images/Files",
+          "name": "download",
+          "type": "boolean",
+          "default": false,
+          "description": "Telegram delivers the image in multiple sizes. By default, just the large image would be downloaded. If you want to change the size, set the field 'Image Size'."
+        },
+        {
+          "displayName": "Image Size",
+          "name": "imageSize",
+          "type": "options",
+          "displayOptions": {
+            "show": {
+              "download": [
+                true
+              ]
+            }
+          },
+          "options": [
+            {
+              "name": "Small",
+              "value": "small"
+            },
+            {
+              "name": "Medium",
+              "value": "medium"
+            },
+            {
+              "name": "Large",
+              "value": "large"
+            },
+            {
+              "name": "Extra Large",
+              "value": "extraLarge"
+            }
+          ],
+          "default": "large",
+          "description": "The size of the image to be downloaded"
+        },
+        {
+          "displayName": "Restrict to Chat IDs",
+          "name": "chatIds",
+          "type": "string",
+          "default": "",
+          "description": "The chat IDs to restrict the trigger to. Multiple can be defined separated by comma.",
+          "displayOptions": {
+            "show": {
+              "@version": [
+                {
+                  "_cnd": {
+                    "gte": 1.1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Restrict to User IDs",
+          "name": "userIds",
+          "type": "string",
+          "default": "",
+          "description": "The user IDs to restrict the trigger to. Multiple can be defined separated by comma.",
+          "displayOptions": {
+            "show": {
+              "@version": [
+                {
+                  "_cnd": {
+                    "gte": 1.1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Communication"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.telegramtrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/telegram/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Telegram/telegram.svg",
+  "name": "n8n-nodes-base.telegramTrigger"
+}

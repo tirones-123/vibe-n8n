@@ -1,0 +1,108 @@
+{
+  "displayName": "WooCommerce Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Handle WooCommerce events via webhooks",
+  "defaults": {
+    "name": "WooCommerce Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "wooCommerceApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "required": true,
+      "default": "",
+      "options": [
+        {
+          "name": "coupon.created",
+          "value": "coupon.created"
+        },
+        {
+          "name": "coupon.deleted",
+          "value": "coupon.deleted"
+        },
+        {
+          "name": "coupon.updated",
+          "value": "coupon.updated"
+        },
+        {
+          "name": "customer.created",
+          "value": "customer.created"
+        },
+        {
+          "name": "customer.deleted",
+          "value": "customer.deleted"
+        },
+        {
+          "name": "customer.updated",
+          "value": "customer.updated"
+        },
+        {
+          "name": "order.created",
+          "value": "order.created"
+        },
+        {
+          "name": "order.deleted",
+          "value": "order.deleted"
+        },
+        {
+          "name": "order.updated",
+          "value": "order.updated"
+        },
+        {
+          "name": "product.created",
+          "value": "product.created"
+        },
+        {
+          "name": "product.deleted",
+          "value": "product.deleted"
+        },
+        {
+          "name": "product.updated",
+          "value": "product.updated"
+        }
+      ],
+      "description": "Determines which resource events the webhook is triggered for"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Sales"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.woocommercetrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/wooCommerce/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/WooCommerce/wooCommerce.svg",
+  "name": "n8n-nodes-base.wooCommerceTrigger"
+}

@@ -1,0 +1,210 @@
+{
+  "displayName": "QuestDB",
+  "group": [
+    "input"
+  ],
+  "version": 1,
+  "description": "Get, add and update data in QuestDB",
+  "defaults": {
+    "name": "QuestDB"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "parameterPane": "wide",
+  "credentials": [
+    {
+      "name": "questDb",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Execute Query",
+          "value": "executeQuery",
+          "description": "Executes a SQL query",
+          "action": "Execute a SQL query"
+        },
+        {
+          "name": "Insert",
+          "value": "insert",
+          "description": "Insert rows in database",
+          "action": "Insert rows in database"
+        }
+      ],
+      "default": "insert"
+    },
+    {
+      "displayName": "Query",
+      "name": "query",
+      "type": "string",
+      "noDataExpression": true,
+      "typeOptions": {
+        "editor": "sqlEditor",
+        "sqlDialect": "PostgreSQL"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "executeQuery"
+          ]
+        }
+      },
+      "default": "",
+      "placeholder": "SELECT id, name FROM product WHERE quantity > $1 AND price <= $2",
+      "required": true,
+      "description": "The SQL query to execute. You can use n8n expressions or $1 and $2 in conjunction with query parameters."
+    },
+    {
+      "displayName": "Schema",
+      "name": "schema",
+      "type": "hidden",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "insert"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Name of the schema the table belongs to"
+    },
+    {
+      "displayName": "Table",
+      "name": "table",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "insert"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Name of the table in which to insert data to"
+    },
+    {
+      "displayName": "Columns",
+      "name": "columns",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "insert"
+          ]
+        }
+      },
+      "default": "",
+      "placeholder": "id,name,description",
+      "description": "Comma-separated list of the properties which should used as columns for the new rows"
+    },
+    {
+      "displayName": "Return Fields",
+      "name": "returnFields",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "insert"
+          ]
+        }
+      },
+      "default": "*",
+      "description": "Comma-separated list of the fields that the operation will return"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "executeQuery"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Mode",
+          "name": "mode",
+          "type": "options",
+          "options": [
+            {
+              "name": "Independently",
+              "value": "independently",
+              "description": "Execute each query independently"
+            },
+            {
+              "name": "Transaction",
+              "value": "transaction",
+              "description": "Executes all queries in a single transaction"
+            }
+          ],
+          "default": "independently",
+          "description": "The way queries should be sent to database. Can be used in conjunction with <b>Continue on Fail</b>. See <a href=\"https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.questdb/\">the docs</a> for more examples."
+        },
+        {
+          "displayName": "Query Parameters",
+          "name": "queryParams",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/operation": [
+                "executeQuery"
+              ]
+            }
+          },
+          "default": "",
+          "placeholder": "quantity,price",
+          "description": "Comma-separated list of properties which should be used as query parameters"
+        }
+      ]
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "hidden",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "insert"
+          ]
+        }
+      }
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Data & Storage",
+      "Development"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.questdb/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/questDb/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/QuestDb/questdb.png",
+  "name": "n8n-nodes-base.questDb"
+}

@@ -1,0 +1,65 @@
+{
+  "displayName": "LoneScale Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Trigger LoneScale Workflow",
+  "defaults": {
+    "name": "LoneScale Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "loneScaleApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Workflow Name",
+      "name": "workflow",
+      "type": "options",
+      "noDataExpression": true,
+      "typeOptions": {
+        "loadOptionsMethod": "getWorkflows"
+      },
+      "default": "",
+      "description": "Select one workflow. Choose from the list",
+      "required": true
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Sales"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.lonescaletrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/lonescale/"
+        }
+      ]
+    }
+  },
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/LoneScale/loneScale.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/LoneScale/loneScale.dark.svg"
+  },
+  "name": "n8n-nodes-base.loneScaleTrigger"
+}

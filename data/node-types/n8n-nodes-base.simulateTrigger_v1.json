@@ -1,0 +1,75 @@
+{
+  "hidden": true,
+  "displayName": "Simulate Trigger",
+  "subtitle": "={{$parameter.subtitle || undefined}}",
+  "icon": "fa:arrow-right",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Simulate a trigger node",
+  "defaults": {
+    "name": "Simulate Trigger",
+    "color": "#b0b0b0"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "Icon to Display on Canvas",
+      "name": "icon",
+      "type": "options",
+      "description": "Select a type of node to show corresponding icon",
+      "default": "n8n-nodes-base.manualTrigger",
+      "typeOptions": {
+        "loadOptionsMethod": "getNodeTypes"
+      }
+    },
+    {
+      "displayName": "Subtitle",
+      "name": "subtitle",
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. 'record: read'"
+    },
+    {
+      "displayName": "Output (JSON)",
+      "name": "jsonOutput",
+      "type": "json",
+      "typeOptions": {
+        "rows": 5
+      },
+      "default": "[\n  {\n  \"my_field_1\": \"value\",\n  \"my_field_2\": 1\n  }\n]",
+      "validateType": "array"
+    },
+    {
+      "displayName": "Execution Duration (MS)",
+      "name": "executionDuration",
+      "type": "number",
+      "default": 150,
+      "description": "Execution duration in milliseconds",
+      "typeOptions": {
+        "minValue": 0
+      }
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Helpers"
+      ]
+    },
+    "alias": [
+      "placeholder",
+      "stub",
+      "dummy"
+    ],
+    "resources": {}
+  },
+  "name": "n8n-nodes-base.simulateTrigger"
+}

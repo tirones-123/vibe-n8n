@@ -1,0 +1,99 @@
+{
+  "displayName": "Mailcheck",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume Mailcheck API",
+  "defaults": {
+    "name": "Mailcheck"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "mailcheckApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Email",
+          "value": "email"
+        }
+      ],
+      "default": "email"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Check",
+          "value": "check",
+          "action": "Check an email"
+        }
+      ],
+      "default": "check"
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "check"
+          ]
+        }
+      },
+      "default": "",
+      "description": "Email address to check"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Utility",
+      "Marketing"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.mailcheck/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/mailcheck/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Mailcheck/mailcheck.svg",
+  "name": "n8n-nodes-base.mailcheck"
+}

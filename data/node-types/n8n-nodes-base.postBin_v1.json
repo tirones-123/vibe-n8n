@@ -1,0 +1,362 @@
+{
+  "displayName": "PostBin",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{ $parameter[\"operation\"] + \": \" + $parameter[\"resource\"] }}",
+  "description": "Consume PostBin API",
+  "defaults": {
+    "name": "PostBin"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [],
+  "requestDefaults": {
+    "baseURL": "https://www.postb.in"
+  },
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Bin",
+          "value": "bin"
+        },
+        {
+          "name": "Request",
+          "value": "request"
+        }
+      ],
+      "default": "bin",
+      "required": true
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "bin"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create bin",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "url": "/api/bin"
+            },
+            "output": {
+              "postReceive": [
+                null
+              ]
+            }
+          },
+          "action": "Create a bin"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a bin",
+          "routing": {
+            "request": {
+              "method": "GET"
+            },
+            "output": {
+              "postReceive": [
+                null
+              ]
+            },
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          },
+          "action": "Get a bin"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a bin",
+          "routing": {
+            "request": {
+              "method": "DELETE"
+            },
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          },
+          "action": "Delete a bin"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Bin ID",
+      "name": "binId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "bin"
+          ],
+          "operation": [
+            "get",
+            "delete"
+          ]
+        }
+      },
+      "description": "Unique identifier for each bin"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "request"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a request",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "=/api/bin/{{$parameter[\"binId\"]}}/req/{{$parameter[\"requestId\"]}}"
+            },
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          },
+          "action": "Get a request"
+        },
+        {
+          "name": "Remove First",
+          "value": "removeFirst",
+          "description": "Remove the first request from bin",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "=/api/bin/{{$parameter[\"binId\"]}}/req/shift"
+            },
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          },
+          "action": "Remove First a request"
+        },
+        {
+          "name": "Send",
+          "value": "send",
+          "description": "Send a test request to the bin",
+          "routing": {
+            "request": {
+              "method": "POST"
+            },
+            "send": {
+              "preSend": [
+                null
+              ]
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"requestId\": $response.body } }}"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Send a request"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Bin ID",
+      "name": "binId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "request"
+          ],
+          "operation": [
+            "get",
+            "removeFirst",
+            "send"
+          ]
+        }
+      },
+      "description": "Unique identifier for each bin"
+    },
+    {
+      "displayName": "Bin Content",
+      "name": "binContent",
+      "type": "string",
+      "default": "",
+      "typeOptions": {
+        "rows": 5
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "request"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "property": "content",
+          "type": "body"
+        }
+      }
+    },
+    {
+      "displayName": "Request ID",
+      "name": "requestId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "request"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "description": "Unique identifier for each request"
+    },
+    {
+      "displayName": "Request Options",
+      "name": "requestOptions",
+      "type": "collection",
+      "isNodeSetting": true,
+      "placeholder": "Add Option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Batching",
+          "name": "batching",
+          "placeholder": "Add Batching",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": false
+          },
+          "default": {
+            "batch": {}
+          },
+          "options": [
+            {
+              "displayName": "Batching",
+              "name": "batch",
+              "values": [
+                {
+                  "displayName": "Items per Batch",
+                  "name": "batchSize",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": -1
+                  },
+                  "default": 50,
+                  "description": "Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1."
+                },
+                {
+                  "displayName": "Batch Interval (ms)",
+                  "name": "batchInterval",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": 0
+                  },
+                  "default": 1000,
+                  "description": "Time (in milliseconds) between each batch of requests. 0 for disabled."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Ignore SSL Issues (Insecure)",
+          "name": "allowUnauthorizedCerts",
+          "type": "boolean",
+          "noDataExpression": true,
+          "default": false,
+          "description": "Whether to accept the response even if SSL certificate validation is not possible"
+        },
+        {
+          "displayName": "Proxy",
+          "name": "proxy",
+          "type": "string",
+          "default": "",
+          "placeholder": "e.g. http://myproxy:3128",
+          "description": "HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128"
+        },
+        {
+          "displayName": "Timeout",
+          "name": "timeout",
+          "type": "number",
+          "typeOptions": {
+            "minValue": 1
+          },
+          "default": 10000,
+          "description": "Time in ms to wait for the server to send response headers (and start the response body) before aborting the request"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development",
+      "Data & Storage"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.postbin/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/PostBin/postbin.svg",
+  "name": "n8n-nodes-base.postBin"
+}

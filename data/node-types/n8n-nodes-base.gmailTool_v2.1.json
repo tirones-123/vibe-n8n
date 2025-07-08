@@ -1,0 +1,2587 @@
+{
+  "displayName": "Gmail Tool",
+  "group": [
+    "transform"
+  ],
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume the Gmail API",
+  "defaultVersion": 2.1,
+  "version": [
+    2,
+    2.1
+  ],
+  "defaults": {
+    "name": "Gmail"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "googleApi",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "serviceAccount"
+          ]
+        }
+      }
+    },
+    {
+      "name": "gmailOAuth2",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ]
+        }
+      }
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "GET",
+      "responseMode": "onReceived",
+      "responseData": "",
+      "path": "={{ $nodeId }}",
+      "restartWebhook": true,
+      "isFullPath": true
+    },
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "responseData": "",
+      "path": "={{ $nodeId }}",
+      "restartWebhook": true,
+      "isFullPath": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume the Gmail API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "OAuth2 (recommended)",
+          "value": "oAuth2"
+        },
+        {
+          "name": "Service Account",
+          "value": "serviceAccount"
+        }
+      ],
+      "default": "oAuth2"
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Message",
+          "value": "message"
+        },
+        {
+          "name": "Label",
+          "value": "label"
+        },
+        {
+          "name": "Draft",
+          "value": "draft"
+        },
+        {
+          "name": "Thread",
+          "value": "thread"
+        }
+      ],
+      "default": "message"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "draft"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a draft"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a draft"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a draft"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many drafts"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Draft ID",
+      "name": "messageId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "draft"
+          ],
+          "operation": [
+            "delete",
+            "get"
+          ]
+        }
+      },
+      "placeholder": "r-3254521568507167962"
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "draft"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "placeholder": "Hello World!"
+    },
+    {
+      "displayName": "Email Type",
+      "name": "emailType",
+      "type": "options",
+      "default": "text",
+      "required": true,
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "HTML",
+          "value": "html"
+        },
+        {
+          "name": "Text",
+          "value": "text"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "draft"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message",
+      "name": "message",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "draft"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "draft"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Attachments",
+          "name": "attachmentsUi",
+          "placeholder": "Add Attachment",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "name": "attachmentsBinary",
+              "displayName": "Attachment Binary",
+              "values": [
+                {
+                  "displayName": "Attachment Field Name (in Input)",
+                  "name": "property",
+                  "type": "string",
+                  "default": "",
+                  "description": "Add the field name from the input node. Multiple properties can be set separated by comma."
+                }
+              ]
+            }
+          ],
+          "default": {},
+          "description": "Array of supported attachments to add to the message"
+        },
+        {
+          "displayName": "BCC",
+          "name": "bccList",
+          "type": "string",
+          "description": "The email addresses of the blind copy recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com.",
+          "placeholder": "info@example.com",
+          "default": ""
+        },
+        {
+          "displayName": "CC",
+          "name": "ccList",
+          "type": "string",
+          "description": "The email addresses of the copy recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com.",
+          "placeholder": "info@example.com",
+          "default": ""
+        },
+        {
+          "displayName": "From Alias Name or ID",
+          "name": "fromAlias",
+          "type": "options",
+          "default": "",
+          "description": "Select the alias to send the email from. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getGmailAliases"
+          }
+        },
+        {
+          "displayName": "Send Replies To",
+          "name": "replyTo",
+          "type": "string",
+          "placeholder": "reply@example.com",
+          "default": "",
+          "description": "The email address that the reply message is sent to"
+        },
+        {
+          "displayName": "Thread ID",
+          "name": "threadId",
+          "type": "string",
+          "placeholder": "18cc573e2431878f",
+          "default": "",
+          "description": "The identifier of the thread to attach the draft"
+        },
+        {
+          "displayName": "To Email",
+          "name": "sendTo",
+          "type": "string",
+          "default": "",
+          "placeholder": "info@example.com",
+          "description": "The email addresses of the recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com."
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "draft"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Attachment Prefix",
+          "name": "dataPropertyAttachmentsPrefixName",
+          "type": "string",
+          "default": "attachment_",
+          "description": "Prefix for name of the binary property to which to write the attachment. An index starting with 0 will be added. So if name is 'attachment_' the first attachment is saved to 'attachment_0'."
+        },
+        {
+          "displayName": "Download Attachments",
+          "name": "downloadAttachments",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the draft's attachments will be downloaded"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "draft"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "draft"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "draft"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Attachment Prefix",
+          "name": "dataPropertyAttachmentsPrefixName",
+          "type": "string",
+          "default": "attachment_",
+          "description": "Prefix for name of the binary property to which to write the attachments. An index starting with 0 will be added. So if name is 'attachment_' the first attachment is saved to 'attachment_0'."
+        },
+        {
+          "displayName": "Download Attachments",
+          "name": "downloadAttachments",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the draft's attachments will be downloaded"
+        },
+        {
+          "displayName": "Include Spam and Trash",
+          "name": "includeSpamTrash",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include messages from SPAM and TRASH in the results"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "label"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a label"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a label"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a label info"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many labels"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "label"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "placeholder": "invoices",
+      "description": "Label Name"
+    },
+    {
+      "displayName": "Label ID",
+      "name": "labelId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "label"
+          ],
+          "operation": [
+            "get",
+            "delete"
+          ]
+        }
+      },
+      "description": "The ID of the label"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "label"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Label List Visibility",
+          "name": "labelListVisibility",
+          "type": "options",
+          "options": [
+            {
+              "name": "Hide",
+              "value": "labelHide"
+            },
+            {
+              "name": "Show",
+              "value": "labelShow"
+            },
+            {
+              "name": "Show If Unread",
+              "value": "labelShowIfUnread"
+            }
+          ],
+          "default": "labelShow",
+          "description": "The visibility of the label in the label list in the Gmail web interface"
+        },
+        {
+          "displayName": "Message List Visibility",
+          "name": "messageListVisibility",
+          "type": "options",
+          "options": [
+            {
+              "name": "Hide",
+              "value": "hide"
+            },
+            {
+              "name": "Show",
+              "value": "show"
+            }
+          ],
+          "default": "show",
+          "description": "The visibility of messages with this label in the message list in the Gmail web interface"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "label"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "label"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add Label",
+          "value": "addLabels",
+          "action": "Add label to message"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a message"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a message"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many messages"
+        },
+        {
+          "name": "Mark as Read",
+          "value": "markAsRead",
+          "action": "Mark a message as read"
+        },
+        {
+          "name": "Mark as Unread",
+          "value": "markAsUnread",
+          "action": "Mark a message as unread"
+        },
+        {
+          "name": "Remove Label",
+          "value": "removeLabels",
+          "action": "Remove label from message"
+        },
+        {
+          "name": "Reply",
+          "value": "reply",
+          "action": "Reply to a message"
+        },
+        {
+          "name": "Send",
+          "value": "send",
+          "action": "Send a message"
+        },
+        {
+          "name": "Send and Wait for Response",
+          "value": "sendAndWait",
+          "action": "Send message and wait for response"
+        }
+      ],
+      "default": "send"
+    },
+    {
+      "displayName": "Message ID",
+      "name": "messageId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "get",
+            "delete",
+            "markAsRead",
+            "markAsUnread"
+          ]
+        }
+      },
+      "placeholder": "172ce2c4a72cc243"
+    },
+    {
+      "displayName": "Message ID",
+      "name": "messageId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "reply"
+          ]
+        }
+      },
+      "placeholder": "172ce2c4a72cc243"
+    },
+    {
+      "displayName": "To",
+      "name": "sendTo",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "placeholder": "info@example.com",
+      "description": "The email addresses of the recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com."
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "placeholder": "Hello World!"
+    },
+    {
+      "displayName": "Email Type",
+      "name": "emailType",
+      "type": "options",
+      "default": "html",
+      "required": true,
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Text",
+          "value": "text"
+        },
+        {
+          "name": "HTML",
+          "value": "html"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "send",
+            "reply"
+          ]
+        },
+        "hide": {
+          "@version": [
+            2
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Email Type",
+      "name": "emailType",
+      "type": "options",
+      "default": "html",
+      "required": true,
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Text",
+          "value": "text"
+        },
+        {
+          "name": "HTML",
+          "value": "html"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "send",
+            "reply"
+          ],
+          "@version": [
+            2
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message",
+      "name": "message",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "reply",
+            "send"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "send",
+            "reply"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Append n8n Attribution",
+          "name": "appendAttribution",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the phrase “This email was sent automatically with n8n” to the end of the email"
+        },
+        {
+          "displayName": "Attachments",
+          "name": "attachmentsUi",
+          "placeholder": "Add Attachment",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "name": "attachmentsBinary",
+              "displayName": "Attachment Binary",
+              "values": [
+                {
+                  "displayName": "Attachment Field Name",
+                  "name": "property",
+                  "type": "string",
+                  "default": "data",
+                  "description": "Add the field name from the input node. Multiple properties can be set separated by comma.",
+                  "hint": "The name of the field with the attachment in the node input"
+                }
+              ]
+            }
+          ],
+          "default": {},
+          "description": "Array of supported attachments to add to the message"
+        },
+        {
+          "displayName": "BCC",
+          "name": "bccList",
+          "type": "string",
+          "description": "The email addresses of the blind copy recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com.",
+          "placeholder": "info@example.com",
+          "default": ""
+        },
+        {
+          "displayName": "CC",
+          "name": "ccList",
+          "type": "string",
+          "description": "The email addresses of the copy recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com.",
+          "placeholder": "info@example.com",
+          "default": ""
+        },
+        {
+          "displayName": "Sender Name",
+          "name": "senderName",
+          "type": "string",
+          "placeholder": "e.g. Nathan",
+          "default": "",
+          "description": "The name that will be shown in recipients' inboxes"
+        },
+        {
+          "displayName": "Send Replies To",
+          "name": "replyTo",
+          "type": "string",
+          "placeholder": "reply@example.com",
+          "default": "",
+          "description": "The email address that the reply message is sent to",
+          "displayOptions": {
+            "hide": {
+              "/operation": [
+                "reply"
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Reply to Sender Only",
+          "name": "replyToSenderOnly",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to reply to the sender only or to the entire list of recipients"
+        }
+      ]
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "get"
+          ]
+        },
+        "hide": {
+          "simple": [
+            true
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Attachment Prefix",
+          "name": "dataPropertyAttachmentsPrefixName",
+          "type": "string",
+          "default": "attachment_",
+          "description": "Prefix for name of the binary property to which to write the attachment. An index starting with 0 will be added. So if name is 'attachment_' the first attachment is saved to 'attachment_0'."
+        },
+        {
+          "displayName": "Download Attachments",
+          "name": "downloadAttachments",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the email's attachments will be downloaded and included in the output"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "message"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Fetching a lot of messages may take a long time. Consider using filters to speed things up",
+      "name": "filtersNotice",
+      "type": "notice",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "message"
+          ],
+          "returnAll": [
+            true
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Spam and Trash",
+          "name": "includeSpamTrash",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include messages from SPAM and TRASH in the results"
+        },
+        {
+          "displayName": "Label Names or IDs",
+          "name": "labelIds",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getLabels"
+          },
+          "default": [],
+          "description": "Only return messages with labels that match all of the specified label IDs. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Search",
+          "name": "q",
+          "type": "string",
+          "default": "",
+          "placeholder": "has:attachment",
+          "hint": "Use the same format as in the Gmail search box. <a href=\"https://support.google.com/mail/answer/7190?hl=en\">More info</a>.",
+          "description": "Only return messages matching the specified query"
+        },
+        {
+          "displayName": "Read Status",
+          "name": "readStatus",
+          "type": "options",
+          "default": "unread",
+          "hint": "Filter emails by whether they have been read or not",
+          "options": [
+            {
+              "name": "Unread and read emails",
+              "value": "both"
+            },
+            {
+              "name": "Unread emails only",
+              "value": "unread"
+            },
+            {
+              "name": "Read emails only",
+              "value": "read"
+            }
+          ]
+        },
+        {
+          "displayName": "Received After",
+          "name": "receivedAfter",
+          "type": "dateTime",
+          "default": "",
+          "description": "Get all emails received after the specified date. In an expression you can set date using string in ISO format or a timestamp in miliseconds."
+        },
+        {
+          "displayName": "Received Before",
+          "name": "receivedBefore",
+          "type": "dateTime",
+          "default": "",
+          "description": "Get all emails received before the specified date. In an expression you can set date using string in ISO format or a timestamp in miliseconds."
+        },
+        {
+          "displayName": "Sender",
+          "name": "sender",
+          "type": "string",
+          "default": "",
+          "description": "Sender name or email to filter by",
+          "hint": "Enter an email or part of a sender name"
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "message"
+          ]
+        },
+        "hide": {
+          "simple": [
+            true
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Attachment Prefix",
+          "name": "dataPropertyAttachmentsPrefixName",
+          "type": "string",
+          "default": "attachment_",
+          "description": "Prefix for name of the binary property to which to write the attachment. An index starting with 0 will be added. So if name is 'attachment_' the first attachment is saved to 'attachment_0'."
+        },
+        {
+          "displayName": "Download Attachments",
+          "name": "downloadAttachments",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the email's attachments will be downloaded and included in the output"
+        }
+      ]
+    },
+    {
+      "displayName": "Message ID",
+      "name": "messageId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "placeholder": "172ce2c4a72cc243",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "addLabels",
+            "removeLabels"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Label Names or IDs",
+      "name": "labelIds",
+      "type": "multiOptions",
+      "typeOptions": {
+        "loadOptionsMethod": "getLabels"
+      },
+      "default": [],
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "addLabels",
+            "removeLabels"
+          ]
+        }
+      },
+      "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>"
+    },
+    {
+      "displayName": "To",
+      "name": "sendTo",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "placeholder": "e.g. info@example.com",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "placeholder": "e.g. Approval required",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message",
+      "name": "message",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "typeOptions": {
+        "rows": 4
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Response Type",
+      "name": "responseType",
+      "type": "options",
+      "default": "approval",
+      "options": [
+        {
+          "name": "Approval",
+          "value": "approval",
+          "description": "User can approve/disapprove from within the message"
+        },
+        {
+          "name": "Free Text",
+          "value": "freeText",
+          "description": "User can submit a response via a form"
+        },
+        {
+          "name": "Custom Form",
+          "value": "customForm",
+          "description": "User can submit a response via a custom form"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Define Form",
+      "name": "defineForm",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Using Fields Below",
+          "value": "fields"
+        },
+        {
+          "name": "Using JSON",
+          "value": "json"
+        }
+      ],
+      "default": "fields",
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "customForm"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Form Fields",
+      "name": "jsonOutput",
+      "type": "json",
+      "typeOptions": {
+        "rows": 5
+      },
+      "default": "[\n   {\n      \"fieldLabel\":\"Name\",\n      \"placeholder\":\"enter you name\",\n      \"requiredField\":true\n   },\n   {\n      \"fieldLabel\":\"Age\",\n      \"fieldType\":\"number\",\n      \"placeholder\":\"enter your age\"\n   },\n   {\n      \"fieldLabel\":\"Email\",\n      \"fieldType\":\"email\",\n      \"requiredField\":true\n   }\n]",
+      "validateType": "form-fields",
+      "ignoreValidationDuringExecution": true,
+      "hint": "<a href=\"https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.form/\" target=\"_blank\">See docs</a> for field syntax",
+      "displayOptions": {
+        "show": {
+          "defineForm": [
+            "json"
+          ],
+          "responseType": [
+            "customForm"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Form Elements",
+      "name": "formFields",
+      "placeholder": "Add Form Element",
+      "type": "fixedCollection",
+      "default": {},
+      "typeOptions": {
+        "multipleValues": true,
+        "sortable": true
+      },
+      "options": [
+        {
+          "displayName": "Values",
+          "name": "values",
+          "values": [
+            {
+              "displayName": "Field Name",
+              "name": "fieldLabel",
+              "type": "string",
+              "default": "",
+              "placeholder": "e.g. What is your name?",
+              "description": "Label that appears above the input field",
+              "required": true,
+              "displayOptions": {
+                "hide": {
+                  "fieldType": [
+                    "hiddenField",
+                    "html"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Element Type",
+              "name": "fieldType",
+              "type": "options",
+              "default": "text",
+              "description": "The type of field to add to the form",
+              "options": [
+                {
+                  "name": "Custom HTML",
+                  "value": "html"
+                },
+                {
+                  "name": "Date",
+                  "value": "date"
+                },
+                {
+                  "name": "Dropdown List",
+                  "value": "dropdown"
+                },
+                {
+                  "name": "Email",
+                  "value": "email"
+                },
+                {
+                  "name": "File",
+                  "value": "file"
+                },
+                {
+                  "name": "Hidden Field",
+                  "value": "hiddenField"
+                },
+                {
+                  "name": "Number",
+                  "value": "number"
+                },
+                {
+                  "name": "Password",
+                  "value": "password"
+                },
+                {
+                  "name": "Text",
+                  "value": "text"
+                },
+                {
+                  "name": "Textarea",
+                  "value": "textarea"
+                }
+              ],
+              "required": true
+            },
+            {
+              "displayName": "Element Name",
+              "name": "elementName",
+              "type": "string",
+              "default": "",
+              "placeholder": "e.g. content-section",
+              "description": "Optional field. It can be used to include the html in the output.",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "html"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Placeholder",
+              "name": "placeholder",
+              "description": "Sample text to display inside the field",
+              "type": "string",
+              "default": "",
+              "displayOptions": {
+                "hide": {
+                  "fieldType": [
+                    "dropdown",
+                    "date",
+                    "file",
+                    "html",
+                    "hiddenField"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Field Name",
+              "name": "fieldName",
+              "description": "The name of the field, used in input attributes and referenced by the workflow",
+              "type": "string",
+              "default": "",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "hiddenField"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Field Value",
+              "name": "fieldValue",
+              "description": "Input value can be set here or will be passed as a query parameter via Field Name if no value is set",
+              "type": "string",
+              "default": "",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "hiddenField"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Field Options",
+              "name": "fieldOptions",
+              "placeholder": "Add Field Option",
+              "description": "List of options that can be selected from the dropdown",
+              "type": "fixedCollection",
+              "default": {
+                "values": [
+                  {
+                    "option": ""
+                  }
+                ]
+              },
+              "required": true,
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "dropdown"
+                  ]
+                }
+              },
+              "typeOptions": {
+                "multipleValues": true,
+                "sortable": true
+              },
+              "options": [
+                {
+                  "displayName": "Values",
+                  "name": "values",
+                  "values": [
+                    {
+                      "displayName": "Option",
+                      "name": "option",
+                      "type": "string",
+                      "default": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "displayName": "Multiple Choice",
+              "name": "multiselect",
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to allow the user to select multiple options from the dropdown list",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "dropdown"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "HTML",
+              "name": "html",
+              "typeOptions": {
+                "editor": "htmlEditor"
+              },
+              "type": "string",
+              "noDataExpression": true,
+              "default": "<!-- Your custom HTML here --->\n\n\n",
+              "description": "HTML elements to display on the form page",
+              "hint": "Does not accept <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code> or <code>&lt;input&gt;</code> tags",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "html"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Multiple Files",
+              "name": "multipleFiles",
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to allow the user to select multiple files from the file input or just one",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "file"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Accepted File Types",
+              "name": "acceptFileTypes",
+              "type": "string",
+              "default": "",
+              "description": "Comma-separated list of allowed file extensions",
+              "hint": "Leave empty to allow all file types",
+              "placeholder": "e.g. .jpg, .png",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "file"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "The displayed date is formatted based on the locale of the user's browser",
+              "name": "formatDate",
+              "type": "notice",
+              "default": "",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "date"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Required Field",
+              "name": "requiredField",
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to require the user to enter a value for this field before submitting the form",
+              "displayOptions": {
+                "hide": {
+                  "fieldType": [
+                    "html",
+                    "hiddenField"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "defineForm": [
+            "fields"
+          ],
+          "responseType": [
+            "customForm"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Approval Options",
+      "name": "approvalOptions",
+      "type": "fixedCollection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Values",
+          "name": "values",
+          "values": [
+            {
+              "displayName": "Type of Approval",
+              "name": "approvalType",
+              "type": "options",
+              "placeholder": "Add option",
+              "default": "single",
+              "options": [
+                {
+                  "name": "Approve Only",
+                  "value": "single"
+                },
+                {
+                  "name": "Approve and Disapprove",
+                  "value": "double"
+                }
+              ]
+            },
+            {
+              "displayName": "Approve Button Label",
+              "name": "approveLabel",
+              "type": "string",
+              "default": "Approve",
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "single",
+                    "double"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Approve Button Style",
+              "name": "buttonApprovalStyle",
+              "type": "options",
+              "default": "primary",
+              "options": [
+                {
+                  "name": "Primary",
+                  "value": "primary"
+                },
+                {
+                  "name": "Secondary",
+                  "value": "secondary"
+                }
+              ],
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "single",
+                    "double"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Disapprove Button Label",
+              "name": "disapproveLabel",
+              "type": "string",
+              "default": "Decline",
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "double"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Disapprove Button Style",
+              "name": "buttonDisapprovalStyle",
+              "type": "options",
+              "default": "secondary",
+              "options": [
+                {
+                  "name": "Primary",
+                  "value": "primary"
+                },
+                {
+                  "name": "Secondary",
+                  "value": "secondary"
+                }
+              ],
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "double"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "approval"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Limit Wait Time",
+          "name": "limitWaitTime",
+          "type": "fixedCollection",
+          "description": "Whether the workflow will automatically resume execution after the specified limit type",
+          "default": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "options": [
+            {
+              "displayName": "Values",
+              "name": "values",
+              "values": [
+                {
+                  "displayName": "Limit Type",
+                  "name": "limitType",
+                  "type": "options",
+                  "default": "afterTimeInterval",
+                  "description": "Sets the condition for the execution to resume. Can be a specified date or after some time.",
+                  "options": [
+                    {
+                      "name": "After Time Interval",
+                      "description": "Waits for a certain amount of time",
+                      "value": "afterTimeInterval"
+                    },
+                    {
+                      "name": "At Specified Time",
+                      "description": "Waits until the set date and time to continue",
+                      "value": "atSpecifiedTime"
+                    }
+                  ]
+                },
+                {
+                  "displayName": "Amount",
+                  "name": "resumeAmount",
+                  "type": "number",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "typeOptions": {
+                    "minValue": 0,
+                    "numberPrecision": 2
+                  },
+                  "default": 1,
+                  "description": "The time to wait"
+                },
+                {
+                  "displayName": "Unit",
+                  "name": "resumeUnit",
+                  "type": "options",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "options": [
+                    {
+                      "name": "Minutes",
+                      "value": "minutes"
+                    },
+                    {
+                      "name": "Hours",
+                      "value": "hours"
+                    },
+                    {
+                      "name": "Days",
+                      "value": "days"
+                    }
+                  ],
+                  "default": "hours",
+                  "description": "Unit of the interval value"
+                },
+                {
+                  "displayName": "Max Date and Time",
+                  "name": "maxDateAndTime",
+                  "type": "dateTime",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "atSpecifiedTime"
+                      ]
+                    }
+                  },
+                  "default": "",
+                  "description": "Continue execution after the specified date and time"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Append n8n Attribution",
+          "name": "appendAttribution",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the phrase \"This message was sent automatically with n8n\" to the end of the message"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "approval"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Message Button Label",
+          "name": "messageButtonLabel",
+          "type": "string",
+          "default": "Respond"
+        },
+        {
+          "displayName": "Response Form Title",
+          "name": "responseFormTitle",
+          "description": "Title of the form that the user can access to provide their response",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Response Form Description",
+          "name": "responseFormDescription",
+          "description": "Description of the form that the user can access to provide their response",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Response Form Button Label",
+          "name": "responseFormButtonLabel",
+          "type": "string",
+          "default": "Submit"
+        },
+        {
+          "displayName": "Limit Wait Time",
+          "name": "limitWaitTime",
+          "type": "fixedCollection",
+          "description": "Whether the workflow will automatically resume execution after the specified limit type",
+          "default": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "options": [
+            {
+              "displayName": "Values",
+              "name": "values",
+              "values": [
+                {
+                  "displayName": "Limit Type",
+                  "name": "limitType",
+                  "type": "options",
+                  "default": "afterTimeInterval",
+                  "description": "Sets the condition for the execution to resume. Can be a specified date or after some time.",
+                  "options": [
+                    {
+                      "name": "After Time Interval",
+                      "description": "Waits for a certain amount of time",
+                      "value": "afterTimeInterval"
+                    },
+                    {
+                      "name": "At Specified Time",
+                      "description": "Waits until the set date and time to continue",
+                      "value": "atSpecifiedTime"
+                    }
+                  ]
+                },
+                {
+                  "displayName": "Amount",
+                  "name": "resumeAmount",
+                  "type": "number",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "typeOptions": {
+                    "minValue": 0,
+                    "numberPrecision": 2
+                  },
+                  "default": 1,
+                  "description": "The time to wait"
+                },
+                {
+                  "displayName": "Unit",
+                  "name": "resumeUnit",
+                  "type": "options",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "options": [
+                    {
+                      "name": "Minutes",
+                      "value": "minutes"
+                    },
+                    {
+                      "name": "Hours",
+                      "value": "hours"
+                    },
+                    {
+                      "name": "Days",
+                      "value": "days"
+                    }
+                  ],
+                  "default": "hours",
+                  "description": "Unit of the interval value"
+                },
+                {
+                  "displayName": "Max Date and Time",
+                  "name": "maxDateAndTime",
+                  "type": "dateTime",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "atSpecifiedTime"
+                      ]
+                    }
+                  },
+                  "default": "",
+                  "description": "Continue execution after the specified date and time"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Append n8n Attribution",
+          "name": "appendAttribution",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the phrase \"This message was sent automatically with n8n\" to the end of the message"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "freeText",
+            "customForm"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "thread"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add Label",
+          "value": "addLabels",
+          "action": "Add label to thread"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a thread"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a thread"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many threads"
+        },
+        {
+          "name": "Remove Label",
+          "value": "removeLabels",
+          "action": "Remove label from thread"
+        },
+        {
+          "name": "Reply",
+          "value": "reply",
+          "action": "Reply to a message"
+        },
+        {
+          "name": "Trash",
+          "value": "trash",
+          "action": "Trash a thread"
+        },
+        {
+          "name": "Untrash",
+          "value": "untrash",
+          "action": "Untrash a thread"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Thread ID",
+      "name": "threadId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "description": "The ID of the thread you are operating on",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "thread"
+          ],
+          "operation": [
+            "get",
+            "delete",
+            "reply",
+            "trash",
+            "untrash"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message Snippet or ID",
+      "name": "messageId",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getThreadMessages",
+        "loadOptionsDependsOn": [
+          "threadId"
+        ]
+      },
+      "default": "",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "thread"
+          ],
+          "operation": [
+            "reply"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Email Type",
+      "name": "emailType",
+      "type": "options",
+      "default": "text",
+      "required": true,
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Text",
+          "value": "text"
+        },
+        {
+          "name": "HTML",
+          "value": "html"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "thread"
+          ],
+          "operation": [
+            "reply"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message",
+      "name": "message",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "thread"
+          ],
+          "operation": [
+            "reply"
+          ]
+        }
+      },
+      "hint": "Get better Text and Expressions writing experience by using the expression editor"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "thread"
+          ],
+          "operation": [
+            "reply"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Attachments",
+          "name": "attachmentsUi",
+          "placeholder": "Add Attachment",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "name": "attachmentsBinary",
+              "displayName": "Attachment Binary",
+              "values": [
+                {
+                  "displayName": "Attachment Field Name",
+                  "name": "property",
+                  "type": "string",
+                  "default": "",
+                  "description": "Add the field name from the input node. Multiple properties can be set separated by comma."
+                }
+              ]
+            }
+          ],
+          "default": {},
+          "description": "Array of supported attachments to add to the message"
+        },
+        {
+          "displayName": "BCC",
+          "name": "bccList",
+          "type": "string",
+          "description": "The email addresses of the blind copy recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com.",
+          "placeholder": "info@example.com",
+          "default": ""
+        },
+        {
+          "displayName": "CC",
+          "name": "ccList",
+          "type": "string",
+          "description": "The email addresses of the copy recipients. Multiple addresses can be separated by a comma. e.g. jay@getsby.com, jon@smith.com.",
+          "placeholder": "info@example.com",
+          "default": ""
+        },
+        {
+          "displayName": "Sender Name",
+          "name": "senderName",
+          "type": "string",
+          "placeholder": "e.g. Nathan",
+          "default": "",
+          "description": "The name displayed in your contacts inboxes"
+        },
+        {
+          "displayName": "Reply to Sender Only",
+          "name": "replyToSenderOnly",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to reply to the sender only or to the entire list of recipients"
+        }
+      ]
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "thread"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "thread"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Return Only Messages",
+          "name": "returnOnlyMessages",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to return only thread messages"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "thread"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "thread"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Fetching a lot of messages may take a long time. Consider using filters to speed things up",
+      "name": "filtersNotice",
+      "type": "notice",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "thread"
+          ],
+          "returnAll": [
+            true
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "thread"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Spam and Trash",
+          "name": "includeSpamTrash",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include threads from SPAM and TRASH in the results"
+        },
+        {
+          "displayName": "Label ID Names or IDs",
+          "name": "labelIds",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getLabels"
+          },
+          "default": [],
+          "description": "Only return threads with labels that match all of the specified label IDs. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Search",
+          "name": "q",
+          "type": "string",
+          "default": "",
+          "placeholder": "has:attachment",
+          "hint": "Use the same format as in the Gmail search box. <a href=\"https://support.google.com/mail/answer/7190?hl=en\">More info</a>.",
+          "description": "Only return messages matching the specified query"
+        },
+        {
+          "displayName": "Read Status",
+          "name": "readStatus",
+          "type": "options",
+          "default": "unread",
+          "hint": "Filter emails by whether they have been read or not",
+          "options": [
+            {
+              "name": "Unread and read emails",
+              "value": "both"
+            },
+            {
+              "name": "Unread emails only",
+              "value": "unread"
+            },
+            {
+              "name": "Read emails only",
+              "value": "read"
+            }
+          ]
+        },
+        {
+          "displayName": "Received After",
+          "name": "receivedAfter",
+          "type": "dateTime",
+          "default": "",
+          "description": "Get all emails received after the specified date. In an expression you can set date using string in ISO format or a timestamp in miliseconds."
+        },
+        {
+          "displayName": "Received Before",
+          "name": "receivedBefore",
+          "type": "dateTime",
+          "default": "",
+          "description": "Get all emails received before the specified date. In an expression you can set date using string in ISO format or a timestamp in miliseconds."
+        }
+      ]
+    },
+    {
+      "displayName": "Thread ID",
+      "name": "threadId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "placeholder": "172ce2c4a72cc243",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "thread"
+          ],
+          "operation": [
+            "addLabels",
+            "removeLabels"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Label Names or IDs",
+      "name": "labelIds",
+      "type": "multiOptions",
+      "typeOptions": {
+        "loadOptionsMethod": "getLabels"
+      },
+      "default": [],
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "thread"
+          ],
+          "operation": [
+            "addLabels",
+            "removeLabels"
+          ]
+        }
+      },
+      "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>"
+    }
+  ],
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Google/Gmail/gmail.svg",
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.gmail/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/google/oauth-single-service/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.gmailTool"
+}

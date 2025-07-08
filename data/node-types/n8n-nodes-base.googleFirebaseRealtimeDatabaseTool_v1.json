@@ -1,0 +1,192 @@
+{
+  "displayName": "Google Cloud Realtime Database Tool",
+  "group": [
+    "input"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"]}}",
+  "description": "Interact with Google Firebase - Realtime Database API",
+  "defaults": {
+    "name": "Google Cloud Realtime Database"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "googleFirebaseRealtimeDatabaseOAuth2Api"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Interact with Google Firebase - Realtime Database API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Project Name or ID",
+      "name": "projectId",
+      "type": "options",
+      "default": "",
+      "typeOptions": {
+        "loadOptionsMethod": "getProjects"
+      },
+      "description": "As displayed in firebase console URL. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "required": true
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Write data to a database",
+          "action": "Write data to a database"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete data from a database",
+          "action": "Delete data from a database"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a record from a database",
+          "action": "Get a record from a database"
+        },
+        {
+          "name": "Push",
+          "value": "push",
+          "description": "Append to a list of data",
+          "action": "Append to a list of data"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update item on a database",
+          "action": "Update item in a database"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create",
+      "required": true
+    },
+    {
+      "displayName": "Object Path",
+      "name": "path",
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. /app/users",
+      "description": "Object path on database. Do not append .json.",
+      "required": true,
+      "displayOptions": {
+        "hide": {
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Object Path",
+      "name": "path",
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. /app/users",
+      "description": "Object path on database. Do not append .json.",
+      "hint": "Leave blank to get a whole database object",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Columns / Attributes",
+      "name": "attributes",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create",
+            "push",
+            "update"
+          ]
+        }
+      },
+      "description": "Attributes to save",
+      "required": true,
+      "placeholder": "age, name, city"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.googlecloudrealtimedatabase/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/google/oauth-single-service/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Google/Firebase/RealtimeDatabase/googleFirebaseRealtimeDatabase.svg",
+  "name": "n8n-nodes-base.googleFirebaseRealtimeDatabaseTool"
+}

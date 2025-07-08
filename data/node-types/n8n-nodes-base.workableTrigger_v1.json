@@ -1,0 +1,97 @@
+{
+  "displayName": "Workable Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"triggerOn\"]}}",
+  "description": "Starts the workflow when Workable events occur",
+  "defaults": {
+    "name": "Workable Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "workableApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Trigger On",
+      "name": "triggerOn",
+      "type": "options",
+      "options": [
+        {
+          "name": "Candidate Created",
+          "value": "candidateCreated"
+        },
+        {
+          "name": "Candidate Moved",
+          "value": "candidateMoved"
+        }
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Job Name or ID",
+          "name": "job",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getJobs"
+          },
+          "default": "",
+          "description": "Get notifications only for one job. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Stage Name or ID",
+          "name": "stage",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getStages"
+          },
+          "default": "",
+          "description": "Get notifications for specific stages. e.g. 'hired'. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Miscellaneous"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.workabletrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/workable/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Workable/workable.png",
+  "name": "n8n-nodes-base.workableTrigger"
+}

@@ -1,0 +1,6412 @@
+{
+  "displayName": "ActiveCampaign",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Create and edit data in ActiveCampaign",
+  "defaults": {
+    "name": "ActiveCampaign"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "activeCampaignApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Account",
+          "value": "account"
+        },
+        {
+          "name": "Account Contact",
+          "value": "accountContact"
+        },
+        {
+          "name": "Connection",
+          "value": "connection"
+        },
+        {
+          "name": "Contact",
+          "value": "contact"
+        },
+        {
+          "name": "Contact List",
+          "value": "contactList"
+        },
+        {
+          "name": "Contact Tag",
+          "value": "contactTag"
+        },
+        {
+          "name": "Deal",
+          "value": "deal"
+        },
+        {
+          "name": "E-Commerce Customer",
+          "value": "ecommerceCustomer"
+        },
+        {
+          "name": "E-Commerce Order",
+          "value": "ecommerceOrder"
+        },
+        {
+          "name": "E-Commerce Order Product",
+          "value": "ecommerceOrderProducts"
+        },
+        {
+          "name": "List",
+          "value": "list"
+        },
+        {
+          "name": "Tag",
+          "value": "tag"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "contact"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create an account",
+          "action": "Create an account"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete an account",
+          "action": "Delete an account"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get data of an account",
+          "action": "Get an account"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get data of many accounts",
+          "action": "Get many accounts"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update an account",
+          "action": "Update an account"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a contact",
+          "action": "Create a contact"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a contact",
+          "action": "Delete a contact"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get data of a contact",
+          "action": "Get a contact"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get data of many contacts",
+          "action": "Get many contacts"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a contact",
+          "action": "Update a contact"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "accountContact"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create an association",
+          "action": "Create an account contact"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete an association",
+          "action": "Delete an account contact"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update an association",
+          "action": "Update an account contact"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contactList"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add",
+          "value": "add",
+          "description": "Add contact to a list",
+          "action": "Add a contact to a list"
+        },
+        {
+          "name": "Remove",
+          "value": "remove",
+          "description": "Remove contact from a list",
+          "action": "Remove a contact from a list"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "add"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contactTag"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add",
+          "value": "add",
+          "description": "Add a tag to a contact",
+          "action": "Add a contact tag"
+        },
+        {
+          "name": "Remove",
+          "value": "remove",
+          "description": "Remove a tag from a contact",
+          "action": "Remove a contact tag"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "add"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "list"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many lists",
+          "action": "Get many lists"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a tag",
+          "action": "Create a tag"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a tag",
+          "action": "Delete a tag"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get data of a tag",
+          "action": "Get a tag"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get data of many tags",
+          "action": "Get many tags"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a tag",
+          "action": "Update a tag"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a deal",
+          "action": "Create a deal"
+        },
+        {
+          "name": "Create Note",
+          "value": "createNote",
+          "description": "Create a deal note",
+          "action": "Create a deal note"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a deal",
+          "action": "Delete a deal"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get data of a deal",
+          "action": "Get a deal"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get data of many deals",
+          "action": "Get many deals"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a deal",
+          "action": "Update a deal"
+        },
+        {
+          "name": "Update Deal Note",
+          "value": "updateNote",
+          "description": "Update a deal note",
+          "action": "Update a deal note"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a connection",
+          "action": "Create a connection"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a connection",
+          "action": "Delete a connection"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get data of a connection",
+          "action": "Get a connection"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get data of many connections",
+          "action": "Get many connections"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a connection",
+          "action": "Update a connection"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a order",
+          "action": "Create an e-commerce order"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a order",
+          "action": "Delete an e-commerce order"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get data of a order",
+          "action": "Get an e-commerce order"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get data of many orders",
+          "action": "Get many e-commerce orders"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a order",
+          "action": "Update an e-commerce order"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a E-commerce Customer",
+          "action": "Create an e-commerce customer"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a E-commerce Customer",
+          "action": "Delete an e-commerce customer"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get data of a E-commerce Customer",
+          "action": "Get an e-commerce customer"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get data of many E-commerce Customers",
+          "action": "Get many e-commerce customers"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a E-commerce Customer",
+          "action": "Update an e-commerce customer"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ecommerceOrderProducts"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get data of many order products",
+          "action": "Get many ecommerce orders"
+        },
+        {
+          "name": "Get by Product ID",
+          "value": "getByProductId",
+          "description": "Get data of a ordered product",
+          "action": "Get an e-commerce order product by product ID"
+        },
+        {
+          "name": "Get by Order ID",
+          "value": "getByOrderId",
+          "description": "Get data of an order's products",
+          "action": "Get an e-commerce order product by order ID"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Type",
+      "name": "tagType",
+      "type": "options",
+      "default": "contact",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Contact",
+          "value": "contact",
+          "description": "Tag contact"
+        },
+        {
+          "name": "Template",
+          "value": "template",
+          "description": "Tag template"
+        }
+      ],
+      "description": "Tag-type of the new tag"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "description": "Name of the new tag"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "Description of the new tag"
+        }
+      ]
+    },
+    {
+      "displayName": "Tag ID",
+      "name": "tagId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the tag to update"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "description": "The fields to update",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Tag",
+          "name": "tag",
+          "type": "string",
+          "default": "",
+          "description": "Name of the contact"
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "Description of the tag being updated"
+        }
+      ]
+    },
+    {
+      "displayName": "Tag ID",
+      "name": "tagId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the tag to delete"
+    },
+    {
+      "displayName": "Tag ID",
+      "name": "tagId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the tag to get"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "tag"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "list"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "list"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "list"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Tag Name or ID",
+      "name": "tagId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getTags"
+      },
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "add"
+          ],
+          "resource": [
+            "contactTag"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "add"
+          ],
+          "resource": [
+            "contactTag"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Contact Tag ID",
+      "name": "contactTagId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "remove"
+          ],
+          "resource": [
+            "contactTag"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the contact tag to delete"
+    },
+    {
+      "displayName": "List ID",
+      "name": "listId",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "add"
+          ],
+          "resource": [
+            "contactList"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "add"
+          ],
+          "resource": [
+            "contactList"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "List ID",
+      "name": "listId",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "remove"
+          ],
+          "resource": [
+            "contactList"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "remove"
+          ],
+          "resource": [
+            "contactList"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "description": "Account's name"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Account URL",
+          "name": "accountUrl",
+          "type": "string",
+          "default": "",
+          "description": "Account's website"
+        },
+        {
+          "displayName": "Fields",
+          "name": "fields",
+          "placeholder": "Add Custom Fields",
+          "description": "Adds a custom fields to set also values which have not been predefined",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "options": [
+            {
+              "name": "property",
+              "displayName": "Field",
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "customFieldId",
+                  "type": "options",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getAccountCustomFields"
+                  },
+                  "default": "",
+                  "description": "ID of the field to set. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+                },
+                {
+                  "displayName": "Field Value",
+                  "name": "fieldValue",
+                  "type": "string",
+                  "default": "",
+                  "description": "Value of the field to set"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Account ID",
+      "name": "accountId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the account to update"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "description": "The fields to update",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "Account's name"
+        },
+        {
+          "displayName": "Account URL",
+          "name": "accountUrl",
+          "type": "string",
+          "default": "",
+          "description": "Account's website"
+        },
+        {
+          "displayName": "Fields",
+          "name": "fields",
+          "placeholder": "Add Fields",
+          "description": "Adds a custom fields to set also values which have not been predefined",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "options": [
+            {
+              "name": "property",
+              "displayName": "Field",
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "customFieldId",
+                  "type": "options",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getAccountCustomFields"
+                  },
+                  "default": "",
+                  "description": "ID of the field to set. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+                },
+                {
+                  "displayName": "Field Value",
+                  "name": "fieldValue",
+                  "type": "string",
+                  "default": "",
+                  "description": "Value of the field to set"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Account ID",
+      "name": "accountId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the account to delete"
+    },
+    {
+      "displayName": "Account ID",
+      "name": "accountId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the account to get"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "account"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "account"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Search",
+          "name": "search",
+          "type": "string",
+          "default": "",
+          "description": "Search by name"
+        }
+      ]
+    },
+    {
+      "displayName": "Account ID",
+      "name": "account",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "accountContact"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contact",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "accountContact"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "accountContact"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Job Title",
+          "name": "jobTitle",
+          "type": "string",
+          "default": "",
+          "description": "Job Title of the contact at the account"
+        }
+      ]
+    },
+    {
+      "displayName": "Account Contact ID",
+      "name": "accountContactId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "accountContact"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the account contact to delete"
+    },
+    {
+      "displayName": "Account Contact ID",
+      "name": "accountContactId",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "accountContact"
+          ]
+        }
+      },
+      "description": "Account ID"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "description": "The fields to update",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "accountContact"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Job Title",
+          "name": "jobTitle",
+          "type": "string",
+          "default": "",
+          "description": "Job Title of the contact at the account"
+        }
+      ]
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "description": "The email of the contact to create"
+    },
+    {
+      "displayName": "Update if Exists",
+      "name": "updateIfExists",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to update user if it exists already. If not set and user exists it will error instead."
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Custom Fields",
+          "name": "fieldValues",
+          "placeholder": "Add Custom Fields",
+          "description": "Adds a custom fields to set also values which have not been predefined",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "options": [
+            {
+              "name": "property",
+              "displayName": "Custom Field",
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "field",
+                  "type": "options",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getContactCustomFields"
+                  },
+                  "default": "",
+                  "description": "ID of the field to set. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+                },
+                {
+                  "displayName": "Field Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": "",
+                  "description": "Value of the field to set"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "First Name",
+          "name": "firstName",
+          "type": "string",
+          "default": "",
+          "description": "The first name of the contact to create"
+        },
+        {
+          "displayName": "Last Name",
+          "name": "lastName",
+          "type": "string",
+          "default": "",
+          "description": "The last name of the contact to create"
+        },
+        {
+          "displayName": "Phone",
+          "name": "phone",
+          "type": "string",
+          "default": "",
+          "description": "Phone number of the contact"
+        }
+      ]
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the contact to update"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "description": "The fields to update",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Custom Fields",
+          "name": "fieldValues",
+          "placeholder": "Add Custom Fields",
+          "description": "Adds a custom fields to set also values which have not been predefined",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "options": [
+            {
+              "name": "property",
+              "displayName": "Custom Field",
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "field",
+                  "type": "options",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getContactCustomFields"
+                  },
+                  "default": "",
+                  "description": "ID of the field to set. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+                },
+                {
+                  "displayName": "Field Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": "",
+                  "description": "Value of the field to set"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "Email of the contact"
+        },
+        {
+          "displayName": "First Name",
+          "name": "firstName",
+          "type": "string",
+          "default": "",
+          "description": "First name of the contact"
+        },
+        {
+          "displayName": "Last Name",
+          "name": "lastName",
+          "type": "string",
+          "default": "",
+          "description": "Last name of the contact"
+        },
+        {
+          "displayName": "Phone",
+          "name": "phone",
+          "type": "string",
+          "default": "",
+          "description": "Phone number of the contact"
+        }
+      ]
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the contact to delete"
+    },
+    {
+      "displayName": "Contact ID",
+      "name": "contactId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the contact to get"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "contact"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Datetime",
+          "name": "datetime",
+          "type": "dateTime",
+          "default": "",
+          "description": "Contacts created on the specified date"
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "Email address of the contact you want to get"
+        },
+        {
+          "displayName": "Email Like",
+          "name": "email_like",
+          "type": "string",
+          "default": "",
+          "description": "Filter contacts that contain the given value in the email address"
+        },
+        {
+          "displayName": "Exclude",
+          "name": "exclude",
+          "type": "string",
+          "default": "",
+          "description": "Exclude from the response the contact with the given ID"
+        },
+        {
+          "displayName": "Form ID",
+          "name": "formid",
+          "type": "string",
+          "default": "",
+          "description": "Filter contacts associated with the given form"
+        },
+        {
+          "displayName": "List ID",
+          "name": "listid",
+          "type": "string",
+          "default": "",
+          "description": "Filter contacts associated with the given list"
+        },
+        {
+          "displayName": "Search",
+          "name": "search",
+          "type": "string",
+          "default": "",
+          "description": "Filter contacts that match the given value in the contact names, organization, phone or email"
+        },
+        {
+          "displayName": "Segment ID",
+          "name": "segmentid",
+          "type": "string",
+          "default": "",
+          "description": "Return only contacts that match a list segment"
+        },
+        {
+          "displayName": "Series ID",
+          "name": "seriesid",
+          "type": "string",
+          "default": "",
+          "description": "Filter contacts associated with the given automation"
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "options": [
+            {
+              "name": "Active",
+              "value": 1
+            },
+            {
+              "name": "Any",
+              "value": -1
+            },
+            {
+              "name": "Bounced",
+              "value": 3
+            },
+            {
+              "name": "Unconfirmed",
+              "value": 0
+            },
+            {
+              "name": "Unsubscribed",
+              "value": 2
+            }
+          ],
+          "default": ""
+        },
+        {
+          "displayName": "Tag ID",
+          "name": "tagid",
+          "type": "string",
+          "default": "",
+          "description": "Filter contacts associated with the given tag"
+        },
+        {
+          "displayName": "Created Before",
+          "name": "filters[created_before]",
+          "type": "dateTime",
+          "default": "",
+          "description": "Filter contacts that were created prior to this date"
+        },
+        {
+          "displayName": "Created After",
+          "name": "filters[created_after]",
+          "type": "dateTime",
+          "default": "",
+          "description": "Filter contacts that were created after this date"
+        },
+        {
+          "displayName": "Updated Before",
+          "name": "filters[updated_before]",
+          "type": "dateTime",
+          "default": "",
+          "description": "Filter contacts that were updated before this date"
+        },
+        {
+          "displayName": "Updated After",
+          "name": "filters[updated_after]",
+          "type": "dateTime",
+          "default": "",
+          "description": "Filter contacts that were updated after this date"
+        },
+        {
+          "displayName": "Wait ID",
+          "name": "waitid",
+          "type": "string",
+          "default": "",
+          "description": "Filter by contacts in the wait queue of an automation block"
+        },
+        {
+          "displayName": "Order By",
+          "name": "orderBy",
+          "type": "options",
+          "options": [
+            {
+              "name": "Creation Date",
+              "value": "orders[cdate]",
+              "description": "Order contacts by creation date"
+            },
+            {
+              "name": "Email",
+              "value": "orders[email]",
+              "description": "Order contacts by email"
+            },
+            {
+              "name": "First Name",
+              "value": "orders[first_name]",
+              "description": "Order contacts by first name"
+            },
+            {
+              "name": "Last Name",
+              "value": "orders[last_name]",
+              "description": "Order contacts by last name"
+            },
+            {
+              "name": "Name",
+              "value": "orders[name]",
+              "description": "Order contacts by full name"
+            },
+            {
+              "name": "Score",
+              "value": "orders[score]",
+              "description": "Order contacts by score"
+            }
+          ],
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Title",
+      "name": "title",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The title of the deal"
+    },
+    {
+      "displayName": "Deal's Contact ID",
+      "name": "contact",
+      "type": "number",
+      "default": 0,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The ID of the deal's contact"
+    },
+    {
+      "displayName": "Deal Value",
+      "name": "value",
+      "type": "number",
+      "default": 0,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The value of the deal in cents"
+    },
+    {
+      "displayName": "Currency",
+      "name": "currency",
+      "type": "options",
+      "default": "eur",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Euro",
+          "value": "eur"
+        },
+        {
+          "name": "United States Dollar",
+          "value": "usd"
+        },
+        {
+          "name": "British Pound Sterling",
+          "value": "gbp"
+        },
+        {
+          "name": "Swiss Franc",
+          "value": "chf"
+        },
+        {
+          "name": "Renminbi",
+          "value": "cny"
+        },
+        {
+          "name": "--------",
+          "value": ""
+        },
+        {
+          "name": "United Arab Emirates Dirham",
+          "value": "aed"
+        },
+        {
+          "name": "Afghan Afghani",
+          "value": "afn"
+        },
+        {
+          "name": "Albanian Lek",
+          "value": "all"
+        },
+        {
+          "name": "Armenian Dram",
+          "value": "amd"
+        },
+        {
+          "name": "Netherlands Antillean Guilder",
+          "value": "ang"
+        },
+        {
+          "name": "Angolan Kwanza",
+          "value": "aoa"
+        },
+        {
+          "name": "Argentine Peso",
+          "value": "ars"
+        },
+        {
+          "name": "Australian Dollar",
+          "value": "aud"
+        },
+        {
+          "name": "Aruban Florin",
+          "value": "awg"
+        },
+        {
+          "name": "Azerbaijani Manat",
+          "value": "azn"
+        },
+        {
+          "name": "Bosnia-Herzegovina Convertible Mark",
+          "value": "bam"
+        },
+        {
+          "name": "Barbadian Dollar",
+          "value": "bbd"
+        },
+        {
+          "name": "Bangladeshi Taka",
+          "value": "bdt"
+        },
+        {
+          "name": "Bulgarian Lev",
+          "value": "bgn"
+        },
+        {
+          "name": "Bahraini Dinar",
+          "value": "bhd"
+        },
+        {
+          "name": "Burundian Franc",
+          "value": "bif"
+        },
+        {
+          "name": "Bermudan Dollar",
+          "value": "bmd"
+        },
+        {
+          "name": "Brunei Dollar",
+          "value": "bnd"
+        },
+        {
+          "name": "Bolivian Boliviano",
+          "value": "bob"
+        },
+        {
+          "name": "Brazilian Real",
+          "value": "brl"
+        },
+        {
+          "name": "Bahamian Dollar",
+          "value": "bsd"
+        },
+        {
+          "name": "Bitcoin",
+          "value": "btc"
+        },
+        {
+          "name": "Bhutanese Ngultrum",
+          "value": "btn"
+        },
+        {
+          "name": "Botswanan Pula",
+          "value": "bwp"
+        },
+        {
+          "name": "Belarusian Ruble",
+          "value": "byn"
+        },
+        {
+          "name": "Belize Dollar",
+          "value": "bzd"
+        },
+        {
+          "name": "Canadian Dollar",
+          "value": "cad"
+        },
+        {
+          "name": "Congolese Franc",
+          "value": "cdf"
+        },
+        {
+          "name": "Chilean Unit of Account (UF)",
+          "value": "clf"
+        },
+        {
+          "name": "Chilean Peso",
+          "value": "clp"
+        },
+        {
+          "name": "Chinese Yuan (Offshore)",
+          "value": "cnh"
+        },
+        {
+          "name": "Colombian Peso",
+          "value": "cop"
+        },
+        {
+          "name": "Costa Rican Colón",
+          "value": "crc"
+        },
+        {
+          "name": "Cuban Convertible Peso",
+          "value": "cuc"
+        },
+        {
+          "name": "Cuban Peso",
+          "value": "cup"
+        },
+        {
+          "name": "Cape Verdean Escudo",
+          "value": "cve"
+        },
+        {
+          "name": "Czech Republic Koruna",
+          "value": "czk"
+        },
+        {
+          "name": "Djiboutian Franc",
+          "value": "djf"
+        },
+        {
+          "name": "Danish Krone",
+          "value": "dkk"
+        },
+        {
+          "name": "Dominican Peso",
+          "value": "dop"
+        },
+        {
+          "name": "Algerian Dinar",
+          "value": "dzd"
+        },
+        {
+          "name": "Egyptian Pound",
+          "value": "egp"
+        },
+        {
+          "name": "Eritrean Nakfa",
+          "value": "ern"
+        },
+        {
+          "name": "Ethiopian Birr",
+          "value": "etb"
+        },
+        {
+          "name": "Fijian Dollar",
+          "value": "fjd"
+        },
+        {
+          "name": "Falkland Islands Pound",
+          "value": "fkp"
+        },
+        {
+          "name": "Georgian Lari",
+          "value": "gel"
+        },
+        {
+          "name": "Guernsey Pound",
+          "value": "ggp"
+        },
+        {
+          "name": "Ghanaian Cedi",
+          "value": "ghs"
+        },
+        {
+          "name": "Gibraltar Pound",
+          "value": "gip"
+        },
+        {
+          "name": "Gambian Dalasi",
+          "value": "gmd"
+        },
+        {
+          "name": "Guinean Franc",
+          "value": "gnf"
+        },
+        {
+          "name": "Guatemalan Quetzal",
+          "value": "gtq"
+        },
+        {
+          "name": "Guyanaese Dollar",
+          "value": "gyd"
+        },
+        {
+          "name": "Hong Kong Dollar",
+          "value": "hkd"
+        },
+        {
+          "name": "Honduran Lempira",
+          "value": "hnl"
+        },
+        {
+          "name": "Croatian Kuna",
+          "value": "hrk"
+        },
+        {
+          "name": "Haitian Gourde",
+          "value": "htg"
+        },
+        {
+          "name": "Hungarian Forint",
+          "value": "huf"
+        },
+        {
+          "name": "Indonesian Rupiah",
+          "value": "idr"
+        },
+        {
+          "name": "Israeli New Sheqel",
+          "value": "ils"
+        },
+        {
+          "name": "Manx Pound",
+          "value": "imp"
+        },
+        {
+          "name": "Indian Rupee",
+          "value": "inr"
+        },
+        {
+          "name": "Iraqi Dinar",
+          "value": "iqd"
+        },
+        {
+          "name": "Iranian Rial",
+          "value": "irr"
+        },
+        {
+          "name": "Icelandic Króna",
+          "value": "isk"
+        },
+        {
+          "name": "Jersey Pound",
+          "value": "jep"
+        },
+        {
+          "name": "Jamaican Dollar",
+          "value": "jmd"
+        },
+        {
+          "name": "Jordanian Dinar",
+          "value": "jod"
+        },
+        {
+          "name": "Japanese Yen",
+          "value": "jpy"
+        },
+        {
+          "name": "Kenyan Shilling",
+          "value": "kes"
+        },
+        {
+          "name": "Kyrgystani Som",
+          "value": "kgs"
+        },
+        {
+          "name": "Cambodian Riel",
+          "value": "khr"
+        },
+        {
+          "name": "Comorian Franc",
+          "value": "kmf"
+        },
+        {
+          "name": "North Korean Won",
+          "value": "kpw"
+        },
+        {
+          "name": "South Korean Won",
+          "value": "krw"
+        },
+        {
+          "name": "Kuwaiti Dinar",
+          "value": "kwd"
+        },
+        {
+          "name": "Cayman Islands Dollar",
+          "value": "kyd"
+        },
+        {
+          "name": "Kazakhstani Tenge",
+          "value": "kzt"
+        },
+        {
+          "name": "Laotian Kip",
+          "value": "lak"
+        },
+        {
+          "name": "Lebanese Pound",
+          "value": "lbp"
+        },
+        {
+          "name": "Sri Lankan Rupee",
+          "value": "lkr"
+        },
+        {
+          "name": "Liberian Dollar",
+          "value": "lrd"
+        },
+        {
+          "name": "Lesotho Loti",
+          "value": "lsl"
+        },
+        {
+          "name": "Libyan Dinar",
+          "value": "lyd"
+        },
+        {
+          "name": "Moroccan Dirham",
+          "value": "mad"
+        },
+        {
+          "name": "Moldovan Leu",
+          "value": "mdl"
+        },
+        {
+          "name": "Malagasy Ariary",
+          "value": "mga"
+        },
+        {
+          "name": "Macedonian Denar",
+          "value": "mkd"
+        },
+        {
+          "name": "Myanma Kyat",
+          "value": "mmk"
+        },
+        {
+          "name": "Mongolian Tugrik",
+          "value": "mnt"
+        },
+        {
+          "name": "Macanese Pataca",
+          "value": "mop"
+        },
+        {
+          "name": "Mauritanian Ouguiya (Pre-2018)",
+          "value": "mro"
+        },
+        {
+          "name": "Mauritanian Ouguiya",
+          "value": "mru"
+        },
+        {
+          "name": "Mauritian Rupee",
+          "value": "mur"
+        },
+        {
+          "name": "Maldivian Rufiyaa",
+          "value": "mvr"
+        },
+        {
+          "name": "Malawian Kwacha",
+          "value": "mwk"
+        },
+        {
+          "name": "Mexican Peso",
+          "value": "mxn"
+        },
+        {
+          "name": "Malaysian Ringgit",
+          "value": "myr"
+        },
+        {
+          "name": "Mozambican Metical",
+          "value": "mzn"
+        },
+        {
+          "name": "Namibian Dollar",
+          "value": "nad"
+        },
+        {
+          "name": "Nigerian Naira",
+          "value": "ngn"
+        },
+        {
+          "name": "Nicaraguan Córdoba",
+          "value": "nio"
+        },
+        {
+          "name": "Norwegian Krone",
+          "value": "nok"
+        },
+        {
+          "name": "Nepalese Rupee",
+          "value": "npr"
+        },
+        {
+          "name": "New Zealand Dollar",
+          "value": "nzd"
+        },
+        {
+          "name": "Omani Rial",
+          "value": "omr"
+        },
+        {
+          "name": "Panamanian Balboa",
+          "value": "pab"
+        },
+        {
+          "name": "Peruvian Nuevo Sol",
+          "value": "pen"
+        },
+        {
+          "name": "Papua New Guinean Kina",
+          "value": "pgk"
+        },
+        {
+          "name": "Philippine Peso",
+          "value": "php"
+        },
+        {
+          "name": "Pakistani Rupee",
+          "value": "pkr"
+        },
+        {
+          "name": "Polish Zloty",
+          "value": "pln"
+        },
+        {
+          "name": "Paraguayan Guarani",
+          "value": "pyg"
+        },
+        {
+          "name": "Qatari Rial",
+          "value": "qar"
+        },
+        {
+          "name": "Romanian Leu",
+          "value": "ron"
+        },
+        {
+          "name": "Serbian Dinar",
+          "value": "rsd"
+        },
+        {
+          "name": "Russian Ruble",
+          "value": "rub"
+        },
+        {
+          "name": "Rwandan Franc",
+          "value": "rwf"
+        },
+        {
+          "name": "Saudi Riyal",
+          "value": "sar"
+        },
+        {
+          "name": "Solomon Islands Dollar",
+          "value": "sbd"
+        },
+        {
+          "name": "Seychellois Rupee",
+          "value": "scr"
+        },
+        {
+          "name": "Sudanese Pound",
+          "value": "sdg"
+        },
+        {
+          "name": "Swedish Krona",
+          "value": "sek"
+        },
+        {
+          "name": "Singapore Dollar",
+          "value": "sgd"
+        },
+        {
+          "name": "Saint Helena Pound",
+          "value": "shp"
+        },
+        {
+          "name": "Sierra Leonean Leone",
+          "value": "sll"
+        },
+        {
+          "name": "Somali Shilling",
+          "value": "sos"
+        },
+        {
+          "name": "Surinamese Dollar",
+          "value": "srd"
+        },
+        {
+          "name": "South Sudanese Pound",
+          "value": "ssp"
+        },
+        {
+          "name": "São Tomé and Príncipe Dobra (Pre-2018)",
+          "value": "std"
+        },
+        {
+          "name": "São Tomé and Príncipe Dobra",
+          "value": "stn"
+        },
+        {
+          "name": "Salvadoran Colón",
+          "value": "svc"
+        },
+        {
+          "name": "Syrian Pound",
+          "value": "syp"
+        },
+        {
+          "name": "Swazi Lilangeni",
+          "value": "szl"
+        },
+        {
+          "name": "Thai Baht",
+          "value": "thb"
+        },
+        {
+          "name": "Tajikistani Somoni",
+          "value": "tjs"
+        },
+        {
+          "name": "Turkmenistani Manat",
+          "value": "tmt"
+        },
+        {
+          "name": "Tunisian Dinar",
+          "value": "tnd"
+        },
+        {
+          "name": "Tongan Pa'anga",
+          "value": "top"
+        },
+        {
+          "name": "Turkish Lira",
+          "value": "try"
+        },
+        {
+          "name": "Trinidad and Tobago Dollar",
+          "value": "ttd"
+        },
+        {
+          "name": "New Taiwan Dollar",
+          "value": "twd"
+        },
+        {
+          "name": "Tanzanian Shilling",
+          "value": "tzs"
+        },
+        {
+          "name": "Ukrainian Hryvnia",
+          "value": "uah"
+        },
+        {
+          "name": "Ugandan Shilling",
+          "value": "ugx"
+        },
+        {
+          "name": "Uruguayan Peso",
+          "value": "uyu"
+        },
+        {
+          "name": "Uzbekistan Som",
+          "value": "uzs"
+        },
+        {
+          "name": "Venezuelan Bolívar Fuerte",
+          "value": "vef"
+        },
+        {
+          "name": "Vietnamese Dong",
+          "value": "vnd"
+        },
+        {
+          "name": "Vanuatu Vatu",
+          "value": "vuv"
+        },
+        {
+          "name": "Samoan Tala",
+          "value": "wst"
+        },
+        {
+          "name": "CFA Franc BEAC",
+          "value": "xaf"
+        },
+        {
+          "name": "Silver Ounce",
+          "value": "xag"
+        },
+        {
+          "name": "Gold Ounce",
+          "value": "xau"
+        },
+        {
+          "name": "East Caribbean Dollar",
+          "value": "xcd"
+        },
+        {
+          "name": "Special Drawing Rights",
+          "value": "xdr"
+        },
+        {
+          "name": "CFA Franc BCEAO",
+          "value": "xof"
+        },
+        {
+          "name": "Palladium Ounce",
+          "value": "xpd"
+        },
+        {
+          "name": "CFP Franc",
+          "value": "xpf"
+        },
+        {
+          "name": "Platinum Ounce",
+          "value": "xpt"
+        },
+        {
+          "name": "Yemeni Rial",
+          "value": "yer"
+        },
+        {
+          "name": "South African Rand",
+          "value": "zar"
+        },
+        {
+          "name": "Zambian Kwacha",
+          "value": "zmw"
+        },
+        {
+          "name": "Zimbabwean Dollar",
+          "value": "zwl"
+        }
+      ],
+      "description": "The currency of the deal in 3-character ISO format"
+    },
+    {
+      "displayName": "Deal Pipeline ID",
+      "name": "group",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The pipeline ID of the deal"
+    },
+    {
+      "displayName": "Deal Stage ID",
+      "name": "stage",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The stage ID of the deal"
+    },
+    {
+      "displayName": "Deal Owner ID",
+      "name": "owner",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The owner ID of the deal"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "The description of the deal"
+        },
+        {
+          "displayName": "Deal Percentage",
+          "name": "percent",
+          "type": "number",
+          "default": 0,
+          "description": "The percentage of the deal"
+        },
+        {
+          "displayName": "Deal Status",
+          "name": "status",
+          "type": "number",
+          "default": 0,
+          "description": "The status of the deal"
+        }
+      ]
+    },
+    {
+      "displayName": "Deal ID",
+      "name": "dealId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the deal to update"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "description": "The fields to update",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Title",
+          "name": "title",
+          "type": "string",
+          "default": "",
+          "description": "The title of the deal"
+        },
+        {
+          "displayName": "Deal's Contact ID",
+          "name": "contact",
+          "type": "number",
+          "default": 0,
+          "description": "The ID of the deal's contact"
+        },
+        {
+          "displayName": "Deal Value",
+          "name": "value",
+          "type": "number",
+          "default": 0,
+          "description": "The value of the deal in cents"
+        },
+        {
+          "displayName": "Currency",
+          "name": "currency",
+          "type": "options",
+          "options": [
+            {
+              "name": "Euro",
+              "value": "eur"
+            },
+            {
+              "name": "United States Dollar",
+              "value": "usd"
+            },
+            {
+              "name": "British Pound Sterling",
+              "value": "gbp"
+            },
+            {
+              "name": "Swiss Franc",
+              "value": "chf"
+            },
+            {
+              "name": "Renminbi",
+              "value": "cny"
+            },
+            {
+              "name": "--------",
+              "value": ""
+            },
+            {
+              "name": "United Arab Emirates Dirham",
+              "value": "aed"
+            },
+            {
+              "name": "Afghan Afghani",
+              "value": "afn"
+            },
+            {
+              "name": "Albanian Lek",
+              "value": "all"
+            },
+            {
+              "name": "Armenian Dram",
+              "value": "amd"
+            },
+            {
+              "name": "Netherlands Antillean Guilder",
+              "value": "ang"
+            },
+            {
+              "name": "Angolan Kwanza",
+              "value": "aoa"
+            },
+            {
+              "name": "Argentine Peso",
+              "value": "ars"
+            },
+            {
+              "name": "Australian Dollar",
+              "value": "aud"
+            },
+            {
+              "name": "Aruban Florin",
+              "value": "awg"
+            },
+            {
+              "name": "Azerbaijani Manat",
+              "value": "azn"
+            },
+            {
+              "name": "Bosnia-Herzegovina Convertible Mark",
+              "value": "bam"
+            },
+            {
+              "name": "Barbadian Dollar",
+              "value": "bbd"
+            },
+            {
+              "name": "Bangladeshi Taka",
+              "value": "bdt"
+            },
+            {
+              "name": "Bulgarian Lev",
+              "value": "bgn"
+            },
+            {
+              "name": "Bahraini Dinar",
+              "value": "bhd"
+            },
+            {
+              "name": "Burundian Franc",
+              "value": "bif"
+            },
+            {
+              "name": "Bermudan Dollar",
+              "value": "bmd"
+            },
+            {
+              "name": "Brunei Dollar",
+              "value": "bnd"
+            },
+            {
+              "name": "Bolivian Boliviano",
+              "value": "bob"
+            },
+            {
+              "name": "Brazilian Real",
+              "value": "brl"
+            },
+            {
+              "name": "Bahamian Dollar",
+              "value": "bsd"
+            },
+            {
+              "name": "Bitcoin",
+              "value": "btc"
+            },
+            {
+              "name": "Bhutanese Ngultrum",
+              "value": "btn"
+            },
+            {
+              "name": "Botswanan Pula",
+              "value": "bwp"
+            },
+            {
+              "name": "Belarusian Ruble",
+              "value": "byn"
+            },
+            {
+              "name": "Belize Dollar",
+              "value": "bzd"
+            },
+            {
+              "name": "Canadian Dollar",
+              "value": "cad"
+            },
+            {
+              "name": "Congolese Franc",
+              "value": "cdf"
+            },
+            {
+              "name": "Chilean Unit of Account (UF)",
+              "value": "clf"
+            },
+            {
+              "name": "Chilean Peso",
+              "value": "clp"
+            },
+            {
+              "name": "Chinese Yuan (Offshore)",
+              "value": "cnh"
+            },
+            {
+              "name": "Colombian Peso",
+              "value": "cop"
+            },
+            {
+              "name": "Costa Rican Colón",
+              "value": "crc"
+            },
+            {
+              "name": "Cuban Convertible Peso",
+              "value": "cuc"
+            },
+            {
+              "name": "Cuban Peso",
+              "value": "cup"
+            },
+            {
+              "name": "Cape Verdean Escudo",
+              "value": "cve"
+            },
+            {
+              "name": "Czech Republic Koruna",
+              "value": "czk"
+            },
+            {
+              "name": "Djiboutian Franc",
+              "value": "djf"
+            },
+            {
+              "name": "Danish Krone",
+              "value": "dkk"
+            },
+            {
+              "name": "Dominican Peso",
+              "value": "dop"
+            },
+            {
+              "name": "Algerian Dinar",
+              "value": "dzd"
+            },
+            {
+              "name": "Egyptian Pound",
+              "value": "egp"
+            },
+            {
+              "name": "Eritrean Nakfa",
+              "value": "ern"
+            },
+            {
+              "name": "Ethiopian Birr",
+              "value": "etb"
+            },
+            {
+              "name": "Fijian Dollar",
+              "value": "fjd"
+            },
+            {
+              "name": "Falkland Islands Pound",
+              "value": "fkp"
+            },
+            {
+              "name": "Georgian Lari",
+              "value": "gel"
+            },
+            {
+              "name": "Guernsey Pound",
+              "value": "ggp"
+            },
+            {
+              "name": "Ghanaian Cedi",
+              "value": "ghs"
+            },
+            {
+              "name": "Gibraltar Pound",
+              "value": "gip"
+            },
+            {
+              "name": "Gambian Dalasi",
+              "value": "gmd"
+            },
+            {
+              "name": "Guinean Franc",
+              "value": "gnf"
+            },
+            {
+              "name": "Guatemalan Quetzal",
+              "value": "gtq"
+            },
+            {
+              "name": "Guyanaese Dollar",
+              "value": "gyd"
+            },
+            {
+              "name": "Hong Kong Dollar",
+              "value": "hkd"
+            },
+            {
+              "name": "Honduran Lempira",
+              "value": "hnl"
+            },
+            {
+              "name": "Croatian Kuna",
+              "value": "hrk"
+            },
+            {
+              "name": "Haitian Gourde",
+              "value": "htg"
+            },
+            {
+              "name": "Hungarian Forint",
+              "value": "huf"
+            },
+            {
+              "name": "Indonesian Rupiah",
+              "value": "idr"
+            },
+            {
+              "name": "Israeli New Sheqel",
+              "value": "ils"
+            },
+            {
+              "name": "Manx Pound",
+              "value": "imp"
+            },
+            {
+              "name": "Indian Rupee",
+              "value": "inr"
+            },
+            {
+              "name": "Iraqi Dinar",
+              "value": "iqd"
+            },
+            {
+              "name": "Iranian Rial",
+              "value": "irr"
+            },
+            {
+              "name": "Icelandic Króna",
+              "value": "isk"
+            },
+            {
+              "name": "Jersey Pound",
+              "value": "jep"
+            },
+            {
+              "name": "Jamaican Dollar",
+              "value": "jmd"
+            },
+            {
+              "name": "Jordanian Dinar",
+              "value": "jod"
+            },
+            {
+              "name": "Japanese Yen",
+              "value": "jpy"
+            },
+            {
+              "name": "Kenyan Shilling",
+              "value": "kes"
+            },
+            {
+              "name": "Kyrgystani Som",
+              "value": "kgs"
+            },
+            {
+              "name": "Cambodian Riel",
+              "value": "khr"
+            },
+            {
+              "name": "Comorian Franc",
+              "value": "kmf"
+            },
+            {
+              "name": "North Korean Won",
+              "value": "kpw"
+            },
+            {
+              "name": "South Korean Won",
+              "value": "krw"
+            },
+            {
+              "name": "Kuwaiti Dinar",
+              "value": "kwd"
+            },
+            {
+              "name": "Cayman Islands Dollar",
+              "value": "kyd"
+            },
+            {
+              "name": "Kazakhstani Tenge",
+              "value": "kzt"
+            },
+            {
+              "name": "Laotian Kip",
+              "value": "lak"
+            },
+            {
+              "name": "Lebanese Pound",
+              "value": "lbp"
+            },
+            {
+              "name": "Sri Lankan Rupee",
+              "value": "lkr"
+            },
+            {
+              "name": "Liberian Dollar",
+              "value": "lrd"
+            },
+            {
+              "name": "Lesotho Loti",
+              "value": "lsl"
+            },
+            {
+              "name": "Libyan Dinar",
+              "value": "lyd"
+            },
+            {
+              "name": "Moroccan Dirham",
+              "value": "mad"
+            },
+            {
+              "name": "Moldovan Leu",
+              "value": "mdl"
+            },
+            {
+              "name": "Malagasy Ariary",
+              "value": "mga"
+            },
+            {
+              "name": "Macedonian Denar",
+              "value": "mkd"
+            },
+            {
+              "name": "Myanma Kyat",
+              "value": "mmk"
+            },
+            {
+              "name": "Mongolian Tugrik",
+              "value": "mnt"
+            },
+            {
+              "name": "Macanese Pataca",
+              "value": "mop"
+            },
+            {
+              "name": "Mauritanian Ouguiya (Pre-2018)",
+              "value": "mro"
+            },
+            {
+              "name": "Mauritanian Ouguiya",
+              "value": "mru"
+            },
+            {
+              "name": "Mauritian Rupee",
+              "value": "mur"
+            },
+            {
+              "name": "Maldivian Rufiyaa",
+              "value": "mvr"
+            },
+            {
+              "name": "Malawian Kwacha",
+              "value": "mwk"
+            },
+            {
+              "name": "Mexican Peso",
+              "value": "mxn"
+            },
+            {
+              "name": "Malaysian Ringgit",
+              "value": "myr"
+            },
+            {
+              "name": "Mozambican Metical",
+              "value": "mzn"
+            },
+            {
+              "name": "Namibian Dollar",
+              "value": "nad"
+            },
+            {
+              "name": "Nigerian Naira",
+              "value": "ngn"
+            },
+            {
+              "name": "Nicaraguan Córdoba",
+              "value": "nio"
+            },
+            {
+              "name": "Norwegian Krone",
+              "value": "nok"
+            },
+            {
+              "name": "Nepalese Rupee",
+              "value": "npr"
+            },
+            {
+              "name": "New Zealand Dollar",
+              "value": "nzd"
+            },
+            {
+              "name": "Omani Rial",
+              "value": "omr"
+            },
+            {
+              "name": "Panamanian Balboa",
+              "value": "pab"
+            },
+            {
+              "name": "Peruvian Nuevo Sol",
+              "value": "pen"
+            },
+            {
+              "name": "Papua New Guinean Kina",
+              "value": "pgk"
+            },
+            {
+              "name": "Philippine Peso",
+              "value": "php"
+            },
+            {
+              "name": "Pakistani Rupee",
+              "value": "pkr"
+            },
+            {
+              "name": "Polish Zloty",
+              "value": "pln"
+            },
+            {
+              "name": "Paraguayan Guarani",
+              "value": "pyg"
+            },
+            {
+              "name": "Qatari Rial",
+              "value": "qar"
+            },
+            {
+              "name": "Romanian Leu",
+              "value": "ron"
+            },
+            {
+              "name": "Serbian Dinar",
+              "value": "rsd"
+            },
+            {
+              "name": "Russian Ruble",
+              "value": "rub"
+            },
+            {
+              "name": "Rwandan Franc",
+              "value": "rwf"
+            },
+            {
+              "name": "Saudi Riyal",
+              "value": "sar"
+            },
+            {
+              "name": "Solomon Islands Dollar",
+              "value": "sbd"
+            },
+            {
+              "name": "Seychellois Rupee",
+              "value": "scr"
+            },
+            {
+              "name": "Sudanese Pound",
+              "value": "sdg"
+            },
+            {
+              "name": "Swedish Krona",
+              "value": "sek"
+            },
+            {
+              "name": "Singapore Dollar",
+              "value": "sgd"
+            },
+            {
+              "name": "Saint Helena Pound",
+              "value": "shp"
+            },
+            {
+              "name": "Sierra Leonean Leone",
+              "value": "sll"
+            },
+            {
+              "name": "Somali Shilling",
+              "value": "sos"
+            },
+            {
+              "name": "Surinamese Dollar",
+              "value": "srd"
+            },
+            {
+              "name": "South Sudanese Pound",
+              "value": "ssp"
+            },
+            {
+              "name": "São Tomé and Príncipe Dobra (Pre-2018)",
+              "value": "std"
+            },
+            {
+              "name": "São Tomé and Príncipe Dobra",
+              "value": "stn"
+            },
+            {
+              "name": "Salvadoran Colón",
+              "value": "svc"
+            },
+            {
+              "name": "Syrian Pound",
+              "value": "syp"
+            },
+            {
+              "name": "Swazi Lilangeni",
+              "value": "szl"
+            },
+            {
+              "name": "Thai Baht",
+              "value": "thb"
+            },
+            {
+              "name": "Tajikistani Somoni",
+              "value": "tjs"
+            },
+            {
+              "name": "Turkmenistani Manat",
+              "value": "tmt"
+            },
+            {
+              "name": "Tunisian Dinar",
+              "value": "tnd"
+            },
+            {
+              "name": "Tongan Pa'anga",
+              "value": "top"
+            },
+            {
+              "name": "Turkish Lira",
+              "value": "try"
+            },
+            {
+              "name": "Trinidad and Tobago Dollar",
+              "value": "ttd"
+            },
+            {
+              "name": "New Taiwan Dollar",
+              "value": "twd"
+            },
+            {
+              "name": "Tanzanian Shilling",
+              "value": "tzs"
+            },
+            {
+              "name": "Ukrainian Hryvnia",
+              "value": "uah"
+            },
+            {
+              "name": "Ugandan Shilling",
+              "value": "ugx"
+            },
+            {
+              "name": "Uruguayan Peso",
+              "value": "uyu"
+            },
+            {
+              "name": "Uzbekistan Som",
+              "value": "uzs"
+            },
+            {
+              "name": "Venezuelan Bolívar Fuerte",
+              "value": "vef"
+            },
+            {
+              "name": "Vietnamese Dong",
+              "value": "vnd"
+            },
+            {
+              "name": "Vanuatu Vatu",
+              "value": "vuv"
+            },
+            {
+              "name": "Samoan Tala",
+              "value": "wst"
+            },
+            {
+              "name": "CFA Franc BEAC",
+              "value": "xaf"
+            },
+            {
+              "name": "Silver Ounce",
+              "value": "xag"
+            },
+            {
+              "name": "Gold Ounce",
+              "value": "xau"
+            },
+            {
+              "name": "East Caribbean Dollar",
+              "value": "xcd"
+            },
+            {
+              "name": "Special Drawing Rights",
+              "value": "xdr"
+            },
+            {
+              "name": "CFA Franc BCEAO",
+              "value": "xof"
+            },
+            {
+              "name": "Palladium Ounce",
+              "value": "xpd"
+            },
+            {
+              "name": "CFP Franc",
+              "value": "xpf"
+            },
+            {
+              "name": "Platinum Ounce",
+              "value": "xpt"
+            },
+            {
+              "name": "Yemeni Rial",
+              "value": "yer"
+            },
+            {
+              "name": "South African Rand",
+              "value": "zar"
+            },
+            {
+              "name": "Zambian Kwacha",
+              "value": "zmw"
+            },
+            {
+              "name": "Zimbabwean Dollar",
+              "value": "zwl"
+            }
+          ],
+          "default": "eur",
+          "description": "The currency of the deal in 3-character ISO format"
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "The description of the deal"
+        },
+        {
+          "displayName": "Deal Pipeline ID",
+          "name": "group",
+          "type": "string",
+          "default": "",
+          "description": "The pipeline ID of the deal"
+        },
+        {
+          "displayName": "Deal Stage ID",
+          "name": "stage",
+          "type": "string",
+          "default": "",
+          "description": "The stage ID of the deal"
+        },
+        {
+          "displayName": "Deal Owner ID",
+          "name": "owner",
+          "type": "string",
+          "default": "",
+          "description": "The owner ID of the deal"
+        },
+        {
+          "displayName": "Deal Percentage",
+          "name": "percent",
+          "type": "number",
+          "default": 0,
+          "description": "The percentage of the deal"
+        },
+        {
+          "displayName": "Deal Status",
+          "name": "status",
+          "type": "number",
+          "default": 0,
+          "description": "The status of the deal"
+        }
+      ]
+    },
+    {
+      "displayName": "Deal ID",
+      "name": "dealId",
+      "type": "number",
+      "default": 0,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The ID of the deal to delete"
+    },
+    {
+      "displayName": "Deal ID",
+      "name": "dealId",
+      "type": "number",
+      "default": 0,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The ID of the deal to get"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "deal"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Deal ID",
+      "name": "dealId",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "createNote"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The ID of the deal note"
+    },
+    {
+      "displayName": "Deal Note",
+      "name": "dealNote",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "createNote"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The content of the deal note"
+    },
+    {
+      "displayName": "Deal ID",
+      "name": "dealId",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "updateNote"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The ID of the deal note"
+    },
+    {
+      "displayName": "Deal Note ID",
+      "name": "dealNoteId",
+      "type": "number",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "updateNote"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The ID of the deal note"
+    },
+    {
+      "displayName": "Deal Note",
+      "name": "dealNote",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "updateNote"
+          ],
+          "resource": [
+            "deal"
+          ]
+        }
+      },
+      "description": "The content of the deal note"
+    },
+    {
+      "displayName": "Service",
+      "name": "service",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "description": "The name of the service"
+    },
+    {
+      "displayName": "External Account ID",
+      "name": "externalid",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "description": "The ID of the account in the external service"
+    },
+    {
+      "displayName": "Account Name",
+      "name": "name",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "description": "The name associated with the account in the external service. Often this will be a company name (e.g., \"My Toystore, Inc.\")."
+    },
+    {
+      "displayName": "Logo URL",
+      "name": "logoUrl",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "description": "The URL to a logo image for the external service"
+    },
+    {
+      "displayName": "Link URL",
+      "name": "linkUrl",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "description": "The URL to a page where the integration with the external service can be managed in the third-party's website"
+    },
+    {
+      "displayName": "Connection ID",
+      "name": "connectionId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the connection to update"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "description": "The fields to update",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Service",
+          "name": "service",
+          "type": "string",
+          "default": "",
+          "description": "The name of the service"
+        },
+        {
+          "displayName": "External Account ID",
+          "name": "externalid",
+          "type": "string",
+          "default": "",
+          "description": "The ID of the account in the external service"
+        },
+        {
+          "displayName": "Account Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "The name associated with the account in the external service. Often this will be a company name (e.g., \"My Toystore, Inc.\")."
+        },
+        {
+          "displayName": "Logo URL",
+          "name": "logoUrl",
+          "type": "string",
+          "default": "",
+          "description": "The URL to a logo image for the external service"
+        },
+        {
+          "displayName": "Link URL",
+          "name": "linkUrl",
+          "type": "string",
+          "default": "",
+          "description": "The URL to a page where the integration with the external service can be managed in the third-party's website"
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "number",
+          "default": 1,
+          "description": "The status of the connection (0 = error; 1 = connected)"
+        },
+        {
+          "displayName": "Syncronisation Status",
+          "name": "syncStatus",
+          "type": "number",
+          "default": 1,
+          "description": "The status of a sync triggered on the connection (0 = sync stopped; 1 = sync running)"
+        }
+      ]
+    },
+    {
+      "displayName": "Connection ID",
+      "name": "connectionId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the connection to delete"
+    },
+    {
+      "displayName": "Connection ID",
+      "name": "connectionId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the connection to get"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "connection"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "connection"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "External ID",
+      "name": "externalid",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The ID of the order in the external service. ONLY REQUIRED IF EXTERNALCHECKOUTID NOT INCLUDED."
+    },
+    {
+      "displayName": "External Checkout ID",
+      "name": "externalcheckoutid",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The ID of the cart in the external service. ONLY REQUIRED IF EXTERNALID IS NOT INCLUDED."
+    },
+    {
+      "displayName": "Order Source",
+      "name": "source",
+      "type": "number",
+      "default": 0,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The order source code (0 - will not trigger automations, 1 - will trigger automations)"
+    },
+    {
+      "displayName": "Customer Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The email address of the customer who placed the order"
+    },
+    {
+      "displayName": "Total Price",
+      "name": "totalPrice",
+      "type": "number",
+      "default": 0,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The total price of the order in cents, including tax and shipping charges. (i.e. $456.78 => 45678). Must be greater than or equal to zero."
+    },
+    {
+      "displayName": "Order Currency",
+      "name": "currency",
+      "type": "options",
+      "default": "eur",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Euro",
+          "value": "eur"
+        },
+        {
+          "name": "United States Dollar",
+          "value": "usd"
+        },
+        {
+          "name": "British Pound Sterling",
+          "value": "gbp"
+        },
+        {
+          "name": "Swiss Franc",
+          "value": "chf"
+        },
+        {
+          "name": "Renminbi",
+          "value": "cny"
+        },
+        {
+          "name": "--------",
+          "value": ""
+        },
+        {
+          "name": "United Arab Emirates Dirham",
+          "value": "aed"
+        },
+        {
+          "name": "Afghan Afghani",
+          "value": "afn"
+        },
+        {
+          "name": "Albanian Lek",
+          "value": "all"
+        },
+        {
+          "name": "Armenian Dram",
+          "value": "amd"
+        },
+        {
+          "name": "Netherlands Antillean Guilder",
+          "value": "ang"
+        },
+        {
+          "name": "Angolan Kwanza",
+          "value": "aoa"
+        },
+        {
+          "name": "Argentine Peso",
+          "value": "ars"
+        },
+        {
+          "name": "Australian Dollar",
+          "value": "aud"
+        },
+        {
+          "name": "Aruban Florin",
+          "value": "awg"
+        },
+        {
+          "name": "Azerbaijani Manat",
+          "value": "azn"
+        },
+        {
+          "name": "Bosnia-Herzegovina Convertible Mark",
+          "value": "bam"
+        },
+        {
+          "name": "Barbadian Dollar",
+          "value": "bbd"
+        },
+        {
+          "name": "Bangladeshi Taka",
+          "value": "bdt"
+        },
+        {
+          "name": "Bulgarian Lev",
+          "value": "bgn"
+        },
+        {
+          "name": "Bahraini Dinar",
+          "value": "bhd"
+        },
+        {
+          "name": "Burundian Franc",
+          "value": "bif"
+        },
+        {
+          "name": "Bermudan Dollar",
+          "value": "bmd"
+        },
+        {
+          "name": "Brunei Dollar",
+          "value": "bnd"
+        },
+        {
+          "name": "Bolivian Boliviano",
+          "value": "bob"
+        },
+        {
+          "name": "Brazilian Real",
+          "value": "brl"
+        },
+        {
+          "name": "Bahamian Dollar",
+          "value": "bsd"
+        },
+        {
+          "name": "Bitcoin",
+          "value": "btc"
+        },
+        {
+          "name": "Bhutanese Ngultrum",
+          "value": "btn"
+        },
+        {
+          "name": "Botswanan Pula",
+          "value": "bwp"
+        },
+        {
+          "name": "Belarusian Ruble",
+          "value": "byn"
+        },
+        {
+          "name": "Belize Dollar",
+          "value": "bzd"
+        },
+        {
+          "name": "Canadian Dollar",
+          "value": "cad"
+        },
+        {
+          "name": "Congolese Franc",
+          "value": "cdf"
+        },
+        {
+          "name": "Chilean Unit of Account (UF)",
+          "value": "clf"
+        },
+        {
+          "name": "Chilean Peso",
+          "value": "clp"
+        },
+        {
+          "name": "Chinese Yuan (Offshore)",
+          "value": "cnh"
+        },
+        {
+          "name": "Colombian Peso",
+          "value": "cop"
+        },
+        {
+          "name": "Costa Rican Colón",
+          "value": "crc"
+        },
+        {
+          "name": "Cuban Convertible Peso",
+          "value": "cuc"
+        },
+        {
+          "name": "Cuban Peso",
+          "value": "cup"
+        },
+        {
+          "name": "Cape Verdean Escudo",
+          "value": "cve"
+        },
+        {
+          "name": "Czech Republic Koruna",
+          "value": "czk"
+        },
+        {
+          "name": "Djiboutian Franc",
+          "value": "djf"
+        },
+        {
+          "name": "Danish Krone",
+          "value": "dkk"
+        },
+        {
+          "name": "Dominican Peso",
+          "value": "dop"
+        },
+        {
+          "name": "Algerian Dinar",
+          "value": "dzd"
+        },
+        {
+          "name": "Egyptian Pound",
+          "value": "egp"
+        },
+        {
+          "name": "Eritrean Nakfa",
+          "value": "ern"
+        },
+        {
+          "name": "Ethiopian Birr",
+          "value": "etb"
+        },
+        {
+          "name": "Fijian Dollar",
+          "value": "fjd"
+        },
+        {
+          "name": "Falkland Islands Pound",
+          "value": "fkp"
+        },
+        {
+          "name": "Georgian Lari",
+          "value": "gel"
+        },
+        {
+          "name": "Guernsey Pound",
+          "value": "ggp"
+        },
+        {
+          "name": "Ghanaian Cedi",
+          "value": "ghs"
+        },
+        {
+          "name": "Gibraltar Pound",
+          "value": "gip"
+        },
+        {
+          "name": "Gambian Dalasi",
+          "value": "gmd"
+        },
+        {
+          "name": "Guinean Franc",
+          "value": "gnf"
+        },
+        {
+          "name": "Guatemalan Quetzal",
+          "value": "gtq"
+        },
+        {
+          "name": "Guyanaese Dollar",
+          "value": "gyd"
+        },
+        {
+          "name": "Hong Kong Dollar",
+          "value": "hkd"
+        },
+        {
+          "name": "Honduran Lempira",
+          "value": "hnl"
+        },
+        {
+          "name": "Croatian Kuna",
+          "value": "hrk"
+        },
+        {
+          "name": "Haitian Gourde",
+          "value": "htg"
+        },
+        {
+          "name": "Hungarian Forint",
+          "value": "huf"
+        },
+        {
+          "name": "Indonesian Rupiah",
+          "value": "idr"
+        },
+        {
+          "name": "Israeli New Sheqel",
+          "value": "ils"
+        },
+        {
+          "name": "Manx Pound",
+          "value": "imp"
+        },
+        {
+          "name": "Indian Rupee",
+          "value": "inr"
+        },
+        {
+          "name": "Iraqi Dinar",
+          "value": "iqd"
+        },
+        {
+          "name": "Iranian Rial",
+          "value": "irr"
+        },
+        {
+          "name": "Icelandic Króna",
+          "value": "isk"
+        },
+        {
+          "name": "Jersey Pound",
+          "value": "jep"
+        },
+        {
+          "name": "Jamaican Dollar",
+          "value": "jmd"
+        },
+        {
+          "name": "Jordanian Dinar",
+          "value": "jod"
+        },
+        {
+          "name": "Japanese Yen",
+          "value": "jpy"
+        },
+        {
+          "name": "Kenyan Shilling",
+          "value": "kes"
+        },
+        {
+          "name": "Kyrgystani Som",
+          "value": "kgs"
+        },
+        {
+          "name": "Cambodian Riel",
+          "value": "khr"
+        },
+        {
+          "name": "Comorian Franc",
+          "value": "kmf"
+        },
+        {
+          "name": "North Korean Won",
+          "value": "kpw"
+        },
+        {
+          "name": "South Korean Won",
+          "value": "krw"
+        },
+        {
+          "name": "Kuwaiti Dinar",
+          "value": "kwd"
+        },
+        {
+          "name": "Cayman Islands Dollar",
+          "value": "kyd"
+        },
+        {
+          "name": "Kazakhstani Tenge",
+          "value": "kzt"
+        },
+        {
+          "name": "Laotian Kip",
+          "value": "lak"
+        },
+        {
+          "name": "Lebanese Pound",
+          "value": "lbp"
+        },
+        {
+          "name": "Sri Lankan Rupee",
+          "value": "lkr"
+        },
+        {
+          "name": "Liberian Dollar",
+          "value": "lrd"
+        },
+        {
+          "name": "Lesotho Loti",
+          "value": "lsl"
+        },
+        {
+          "name": "Libyan Dinar",
+          "value": "lyd"
+        },
+        {
+          "name": "Moroccan Dirham",
+          "value": "mad"
+        },
+        {
+          "name": "Moldovan Leu",
+          "value": "mdl"
+        },
+        {
+          "name": "Malagasy Ariary",
+          "value": "mga"
+        },
+        {
+          "name": "Macedonian Denar",
+          "value": "mkd"
+        },
+        {
+          "name": "Myanma Kyat",
+          "value": "mmk"
+        },
+        {
+          "name": "Mongolian Tugrik",
+          "value": "mnt"
+        },
+        {
+          "name": "Macanese Pataca",
+          "value": "mop"
+        },
+        {
+          "name": "Mauritanian Ouguiya (Pre-2018)",
+          "value": "mro"
+        },
+        {
+          "name": "Mauritanian Ouguiya",
+          "value": "mru"
+        },
+        {
+          "name": "Mauritian Rupee",
+          "value": "mur"
+        },
+        {
+          "name": "Maldivian Rufiyaa",
+          "value": "mvr"
+        },
+        {
+          "name": "Malawian Kwacha",
+          "value": "mwk"
+        },
+        {
+          "name": "Mexican Peso",
+          "value": "mxn"
+        },
+        {
+          "name": "Malaysian Ringgit",
+          "value": "myr"
+        },
+        {
+          "name": "Mozambican Metical",
+          "value": "mzn"
+        },
+        {
+          "name": "Namibian Dollar",
+          "value": "nad"
+        },
+        {
+          "name": "Nigerian Naira",
+          "value": "ngn"
+        },
+        {
+          "name": "Nicaraguan Córdoba",
+          "value": "nio"
+        },
+        {
+          "name": "Norwegian Krone",
+          "value": "nok"
+        },
+        {
+          "name": "Nepalese Rupee",
+          "value": "npr"
+        },
+        {
+          "name": "New Zealand Dollar",
+          "value": "nzd"
+        },
+        {
+          "name": "Omani Rial",
+          "value": "omr"
+        },
+        {
+          "name": "Panamanian Balboa",
+          "value": "pab"
+        },
+        {
+          "name": "Peruvian Nuevo Sol",
+          "value": "pen"
+        },
+        {
+          "name": "Papua New Guinean Kina",
+          "value": "pgk"
+        },
+        {
+          "name": "Philippine Peso",
+          "value": "php"
+        },
+        {
+          "name": "Pakistani Rupee",
+          "value": "pkr"
+        },
+        {
+          "name": "Polish Zloty",
+          "value": "pln"
+        },
+        {
+          "name": "Paraguayan Guarani",
+          "value": "pyg"
+        },
+        {
+          "name": "Qatari Rial",
+          "value": "qar"
+        },
+        {
+          "name": "Romanian Leu",
+          "value": "ron"
+        },
+        {
+          "name": "Serbian Dinar",
+          "value": "rsd"
+        },
+        {
+          "name": "Russian Ruble",
+          "value": "rub"
+        },
+        {
+          "name": "Rwandan Franc",
+          "value": "rwf"
+        },
+        {
+          "name": "Saudi Riyal",
+          "value": "sar"
+        },
+        {
+          "name": "Solomon Islands Dollar",
+          "value": "sbd"
+        },
+        {
+          "name": "Seychellois Rupee",
+          "value": "scr"
+        },
+        {
+          "name": "Sudanese Pound",
+          "value": "sdg"
+        },
+        {
+          "name": "Swedish Krona",
+          "value": "sek"
+        },
+        {
+          "name": "Singapore Dollar",
+          "value": "sgd"
+        },
+        {
+          "name": "Saint Helena Pound",
+          "value": "shp"
+        },
+        {
+          "name": "Sierra Leonean Leone",
+          "value": "sll"
+        },
+        {
+          "name": "Somali Shilling",
+          "value": "sos"
+        },
+        {
+          "name": "Surinamese Dollar",
+          "value": "srd"
+        },
+        {
+          "name": "South Sudanese Pound",
+          "value": "ssp"
+        },
+        {
+          "name": "São Tomé and Príncipe Dobra (Pre-2018)",
+          "value": "std"
+        },
+        {
+          "name": "São Tomé and Príncipe Dobra",
+          "value": "stn"
+        },
+        {
+          "name": "Salvadoran Colón",
+          "value": "svc"
+        },
+        {
+          "name": "Syrian Pound",
+          "value": "syp"
+        },
+        {
+          "name": "Swazi Lilangeni",
+          "value": "szl"
+        },
+        {
+          "name": "Thai Baht",
+          "value": "thb"
+        },
+        {
+          "name": "Tajikistani Somoni",
+          "value": "tjs"
+        },
+        {
+          "name": "Turkmenistani Manat",
+          "value": "tmt"
+        },
+        {
+          "name": "Tunisian Dinar",
+          "value": "tnd"
+        },
+        {
+          "name": "Tongan Pa'anga",
+          "value": "top"
+        },
+        {
+          "name": "Turkish Lira",
+          "value": "try"
+        },
+        {
+          "name": "Trinidad and Tobago Dollar",
+          "value": "ttd"
+        },
+        {
+          "name": "New Taiwan Dollar",
+          "value": "twd"
+        },
+        {
+          "name": "Tanzanian Shilling",
+          "value": "tzs"
+        },
+        {
+          "name": "Ukrainian Hryvnia",
+          "value": "uah"
+        },
+        {
+          "name": "Ugandan Shilling",
+          "value": "ugx"
+        },
+        {
+          "name": "Uruguayan Peso",
+          "value": "uyu"
+        },
+        {
+          "name": "Uzbekistan Som",
+          "value": "uzs"
+        },
+        {
+          "name": "Venezuelan Bolívar Fuerte",
+          "value": "vef"
+        },
+        {
+          "name": "Vietnamese Dong",
+          "value": "vnd"
+        },
+        {
+          "name": "Vanuatu Vatu",
+          "value": "vuv"
+        },
+        {
+          "name": "Samoan Tala",
+          "value": "wst"
+        },
+        {
+          "name": "CFA Franc BEAC",
+          "value": "xaf"
+        },
+        {
+          "name": "Silver Ounce",
+          "value": "xag"
+        },
+        {
+          "name": "Gold Ounce",
+          "value": "xau"
+        },
+        {
+          "name": "East Caribbean Dollar",
+          "value": "xcd"
+        },
+        {
+          "name": "Special Drawing Rights",
+          "value": "xdr"
+        },
+        {
+          "name": "CFA Franc BCEAO",
+          "value": "xof"
+        },
+        {
+          "name": "Palladium Ounce",
+          "value": "xpd"
+        },
+        {
+          "name": "CFP Franc",
+          "value": "xpf"
+        },
+        {
+          "name": "Platinum Ounce",
+          "value": "xpt"
+        },
+        {
+          "name": "Yemeni Rial",
+          "value": "yer"
+        },
+        {
+          "name": "South African Rand",
+          "value": "zar"
+        },
+        {
+          "name": "Zambian Kwacha",
+          "value": "zmw"
+        },
+        {
+          "name": "Zimbabwean Dollar",
+          "value": "zwl"
+        }
+      ],
+      "description": "The currency of the order (3-digit ISO code, e.g., \"USD\")"
+    },
+    {
+      "displayName": "Connection ID",
+      "name": "connectionid",
+      "type": "number",
+      "default": 0,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The ID of the connection from which this order originated"
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "customerid",
+      "type": "number",
+      "default": 0,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The ID of the customer associated with this order"
+    },
+    {
+      "displayName": "Creation Date",
+      "name": "externalCreatedDate",
+      "type": "dateTime",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The date the order was placed"
+    },
+    {
+      "displayName": "Abandoning Date",
+      "name": "abandonedDate",
+      "type": "dateTime",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The date the cart was abandoned. REQUIRED ONLY IF INCLUDING EXTERNALCHECKOUTID."
+    },
+    {
+      "displayName": "Products",
+      "name": "orderProducts",
+      "type": "collection",
+      "typeOptions": {
+        "multipleValues": true,
+        "multipleValueButtonText": "Add product"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "default": {},
+      "description": "All ordered products",
+      "placeholder": "Add product field",
+      "options": [
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "The name of the product"
+        },
+        {
+          "displayName": "Price",
+          "name": "price",
+          "type": "number",
+          "default": 0,
+          "description": "The price of the product, in cents. (i.e. $456.78 => 45678). Must be greater than or equal to zero."
+        },
+        {
+          "displayName": "Product Quantity",
+          "name": "quantity",
+          "type": "number",
+          "default": 0,
+          "description": "The quantity ordered"
+        },
+        {
+          "displayName": "Product External ID",
+          "name": "externalid",
+          "type": "string",
+          "default": "",
+          "description": "The ID of the product in the external service"
+        },
+        {
+          "displayName": "Product Category",
+          "name": "category",
+          "type": "string",
+          "default": "",
+          "description": "The category of the product"
+        },
+        {
+          "displayName": "SKU",
+          "name": "sku",
+          "type": "string",
+          "default": "",
+          "description": "The SKU for the product"
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "The description of the product"
+        },
+        {
+          "displayName": "Image URL",
+          "name": "imageUrl",
+          "type": "string",
+          "default": "",
+          "description": "An Image URL that displays an image of the product"
+        },
+        {
+          "displayName": "Product URL",
+          "name": "productUrl",
+          "type": "string",
+          "default": "",
+          "description": "A URL linking to the product in your store"
+        }
+      ]
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Shipping Amount",
+          "name": "shippingAmount",
+          "type": "number",
+          "default": 0,
+          "description": "The total shipping amount for the order in cents"
+        },
+        {
+          "displayName": "Tax Amount",
+          "name": "taxAmount",
+          "type": "number",
+          "default": 0,
+          "description": "The total tax amount for the order in cents"
+        },
+        {
+          "displayName": "Discount Amount",
+          "name": "discountAmount",
+          "type": "number",
+          "default": 0,
+          "description": "The total discount amount for the order in cents"
+        },
+        {
+          "displayName": "Order URL",
+          "name": "orderUrl",
+          "type": "string",
+          "default": "",
+          "description": "The URL for the order in the external service"
+        },
+        {
+          "displayName": "External Updated Date",
+          "name": "externalUpdatedDate",
+          "type": "dateTime",
+          "default": "",
+          "description": "The date the order was updated"
+        },
+        {
+          "displayName": "Shipping Method",
+          "name": "shippingMethod",
+          "type": "string",
+          "default": "",
+          "description": "The shipping method of the order"
+        },
+        {
+          "displayName": "Order Number",
+          "name": "orderNumber",
+          "type": "string",
+          "default": "",
+          "description": "The order number. This can be different than the externalid."
+        }
+      ]
+    },
+    {
+      "displayName": "Order ID",
+      "name": "orderId",
+      "type": "number",
+      "default": 0,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The ID of the e-commerce order"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "External ID",
+          "name": "externalid",
+          "type": "string",
+          "default": "",
+          "description": "The ID of the order in the external service. ONLY REQUIRED IF EXTERNALCHECKOUTID NOT INCLUDED."
+        },
+        {
+          "displayName": "External Checkout ID",
+          "name": "externalcheckoutid",
+          "type": "string",
+          "default": "",
+          "description": "The ID of the cart in the external service. ONLY REQUIRED IF EXTERNALID IS NOT INCLUDED."
+        },
+        {
+          "displayName": "Order Source",
+          "name": "source",
+          "type": "number",
+          "default": 0,
+          "description": "The order source code (0 - will not trigger automations, 1 - will trigger automations)"
+        },
+        {
+          "displayName": "Customer Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "The email address of the customer who placed the order"
+        },
+        {
+          "displayName": "Total Price",
+          "name": "totalPrice",
+          "type": "number",
+          "default": 0,
+          "description": "The total price of the order in cents, including tax and shipping charges. (i.e. $456.78 => 45678). Must be greater than or equal to zero."
+        },
+        {
+          "displayName": "Order Currency",
+          "name": "currency",
+          "type": "options",
+          "default": "eur",
+          "options": [
+            {
+              "name": "Euro",
+              "value": "eur"
+            },
+            {
+              "name": "United States Dollar",
+              "value": "usd"
+            },
+            {
+              "name": "British Pound Sterling",
+              "value": "gbp"
+            },
+            {
+              "name": "Swiss Franc",
+              "value": "chf"
+            },
+            {
+              "name": "Renminbi",
+              "value": "cny"
+            },
+            {
+              "name": "--------",
+              "value": ""
+            },
+            {
+              "name": "United Arab Emirates Dirham",
+              "value": "aed"
+            },
+            {
+              "name": "Afghan Afghani",
+              "value": "afn"
+            },
+            {
+              "name": "Albanian Lek",
+              "value": "all"
+            },
+            {
+              "name": "Armenian Dram",
+              "value": "amd"
+            },
+            {
+              "name": "Netherlands Antillean Guilder",
+              "value": "ang"
+            },
+            {
+              "name": "Angolan Kwanza",
+              "value": "aoa"
+            },
+            {
+              "name": "Argentine Peso",
+              "value": "ars"
+            },
+            {
+              "name": "Australian Dollar",
+              "value": "aud"
+            },
+            {
+              "name": "Aruban Florin",
+              "value": "awg"
+            },
+            {
+              "name": "Azerbaijani Manat",
+              "value": "azn"
+            },
+            {
+              "name": "Bosnia-Herzegovina Convertible Mark",
+              "value": "bam"
+            },
+            {
+              "name": "Barbadian Dollar",
+              "value": "bbd"
+            },
+            {
+              "name": "Bangladeshi Taka",
+              "value": "bdt"
+            },
+            {
+              "name": "Bulgarian Lev",
+              "value": "bgn"
+            },
+            {
+              "name": "Bahraini Dinar",
+              "value": "bhd"
+            },
+            {
+              "name": "Burundian Franc",
+              "value": "bif"
+            },
+            {
+              "name": "Bermudan Dollar",
+              "value": "bmd"
+            },
+            {
+              "name": "Brunei Dollar",
+              "value": "bnd"
+            },
+            {
+              "name": "Bolivian Boliviano",
+              "value": "bob"
+            },
+            {
+              "name": "Brazilian Real",
+              "value": "brl"
+            },
+            {
+              "name": "Bahamian Dollar",
+              "value": "bsd"
+            },
+            {
+              "name": "Bitcoin",
+              "value": "btc"
+            },
+            {
+              "name": "Bhutanese Ngultrum",
+              "value": "btn"
+            },
+            {
+              "name": "Botswanan Pula",
+              "value": "bwp"
+            },
+            {
+              "name": "Belarusian Ruble",
+              "value": "byn"
+            },
+            {
+              "name": "Belize Dollar",
+              "value": "bzd"
+            },
+            {
+              "name": "Canadian Dollar",
+              "value": "cad"
+            },
+            {
+              "name": "Congolese Franc",
+              "value": "cdf"
+            },
+            {
+              "name": "Chilean Unit of Account (UF)",
+              "value": "clf"
+            },
+            {
+              "name": "Chilean Peso",
+              "value": "clp"
+            },
+            {
+              "name": "Chinese Yuan (Offshore)",
+              "value": "cnh"
+            },
+            {
+              "name": "Colombian Peso",
+              "value": "cop"
+            },
+            {
+              "name": "Costa Rican Colón",
+              "value": "crc"
+            },
+            {
+              "name": "Cuban Convertible Peso",
+              "value": "cuc"
+            },
+            {
+              "name": "Cuban Peso",
+              "value": "cup"
+            },
+            {
+              "name": "Cape Verdean Escudo",
+              "value": "cve"
+            },
+            {
+              "name": "Czech Republic Koruna",
+              "value": "czk"
+            },
+            {
+              "name": "Djiboutian Franc",
+              "value": "djf"
+            },
+            {
+              "name": "Danish Krone",
+              "value": "dkk"
+            },
+            {
+              "name": "Dominican Peso",
+              "value": "dop"
+            },
+            {
+              "name": "Algerian Dinar",
+              "value": "dzd"
+            },
+            {
+              "name": "Egyptian Pound",
+              "value": "egp"
+            },
+            {
+              "name": "Eritrean Nakfa",
+              "value": "ern"
+            },
+            {
+              "name": "Ethiopian Birr",
+              "value": "etb"
+            },
+            {
+              "name": "Fijian Dollar",
+              "value": "fjd"
+            },
+            {
+              "name": "Falkland Islands Pound",
+              "value": "fkp"
+            },
+            {
+              "name": "Georgian Lari",
+              "value": "gel"
+            },
+            {
+              "name": "Guernsey Pound",
+              "value": "ggp"
+            },
+            {
+              "name": "Ghanaian Cedi",
+              "value": "ghs"
+            },
+            {
+              "name": "Gibraltar Pound",
+              "value": "gip"
+            },
+            {
+              "name": "Gambian Dalasi",
+              "value": "gmd"
+            },
+            {
+              "name": "Guinean Franc",
+              "value": "gnf"
+            },
+            {
+              "name": "Guatemalan Quetzal",
+              "value": "gtq"
+            },
+            {
+              "name": "Guyanaese Dollar",
+              "value": "gyd"
+            },
+            {
+              "name": "Hong Kong Dollar",
+              "value": "hkd"
+            },
+            {
+              "name": "Honduran Lempira",
+              "value": "hnl"
+            },
+            {
+              "name": "Croatian Kuna",
+              "value": "hrk"
+            },
+            {
+              "name": "Haitian Gourde",
+              "value": "htg"
+            },
+            {
+              "name": "Hungarian Forint",
+              "value": "huf"
+            },
+            {
+              "name": "Indonesian Rupiah",
+              "value": "idr"
+            },
+            {
+              "name": "Israeli New Sheqel",
+              "value": "ils"
+            },
+            {
+              "name": "Manx Pound",
+              "value": "imp"
+            },
+            {
+              "name": "Indian Rupee",
+              "value": "inr"
+            },
+            {
+              "name": "Iraqi Dinar",
+              "value": "iqd"
+            },
+            {
+              "name": "Iranian Rial",
+              "value": "irr"
+            },
+            {
+              "name": "Icelandic Króna",
+              "value": "isk"
+            },
+            {
+              "name": "Jersey Pound",
+              "value": "jep"
+            },
+            {
+              "name": "Jamaican Dollar",
+              "value": "jmd"
+            },
+            {
+              "name": "Jordanian Dinar",
+              "value": "jod"
+            },
+            {
+              "name": "Japanese Yen",
+              "value": "jpy"
+            },
+            {
+              "name": "Kenyan Shilling",
+              "value": "kes"
+            },
+            {
+              "name": "Kyrgystani Som",
+              "value": "kgs"
+            },
+            {
+              "name": "Cambodian Riel",
+              "value": "khr"
+            },
+            {
+              "name": "Comorian Franc",
+              "value": "kmf"
+            },
+            {
+              "name": "North Korean Won",
+              "value": "kpw"
+            },
+            {
+              "name": "South Korean Won",
+              "value": "krw"
+            },
+            {
+              "name": "Kuwaiti Dinar",
+              "value": "kwd"
+            },
+            {
+              "name": "Cayman Islands Dollar",
+              "value": "kyd"
+            },
+            {
+              "name": "Kazakhstani Tenge",
+              "value": "kzt"
+            },
+            {
+              "name": "Laotian Kip",
+              "value": "lak"
+            },
+            {
+              "name": "Lebanese Pound",
+              "value": "lbp"
+            },
+            {
+              "name": "Sri Lankan Rupee",
+              "value": "lkr"
+            },
+            {
+              "name": "Liberian Dollar",
+              "value": "lrd"
+            },
+            {
+              "name": "Lesotho Loti",
+              "value": "lsl"
+            },
+            {
+              "name": "Libyan Dinar",
+              "value": "lyd"
+            },
+            {
+              "name": "Moroccan Dirham",
+              "value": "mad"
+            },
+            {
+              "name": "Moldovan Leu",
+              "value": "mdl"
+            },
+            {
+              "name": "Malagasy Ariary",
+              "value": "mga"
+            },
+            {
+              "name": "Macedonian Denar",
+              "value": "mkd"
+            },
+            {
+              "name": "Myanma Kyat",
+              "value": "mmk"
+            },
+            {
+              "name": "Mongolian Tugrik",
+              "value": "mnt"
+            },
+            {
+              "name": "Macanese Pataca",
+              "value": "mop"
+            },
+            {
+              "name": "Mauritanian Ouguiya (Pre-2018)",
+              "value": "mro"
+            },
+            {
+              "name": "Mauritanian Ouguiya",
+              "value": "mru"
+            },
+            {
+              "name": "Mauritian Rupee",
+              "value": "mur"
+            },
+            {
+              "name": "Maldivian Rufiyaa",
+              "value": "mvr"
+            },
+            {
+              "name": "Malawian Kwacha",
+              "value": "mwk"
+            },
+            {
+              "name": "Mexican Peso",
+              "value": "mxn"
+            },
+            {
+              "name": "Malaysian Ringgit",
+              "value": "myr"
+            },
+            {
+              "name": "Mozambican Metical",
+              "value": "mzn"
+            },
+            {
+              "name": "Namibian Dollar",
+              "value": "nad"
+            },
+            {
+              "name": "Nigerian Naira",
+              "value": "ngn"
+            },
+            {
+              "name": "Nicaraguan Córdoba",
+              "value": "nio"
+            },
+            {
+              "name": "Norwegian Krone",
+              "value": "nok"
+            },
+            {
+              "name": "Nepalese Rupee",
+              "value": "npr"
+            },
+            {
+              "name": "New Zealand Dollar",
+              "value": "nzd"
+            },
+            {
+              "name": "Omani Rial",
+              "value": "omr"
+            },
+            {
+              "name": "Panamanian Balboa",
+              "value": "pab"
+            },
+            {
+              "name": "Peruvian Nuevo Sol",
+              "value": "pen"
+            },
+            {
+              "name": "Papua New Guinean Kina",
+              "value": "pgk"
+            },
+            {
+              "name": "Philippine Peso",
+              "value": "php"
+            },
+            {
+              "name": "Pakistani Rupee",
+              "value": "pkr"
+            },
+            {
+              "name": "Polish Zloty",
+              "value": "pln"
+            },
+            {
+              "name": "Paraguayan Guarani",
+              "value": "pyg"
+            },
+            {
+              "name": "Qatari Rial",
+              "value": "qar"
+            },
+            {
+              "name": "Romanian Leu",
+              "value": "ron"
+            },
+            {
+              "name": "Serbian Dinar",
+              "value": "rsd"
+            },
+            {
+              "name": "Russian Ruble",
+              "value": "rub"
+            },
+            {
+              "name": "Rwandan Franc",
+              "value": "rwf"
+            },
+            {
+              "name": "Saudi Riyal",
+              "value": "sar"
+            },
+            {
+              "name": "Solomon Islands Dollar",
+              "value": "sbd"
+            },
+            {
+              "name": "Seychellois Rupee",
+              "value": "scr"
+            },
+            {
+              "name": "Sudanese Pound",
+              "value": "sdg"
+            },
+            {
+              "name": "Swedish Krona",
+              "value": "sek"
+            },
+            {
+              "name": "Singapore Dollar",
+              "value": "sgd"
+            },
+            {
+              "name": "Saint Helena Pound",
+              "value": "shp"
+            },
+            {
+              "name": "Sierra Leonean Leone",
+              "value": "sll"
+            },
+            {
+              "name": "Somali Shilling",
+              "value": "sos"
+            },
+            {
+              "name": "Surinamese Dollar",
+              "value": "srd"
+            },
+            {
+              "name": "South Sudanese Pound",
+              "value": "ssp"
+            },
+            {
+              "name": "São Tomé and Príncipe Dobra (Pre-2018)",
+              "value": "std"
+            },
+            {
+              "name": "São Tomé and Príncipe Dobra",
+              "value": "stn"
+            },
+            {
+              "name": "Salvadoran Colón",
+              "value": "svc"
+            },
+            {
+              "name": "Syrian Pound",
+              "value": "syp"
+            },
+            {
+              "name": "Swazi Lilangeni",
+              "value": "szl"
+            },
+            {
+              "name": "Thai Baht",
+              "value": "thb"
+            },
+            {
+              "name": "Tajikistani Somoni",
+              "value": "tjs"
+            },
+            {
+              "name": "Turkmenistani Manat",
+              "value": "tmt"
+            },
+            {
+              "name": "Tunisian Dinar",
+              "value": "tnd"
+            },
+            {
+              "name": "Tongan Pa'anga",
+              "value": "top"
+            },
+            {
+              "name": "Turkish Lira",
+              "value": "try"
+            },
+            {
+              "name": "Trinidad and Tobago Dollar",
+              "value": "ttd"
+            },
+            {
+              "name": "New Taiwan Dollar",
+              "value": "twd"
+            },
+            {
+              "name": "Tanzanian Shilling",
+              "value": "tzs"
+            },
+            {
+              "name": "Ukrainian Hryvnia",
+              "value": "uah"
+            },
+            {
+              "name": "Ugandan Shilling",
+              "value": "ugx"
+            },
+            {
+              "name": "Uruguayan Peso",
+              "value": "uyu"
+            },
+            {
+              "name": "Uzbekistan Som",
+              "value": "uzs"
+            },
+            {
+              "name": "Venezuelan Bolívar Fuerte",
+              "value": "vef"
+            },
+            {
+              "name": "Vietnamese Dong",
+              "value": "vnd"
+            },
+            {
+              "name": "Vanuatu Vatu",
+              "value": "vuv"
+            },
+            {
+              "name": "Samoan Tala",
+              "value": "wst"
+            },
+            {
+              "name": "CFA Franc BEAC",
+              "value": "xaf"
+            },
+            {
+              "name": "Silver Ounce",
+              "value": "xag"
+            },
+            {
+              "name": "Gold Ounce",
+              "value": "xau"
+            },
+            {
+              "name": "East Caribbean Dollar",
+              "value": "xcd"
+            },
+            {
+              "name": "Special Drawing Rights",
+              "value": "xdr"
+            },
+            {
+              "name": "CFA Franc BCEAO",
+              "value": "xof"
+            },
+            {
+              "name": "Palladium Ounce",
+              "value": "xpd"
+            },
+            {
+              "name": "CFP Franc",
+              "value": "xpf"
+            },
+            {
+              "name": "Platinum Ounce",
+              "value": "xpt"
+            },
+            {
+              "name": "Yemeni Rial",
+              "value": "yer"
+            },
+            {
+              "name": "South African Rand",
+              "value": "zar"
+            },
+            {
+              "name": "Zambian Kwacha",
+              "value": "zmw"
+            },
+            {
+              "name": "Zimbabwean Dollar",
+              "value": "zwl"
+            }
+          ],
+          "description": "The currency of the order (3-digit ISO code, e.g., \"USD\")"
+        },
+        {
+          "displayName": "Connection ID",
+          "name": "connectionid",
+          "type": "number",
+          "default": 0,
+          "description": "The ID of the connection from which this order originated"
+        },
+        {
+          "displayName": "Customer ID",
+          "name": "customerid",
+          "type": "number",
+          "default": 0,
+          "description": "The ID of the customer associated with this order"
+        },
+        {
+          "displayName": "Creation Date",
+          "name": "externalupdatedDate",
+          "type": "dateTime",
+          "default": "",
+          "description": "The date the order was placed"
+        },
+        {
+          "displayName": "Abandoning Date",
+          "name": "abandonedDate",
+          "type": "dateTime",
+          "default": "",
+          "description": "The date the cart was abandoned. REQUIRED ONLY IF INCLUDING EXTERNALCHECKOUTID."
+        },
+        {
+          "displayName": "Shipping Amount",
+          "name": "shippingAmount",
+          "type": "number",
+          "default": 0,
+          "description": "The total shipping amount for the order in cents"
+        },
+        {
+          "displayName": "Tax Amount",
+          "name": "taxAmount",
+          "type": "number",
+          "default": 0,
+          "description": "The total tax amount for the order in cents"
+        },
+        {
+          "displayName": "Discount Amount",
+          "name": "discountAmount",
+          "type": "number",
+          "default": 0,
+          "description": "The total discount amount for the order in cents"
+        },
+        {
+          "displayName": "Order URL",
+          "name": "orderUrl",
+          "type": "string",
+          "default": "",
+          "description": "The URL for the order in the external service"
+        },
+        {
+          "displayName": "External Updated Date",
+          "name": "externalUpdatedDate",
+          "type": "dateTime",
+          "default": "",
+          "description": "The date the order was updated"
+        },
+        {
+          "displayName": "Shipping Method",
+          "name": "shippingMethod",
+          "type": "string",
+          "default": "",
+          "description": "The shipping method of the order"
+        },
+        {
+          "displayName": "Order Number",
+          "name": "orderNumber",
+          "type": "string",
+          "default": "",
+          "description": "The order number. This can be different than the externalid."
+        },
+        {
+          "displayName": "Products",
+          "name": "orderProducts",
+          "type": "collection",
+          "typeOptions": {
+            "multipleValues": true,
+            "multipleValueButtonText": "Add product"
+          },
+          "default": {},
+          "description": "All ordered products",
+          "placeholder": "Add product field",
+          "options": [
+            {
+              "displayName": "Name",
+              "name": "name",
+              "type": "string",
+              "default": "",
+              "description": "The name of the product"
+            },
+            {
+              "displayName": "Price",
+              "name": "price",
+              "type": "number",
+              "default": 0,
+              "description": "The price of the product, in cents. (i.e. $456.78 => 45678). Must be greater than or equal to zero."
+            },
+            {
+              "displayName": "Product Quantity",
+              "name": "quantity",
+              "type": "number",
+              "default": 0,
+              "description": "The quantity ordered"
+            },
+            {
+              "displayName": "Product External ID",
+              "name": "externalid",
+              "type": "string",
+              "default": "",
+              "description": "The ID of the product in the external service"
+            },
+            {
+              "displayName": "Product Category",
+              "name": "category",
+              "type": "string",
+              "default": "",
+              "description": "The category of the product"
+            },
+            {
+              "displayName": "SKU",
+              "name": "sku",
+              "type": "string",
+              "default": "",
+              "description": "The SKU for the product"
+            },
+            {
+              "displayName": "Description",
+              "name": "description",
+              "type": "string",
+              "default": "",
+              "description": "The description of the product"
+            },
+            {
+              "displayName": "Image URL",
+              "name": "imageUrl",
+              "type": "string",
+              "default": "",
+              "description": "An Image URL that displays an image of the product"
+            },
+            {
+              "displayName": "Product URL",
+              "name": "productUrl",
+              "type": "string",
+              "default": "",
+              "description": "A URL linking to the product in your store"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Order ID",
+      "name": "orderId",
+      "type": "number",
+      "default": 0,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The ID of the e-commerce order"
+    },
+    {
+      "displayName": "Order ID",
+      "name": "orderId",
+      "type": "number",
+      "default": 0,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "description": "The ID of the e-commerce order"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "ecommerceOrder"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Service ID",
+      "name": "connectionid",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "description": "The ID of the connection object for the service where the customer originates"
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "externalid",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "description": "The ID of the customer in the external service"
+    },
+    {
+      "displayName": "Customer Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "description": "The email address of the customer"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Accepts Marketing",
+          "name": "acceptsMarketing",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether customer has opt-ed in to marketing communications"
+        }
+      ]
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "ecommerceCustomerId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the E-commerce customer to update"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "description": "The fields to update",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Service ID",
+          "name": "connectionid",
+          "type": "string",
+          "default": "",
+          "description": "The ID of the connection object for the service where the customer originates"
+        },
+        {
+          "displayName": "Customer ID",
+          "name": "externalid",
+          "type": "string",
+          "default": "",
+          "description": "The ID of the customer in the external service"
+        },
+        {
+          "displayName": "Customer Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "The email address of the customer"
+        },
+        {
+          "displayName": "Accepts Marketing",
+          "name": "acceptsMarketing",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether customer has opt-ed in to marketing communications"
+        }
+      ]
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "ecommerceCustomerId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the E-commerce customer to delete"
+    },
+    {
+      "displayName": "Customer ID",
+      "name": "ecommerceCustomerId",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "default": 0,
+      "required": true,
+      "description": "ID of the E-commerce customer to get"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "ecommerceCustomer"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Order ID",
+      "name": "orderId",
+      "type": "number",
+      "default": 0,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getByOrderId"
+          ],
+          "resource": [
+            "ecommerceOrderProducts"
+          ]
+        }
+      },
+      "description": "The ID of the order whose products you'd like returned"
+    },
+    {
+      "displayName": "Product ID",
+      "name": "procuctId",
+      "type": "number",
+      "default": 0,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getByProductId"
+          ],
+          "resource": [
+            "ecommerceOrderProducts"
+          ]
+        }
+      },
+      "description": "The ID of the product you'd like returned"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "ecommerceOrderProducts"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "ecommerceOrderProducts"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "ecommerceOrderProducts"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Marketing"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.activecampaign/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/activeCampaign/"
+        }
+      ]
+    }
+  },
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/ActiveCampaign/activeCampaign.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/ActiveCampaign/activeCampaign.dark.svg"
+  },
+  "name": "n8n-nodes-base.activeCampaign"
+}

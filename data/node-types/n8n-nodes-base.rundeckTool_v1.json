@@ -1,0 +1,226 @@
+{
+  "displayName": "Rundeck Tool",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Manage Rundeck API",
+  "defaults": {
+    "name": "Rundeck"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "rundeckApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Manage Rundeck API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Job",
+          "value": "job"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "job"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Execute",
+          "value": "execute",
+          "description": "Execute a job",
+          "action": "Execute a job"
+        },
+        {
+          "name": "Get Metadata",
+          "value": "getMetadata",
+          "description": "Get metadata of a job",
+          "action": "Get metadata of a job"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "execute"
+    },
+    {
+      "displayName": "Job ID",
+      "name": "jobid",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "execute"
+          ],
+          "resource": [
+            "job"
+          ]
+        }
+      },
+      "default": "",
+      "placeholder": "Rundeck Job ID",
+      "required": true,
+      "description": "The job ID to execute"
+    },
+    {
+      "displayName": "Arguments",
+      "name": "arguments",
+      "placeholder": "Add Argument",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "execute"
+          ],
+          "resource": [
+            "job"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "name": "arguments",
+          "displayName": "Arguments",
+          "values": [
+            {
+              "displayName": "Name",
+              "name": "name",
+              "type": "string",
+              "default": ""
+            },
+            {
+              "displayName": "Value",
+              "name": "value",
+              "type": "string",
+              "default": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Filter",
+      "name": "filter",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "execute"
+          ],
+          "resource": [
+            "job"
+          ]
+        }
+      },
+      "default": "",
+      "placeholder": "Add Filters",
+      "description": "Filter Rundeck nodes by name"
+    },
+    {
+      "displayName": "Job ID",
+      "name": "jobid",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getMetadata"
+          ],
+          "resource": [
+            "job"
+          ]
+        }
+      },
+      "default": "",
+      "placeholder": "Rundeck Job ID",
+      "required": true,
+      "description": "The job ID to get metadata off"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.rundeck/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/rundeck/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Rundeck/rundeck.png",
+  "name": "n8n-nodes-base.rundeckTool"
+}

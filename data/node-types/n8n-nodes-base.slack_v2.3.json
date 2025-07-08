@@ -1,0 +1,5597 @@
+{
+  "displayName": "Slack",
+  "group": [
+    "output"
+  ],
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume Slack API",
+  "defaultVersion": 2.3,
+  "version": [
+    2,
+    2.1,
+    2.2,
+    2.3
+  ],
+  "defaults": {
+    "name": "Slack"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "usableAsTool": true,
+  "credentials": [
+    {
+      "name": "slackApi",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "accessToken"
+          ]
+        }
+      }
+    },
+    {
+      "name": "slackOAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ]
+        }
+      }
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "GET",
+      "responseMode": "onReceived",
+      "responseData": "",
+      "path": "={{ $nodeId }}",
+      "restartWebhook": true,
+      "isFullPath": true
+    },
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "responseData": "",
+      "path": "={{ $nodeId }}",
+      "restartWebhook": true,
+      "isFullPath": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "Access Token",
+          "value": "accessToken"
+        },
+        {
+          "name": "OAuth2",
+          "value": "oAuth2"
+        }
+      ],
+      "default": "accessToken"
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Channel",
+          "value": "channel"
+        },
+        {
+          "name": "File",
+          "value": "file"
+        },
+        {
+          "name": "Message",
+          "value": "message"
+        },
+        {
+          "name": "Reaction",
+          "value": "reaction"
+        },
+        {
+          "name": "Star",
+          "value": "star"
+        },
+        {
+          "name": "User",
+          "value": "user"
+        },
+        {
+          "name": "User Group",
+          "value": "userGroup"
+        }
+      ],
+      "default": "message"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Archive",
+          "value": "archive",
+          "description": "Archives a conversation",
+          "action": "Archive a channel"
+        },
+        {
+          "name": "Close",
+          "value": "close",
+          "description": "Closes a direct message or multi-person direct message",
+          "action": "Close a channel"
+        },
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Initiates a public or private channel-based conversation",
+          "action": "Create a channel"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get information about a channel",
+          "action": "Get a channel"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many channels in a Slack team",
+          "action": "Get many channels"
+        },
+        {
+          "name": "History",
+          "value": "history",
+          "description": "Get a conversation's history of messages and events",
+          "action": "Get the history of a channel"
+        },
+        {
+          "name": "Invite",
+          "value": "invite",
+          "description": "Invite a user to a channel",
+          "action": "Invite a user to a channel"
+        },
+        {
+          "name": "Join",
+          "value": "join",
+          "description": "Joins an existing conversation",
+          "action": "Join a channel"
+        },
+        {
+          "name": "Kick",
+          "value": "kick",
+          "description": "Removes a user from a channel",
+          "action": "Kick a user from a channel"
+        },
+        {
+          "name": "Leave",
+          "value": "leave",
+          "description": "Leaves a conversation",
+          "action": "Leave a channel"
+        },
+        {
+          "name": "Member",
+          "value": "member",
+          "description": "List members of a conversation",
+          "action": "Get members of a channel"
+        },
+        {
+          "name": "Open",
+          "value": "open",
+          "description": "Opens or resumes a direct message or multi-person direct message",
+          "action": "Open a channel"
+        },
+        {
+          "name": "Rename",
+          "value": "rename",
+          "description": "Renames a conversation",
+          "action": "Rename a channel"
+        },
+        {
+          "name": "Replies",
+          "value": "replies",
+          "description": "Get a thread of messages posted to a channel",
+          "action": "Get a thread of messages posted to a channel"
+        },
+        {
+          "name": "Set Purpose",
+          "value": "setPurpose",
+          "description": "Sets the purpose for a conversation",
+          "action": "Set the purpose of a channel"
+        },
+        {
+          "name": "Set Topic",
+          "value": "setTopic",
+          "description": "Sets the topic for a conversation",
+          "action": "Set the topic of a channel"
+        },
+        {
+          "name": "Unarchive",
+          "value": "unarchive",
+          "description": "Unarchives a conversation",
+          "action": "Unarchive a channel"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "description": "The Slack channel to archive",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "archive"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "close"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to close"
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "string",
+      "default": "",
+      "placeholder": "Channel name",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true
+    },
+    {
+      "displayName": "Channel Visibility",
+      "name": "channelVisibility",
+      "type": "options",
+      "default": "public",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Public Channel",
+          "value": "public"
+        },
+        {
+          "name": "Private Channel",
+          "value": "private"
+        }
+      ],
+      "description": "Whether to create a Public or a Private Slack channel. <a href=\"https://slack.com/help/articles/360017938993-What-is-a-channel\">More info</a>."
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "invite"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to invite to"
+    },
+    {
+      "displayName": "User Names or IDs",
+      "name": "userIds",
+      "type": "multiOptions",
+      "typeOptions": {
+        "loadOptionsMethod": "getUsers"
+      },
+      "default": [],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "invite"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The ID of the user to invite into channel. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "get"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "description": "The Slack channel to get"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Num of Members",
+          "name": "includeNumMembers",
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "kick"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to kick the user from"
+    },
+    {
+      "displayName": "User Name or ID",
+      "name": "userId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getUsers"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "kick"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "description": "The Slack channel to join",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "join"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Exclude Archived",
+          "name": "excludeArchived",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude archived channels from the list"
+        },
+        {
+          "displayName": "Types",
+          "name": "types",
+          "type": "multiOptions",
+          "options": [
+            {
+              "name": "Public Channel",
+              "value": "public_channel"
+            },
+            {
+              "name": "Private Channel",
+              "value": "private_channel"
+            },
+            {
+              "name": "mpim",
+              "value": "mpim"
+            },
+            {
+              "name": "im",
+              "value": "im"
+            }
+          ],
+          "default": [
+            "public_channel"
+          ],
+          "description": "Mix and match channel types"
+        }
+      ]
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "history"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to get the history from"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "history"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "history"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "history"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Inclusive",
+          "name": "inclusive",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include messages with latest or oldest timestamp in results only when either timestamp is specified"
+        },
+        {
+          "displayName": "Latest",
+          "name": "latest",
+          "type": "dateTime",
+          "default": "",
+          "description": "End of time range of messages to include in results"
+        },
+        {
+          "displayName": "Oldest",
+          "name": "oldest",
+          "type": "dateTime",
+          "default": "",
+          "description": "Start of time range of messages to include in results"
+        }
+      ]
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "leave"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to leave from"
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "description": "The Slack channel to get the members from",
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "member"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "member"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "description": "Max number of results to return",
+      "default": 100,
+      "placeholder": "Limit",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "member"
+          ],
+          "resource": [
+            "channel"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resolve Data",
+      "name": "resolveData",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "member"
+          ]
+        }
+      },
+      "description": "Whether to resolve the data automatically. By default the response only contain the ID to resource."
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "open"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Channel ID",
+          "name": "channelId",
+          "type": "string",
+          "default": "",
+          "description": "Resume a conversation by supplying an im or mpim's ID. Or provide the users field instead."
+        },
+        {
+          "displayName": "Return IM",
+          "name": "returnIm",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether you want the full IM channel definition in the response"
+        },
+        {
+          "displayName": "User Names or IDs",
+          "name": "users",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getUsers"
+          },
+          "default": [],
+          "description": "If only one user is included, this creates a 1:1 DM. The ordering of the users is preserved whenever a multi-person direct message is returned. Supply a channel when not supplying users. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        }
+      ]
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "rename"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to rename"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "rename"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "New name for conversation"
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "replies"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to replies to"
+    },
+    {
+      "displayName": "Message Timestamp",
+      "name": "ts",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "replies"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Timestamp of the message to reply",
+      "placeholder": "1663233118.856619"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "replies"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "replies"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "replies"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Inclusive",
+          "name": "inclusive",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include messages with latest or oldest timestamp in results only when either timestamp is specified"
+        },
+        {
+          "displayName": "Latest",
+          "name": "latest",
+          "type": "string",
+          "default": "",
+          "description": "End of time range of messages to include in results"
+        },
+        {
+          "displayName": "Oldest",
+          "name": "oldest",
+          "type": "string",
+          "default": "",
+          "description": "Start of time range of messages to include in results"
+        }
+      ]
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setPurpose"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to set the purpose of"
+    },
+    {
+      "displayName": "Purpose",
+      "name": "purpose",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setPurpose"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "A new, specialer purpose"
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setTopic"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to set the topic of"
+    },
+    {
+      "displayName": "Topic",
+      "name": "topic",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "setTopic"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "default": "",
+      "required": true
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "unarchive"
+          ],
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to unarchive"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a message"
+        },
+        {
+          "name": "Get Permalink",
+          "value": "getPermalink",
+          "action": "Get a message permalink"
+        },
+        {
+          "name": "Search",
+          "value": "search",
+          "action": "Search for messages"
+        },
+        {
+          "name": "Send",
+          "value": "post",
+          "action": "Send a message"
+        },
+        {
+          "name": "Send and Wait for Response",
+          "value": "sendAndWait",
+          "action": "Send message and wait for response"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "action": "Update a message"
+        }
+      ],
+      "default": "post"
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "description": "The Slack channel to get the message permalink from",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "getPermalink"
+          ]
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "Message Timestamp",
+      "name": "timestamp",
+      "required": true,
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "getPermalink"
+          ]
+        }
+      },
+      "description": "Timestamp of the message to message",
+      "placeholder": "1663233118.856619"
+    },
+    {
+      "displayName": "Send Message To",
+      "name": "select",
+      "type": "options",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "post"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Channel",
+          "value": "channel"
+        },
+        {
+          "name": "User",
+          "value": "user"
+        }
+      ],
+      "default": "",
+      "placeholder": "Select..."
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By Name",
+          "name": "name",
+          "type": "string",
+          "placeholder": "#general"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "required": true,
+      "description": "The Slack channel to send to",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ],
+          "select": [
+            "channel"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a user...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a user...",
+          "typeOptions": {
+            "searchListMethod": "getUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack User ID"
+              }
+            }
+          ],
+          "placeholder": "U123AB45JGM"
+        },
+        {
+          "displayName": "By username",
+          "name": "username",
+          "type": "string",
+          "placeholder": "@username"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ],
+          "select": [
+            "user"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message Type",
+      "name": "messageType",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "description": "Whether to send a simple text message, or use Slack’s Blocks UI builder for more sophisticated messages that include form fields, sections and more",
+      "options": [
+        {
+          "name": "Simple Text Message",
+          "value": "text",
+          "description": "Supports basic Markdown"
+        },
+        {
+          "name": "Blocks",
+          "value": "block",
+          "description": "Combine text, buttons, form elements, dividers and more in Slack 's visual builder"
+        },
+        {
+          "name": "Attachments",
+          "value": "attachment"
+        }
+      ],
+      "default": "text"
+    },
+    {
+      "displayName": "Message Text",
+      "name": "text",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ],
+          "messageType": [
+            "text"
+          ]
+        }
+      },
+      "description": "The message text to post. Supports <a href=\"https://api.slack.com/reference/surfaces/formatting\">markdown</a> by default - this can be disabled in \"Options\"."
+    },
+    {
+      "displayName": "Blocks",
+      "name": "blocksUi",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ],
+          "messageType": [
+            "block"
+          ]
+        }
+      },
+      "typeOptions": {
+        "rows": 3
+      },
+      "description": "Enter the JSON output from Slack's visual Block Kit Builder here. You can then use expressions to add variable content to your blocks. To create blocks, use <a target='_blank' href='https://app.slack.com/block-kit-builder'>Slack's Block Kit Builder</a>",
+      "hint": "To create blocks, use <a target='_blank' href='https://app.slack.com/block-kit-builder'>Slack's Block Kit Builder</a>",
+      "default": ""
+    },
+    {
+      "displayName": "Notification Text",
+      "name": "text",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ],
+          "messageType": [
+            "block"
+          ]
+        }
+      },
+      "description": "Fallback text to display in slack notifications. Supports <a href=\"https://api.slack.com/reference/surfaces/formatting\">markdown</a> by default - this can be disabled in \"Options\"."
+    },
+    {
+      "displayName": "This is a legacy Slack feature. Slack advises to instead use Blocks.",
+      "name": "noticeAttachments",
+      "type": "notice",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ],
+          "messageType": [
+            "attachment"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Attachments",
+      "name": "attachments",
+      "type": "collection",
+      "typeOptions": {
+        "multipleValues": true,
+        "multipleValueButtonText": "Add attachment"
+      },
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ],
+          "messageType": [
+            "attachment"
+          ]
+        }
+      },
+      "default": {},
+      "placeholder": "Add attachment item",
+      "options": [
+        {
+          "displayName": "Fallback Text",
+          "name": "fallback",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": "",
+          "description": "Required plain-text summary of the attachment"
+        },
+        {
+          "displayName": "Text",
+          "name": "text",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Title",
+          "name": "title",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Title Link",
+          "name": "title_link",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Color",
+          "name": "color",
+          "type": "color",
+          "default": "#ff0000",
+          "description": "Color of the line left of text"
+        },
+        {
+          "displayName": "Pretext",
+          "name": "pretext",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": "",
+          "description": "Text which appears before the message block"
+        },
+        {
+          "displayName": "Author Name",
+          "name": "author_name",
+          "type": "string",
+          "default": "",
+          "description": "Name that should appear"
+        },
+        {
+          "displayName": "Author Link",
+          "name": "author_link",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Author Icon",
+          "name": "author_icon",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": "",
+          "description": "Icon which should appear for the user"
+        },
+        {
+          "displayName": "Image URL",
+          "name": "image_url",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Thumbnail URL",
+          "name": "thumb_url",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Footer",
+          "name": "footer",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": "",
+          "description": "Text of footer to add"
+        },
+        {
+          "displayName": "Footer Icon",
+          "name": "footer_icon",
+          "type": "string",
+          "typeOptions": {
+            "alwaysOpenEditWindow": true
+          },
+          "default": "",
+          "description": "Icon which should appear next to footer"
+        },
+        {
+          "displayName": "Message Timestamp",
+          "name": "ts",
+          "type": "number",
+          "default": 0,
+          "description": "Timestamp of the message to post",
+          "placeholder": "1663233118.856619"
+        },
+        {
+          "displayName": "Fields",
+          "name": "fields",
+          "placeholder": "Add Fields",
+          "description": "Fields to add to message",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "options": [
+            {
+              "name": "item",
+              "displayName": "Item",
+              "values": [
+                {
+                  "displayName": "Title",
+                  "name": "title",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Short",
+                  "name": "short",
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Whether items can be displayed next to each other"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "otherOptions",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "post"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Other options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Include Link to Workflow",
+          "name": "includeLinkToWorkflow",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to append a link to this workflow at the end of the message. This is helpful if you have many workflows sending Slack messages."
+        },
+        {
+          "displayName": "Custom Bot Profile Photo",
+          "name": "botProfile",
+          "type": "fixedCollection",
+          "default": {
+            "imageValues": [
+              {
+                "profilePhotoType": ""
+              }
+            ]
+          },
+          "description": "Set an image or an emoji as the Profile Photo (avatar) of the bot sending the message. Will not be used if sending message as a user.",
+          "options": [
+            {
+              "name": "imageValues",
+              "displayName": "Add Bot Profile Photo",
+              "values": [
+                {
+                  "displayName": "Profile Photo Type",
+                  "name": "profilePhotoType",
+                  "type": "options",
+                  "options": [
+                    {
+                      "name": "Image URL",
+                      "value": "image"
+                    },
+                    {
+                      "name": "Emoji Code",
+                      "value": "emoji"
+                    }
+                  ],
+                  "default": "",
+                  "placeholder": "Select a type…"
+                },
+                {
+                  "displayName": "Emoji Code",
+                  "name": "icon_emoji",
+                  "type": "string",
+                  "default": "",
+                  "displayOptions": {
+                    "show": {
+                      "profilePhotoType": [
+                        "emoji"
+                      ]
+                    }
+                  },
+                  "description": "Only used if sending message as a bot. Use emoji codes like +1, not an actual emoji like 👍. <a target=\"_blank\" href=\" https://www.webfx.com/tools/emoji-cheat-sheet/\">List of common emoji codes</a>"
+                },
+                {
+                  "displayName": "Image URL",
+                  "name": "icon_url",
+                  "type": "string",
+                  "default": "",
+                  "displayOptions": {
+                    "show": {
+                      "profilePhotoType": [
+                        "image"
+                      ]
+                    }
+                  },
+                  "description": "Only used if sending message as a bot"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Link User and Channel Names",
+          "name": "link_names",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to turn @users and #channels in message text into clickable links"
+        },
+        {
+          "displayName": "Reply to a Message",
+          "name": "thread_ts",
+          "type": "fixedCollection",
+          "default": {},
+          "placeholder": "Reply to a Message",
+          "description": "Provide another message's Timestamp value to make this message a reply",
+          "options": [
+            {
+              "displayName": "Reply to a Message",
+              "name": "replyValues",
+              "values": [
+                {
+                  "displayName": "Message Timestamp to Reply To",
+                  "name": "thread_ts",
+                  "type": "number",
+                  "placeholder": "1663233118.856619",
+                  "description": "Message timestamps are included in output data of Slack nodes, abbreviated to ts"
+                },
+                {
+                  "displayName": "Reply to Thread",
+                  "name": "reply_broadcast",
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether the reply should be made visible to everyone in the channel or conversation"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Use Markdown?",
+          "name": "mrkdwn",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to use Slack Markdown to format the message"
+        },
+        {
+          "displayName": "Unfurl Links",
+          "name": "unfurl_links",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to enable unfurling of primarily text-based content"
+        },
+        {
+          "displayName": "Unfurl Media",
+          "name": "unfurl_media",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to disable unfurling of media content"
+        },
+        {
+          "displayName": "Send as Ephemeral Message",
+          "name": "ephemeral",
+          "type": "fixedCollection",
+          "default": {},
+          "displayOptions": {
+            "show": {
+              "/select": [
+                "channel"
+              ]
+            }
+          },
+          "placeholder": "Send as Ephemeral Message",
+          "description": "Whether to send a temporary, ephemeral message",
+          "options": [
+            {
+              "displayName": "Send as Ephemeral Message",
+              "name": "ephemeralValues",
+              "values": [
+                {
+                  "displayName": "User to Send",
+                  "name": "user",
+                  "type": "resourceLocator",
+                  "default": {
+                    "mode": "list",
+                    "value": ""
+                  },
+                  "placeholder": "Select a user...",
+                  "modes": [
+                    {
+                      "displayName": "From List",
+                      "name": "list",
+                      "type": "list",
+                      "placeholder": "Select a user...",
+                      "typeOptions": {
+                        "searchListMethod": "getUsers",
+                        "searchable": true
+                      }
+                    },
+                    {
+                      "displayName": "By ID",
+                      "name": "id",
+                      "type": "string",
+                      "validation": [
+                        {
+                          "type": "regex",
+                          "properties": {
+                            "regex": "[a-zA-Z0-9]{2,}",
+                            "errorMessage": "Not a valid Slack User ID"
+                          }
+                        }
+                      ],
+                      "placeholder": "U123AB45JGM"
+                    }
+                  ]
+                },
+                {
+                  "displayName": "Send as Ephemeral Message",
+                  "name": "ephemeral",
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Whether to send a temporary, ephemeral message"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Send as Ephemeral Message",
+          "name": "ephemeral",
+          "type": "boolean",
+          "displayOptions": {
+            "show": {
+              "/select": [
+                "user"
+              ]
+            }
+          },
+          "default": true,
+          "description": "Whether to send a temporary, ephemeral message"
+        },
+        {
+          "displayName": "Send as User",
+          "name": "sendAsUser",
+          "type": "string",
+          "displayOptions": {
+            "show": {
+              "/authentication": [
+                "accessToken"
+              ]
+            }
+          },
+          "default": "",
+          "description": "The message will be sent from this username (i.e. as if this individual sent the message). Add chat:write.customize scope on Slack API"
+        }
+      ]
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "description": "The Slack channel to update the message from"
+    },
+    {
+      "displayName": "Message Timestamp",
+      "name": "ts",
+      "required": true,
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "description": "Timestamp of the message to update",
+      "placeholder": "1663233118.856619"
+    },
+    {
+      "displayName": "Message Type",
+      "name": "messageType",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "description": "Whether to send a simple text message, or use Slack’s Blocks UI builder for more sophisticated messages that include form fields, sections and more",
+      "options": [
+        {
+          "name": "Simple Text Message",
+          "value": "text",
+          "description": "Supports basic Markdown"
+        },
+        {
+          "name": "Blocks",
+          "value": "block",
+          "description": "Combine text, buttons, form elements, dividers and more in Slack 's visual builder"
+        },
+        {
+          "name": "Attachments",
+          "value": "attachment"
+        }
+      ],
+      "default": "text"
+    },
+    {
+      "displayName": "Blocks",
+      "name": "blocksUi",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "message"
+          ],
+          "messageType": [
+            "block"
+          ]
+        }
+      },
+      "typeOptions": {
+        "rows": 3
+      },
+      "description": "Enter the JSON output from Slack's visual Block Kit Builder here. You can then use expressions to add variable content to your blocks. To create blocks, use <a target='_blank' href='https://app.slack.com/block-kit-builder'>Slack's Block Kit Builder</a>",
+      "hint": "To create blocks, use <a target='_blank' href='https://app.slack.com/block-kit-builder'>Slack's Block Kit Builder</a>",
+      "default": ""
+    },
+    {
+      "displayName": "Notification Text",
+      "name": "text",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "message"
+          ],
+          "messageType": [
+            "block"
+          ]
+        }
+      },
+      "description": "Fallback text to display in slack notifications. Supports <a href=\"https://api.slack.com/reference/surfaces/formatting\">markdown</a> by default - this can be disabled in \"Options\"."
+    },
+    {
+      "displayName": "Message Text",
+      "name": "text",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ],
+          "messageType": [
+            "text"
+          ]
+        }
+      },
+      "description": "The message text to update. Supports <a href=\"https://api.slack.com/reference/surfaces/formatting/\">markdown</a> by default - this can be disabled in \"Options\"."
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Link User and Channel Names",
+          "name": "link_names",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to find and link channel names and usernames"
+        },
+        {
+          "displayName": "Parse",
+          "name": "parse",
+          "type": "options",
+          "options": [
+            {
+              "name": "Client",
+              "value": "client"
+            },
+            {
+              "name": "Full",
+              "value": "full"
+            },
+            {
+              "name": "None",
+              "value": "none"
+            }
+          ],
+          "default": "client",
+          "description": "Change how messages are treated"
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "otherOptions",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "message"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Other options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Include Link to Workflow",
+          "name": "includeLinkToWorkflow",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to append a link to this workflow at the end of the message. This is helpful if you have many workflows sending Slack messages."
+        }
+      ]
+    },
+    {
+      "displayName": "Delete Message From",
+      "name": "select",
+      "type": "options",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Channel",
+          "value": "channel"
+        },
+        {
+          "name": "User",
+          "value": "user"
+        }
+      ],
+      "default": "",
+      "placeholder": "Select..."
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "message"
+          ],
+          "select": [
+            "channel"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The Slack channel to delete the message from"
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a user...",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "message"
+          ],
+          "select": [
+            "user"
+          ]
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a user...",
+          "typeOptions": {
+            "searchListMethod": "getUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack User ID"
+              }
+            }
+          ],
+          "placeholder": "U123AB45JGM"
+        }
+      ]
+    },
+    {
+      "displayName": "Message Timestamp",
+      "name": "timestamp",
+      "required": true,
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "description": "Timestamp of the message to delete",
+      "placeholder": "1663233118.856619"
+    },
+    {
+      "displayName": "Search Query",
+      "name": "query",
+      "type": "string",
+      "description": "The text to search for within messages",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "search"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Sort By",
+      "name": "sort",
+      "description": "How search results should be sorted. You can sort by.",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "search"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Newest",
+          "value": "desc"
+        },
+        {
+          "name": "Oldest",
+          "value": "asc"
+        },
+        {
+          "name": "Relevance Score",
+          "value": "relevance"
+        }
+      ],
+      "default": "desc"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "search"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "search"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 50
+      },
+      "default": 25,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "search"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Search in Channel",
+          "name": "searchChannel",
+          "type": "multiOptions",
+          "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "default": [],
+          "typeOptions": {
+            "loadOptionsMethod": "getChannelsName"
+          }
+        }
+      ],
+      "default": {},
+      "placeholder": "Add option"
+    },
+    {
+      "displayName": "Send Message To",
+      "name": "select",
+      "type": "options",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Channel",
+          "value": "channel"
+        },
+        {
+          "name": "User",
+          "value": "user"
+        }
+      ],
+      "default": "user",
+      "placeholder": "Select..."
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By Name",
+          "name": "name",
+          "type": "string",
+          "placeholder": "#general"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "required": true,
+      "description": "The Slack channel to send to",
+      "displayOptions": {
+        "show": {
+          "select": [
+            "channel"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a user...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a user...",
+          "typeOptions": {
+            "searchListMethod": "getUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack User ID"
+              }
+            }
+          ],
+          "placeholder": "U123AB45JGM"
+        },
+        {
+          "displayName": "By username",
+          "name": "username",
+          "type": "string",
+          "placeholder": "@username"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "select": [
+            "user"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message",
+      "name": "message",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "typeOptions": {
+        "rows": 4
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Response Type",
+      "name": "responseType",
+      "type": "options",
+      "default": "approval",
+      "options": [
+        {
+          "name": "Approval",
+          "value": "approval",
+          "description": "User can approve/disapprove from within the message"
+        },
+        {
+          "name": "Free Text",
+          "value": "freeText",
+          "description": "User can submit a response via a form"
+        },
+        {
+          "name": "Custom Form",
+          "value": "customForm",
+          "description": "User can submit a response via a custom form"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Define Form",
+      "name": "defineForm",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Using Fields Below",
+          "value": "fields"
+        },
+        {
+          "name": "Using JSON",
+          "value": "json"
+        }
+      ],
+      "default": "fields",
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "customForm"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Form Fields",
+      "name": "jsonOutput",
+      "type": "json",
+      "typeOptions": {
+        "rows": 5
+      },
+      "default": "[\n   {\n      \"fieldLabel\":\"Name\",\n      \"placeholder\":\"enter you name\",\n      \"requiredField\":true\n   },\n   {\n      \"fieldLabel\":\"Age\",\n      \"fieldType\":\"number\",\n      \"placeholder\":\"enter your age\"\n   },\n   {\n      \"fieldLabel\":\"Email\",\n      \"fieldType\":\"email\",\n      \"requiredField\":true\n   }\n]",
+      "validateType": "form-fields",
+      "ignoreValidationDuringExecution": true,
+      "hint": "<a href=\"https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.form/\" target=\"_blank\">See docs</a> for field syntax",
+      "displayOptions": {
+        "show": {
+          "defineForm": [
+            "json"
+          ],
+          "responseType": [
+            "customForm"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Form Elements",
+      "name": "formFields",
+      "placeholder": "Add Form Element",
+      "type": "fixedCollection",
+      "default": {},
+      "typeOptions": {
+        "multipleValues": true,
+        "sortable": true
+      },
+      "options": [
+        {
+          "displayName": "Values",
+          "name": "values",
+          "values": [
+            {
+              "displayName": "Field Name",
+              "name": "fieldLabel",
+              "type": "string",
+              "default": "",
+              "placeholder": "e.g. What is your name?",
+              "description": "Label that appears above the input field",
+              "required": true,
+              "displayOptions": {
+                "hide": {
+                  "fieldType": [
+                    "hiddenField",
+                    "html"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Element Type",
+              "name": "fieldType",
+              "type": "options",
+              "default": "text",
+              "description": "The type of field to add to the form",
+              "options": [
+                {
+                  "name": "Custom HTML",
+                  "value": "html"
+                },
+                {
+                  "name": "Date",
+                  "value": "date"
+                },
+                {
+                  "name": "Dropdown List",
+                  "value": "dropdown"
+                },
+                {
+                  "name": "Email",
+                  "value": "email"
+                },
+                {
+                  "name": "File",
+                  "value": "file"
+                },
+                {
+                  "name": "Hidden Field",
+                  "value": "hiddenField"
+                },
+                {
+                  "name": "Number",
+                  "value": "number"
+                },
+                {
+                  "name": "Password",
+                  "value": "password"
+                },
+                {
+                  "name": "Text",
+                  "value": "text"
+                },
+                {
+                  "name": "Textarea",
+                  "value": "textarea"
+                }
+              ],
+              "required": true
+            },
+            {
+              "displayName": "Element Name",
+              "name": "elementName",
+              "type": "string",
+              "default": "",
+              "placeholder": "e.g. content-section",
+              "description": "Optional field. It can be used to include the html in the output.",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "html"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Placeholder",
+              "name": "placeholder",
+              "description": "Sample text to display inside the field",
+              "type": "string",
+              "default": "",
+              "displayOptions": {
+                "hide": {
+                  "fieldType": [
+                    "dropdown",
+                    "date",
+                    "file",
+                    "html",
+                    "hiddenField"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Field Name",
+              "name": "fieldName",
+              "description": "The name of the field, used in input attributes and referenced by the workflow",
+              "type": "string",
+              "default": "",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "hiddenField"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Field Value",
+              "name": "fieldValue",
+              "description": "Input value can be set here or will be passed as a query parameter via Field Name if no value is set",
+              "type": "string",
+              "default": "",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "hiddenField"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Field Options",
+              "name": "fieldOptions",
+              "placeholder": "Add Field Option",
+              "description": "List of options that can be selected from the dropdown",
+              "type": "fixedCollection",
+              "default": {
+                "values": [
+                  {
+                    "option": ""
+                  }
+                ]
+              },
+              "required": true,
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "dropdown"
+                  ]
+                }
+              },
+              "typeOptions": {
+                "multipleValues": true,
+                "sortable": true
+              },
+              "options": [
+                {
+                  "displayName": "Values",
+                  "name": "values",
+                  "values": [
+                    {
+                      "displayName": "Option",
+                      "name": "option",
+                      "type": "string",
+                      "default": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "displayName": "Multiple Choice",
+              "name": "multiselect",
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to allow the user to select multiple options from the dropdown list",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "dropdown"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "HTML",
+              "name": "html",
+              "typeOptions": {
+                "editor": "htmlEditor"
+              },
+              "type": "string",
+              "noDataExpression": true,
+              "default": "<!-- Your custom HTML here --->\n\n\n",
+              "description": "HTML elements to display on the form page",
+              "hint": "Does not accept <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code> or <code>&lt;input&gt;</code> tags",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "html"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Multiple Files",
+              "name": "multipleFiles",
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to allow the user to select multiple files from the file input or just one",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "file"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Accepted File Types",
+              "name": "acceptFileTypes",
+              "type": "string",
+              "default": "",
+              "description": "Comma-separated list of allowed file extensions",
+              "hint": "Leave empty to allow all file types",
+              "placeholder": "e.g. .jpg, .png",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "file"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "The displayed date is formatted based on the locale of the user's browser",
+              "name": "formatDate",
+              "type": "notice",
+              "default": "",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "date"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Required Field",
+              "name": "requiredField",
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to require the user to enter a value for this field before submitting the form",
+              "displayOptions": {
+                "hide": {
+                  "fieldType": [
+                    "html",
+                    "hiddenField"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "defineForm": [
+            "fields"
+          ],
+          "responseType": [
+            "customForm"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Approval Options",
+      "name": "approvalOptions",
+      "type": "fixedCollection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Values",
+          "name": "values",
+          "values": [
+            {
+              "displayName": "Type of Approval",
+              "name": "approvalType",
+              "type": "options",
+              "placeholder": "Add option",
+              "default": "single",
+              "options": [
+                {
+                  "name": "Approve Only",
+                  "value": "single"
+                },
+                {
+                  "name": "Approve and Disapprove",
+                  "value": "double"
+                }
+              ]
+            },
+            {
+              "displayName": "Approve Button Label",
+              "name": "approveLabel",
+              "type": "string",
+              "default": "Approve",
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "single",
+                    "double"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Approve Button Style",
+              "name": "buttonApprovalStyle",
+              "type": "options",
+              "default": "primary",
+              "options": [
+                {
+                  "name": "Primary",
+                  "value": "primary"
+                },
+                {
+                  "name": "Secondary",
+                  "value": "secondary"
+                }
+              ],
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "single",
+                    "double"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Disapprove Button Label",
+              "name": "disapproveLabel",
+              "type": "string",
+              "default": "Decline",
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "double"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Disapprove Button Style",
+              "name": "buttonDisapprovalStyle",
+              "type": "options",
+              "default": "secondary",
+              "options": [
+                {
+                  "name": "Primary",
+                  "value": "primary"
+                },
+                {
+                  "name": "Secondary",
+                  "value": "secondary"
+                }
+              ],
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "double"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "approval"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Limit Wait Time",
+          "name": "limitWaitTime",
+          "type": "fixedCollection",
+          "description": "Whether the workflow will automatically resume execution after the specified limit type",
+          "default": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "options": [
+            {
+              "displayName": "Values",
+              "name": "values",
+              "values": [
+                {
+                  "displayName": "Limit Type",
+                  "name": "limitType",
+                  "type": "options",
+                  "default": "afterTimeInterval",
+                  "description": "Sets the condition for the execution to resume. Can be a specified date or after some time.",
+                  "options": [
+                    {
+                      "name": "After Time Interval",
+                      "description": "Waits for a certain amount of time",
+                      "value": "afterTimeInterval"
+                    },
+                    {
+                      "name": "At Specified Time",
+                      "description": "Waits until the set date and time to continue",
+                      "value": "atSpecifiedTime"
+                    }
+                  ]
+                },
+                {
+                  "displayName": "Amount",
+                  "name": "resumeAmount",
+                  "type": "number",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "typeOptions": {
+                    "minValue": 0,
+                    "numberPrecision": 2
+                  },
+                  "default": 1,
+                  "description": "The time to wait"
+                },
+                {
+                  "displayName": "Unit",
+                  "name": "resumeUnit",
+                  "type": "options",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "options": [
+                    {
+                      "name": "Minutes",
+                      "value": "minutes"
+                    },
+                    {
+                      "name": "Hours",
+                      "value": "hours"
+                    },
+                    {
+                      "name": "Days",
+                      "value": "days"
+                    }
+                  ],
+                  "default": "hours",
+                  "description": "Unit of the interval value"
+                },
+                {
+                  "displayName": "Max Date and Time",
+                  "name": "maxDateAndTime",
+                  "type": "dateTime",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "atSpecifiedTime"
+                      ]
+                    }
+                  },
+                  "default": "",
+                  "description": "Continue execution after the specified date and time"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Append n8n Attribution",
+          "name": "appendAttribution",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the phrase \"This message was sent automatically with n8n\" to the end of the message"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "approval"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Message Button Label",
+          "name": "messageButtonLabel",
+          "type": "string",
+          "default": "Respond"
+        },
+        {
+          "displayName": "Response Form Title",
+          "name": "responseFormTitle",
+          "description": "Title of the form that the user can access to provide their response",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Response Form Description",
+          "name": "responseFormDescription",
+          "description": "Description of the form that the user can access to provide their response",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Response Form Button Label",
+          "name": "responseFormButtonLabel",
+          "type": "string",
+          "default": "Submit"
+        },
+        {
+          "displayName": "Limit Wait Time",
+          "name": "limitWaitTime",
+          "type": "fixedCollection",
+          "description": "Whether the workflow will automatically resume execution after the specified limit type",
+          "default": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "options": [
+            {
+              "displayName": "Values",
+              "name": "values",
+              "values": [
+                {
+                  "displayName": "Limit Type",
+                  "name": "limitType",
+                  "type": "options",
+                  "default": "afterTimeInterval",
+                  "description": "Sets the condition for the execution to resume. Can be a specified date or after some time.",
+                  "options": [
+                    {
+                      "name": "After Time Interval",
+                      "description": "Waits for a certain amount of time",
+                      "value": "afterTimeInterval"
+                    },
+                    {
+                      "name": "At Specified Time",
+                      "description": "Waits until the set date and time to continue",
+                      "value": "atSpecifiedTime"
+                    }
+                  ]
+                },
+                {
+                  "displayName": "Amount",
+                  "name": "resumeAmount",
+                  "type": "number",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "typeOptions": {
+                    "minValue": 0,
+                    "numberPrecision": 2
+                  },
+                  "default": 1,
+                  "description": "The time to wait"
+                },
+                {
+                  "displayName": "Unit",
+                  "name": "resumeUnit",
+                  "type": "options",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "options": [
+                    {
+                      "name": "Minutes",
+                      "value": "minutes"
+                    },
+                    {
+                      "name": "Hours",
+                      "value": "hours"
+                    },
+                    {
+                      "name": "Days",
+                      "value": "days"
+                    }
+                  ],
+                  "default": "hours",
+                  "description": "Unit of the interval value"
+                },
+                {
+                  "displayName": "Max Date and Time",
+                  "name": "maxDateAndTime",
+                  "type": "dateTime",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "atSpecifiedTime"
+                      ]
+                    }
+                  },
+                  "default": "",
+                  "description": "Continue execution after the specified date and time"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Append n8n Attribution",
+          "name": "appendAttribution",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the phrase \"This message was sent automatically with n8n\" to the end of the message"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "freeText",
+            "customForm"
+          ],
+          "resource": [
+            "message"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "star"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add",
+          "value": "add",
+          "description": "Add a star to an item",
+          "action": "Add a star"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a star from an item",
+          "action": "Delete a star"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many stars of autenticated user",
+          "action": "Get many stars"
+        }
+      ],
+      "default": "add"
+    },
+    {
+      "displayName": "Item to Add Star",
+      "name": "target",
+      "type": "options",
+      "required": true,
+      "description": "Choose whether to add a star to a message or a file",
+      "default": "",
+      "placeholder": "Select...",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "add"
+          ],
+          "resource": [
+            "star"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Message",
+          "value": "message"
+        },
+        {
+          "name": "File",
+          "value": "file"
+        }
+      ]
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "description": "The Slack channel to add a star to",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "star"
+          ],
+          "operation": [
+            "add"
+          ],
+          "target": [
+            "message",
+            "file"
+          ]
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "File ID",
+      "name": "fileId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "star"
+          ],
+          "operation": [
+            "add"
+          ],
+          "target": [
+            "file"
+          ]
+        }
+      },
+      "description": "File to add star to"
+    },
+    {
+      "displayName": "Message Timestamp",
+      "name": "timestamp",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "star"
+          ],
+          "operation": [
+            "add"
+          ],
+          "target": [
+            "message"
+          ]
+        }
+      },
+      "description": "Timestamp of the message to add",
+      "placeholder": "1663233118.856619"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "add"
+          ],
+          "resource": [
+            "star"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "File Comment",
+          "name": "fileComment",
+          "type": "string",
+          "default": "",
+          "description": "File comment to add star to"
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "delete"
+          ],
+          "resource": [
+            "star"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Channel Name or ID",
+          "name": "channelId",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "default": "",
+          "description": "Channel to add star to, or channel where the message to add star to was posted (used with timestamp). Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "File ID",
+          "name": "fileId",
+          "type": "string",
+          "default": "",
+          "description": "File to add star to"
+        },
+        {
+          "displayName": "File Comment",
+          "name": "fileComment",
+          "type": "string",
+          "default": "",
+          "description": "File comment to add star to"
+        },
+        {
+          "displayName": "Message Timestamp",
+          "name": "timestamp",
+          "type": "number",
+          "default": 0,
+          "description": "Timestamp of the message to delete",
+          "placeholder": "1663233118.856619"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "star"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "star"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a file"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get & filters team files",
+          "action": "Get many files"
+        },
+        {
+          "name": "Upload",
+          "value": "upload",
+          "description": "Create or upload an existing file",
+          "action": "Upload a file"
+        }
+      ],
+      "default": "upload"
+    },
+    {
+      "displayName": "Binary File",
+      "name": "binaryData",
+      "type": "boolean",
+      "default": false,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ],
+          "@version": [
+            2,
+            2.1
+          ]
+        }
+      },
+      "description": "Whether the data to upload should be taken from binary field"
+    },
+    {
+      "displayName": "File Content",
+      "name": "fileContent",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ],
+          "binaryData": [
+            false
+          ],
+          "@version": [
+            2,
+            2.1
+          ]
+        }
+      },
+      "placeholder": ""
+    },
+    {
+      "displayName": "File Property",
+      "name": "binaryPropertyName",
+      "type": "string",
+      "default": "data",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ],
+          "binaryData": [
+            true
+          ],
+          "@version": [
+            2,
+            2.1
+          ]
+        }
+      },
+      "placeholder": "",
+      "description": "Name of the binary property which contains the data for the file to be uploaded"
+    },
+    {
+      "displayName": "File Property",
+      "name": "binaryPropertyName",
+      "type": "string",
+      "default": "data",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ],
+          "@version": [
+            {
+              "_cnd": {
+                "gte": 2.2
+              }
+            }
+          ]
+        }
+      },
+      "placeholder": "",
+      "description": "Name of the binary property which contains the data for the file to be uploaded"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "upload"
+          ],
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "default": {},
+      "description": "Other options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Channel Names or IDs",
+          "name": "channelIds",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "displayOptions": {
+            "show": {
+              "@version": [
+                2,
+                2.1
+              ]
+            }
+          },
+          "default": [],
+          "description": "The channels to send the file to. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Channel Name or ID",
+          "name": "channelId",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "displayOptions": {
+            "show": {
+              "@version": [
+                {
+                  "_cnd": {
+                    "gte": 2.2
+                  }
+                }
+              ]
+            }
+          },
+          "default": [],
+          "description": "The channel to send the file to. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "File Name",
+          "name": "fileName",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Initial Comment",
+          "name": "initialComment",
+          "type": "string",
+          "default": "",
+          "description": "The message text introducing the file in specified channels"
+        },
+        {
+          "displayName": "Thread Timestamp",
+          "name": "threadTs",
+          "type": "string",
+          "default": "",
+          "description": "Provide another message's Timestamp value to upload this file as a reply. Never use a reply's Timestamp value; use its parent instead."
+        },
+        {
+          "displayName": "Title",
+          "name": "title",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "file"
+          ]
+        }
+      },
+      "default": {},
+      "placeholder": "Add Field",
+      "options": [
+        {
+          "displayName": "Channel Name or ID",
+          "name": "channelId",
+          "type": "options",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "description": "Channel containing the file to be listed. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Show Files Hidden By Limit",
+          "name": "showFilesHidden",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to show truncated file info for files hidden due to being too old, and the team who owns the file being over the file limit"
+        },
+        {
+          "displayName": "Message Timestamp From",
+          "name": "tsFrom",
+          "type": "string",
+          "default": "",
+          "description": "Filter files created after this timestamp (inclusive)"
+        },
+        {
+          "displayName": "Message Timestamp To",
+          "name": "tsTo",
+          "type": "string",
+          "default": "",
+          "description": "Filter files created before this timestamp (inclusive)"
+        },
+        {
+          "displayName": "Types",
+          "name": "types",
+          "type": "multiOptions",
+          "options": [
+            {
+              "name": "All",
+              "value": "all"
+            },
+            {
+              "name": "Google Docs",
+              "value": "gdocs"
+            },
+            {
+              "name": "Images",
+              "value": "images"
+            },
+            {
+              "name": "PDFs",
+              "value": "pdfs"
+            },
+            {
+              "name": "Snippets",
+              "value": "snippets"
+            },
+            {
+              "name": "Spaces",
+              "value": "spaces"
+            },
+            {
+              "name": "zips",
+              "value": "zips"
+            }
+          ],
+          "default": [
+            "all"
+          ],
+          "description": "Filter files by type"
+        },
+        {
+          "displayName": "User Name or ID",
+          "name": "userId",
+          "type": "options",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getUsers"
+          },
+          "description": "Filter files created by a single user. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        }
+      ]
+    },
+    {
+      "displayName": "File ID",
+      "name": "fileId",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "file"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "reaction"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add",
+          "value": "add",
+          "description": "Adds a reaction to a message",
+          "action": "Add a reaction"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get the reactions of a message",
+          "action": "Get a reaction"
+        },
+        {
+          "name": "Remove",
+          "value": "remove",
+          "description": "Remove a reaction of a message",
+          "action": "Remove a reaction"
+        }
+      ],
+      "default": "add"
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a channel...",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack Channel ID"
+              }
+            }
+          ],
+          "placeholder": "C0122KQ70S7E"
+        },
+        {
+          "displayName": "By URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://app.slack.com/client/TS9594PZK/B0556F47Z3A",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "http(s)?://app.slack.com/client/.*/([a-zA-Z0-9]{2,})",
+                "errorMessage": "Not a valid Slack Channel URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "https://app.slack.com/client/.*/([a-zA-Z0-9]{2,})"
+          }
+        }
+      ],
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "reaction"
+          ],
+          "operation": [
+            "add",
+            "get",
+            "remove"
+          ]
+        }
+      },
+      "description": "The Slack channel to get the reactions from"
+    },
+    {
+      "displayName": "Message Timestamp",
+      "name": "timestamp",
+      "required": true,
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "reaction"
+          ],
+          "operation": [
+            "add",
+            "get",
+            "remove"
+          ]
+        }
+      },
+      "description": "Timestamp of the message to add, get or remove",
+      "placeholder": "1663233118.856619"
+    },
+    {
+      "displayName": "Emoji Code",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "reaction"
+          ],
+          "operation": [
+            "add",
+            "remove"
+          ]
+        }
+      },
+      "description": "Emoji code to use for the message reaction. Use emoji codes like +1, not an actual emoji like 👍. <a target=\"_blank\" href=\" https://www.webfx.com/tools/emoji-cheat-sheet/\">List of common emoji codes</a>",
+      "placeholder": "+1"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "info",
+          "description": "Get information about a user",
+          "action": "Get information about a user"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get a list of many users",
+          "action": "Get many users"
+        },
+        {
+          "name": "Get User's Profile",
+          "value": "getProfile",
+          "description": "Get a user's profile",
+          "action": "Get a user's profile"
+        },
+        {
+          "name": "Get User's Status",
+          "value": "getPresence",
+          "description": "Get online status of a user",
+          "action": "Get a user's presence status"
+        },
+        {
+          "name": "Update User's Profile",
+          "value": "updateProfile",
+          "description": "Update a user's profile",
+          "action": "Update a user's profile"
+        }
+      ],
+      "default": "info"
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a user...",
+      "description": "The ID of the user to get information about",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "info",
+            "getProfile"
+          ],
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a user...",
+          "typeOptions": {
+            "searchListMethod": "getUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack User ID"
+              }
+            }
+          ],
+          "placeholder": "U123AB45JGM"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "User",
+      "name": "user",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "placeholder": "Select a user...",
+      "description": "The ID of the user to get the online status of",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getPresence"
+          ],
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a user...",
+          "typeOptions": {
+            "searchListMethod": "getUsers",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "[a-zA-Z0-9]{2,}",
+                "errorMessage": "Not a valid Slack User ID"
+              }
+            }
+          ],
+          "placeholder": "U123AB45JGM"
+        }
+      ]
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "updateProfile"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Custom Fields",
+          "name": "customFieldUi",
+          "placeholder": "Add Custom Fields",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "options": [
+            {
+              "name": "customFieldValues",
+              "displayName": "Custom Field",
+              "values": [
+                {
+                  "displayName": "Field Name or ID",
+                  "name": "id",
+                  "type": "options",
+                  "typeOptions": {
+                    "loadOptionsMethod": "getTeamFields"
+                  },
+                  "default": "",
+                  "description": "ID of the field to set. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+                },
+                {
+                  "displayName": "Field Value",
+                  "name": "value",
+                  "type": "string",
+                  "default": "",
+                  "description": "Value of the field to set"
+                },
+                {
+                  "displayName": "Alt",
+                  "name": "alt",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "This field can only be changed by admins for users on paid teams"
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Set Status",
+          "name": "status",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "default": {},
+          "placeholder": "Set Status",
+          "options": [
+            {
+              "displayName": "Set Status",
+              "name": "set_status",
+              "values": [
+                {
+                  "displayName": "Status Emoji",
+                  "name": "status_emoji",
+                  "type": "string",
+                  "default": "",
+                  "description": "Is a string referencing an emoji enabled for the Slack team, such as :mountain_railway:"
+                },
+                {
+                  "displayName": "Status Expiration",
+                  "name": "status_expiration",
+                  "type": "dateTime",
+                  "default": "",
+                  "description": "The number of minutes to wait until this status expires and is cleared. Optional."
+                },
+                {
+                  "displayName": "Status Text",
+                  "name": "status_text",
+                  "type": "string",
+                  "default": "",
+                  "description": "Allows up to 100 characters, though we strongly encourage brevity"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "User ID",
+          "name": "user",
+          "type": "string",
+          "default": "",
+          "description": "ID of user to change. This argument may only be specified by team admins on paid teams."
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a user group"
+        },
+        {
+          "name": "Disable",
+          "value": "disable",
+          "action": "Disable a user group"
+        },
+        {
+          "name": "Enable",
+          "value": "enable",
+          "action": "Enable a user group"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many user groups"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "action": "Update a user group"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "create"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "required": true,
+      "description": "A name for the User Group. Must be unique among User Groups."
+    },
+    {
+      "displayName": "Options",
+      "name": "Options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Channel Names or IDs",
+          "name": "channelIds",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "default": [],
+          "description": "A comma-separated string of encoded channel IDs for which the User Group uses as a default. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "A short description of the User Group"
+        },
+        {
+          "displayName": "Handle",
+          "name": "handle",
+          "type": "string",
+          "default": "",
+          "description": "A mention handle. Must be unique among channels, users and User Groups."
+        },
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        }
+      ]
+    },
+    {
+      "displayName": "User Group ID",
+      "name": "userGroupId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "disable"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The encoded ID of the User Group to update"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "disable"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        }
+      ]
+    },
+    {
+      "displayName": "User Group ID",
+      "name": "userGroupId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "enable"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The encoded ID of the User Group to update"
+    },
+    {
+      "displayName": "Options",
+      "name": "option",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "enable"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "userGroup"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        },
+        {
+          "displayName": "Include Disabled",
+          "name": "include_disabled",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include disabled User Groups"
+        },
+        {
+          "displayName": "Include Users",
+          "name": "include_users",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the list of users for each User Group"
+        }
+      ]
+    },
+    {
+      "displayName": "User Group ID",
+      "name": "userGroupId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "update"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "required": true,
+      "description": "The encoded ID of the User Group to update"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Channel Names or IDs",
+          "name": "channels",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getChannels"
+          },
+          "default": [],
+          "description": "A comma-separated string of encoded channel IDs for which the User Group uses as a default. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "A short description of the User Group"
+        },
+        {
+          "displayName": "Handle",
+          "name": "handle",
+          "type": "string",
+          "default": "",
+          "description": "A mention handle. Must be unique among channels, users and User Groups."
+        },
+        {
+          "displayName": "Include Count",
+          "name": "include_count",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the number of users in each User Group"
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "A name for the User Group. Must be unique among User Groups."
+        }
+      ]
+    }
+  ],
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Slack/slack.svg",
+  "codex": {
+    "categories": [
+      "Communication",
+      "HITL"
+    ],
+    "subcategories": {
+      "HITL": [
+        "Human in the Loop"
+      ]
+    },
+    "alias": [
+      "human",
+      "form",
+      "wait",
+      "hitl",
+      "approval"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.slack/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/slack/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.slack"
+}

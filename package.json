@@ -9,6 +9,8 @@
     "dev": "node --watch server.js",
     "test": "node scripts/test-system.js",
     "test:quick": "node scripts/quick-test.js",
+    "test:volume": "node test-volume-storage.js",
+    "migrate:volume": "node scripts/migrate-to-volume.js",
     "update-nodes": "node scripts/update-node-types.js --local",
     "update-nodes:docker": "node scripts/update-node-types.js --docker",
     "cron:weekly": "node scripts/update-node-types.js --docker",

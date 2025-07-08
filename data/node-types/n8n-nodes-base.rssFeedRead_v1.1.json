@@ -1,0 +1,63 @@
+{
+  "displayName": "RSS Read",
+  "icon": "fa:rss",
+  "iconColor": "orange-red",
+  "group": [
+    "input"
+  ],
+  "version": [
+    1,
+    1.1
+  ],
+  "description": "Reads data from an RSS Feed",
+  "defaults": {
+    "name": "RSS Read",
+    "color": "#b02020"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "URL",
+      "name": "url",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "description": "URL of the RSS feed"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Ignore SSL Issues (Insecure)",
+          "name": "ignoreSSL",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to ignore SSL/TLS certificate issues or not"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Core Nodes"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.rssfeedread/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.rssFeedRead"
+}

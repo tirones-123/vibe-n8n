@@ -1,0 +1,67 @@
+{
+  "displayName": "Execute Command",
+  "icon": "fa:terminal",
+  "iconColor": "crimson",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "description": "Executes a command on the host",
+  "defaults": {
+    "name": "Execute Command",
+    "color": "#886644"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "Execute Once",
+      "name": "executeOnce",
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to execute only once instead of once for each entry"
+    },
+    {
+      "displayName": "Command",
+      "name": "command",
+      "typeOptions": {
+        "rows": 5
+      },
+      "type": "string",
+      "default": "",
+      "placeholder": "echo \"test\"",
+      "description": "The command to execute",
+      "required": true
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development",
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Helpers"
+      ]
+    },
+    "alias": [
+      "Shell",
+      "Command",
+      "OS",
+      "Bash"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.executecommand/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.executeCommand"
+}

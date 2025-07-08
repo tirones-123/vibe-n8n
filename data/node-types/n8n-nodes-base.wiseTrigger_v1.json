@@ -1,0 +1,91 @@
+{
+  "displayName": "Wise Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"event\"]}}",
+  "description": "Handle Wise events via webhooks",
+  "defaults": {
+    "name": "Wise Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "wiseApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Profile Name or ID",
+      "name": "profileId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "required": true,
+      "typeOptions": {
+        "loadOptionsMethod": "getProfiles"
+      },
+      "default": ""
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "required": true,
+      "default": "",
+      "options": [
+        {
+          "name": "Balance Credit",
+          "value": "balanceCredit",
+          "description": "Triggered every time a balance account is credited"
+        },
+        {
+          "name": "Balance Update",
+          "value": "balanceUpdate",
+          "description": "Triggered every time a balance account is credited or debited"
+        },
+        {
+          "name": "Transfer Active Case",
+          "value": "transferActiveCases",
+          "description": "Triggered every time a transfer's list of active cases is updated"
+        },
+        {
+          "name": "Transfer State Changed",
+          "value": "tranferStateChange",
+          "description": "Triggered every time a transfer's status is updated"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Finance & Accounting"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.wisetrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/wise/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Wise/wise.svg",
+  "name": "n8n-nodes-base.wiseTrigger"
+}

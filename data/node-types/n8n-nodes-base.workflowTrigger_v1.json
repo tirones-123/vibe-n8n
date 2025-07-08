@@ -1,0 +1,69 @@
+{
+  "displayName": "Workflow Trigger",
+  "hidden": true,
+  "icon": "fa:network-wired",
+  "iconColor": "orange-red",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Triggers based on various lifecycle events, like when a workflow is activated",
+  "eventTriggerDescription": "",
+  "mockManualExecution": true,
+  "activationMessage": "Your workflow will now trigger executions on the event you have defined.",
+  "defaults": {
+    "name": "Workflow Trigger",
+    "color": "#ff6d5a"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "This node is deprecated and would not be updated in the future. Please use 'n8n Trigger' node instead.",
+      "name": "oldVersionNotice",
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Events",
+      "name": "events",
+      "type": "multiOptions",
+      "required": true,
+      "default": [],
+      "description": "Specifies under which conditions an execution should happen:\n\t\t\t\t\t<ul>\n\t\t\t\t\t\t<li><b>Active Workflow Updated</b>: Triggers when this workflow is updated</li>\n\t\t\t\t\t\t<li><b>Workflow Activated</b>: Triggers when this workflow is activated</li>\n\t\t\t\t\t</ul>",
+      "options": [
+        {
+          "name": "Active Workflow Updated",
+          "value": "update",
+          "description": "Triggers when this workflow is updated"
+        },
+        {
+          "name": "Workflow Activated",
+          "value": "activate",
+          "description": "Triggers when this workflow is activated"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Flow",
+        "Other Trigger Nodes"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.workflowtrigger/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.workflowTrigger"
+}

@@ -1,0 +1,148 @@
+{
+  "displayName": "Bitbucket Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Handle Bitbucket events via webhooks",
+  "defaults": {
+    "name": "Bitbucket Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "bitbucketApi",
+      "required": true,
+      "testedBy": "bitbucketApiTest"
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "required": true,
+      "options": [
+        {
+          "name": "Repository",
+          "value": "repository"
+        },
+        {
+          "name": "Workspace",
+          "value": "workspace"
+        }
+      ],
+      "default": "workspace"
+    },
+    {
+      "displayName": "Workspace Name or ID",
+      "name": "workspace",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "workspace",
+            "repository"
+          ]
+        }
+      },
+      "typeOptions": {
+        "loadOptionsMethod": "getWorkspaces"
+      },
+      "required": true,
+      "default": "",
+      "description": "The repository of which to listen to the events. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Event Names or IDs",
+      "name": "events",
+      "type": "multiOptions",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "workspace"
+          ]
+        }
+      },
+      "typeOptions": {
+        "loadOptionsMethod": "getWorkspaceEvents"
+      },
+      "options": [],
+      "required": true,
+      "default": [],
+      "description": "The events to listen to. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Repository Name or ID",
+      "name": "repository",
+      "type": "options",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "repository"
+          ]
+        }
+      },
+      "typeOptions": {
+        "loadOptionsMethod": "getRepositories",
+        "loadOptionsDependsOn": [
+          "workspace"
+        ]
+      },
+      "required": true,
+      "default": "",
+      "description": "The repository of which to listen to the events. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Event Names or IDs",
+      "name": "events",
+      "type": "multiOptions",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "repository"
+          ]
+        }
+      },
+      "typeOptions": {
+        "loadOptionsMethod": "getRepositoriesEvents"
+      },
+      "options": [],
+      "required": true,
+      "default": [],
+      "description": "The events to listen to. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development",
+      "Productivity"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.bitbuckettrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/bitbucket/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Bitbucket/bitbucket.svg",
+  "name": "n8n-nodes-base.bitbucketTrigger"
+}

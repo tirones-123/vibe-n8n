@@ -1,0 +1,93 @@
+{
+  "displayName": "Figma Trigger (Beta)",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"triggerOn\"]}}",
+  "description": "Starts the workflow when Figma events occur",
+  "defaults": {
+    "name": "Figma Trigger (Beta)"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "figmaApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Team ID",
+      "name": "teamId",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "description": "Trigger will monitor this Figma Team for changes. Team ID can be found in the URL of a Figma Team page when viewed in a web browser: figma.com/files/team/{TEAM-ID}/."
+    },
+    {
+      "displayName": "Trigger On",
+      "name": "triggerOn",
+      "type": "options",
+      "options": [
+        {
+          "name": "File Commented",
+          "value": "fileComment",
+          "description": "Triggers when someone comments on a file"
+        },
+        {
+          "name": "File Deleted",
+          "value": "fileDelete",
+          "description": "Triggers whenever a file has been deleted. Does not trigger on all files within a folder, if the folder is deleted."
+        },
+        {
+          "name": "File Updated",
+          "value": "fileUpdate",
+          "description": "Triggers whenever a file saves or is deleted. This occurs whenever a file is closed or within 30 seconds after changes have been made."
+        },
+        {
+          "name": "File Version Updated",
+          "value": "fileVersionUpdate",
+          "description": "Triggers whenever a named version is created in the version history of a file"
+        },
+        {
+          "name": "Library Publish",
+          "value": "libraryPublish",
+          "description": "Triggers whenever a library file is published"
+        }
+      ],
+      "default": "",
+      "required": true
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Miscellaneous"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.figmatrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/figma/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Figma/figma.svg",
+  "name": "n8n-nodes-base.figmaTrigger"
+}

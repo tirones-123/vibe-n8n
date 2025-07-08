@@ -1,0 +1,131 @@
+{
+  "displayName": "Mailgun Tool",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "description": "Sends an email via Mailgun",
+  "defaults": {
+    "name": "Mailgun"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "mailgunApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Sends an email via Mailgun",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often"
+    },
+    {
+      "displayName": "From Email",
+      "name": "fromEmail",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "placeholder": "Admin <admin@example.com>",
+      "description": "Email address of the sender optional with name"
+    },
+    {
+      "displayName": "To Email",
+      "name": "toEmail",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "placeholder": "info@example.com",
+      "description": "Email address of the recipient. Multiple ones can be separated by comma."
+    },
+    {
+      "displayName": "Cc Email",
+      "name": "ccEmail",
+      "type": "string",
+      "default": "",
+      "placeholder": "",
+      "description": "Cc Email address of the recipient. Multiple ones can be separated by comma."
+    },
+    {
+      "displayName": "Bcc Email",
+      "name": "bccEmail",
+      "type": "string",
+      "default": "",
+      "placeholder": "",
+      "description": "Bcc Email address of the recipient. Multiple ones can be separated by comma."
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "default": "",
+      "placeholder": "My subject line",
+      "description": "Subject line of the email"
+    },
+    {
+      "displayName": "Text",
+      "name": "text",
+      "type": "string",
+      "typeOptions": {
+        "rows": 5
+      },
+      "default": "",
+      "description": "Plain text message of email"
+    },
+    {
+      "displayName": "HTML",
+      "name": "html",
+      "type": "string",
+      "typeOptions": {
+        "rows": 5,
+        "editor": "htmlEditor"
+      },
+      "default": "",
+      "description": "HTML text message of email"
+    },
+    {
+      "displayName": "Attachments",
+      "name": "attachments",
+      "type": "string",
+      "default": "",
+      "description": "Name of the binary properties which contain data which should be added to email as attachment. Multiple ones can be comma-separated."
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.mailgun/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/mailgun/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Mailgun/mailgun.svg",
+  "name": "n8n-nodes-base.mailgunTool"
+}

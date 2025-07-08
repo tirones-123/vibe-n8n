@@ -1,0 +1,113 @@
+{
+  "displayName": "Mautic Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Handle Mautic events via webhooks",
+  "defaults": {
+    "name": "Mautic Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "mauticApi",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "credentials"
+          ]
+        }
+      }
+    },
+    {
+      "name": "mauticOAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ]
+        }
+      }
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "Credentials",
+          "value": "credentials"
+        },
+        {
+          "name": "OAuth2",
+          "value": "oAuth2"
+        }
+      ],
+      "default": "credentials"
+    },
+    {
+      "displayName": "Event Names or IDs",
+      "name": "events",
+      "type": "multiOptions",
+      "description": "Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "required": true,
+      "typeOptions": {
+        "loadOptionsMethod": "getEvents"
+      },
+      "default": []
+    },
+    {
+      "displayName": "Events Order",
+      "name": "eventsOrder",
+      "type": "options",
+      "default": "ASC",
+      "options": [
+        {
+          "name": "ASC",
+          "value": "ASC"
+        },
+        {
+          "name": "DESC",
+          "value": "DESC"
+        }
+      ],
+      "description": "Order direction for queued events in one webhook. Can be “DESC” or “ASC”."
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Marketing",
+      "Communication"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.mautictrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/mautic/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Mautic/mautic.svg",
+  "name": "n8n-nodes-base.mauticTrigger"
+}

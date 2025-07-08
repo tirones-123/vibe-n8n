@@ -1,0 +1,122 @@
+{
+  "displayName": "Simulate",
+  "hidden": true,
+  "group": [
+    "organization"
+  ],
+  "version": 1,
+  "description": "Simulate a node",
+  "subtitle": "={{$parameter.subtitle || undefined}}",
+  "icon": "fa:arrow-right",
+  "defaults": {
+    "name": "Simulate",
+    "color": "#b0b0b0"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "Icon to Display on Canvas",
+      "name": "icon",
+      "type": "options",
+      "description": "Select a type of node to show corresponding icon",
+      "default": "n8n-nodes-base.noOp",
+      "typeOptions": {
+        "loadOptionsMethod": "getNodeTypes"
+      }
+    },
+    {
+      "displayName": "Subtitle",
+      "name": "subtitle",
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. 'record: read'"
+    },
+    {
+      "displayName": "Output",
+      "name": "output",
+      "type": "options",
+      "default": "all",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Returns all input items",
+          "value": "all"
+        },
+        {
+          "name": "Specify how many of input items to return",
+          "value": "specify"
+        },
+        {
+          "name": "Specify output as JSON",
+          "value": "custom"
+        }
+      ]
+    },
+    {
+      "displayName": "Number of Items",
+      "name": "numberOfItems",
+      "type": "number",
+      "default": 1,
+      "description": "Number input of items to return, if greater then input length all items will be returned",
+      "displayOptions": {
+        "show": {
+          "output": [
+            "specify"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      }
+    },
+    {
+      "displayName": "JSON",
+      "name": "jsonOutput",
+      "type": "json",
+      "typeOptions": {
+        "rows": 5
+      },
+      "default": "[\n  {\n  \"my_field_1\": \"value\",\n  \"my_field_2\": 1\n  }\n]",
+      "validateType": "array",
+      "displayOptions": {
+        "show": {
+          "output": [
+            "custom"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Execution Duration (MS)",
+      "name": "executionDuration",
+      "type": "number",
+      "default": 150,
+      "description": "Execution duration in milliseconds",
+      "typeOptions": {
+        "minValue": 0
+      }
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Core Nodes"
+    ],
+    "subcategories": {
+      "Core Nodes": [
+        "Helpers"
+      ]
+    },
+    "alias": [
+      "placeholder",
+      "stub",
+      "dummy"
+    ],
+    "resources": {}
+  },
+  "name": "n8n-nodes-base.simulate"
+}

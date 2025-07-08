@@ -1,0 +1,106 @@
+{
+  "displayName": "AMQP Sender",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "description": "Sends a raw-message via AMQP 1.0, executed once per item",
+  "defaults": {
+    "name": "AMQP Sender"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "amqp",
+      "required": true,
+      "testedBy": "amqpConnectionTest"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Queue / Topic",
+      "name": "sink",
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. topic://sourcename.something",
+      "description": "Name of the queue of topic to publish to"
+    },
+    {
+      "displayName": "Headers",
+      "name": "headerParametersJson",
+      "type": "json",
+      "default": "",
+      "description": "Header parameters as JSON (flat object). Sent as application_properties in amqp-message meta info."
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Container ID",
+          "name": "containerId",
+          "type": "string",
+          "default": "",
+          "description": "Will be used to pass to the RHEA Backend as container_id"
+        },
+        {
+          "displayName": "Data as Object",
+          "name": "dataAsObject",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to send the data as an object"
+        },
+        {
+          "displayName": "Reconnect",
+          "name": "reconnect",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to automatically reconnect if disconnected"
+        },
+        {
+          "displayName": "Reconnect Limit",
+          "name": "reconnectLimit",
+          "type": "number",
+          "default": 50,
+          "description": "Maximum number of reconnect attempts"
+        },
+        {
+          "displayName": "Send Property",
+          "name": "sendOnlyProperty",
+          "type": "string",
+          "default": "",
+          "description": "The only property to send. If empty the whole item will be sent."
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development",
+      "Communication"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.amqp/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/amqp/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Amqp/amqp.svg",
+  "name": "n8n-nodes-base.amqp"
+}

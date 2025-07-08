@@ -1,0 +1,2034 @@
+{
+  "displayName": "Brevo",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume Brevo API",
+  "defaults": {
+    "name": "Brevo"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "sendInBlueApi",
+      "required": true
+    }
+  ],
+  "requestDefaults": {
+    "baseURL": "https://api.brevo.com"
+  },
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Contact",
+          "value": "contact"
+        },
+        {
+          "name": "Contact Attribute",
+          "value": "attribute"
+        },
+        {
+          "name": "Email",
+          "value": "email"
+        },
+        {
+          "name": "Sender",
+          "value": "sender"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "email"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "url": "=/v3/contacts/attributes/{{$parameter.attributeCategory}}/{{encodeURI($parameter.attributeName)}}"
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"success\": true } }}"
+                  }
+                }
+              ]
+            },
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          },
+          "action": "Create an attribute"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "routing": {
+            "request": {
+              "method": "PUT",
+              "url": "=/v3/contacts/attributes/{{$parameter.updateAttributeCategory}}/{{encodeURI($parameter.updateAttributeName)}}"
+            }
+          },
+          "action": "Update an attribute"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "routing": {
+            "request": {
+              "method": "DELETE",
+              "url": "=/v3/contacts/attributes/{{$parameter.deleteAttributeCategory}}/{{encodeURI($parameter.deleteAttributeName)}}"
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"success\": true } }}"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Delete an attribute"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "v3/contacts/attributes"
+            },
+            "send": {
+              "paginate": false
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "attributes"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Get many attributes"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Category",
+      "name": "attributeCategory",
+      "default": "normal",
+      "description": "Category of the attribute",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Calculated",
+          "value": "calculated"
+        },
+        {
+          "name": "Category",
+          "value": "category"
+        },
+        {
+          "name": "Global",
+          "value": "global"
+        },
+        {
+          "name": "Normal",
+          "value": "normal"
+        },
+        {
+          "name": "Transactional",
+          "value": "transactional"
+        }
+      ],
+      "type": "options",
+      "required": true
+    },
+    {
+      "displayName": "Name",
+      "name": "attributeName",
+      "default": "",
+      "description": "Name of the attribute",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "required": true,
+      "type": "string"
+    },
+    {
+      "displayName": "Type",
+      "name": "attributeType",
+      "default": "",
+      "description": "Attribute Type",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "create"
+          ],
+          "attributeCategory": [
+            "normal"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Boolean",
+          "value": "boolean"
+        },
+        {
+          "name": "Date",
+          "value": "date"
+        },
+        {
+          "name": "Float",
+          "value": "float"
+        },
+        {
+          "name": "Text",
+          "value": "text"
+        }
+      ],
+      "required": true,
+      "type": "options",
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "type",
+          "value": "={{$value}}"
+        }
+      }
+    },
+    {
+      "displayName": "Value",
+      "name": "attributeValue",
+      "default": "",
+      "description": "Value of the attribute",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "create"
+          ],
+          "attributeCategory": [
+            "global",
+            "calculated"
+          ]
+        }
+      },
+      "type": "string",
+      "placeholder": "",
+      "required": true,
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "value",
+          "value": "={{$value}}"
+        }
+      }
+    },
+    {
+      "displayName": "Contact Attribute List",
+      "name": "attributeCategoryList",
+      "type": "collection",
+      "placeholder": "Add Attributes",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "create"
+          ],
+          "attributeCategory": [
+            "category"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Contact Attributes",
+          "name": "categoryEnumeration",
+          "placeholder": "Add Attribute",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "name": "attributesValues",
+              "displayName": "Attribute",
+              "values": [
+                {
+                  "displayName": "Value ID",
+                  "name": "attributeCategoryValue",
+                  "type": "number",
+                  "default": 1,
+                  "description": "ID of the value, must be numeric",
+                  "routing": {
+                    "send": {
+                      "value": "={{$value}}",
+                      "property": "=enumeration[{{$index}}].value",
+                      "type": "body"
+                    }
+                  }
+                },
+                {
+                  "displayName": "Label",
+                  "name": "attributeCategoryLabel",
+                  "type": "string",
+                  "default": "",
+                  "routing": {
+                    "send": {
+                      "value": "={{$value}}",
+                      "property": "=enumeration[{{$index}}].label",
+                      "type": "body"
+                    }
+                  },
+                  "description": "Label of the value"
+                }
+              ]
+            }
+          ],
+          "default": {},
+          "description": "List of values and labels that the attribute can take"
+        }
+      ]
+    },
+    {
+      "displayName": "Category",
+      "name": "updateAttributeCategory",
+      "default": "calculated",
+      "description": "Category of the attribute",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Calculated",
+          "value": "calculated"
+        },
+        {
+          "name": "Category",
+          "value": "category"
+        },
+        {
+          "name": "Global",
+          "value": "global"
+        }
+      ],
+      "type": "options"
+    },
+    {
+      "displayName": "Name",
+      "name": "updateAttributeName",
+      "default": "",
+      "description": "Name of the existing attribute",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "type": "string"
+    },
+    {
+      "displayName": "Value",
+      "name": "updateAttributeValue",
+      "default": "",
+      "description": "Value of the attribute to update",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "update"
+          ]
+        },
+        "hide": {
+          "updateAttributeCategory": [
+            "category"
+          ]
+        }
+      },
+      "type": "string",
+      "placeholder": "",
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "value",
+          "value": "={{$value}}"
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateAttributeCategoryList",
+      "default": {},
+      "description": "List of the values and labels that the attribute can take",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "update"
+          ],
+          "updateAttributeCategory": [
+            "category"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Contact Attributes",
+          "name": "updateCategoryEnumeration",
+          "placeholder": "Add Attribute",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "name": "updateAttributesValues",
+              "displayName": "Attribute",
+              "values": [
+                {
+                  "displayName": "Value",
+                  "name": "attributeCategoryValue",
+                  "type": "number",
+                  "default": 1,
+                  "description": "ID of the value, must be numeric",
+                  "routing": {
+                    "send": {
+                      "value": "={{$value}}",
+                      "property": "=enumeration[{{$index}}].value",
+                      "type": "body"
+                    }
+                  }
+                },
+                {
+                  "displayName": "Label",
+                  "name": "attributeCategoryLabel",
+                  "type": "string",
+                  "default": "",
+                  "routing": {
+                    "send": {
+                      "value": "={{$value}}",
+                      "property": "=enumeration[{{$index}}].label",
+                      "type": "body"
+                    }
+                  },
+                  "description": "Label of the value"
+                }
+              ]
+            }
+          ],
+          "default": {},
+          "description": "List of values and labels that the attribute can take"
+        }
+      ]
+    },
+    {
+      "displayName": "Category",
+      "name": "deleteAttributeCategory",
+      "default": "normal",
+      "description": "Category of the attribute",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Calculated",
+          "value": "calculated"
+        },
+        {
+          "name": "Category",
+          "value": "category"
+        },
+        {
+          "name": "Global",
+          "value": "global"
+        },
+        {
+          "name": "Normal",
+          "value": "normal"
+        },
+        {
+          "name": "Transactional",
+          "value": "transactional"
+        }
+      ],
+      "type": "options"
+    },
+    {
+      "displayName": "Name",
+      "name": "deleteAttributeName",
+      "default": "",
+      "description": "Name of the attribute",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "type": "string"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attribute"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 1000
+      },
+      "routing": {
+        "output": {
+          "postReceive": [
+            {
+              "type": "limit",
+              "properties": {
+                "maxResults": "={{$value}}"
+              }
+            }
+          ]
+        }
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sender"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a sender"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "routing": {
+            "request": {
+              "method": "DELETE",
+              "url": "=/v3/senders/{{$parameter.id}}"
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"success\": true } }}"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Delete a sender"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "/v3/senders"
+            },
+            "send": {
+              "paginate": false
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "senders"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Get many senders"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sender"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "routing": {
+        "request": {
+          "method": "POST",
+          "url": "/v3/senders"
+        },
+        "send": {
+          "property": "name",
+          "type": "body"
+        }
+      },
+      "required": true,
+      "description": "Name of the sender"
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sender"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "property": "email",
+          "type": "body"
+        }
+      },
+      "required": true,
+      "description": "Email of the sender"
+    },
+    {
+      "displayName": "Sender ID",
+      "name": "id",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sender"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "description": "ID of the sender to delete"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sender"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "sender"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 1000
+      },
+      "routing": {
+        "output": {
+          "postReceive": [
+            {
+              "type": "limit",
+              "properties": {
+                "maxResults": "={{$value}}"
+              }
+            }
+          ]
+        }
+      },
+      "default": 10,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a contact",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "url": "/v3/contacts"
+            }
+          }
+        },
+        {
+          "name": "Create or Update",
+          "value": "upsert",
+          "action": "Upsert a contact",
+          "routing": {
+            "request": {
+              "method": "POST",
+              "url": "=/v3/contacts"
+            }
+          }
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a contact"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a contact"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "/v3/contacts"
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "contacts"
+                  }
+                }
+              ]
+            },
+            "operations": {
+              "pagination": {
+                "type": "offset",
+                "properties": {
+                  "limitParameter": "limit",
+                  "offsetParameter": "offset",
+                  "pageSize": 1000,
+                  "type": "query"
+                }
+              }
+            }
+          },
+          "action": "Get many contacts"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "routing": {
+            "output": {
+              "postReceive": [
+                {
+                  "type": "set",
+                  "properties": {
+                    "value": "={{ { \"success\": true } }}"
+                  }
+                }
+              ]
+            }
+          },
+          "action": "Update a contact"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": "",
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "email"
+        }
+      }
+    },
+    {
+      "displayName": "Contact Attributes",
+      "name": "createContactAttributes",
+      "default": {},
+      "description": "Array of attributes to be added",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "attributesValues",
+          "displayName": "Attribute",
+          "values": [
+            {
+              "displayName": "Field Name",
+              "name": "fieldName",
+              "type": "options",
+              "typeOptions": {
+                "loadOptions": {
+                  "routing": {
+                    "request": {
+                      "method": "GET",
+                      "url": "/v3/contacts/attributes"
+                    },
+                    "output": {
+                      "postReceive": [
+                        {
+                          "type": "rootProperty",
+                          "properties": {
+                            "property": "attributes"
+                          }
+                        },
+                        {
+                          "type": "setKeyValue",
+                          "properties": {
+                            "name": "={{$responseItem.name}} - ({{$responseItem.category}})",
+                            "value": "={{$responseItem.name}}"
+                          }
+                        },
+                        {
+                          "type": "sort",
+                          "properties": {
+                            "key": "name"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "default": ""
+            },
+            {
+              "displayName": "Field Value",
+              "name": "fieldValue",
+              "type": "string",
+              "default": "",
+              "routing": {
+                "send": {
+                  "value": "={{$value}}",
+                  "property": "=attributes.{{$parent.fieldName}}",
+                  "type": "body"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "placeholder": "Add Attribute",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "routing": {
+        "send": {
+          "paginate": "={{$value}}"
+        }
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "type": "query",
+          "property": "limit"
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 1000
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Sort",
+          "name": "sort",
+          "type": "options",
+          "options": [
+            {
+              "name": "DESC",
+              "value": "desc"
+            },
+            {
+              "name": "ASC",
+              "value": "asc"
+            }
+          ],
+          "routing": {
+            "send": {
+              "type": "query",
+              "property": "sort",
+              "value": "={{$value}}"
+            }
+          },
+          "default": "desc",
+          "description": "Sort the results in the ascending/descending order of record creation"
+        }
+      ]
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Modified Since",
+          "name": "modifiedSince",
+          "type": "dateTime",
+          "routing": {
+            "send": {
+              "type": "query",
+              "property": "modifiedSince"
+            }
+          },
+          "default": "",
+          "description": "Filter (urlencoded) the contacts modified after a given UTC date-time (YYYY-MM-DDTHH:mm:ss.SSSZ)"
+        }
+      ]
+    },
+    {
+      "displayName": "Contact Identifier",
+      "name": "identifier",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "routing": {
+        "request": {
+          "method": "GET",
+          "url": "=/v3/contacts/{{encodeURIComponent($value)}}"
+        }
+      },
+      "required": true,
+      "default": "",
+      "description": "Email (urlencoded) OR ID of the contact OR its SMS attribute value"
+    },
+    {
+      "displayName": "Contact Identifier",
+      "name": "identifier",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "routing": {
+        "request": {
+          "method": "DELETE",
+          "url": "=/v3/contacts/{{encodeURIComponent($parameter.identifier)}}"
+        },
+        "output": {
+          "postReceive": [
+            {
+              "type": "set",
+              "properties": {
+                "value": "={{ { \"success\": true } }}"
+              }
+            }
+          ]
+        }
+      },
+      "default": "",
+      "description": "Email (urlencoded) OR ID of the contact OR its SMS attribute value"
+    },
+    {
+      "displayName": "Contact Identifier",
+      "name": "identifier",
+      "default": "",
+      "description": "Email (urlencoded) OR ID of the contact OR its SMS attribute value",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    {
+      "displayName": "Attributes",
+      "name": "updateAttributes",
+      "default": {},
+      "description": "Array of attributes to be updated",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Attribute",
+          "name": "updateAttributesValues",
+          "values": [
+            {
+              "displayName": "Field Name",
+              "name": "fieldName",
+              "type": "options",
+              "typeOptions": {
+                "loadOptions": {
+                  "routing": {
+                    "request": {
+                      "method": "GET",
+                      "url": "/v3/contacts/attributes"
+                    },
+                    "output": {
+                      "postReceive": [
+                        {
+                          "type": "rootProperty",
+                          "properties": {
+                            "property": "attributes"
+                          }
+                        },
+                        {
+                          "type": "setKeyValue",
+                          "properties": {
+                            "name": "={{$responseItem.name}} - ({{$responseItem.category}})",
+                            "value": "={{$responseItem.name}}"
+                          }
+                        },
+                        {
+                          "type": "sort",
+                          "properties": {
+                            "key": "name"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "default": ""
+            },
+            {
+              "displayName": "Field Value",
+              "name": "fieldValue",
+              "type": "string",
+              "default": "",
+              "routing": {
+                "send": {
+                  "value": "={{$value}}",
+                  "property": "=attributes.{{$parent.fieldName}}",
+                  "type": "body"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "placeholder": "Add Attribute",
+      "routing": {
+        "request": {
+          "method": "PUT",
+          "url": "=/v3/contacts/{{encodeURIComponent($parameter.identifier)}}"
+        }
+      },
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true
+      }
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "default": "",
+      "description": "Email of the contact",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "upsert"
+          ]
+        }
+      },
+      "type": "string",
+      "placeholder": "name@email.com",
+      "required": true,
+      "routing": {
+        "send": {
+          "value": "={{$value}}",
+          "property": "email",
+          "type": "body"
+        }
+      }
+    },
+    {
+      "displayName": "Contact Attributes",
+      "name": "upsertAttributes",
+      "default": {},
+      "description": "Array of attributes to be updated",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "contact"
+          ],
+          "operation": [
+            "upsert"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "upsertAttributesValues",
+          "displayName": "Attribute",
+          "values": [
+            {
+              "displayName": "Field Name",
+              "name": "fieldName",
+              "type": "options",
+              "typeOptions": {
+                "loadOptions": {
+                  "routing": {
+                    "request": {
+                      "method": "GET",
+                      "url": "/v3/contacts/attributes"
+                    },
+                    "output": {
+                      "postReceive": [
+                        {
+                          "type": "rootProperty",
+                          "properties": {
+                            "property": "attributes"
+                          }
+                        },
+                        {
+                          "type": "setKeyValue",
+                          "properties": {
+                            "name": "={{$responseItem.name}} - ({{$responseItem.category}})",
+                            "value": "={{$responseItem.name}}"
+                          }
+                        },
+                        {
+                          "type": "sort",
+                          "properties": {
+                            "key": "name"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "default": ""
+            },
+            {
+              "displayName": "Field Value",
+              "name": "fieldValue",
+              "type": "string",
+              "default": "",
+              "routing": {
+                "send": {
+                  "value": "={{$value}}",
+                  "property": "=attributes.{{$parent.fieldName}}",
+                  "type": "body"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "placeholder": "Add Attribute",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        },
+        "output": {
+          "postReceive": [
+            {
+              "type": "set",
+              "properties": {
+                "value": "={{ { \"success\": true } }}"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Send",
+          "value": "send",
+          "action": "Send a transactional email"
+        },
+        {
+          "name": "Send Template",
+          "value": "sendTemplate",
+          "action": "Send an email with an existing Template"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "routing": {
+        "request": {
+          "method": "POST",
+          "url": "/v3/smtp/email"
+        }
+      },
+      "default": "send"
+    },
+    {
+      "displayName": "Send HTML",
+      "name": "sendHTML",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": false
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "property": "subject",
+          "type": "body"
+        }
+      },
+      "default": "",
+      "description": "Subject of the email"
+    },
+    {
+      "displayName": "Text Content",
+      "name": "textContent",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "send"
+          ],
+          "sendHTML": [
+            false
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "property": "textContent",
+          "type": "body"
+        }
+      },
+      "default": "",
+      "description": "Text content of the message"
+    },
+    {
+      "displayName": "HTML Content",
+      "name": "htmlContent",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "send"
+          ],
+          "sendHTML": [
+            true
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "property": "htmlContent",
+          "type": "body"
+        }
+      },
+      "default": "",
+      "description": "HTML content of the message"
+    },
+    {
+      "displayName": "Sender",
+      "name": "sender",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Receipients",
+      "name": "receipients",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "placeholder": "Add Field",
+      "description": "Additional fields to add",
+      "type": "collection",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "send"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Attachments",
+          "name": "emailAttachments",
+          "placeholder": "Add Attachment",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "name": "attachment",
+              "displayName": "Attachment Data",
+              "values": [
+                {
+                  "displayName": "Input Data Field Name",
+                  "default": "",
+                  "name": "binaryPropertyName",
+                  "type": "string",
+                  "description": "The name of the incoming field containing the binary file data to be processed"
+                }
+              ]
+            }
+          ],
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Receipients BCC",
+          "name": "receipientsBCC",
+          "placeholder": "Add BCC",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "name": "receipientBcc",
+              "displayName": "Receipient",
+              "values": [
+                {
+                  "displayName": "Receipient",
+                  "name": "bcc",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ],
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Receipients CC",
+          "name": "receipientsCC",
+          "placeholder": "Add CC",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "name": "receipientCc",
+              "displayName": "Receipient",
+              "values": [
+                {
+                  "displayName": "Receipient",
+                  "name": "cc",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ],
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Email Tags",
+          "name": "emailTags",
+          "default": {},
+          "description": "Add tags to your emails to find them more easily",
+          "placeholder": "Add Email Tags",
+          "type": "fixedCollection",
+          "options": [
+            {
+              "displayName": "Tags",
+              "name": "tags",
+              "values": [
+                {
+                  "displayName": "Tag",
+                  "default": "",
+                  "name": "tag",
+                  "type": "string"
+                }
+              ]
+            }
+          ],
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "Template ID",
+      "name": "templateId",
+      "type": "options",
+      "default": "",
+      "typeOptions": {
+        "loadOptions": {
+          "routing": {
+            "request": {
+              "method": "GET",
+              "url": "/v3/smtp/templates",
+              "qs": {
+                "templateStatus": true,
+                "limit": 1000,
+                "offset": 0,
+                "sort": "desc"
+              }
+            },
+            "output": {
+              "postReceive": [
+                {
+                  "type": "rootProperty",
+                  "properties": {
+                    "property": "templates"
+                  }
+                },
+                {
+                  "type": "setKeyValue",
+                  "properties": {
+                    "name": "={{$responseItem.name}}",
+                    "value": "={{$responseItem.id}}"
+                  }
+                },
+                {
+                  "type": "sort",
+                  "properties": {
+                    "key": "name"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "sendTemplate"
+          ]
+        }
+      },
+      "routing": {
+        "send": {
+          "type": "body",
+          "property": "templateId"
+        }
+      }
+    },
+    {
+      "displayName": "Receipients",
+      "name": "receipients",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "sendTemplate"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "routing": {
+        "send": {
+          "preSend": [
+            null
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "description": "Additional fields to add",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "email"
+          ],
+          "operation": [
+            "sendTemplate"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Attachments",
+          "name": "emailAttachments",
+          "placeholder": "Add Attachment",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Attachment Data",
+              "name": "attachment",
+              "values": [
+                {
+                  "displayName": "Input Data Field Name",
+                  "name": "binaryPropertyName",
+                  "default": "",
+                  "type": "string",
+                  "description": "The name of the incoming field containing the binary file data to be processed"
+                }
+              ]
+            }
+          ],
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Email Tags",
+          "name": "emailTags",
+          "default": {},
+          "description": "Add tags to your emails to find them more easily",
+          "placeholder": "Add Email Tags",
+          "type": "fixedCollection",
+          "options": [
+            {
+              "displayName": "Tags",
+              "name": "tags",
+              "values": [
+                {
+                  "displayName": "Tag",
+                  "default": "",
+                  "name": "tag",
+                  "type": "string"
+                }
+              ]
+            }
+          ],
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          }
+        },
+        {
+          "displayName": "Template Parameters",
+          "name": "templateParameters",
+          "default": {},
+          "description": "Pass a set of attributes to customize the template",
+          "placeholder": "Add Parameter",
+          "type": "fixedCollection",
+          "options": [
+            {
+              "name": "parameterValues",
+              "displayName": "Parameters",
+              "values": [
+                {
+                  "displayName": "Parameter",
+                  "name": "parameters",
+                  "type": "string",
+                  "default": "",
+                  "placeholder": "key=value",
+                  "description": "Comma-separated key=value pairs"
+                }
+              ]
+            }
+          ],
+          "routing": {
+            "send": {
+              "preSend": [
+                null
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "Request Options",
+      "name": "requestOptions",
+      "type": "collection",
+      "isNodeSetting": true,
+      "placeholder": "Add Option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Batching",
+          "name": "batching",
+          "placeholder": "Add Batching",
+          "type": "fixedCollection",
+          "typeOptions": {
+            "multipleValues": false
+          },
+          "default": {
+            "batch": {}
+          },
+          "options": [
+            {
+              "displayName": "Batching",
+              "name": "batch",
+              "values": [
+                {
+                  "displayName": "Items per Batch",
+                  "name": "batchSize",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": -1
+                  },
+                  "default": 50,
+                  "description": "Input will be split in batches to throttle requests. -1 for disabled. 0 will be treated as 1."
+                },
+                {
+                  "displayName": "Batch Interval (ms)",
+                  "name": "batchInterval",
+                  "type": "number",
+                  "typeOptions": {
+                    "minValue": 0
+                  },
+                  "default": 1000,
+                  "description": "Time (in milliseconds) between each batch of requests. 0 for disabled."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Ignore SSL Issues (Insecure)",
+          "name": "allowUnauthorizedCerts",
+          "type": "boolean",
+          "noDataExpression": true,
+          "default": false,
+          "description": "Whether to accept the response even if SSL certificate validation is not possible"
+        },
+        {
+          "displayName": "Proxy",
+          "name": "proxy",
+          "type": "string",
+          "default": "",
+          "placeholder": "e.g. http://myproxy:3128",
+          "description": "HTTP proxy to use. If authentication is required it can be defined as follow: http://username:password@myproxy:3128"
+        },
+        {
+          "displayName": "Timeout",
+          "name": "timeout",
+          "type": "number",
+          "typeOptions": {
+            "minValue": 1
+          },
+          "default": 10000,
+          "description": "Time in ms to wait for the server to send response headers (and start the response body) before aborting the request"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Marketing",
+      "Communication"
+    ],
+    "alias": [
+      "sendinblue"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.brevo/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/brevo/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Brevo/brevo.svg",
+  "name": "n8n-nodes-base.sendInBlue"
+}

@@ -1,0 +1,299 @@
+{
+  "displayName": "Hunter",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"]}}",
+  "description": "Consume Hunter API",
+  "defaults": {
+    "name": "Hunter"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "hunterApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Domain Search",
+          "value": "domainSearch",
+          "description": "Get every email address found on the internet using a given domain name, with sources",
+          "action": "Get every email address found on the internet using a given domain name, with sources"
+        },
+        {
+          "name": "Email Finder",
+          "value": "emailFinder",
+          "description": "Generate or retrieve the most likely email address from a domain name, a first name and a last name",
+          "action": "Generate or retrieve the most likely email address from a domain name, a first name and a last name"
+        },
+        {
+          "name": "Email Verifier",
+          "value": "emailVerifier",
+          "description": "Verify the deliverability of an email address",
+          "action": "Verify the deliverability of an email address"
+        }
+      ],
+      "default": "domainSearch",
+      "description": "Operation to consume"
+    },
+    {
+      "displayName": "Domain",
+      "name": "domain",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "domainSearch"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "Domain name from which you want to find the email addresses. For example, \"stripe.com\"."
+    },
+    {
+      "displayName": "Only Emails",
+      "name": "onlyEmails",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "domainSearch"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return only the found emails"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "domainSearch"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "domainSearch"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 100
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "domainSearch"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Type",
+          "name": "type",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "name": "Personal",
+              "value": "personal"
+            },
+            {
+              "name": "Generic",
+              "value": "generic"
+            }
+          ]
+        },
+        {
+          "displayName": "Seniority",
+          "name": "seniority",
+          "type": "multiOptions",
+          "default": [],
+          "options": [
+            {
+              "name": "Junior",
+              "value": "junior"
+            },
+            {
+              "name": "Senior",
+              "value": "senior"
+            },
+            {
+              "name": "Executive",
+              "value": "executive"
+            }
+          ]
+        },
+        {
+          "displayName": "Department",
+          "name": "department",
+          "type": "multiOptions",
+          "default": [],
+          "options": [
+            {
+              "name": "Communication",
+              "value": "communication"
+            },
+            {
+              "name": "Executive",
+              "value": "executive"
+            },
+            {
+              "name": "Finance",
+              "value": "finance"
+            },
+            {
+              "name": "HR",
+              "value": "hr"
+            },
+            {
+              "name": "IT",
+              "value": "it"
+            },
+            {
+              "name": "Legal",
+              "value": "legal"
+            },
+            {
+              "name": "Management",
+              "value": "management"
+            },
+            {
+              "name": "Marketing",
+              "value": "marketing"
+            },
+            {
+              "name": "Sales",
+              "value": "sales"
+            },
+            {
+              "name": "Support",
+              "value": "support"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Domain",
+      "name": "domain",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "emailFinder"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Domain name from which you want to find the email addresses. For example, \"stripe.com\"."
+    },
+    {
+      "displayName": "First Name",
+      "name": "firstname",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "emailFinder"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The person's first name. It doesn't need to be in lowercase."
+    },
+    {
+      "displayName": "Last Name",
+      "name": "lastname",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "emailFinder"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The person's last name. It doesn't need to be in lowercase."
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "emailVerifier"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "The email address you want to verify"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Sales"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.hunter/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/hunter/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Hunter/hunter.png",
+  "name": "n8n-nodes-base.hunter"
+}

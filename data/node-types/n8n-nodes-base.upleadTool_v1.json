@@ -1,0 +1,252 @@
+{
+  "displayName": "Uplead Tool",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \":\" + $parameter[\"resource\"]}}",
+  "description": "Consume Uplead API",
+  "defaults": {
+    "name": "Uplead"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "upleadApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume Uplead API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Company",
+          "value": "company",
+          "description": "Company API lets you lookup company data via a domain name or company name"
+        },
+        {
+          "name": "Person",
+          "value": "person",
+          "description": "Person API lets you lookup a person based on an email address OR based on a domain name + first name + last name"
+        }
+      ],
+      "default": "company"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "company"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Enrich",
+          "value": "enrich",
+          "action": "Enrich a company"
+        }
+      ],
+      "default": "enrich"
+    },
+    {
+      "displayName": "Company",
+      "name": "company",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "company"
+          ],
+          "operation": [
+            "enrich"
+          ]
+        }
+      },
+      "description": "The name of the company (e.g – amazon)"
+    },
+    {
+      "displayName": "Domain",
+      "name": "domain",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "company"
+          ],
+          "operation": [
+            "enrich"
+          ]
+        }
+      },
+      "description": "The domain name (e.g – amazon.com)"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Enrich",
+          "value": "enrich",
+          "action": "Enrich a person"
+        }
+      ],
+      "default": "enrich"
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "enrich"
+          ]
+        }
+      },
+      "description": "Email address (e.g – mbenioff@salesforce.com)"
+    },
+    {
+      "displayName": "First Name",
+      "name": "firstname",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "enrich"
+          ]
+        }
+      },
+      "description": "First name of the person (e.g – Marc)"
+    },
+    {
+      "displayName": "Last Name",
+      "name": "lastname",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "enrich"
+          ]
+        }
+      },
+      "description": "Last name of the person (e.g – Benioff)"
+    },
+    {
+      "displayName": "Domain",
+      "name": "domain",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "enrich"
+          ]
+        }
+      },
+      "description": "The domain name (e.g – salesforce.com)"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.uplead/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/uplead/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Uplead/uplead.png",
+  "name": "n8n-nodes-base.upleadTool"
+}

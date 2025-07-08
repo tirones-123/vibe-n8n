@@ -1,0 +1,179 @@
+{
+  "displayName": "Stackby",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "description": "Read, write, and delete data in Stackby",
+  "defaults": {
+    "name": "Stackby"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "stackbyApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Append",
+          "value": "append"
+        },
+        {
+          "name": "Delete",
+          "value": "delete"
+        },
+        {
+          "name": "List",
+          "value": "list"
+        },
+        {
+          "name": "Read",
+          "value": "read"
+        }
+      ],
+      "default": "append",
+      "placeholder": "Action to perform"
+    },
+    {
+      "displayName": "Stack ID",
+      "name": "stackId",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "description": "The ID of the stack to access"
+    },
+    {
+      "displayName": "Table",
+      "name": "table",
+      "type": "string",
+      "default": "",
+      "placeholder": "Stories",
+      "required": true,
+      "description": "Enter Table Name"
+    },
+    {
+      "displayName": "ID",
+      "name": "id",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "read",
+            "delete"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "description": "ID of the record to return"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "list"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "list"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 1000
+      },
+      "default": 1000,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "list"
+          ]
+        }
+      },
+      "default": {},
+      "placeholder": "Add Field",
+      "options": [
+        {
+          "displayName": "View",
+          "name": "view",
+          "type": "string",
+          "default": "",
+          "placeholder": "All Stories",
+          "description": "The name or ID of a view in the Stories table. If set, only the records in that view will be returned. The records will be sorted according to the order of the view."
+        }
+      ]
+    },
+    {
+      "displayName": "Columns",
+      "name": "columns",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "append"
+          ]
+        }
+      },
+      "default": "",
+      "required": true,
+      "placeholder": "id,name,description",
+      "description": "Comma-separated list of the properties which should used as columns for the new rows"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Data & Storage"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.stackby/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/stackby/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Stackby/stackby.png",
+  "name": "n8n-nodes-base.stackby"
+}

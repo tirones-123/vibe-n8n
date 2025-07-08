@@ -1,0 +1,6795 @@
+{
+  "displayName": "Freshservice Tool",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume the Freshservice API",
+  "defaults": {
+    "name": "Freshservice"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "freshserviceApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume the Freshservice API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Agent",
+          "value": "agent"
+        },
+        {
+          "name": "Agent Group",
+          "value": "agentGroup"
+        },
+        {
+          "name": "Agent Role",
+          "value": "agentRole"
+        },
+        {
+          "name": "Announcement",
+          "value": "announcement"
+        },
+        {
+          "name": "Asset Type",
+          "value": "assetType"
+        },
+        {
+          "name": "Change",
+          "value": "change"
+        },
+        {
+          "name": "Department",
+          "value": "department"
+        },
+        {
+          "name": "Location",
+          "value": "location"
+        },
+        {
+          "name": "Problem",
+          "value": "problem"
+        },
+        {
+          "name": "Product",
+          "value": "product"
+        },
+        {
+          "name": "Release",
+          "value": "release"
+        },
+        {
+          "name": "Requester",
+          "value": "requester"
+        },
+        {
+          "name": "Requester Group",
+          "value": "requesterGroup"
+        },
+        {
+          "name": "Software",
+          "value": "software"
+        },
+        {
+          "name": "Ticket",
+          "value": "ticket"
+        }
+      ],
+      "default": "agent"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create an agent",
+          "action": "Create an agent"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete an agent",
+          "action": "Delete an agent"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve an agent",
+          "action": "Get an agent"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many agents",
+          "action": "Get many agents"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update an agent",
+          "action": "Update an agent"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "First Name",
+      "name": "firstName",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Roles",
+      "name": "roles",
+      "description": "Role to assign to the agent",
+      "type": "fixedCollection",
+      "placeholder": "Add Role",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "required": true,
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Role Properties",
+          "name": "roleProperties",
+          "values": [
+            {
+              "displayName": "Role Name or ID",
+              "name": "role",
+              "description": "Name of the role to assign to the agent. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+              "type": "options",
+              "typeOptions": {
+                "loadOptionsMethod": "getAgentRoles"
+              },
+              "required": true,
+              "default": ""
+            },
+            {
+              "displayName": "Scope",
+              "name": "assignment_scope",
+              "description": "Scope in which the agent may use the permissions granted by the role",
+              "type": "options",
+              "options": [
+                {
+                  "name": "Entire Helpdesk",
+                  "value": "entire_helpdesk"
+                },
+                {
+                  "name": "Member Groups",
+                  "value": "member_groups"
+                },
+                {
+                  "name": "Specified Groups",
+                  "value": "specified_groups"
+                },
+                {
+                  "name": "Assigned Items",
+                  "value": "assigned_items"
+                }
+              ],
+              "required": true,
+              "default": "specified_groups"
+            },
+            {
+              "displayName": "Group Names or IDs",
+              "name": "groups",
+              "description": "Groups in which the permissions granted by the role apply. Required only when Scope is Specified Groups - ignored otherwise. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+              "type": "multiOptions",
+              "typeOptions": {
+                "loadOptionsMethod": "getAgentGroups"
+              },
+              "default": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Background Information",
+          "name": "background_information",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Department Names or IDs",
+          "name": "department_ids",
+          "type": "multiOptions",
+          "default": [],
+          "description": "IDs of the departments to which the agent belongs. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Job Title",
+          "name": "job_title",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Language",
+          "name": "language",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "value": "en",
+              "name": "English"
+            },
+            {
+              "value": "ar",
+              "name": "Arabic"
+            },
+            {
+              "value": "ca",
+              "name": "Catalan"
+            },
+            {
+              "value": "cs",
+              "name": "Czech"
+            },
+            {
+              "value": "cy-GB",
+              "name": "Welsh"
+            },
+            {
+              "value": "da",
+              "name": "Danish"
+            },
+            {
+              "value": "de",
+              "name": "German"
+            },
+            {
+              "value": "es",
+              "name": "Spanish"
+            },
+            {
+              "value": "es-LA",
+              "name": "Spanish (Latin America)"
+            },
+            {
+              "value": "et",
+              "name": "Estonian"
+            },
+            {
+              "value": "fi",
+              "name": "Finnish"
+            },
+            {
+              "value": "fr",
+              "name": "French"
+            },
+            {
+              "value": "he",
+              "name": "Hebrew"
+            },
+            {
+              "value": "hu",
+              "name": "Hungarian"
+            },
+            {
+              "value": "id",
+              "name": "Indonesian"
+            },
+            {
+              "value": "it",
+              "name": "Italian"
+            },
+            {
+              "value": "ja-JP",
+              "name": "Japanese"
+            },
+            {
+              "value": "ko",
+              "name": "Korean"
+            },
+            {
+              "value": "LV",
+              "name": "Latvian"
+            },
+            {
+              "value": "nb-NO",
+              "name": "Norwegian"
+            },
+            {
+              "value": "nl",
+              "name": "Dutch"
+            },
+            {
+              "value": "pl",
+              "name": "Polish"
+            },
+            {
+              "value": "pt",
+              "name": "Portuguese"
+            },
+            {
+              "value": "pt-BR",
+              "name": "Portuguese (Brazil)"
+            },
+            {
+              "value": "pt-PT",
+              "name": "Portuguese (Portugal)"
+            },
+            {
+              "value": "ru-RU",
+              "name": "Russian"
+            },
+            {
+              "value": "sk",
+              "name": "Slovak"
+            },
+            {
+              "value": "sk-SK",
+              "name": "Slovak"
+            },
+            {
+              "value": "sl",
+              "name": "Slovenian"
+            },
+            {
+              "value": "sv-SE",
+              "name": "Swedish"
+            },
+            {
+              "value": "th",
+              "name": "Thai"
+            },
+            {
+              "value": "tr",
+              "name": "Turkish"
+            },
+            {
+              "value": "UK",
+              "name": "Ukrainian"
+            },
+            {
+              "value": "vi",
+              "name": "Vietnamese"
+            },
+            {
+              "value": "zh-CN",
+              "name": "Chinese (Simplified)"
+            },
+            {
+              "value": "zh-TW",
+              "name": "Chinese (Traditional)"
+            }
+          ]
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Location Name or ID",
+          "name": "location_id",
+          "type": "options",
+          "default": "",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsMethod": "getLocations"
+          }
+        },
+        {
+          "displayName": "Group Names or IDs",
+          "name": "member_of",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of the groups that the agent is a member of. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Mobile Phone",
+          "name": "mobile_phone_number",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Observer of Group Names/IDs",
+          "name": "observer_of",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of the groups that the agent is an observer of. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Scoreboard Level ID",
+          "name": "scoreboard_level_id",
+          "type": "options",
+          "description": "ID of the level of the agent in the Arcade",
+          "default": 1,
+          "options": [
+            {
+              "name": "Beginner",
+              "value": 1
+            },
+            {
+              "name": "Intermediate",
+              "value": 2
+            },
+            {
+              "name": "Professional",
+              "value": 3
+            },
+            {
+              "name": "Expert",
+              "value": 4
+            },
+            {
+              "name": "Master",
+              "value": 5
+            },
+            {
+              "name": "Guru",
+              "value": 6
+            }
+          ]
+        },
+        {
+          "displayName": "Time Format",
+          "name": "time_format",
+          "type": "options",
+          "default": "12h",
+          "options": [
+            {
+              "name": "12-Hour Format",
+              "value": "12h"
+            },
+            {
+              "name": "24-Hour Format",
+              "value": "24h"
+            }
+          ]
+        },
+        {
+          "displayName": "Work Phone",
+          "name": "work_phone_number",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Agent ID",
+      "name": "agentId",
+      "description": "ID of the agent to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Agent ID",
+      "name": "agentId",
+      "description": "ID of the agent to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the department to which the agent belongs. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": ""
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Job Title",
+          "name": "job_title",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Language",
+          "name": "language",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "value": "en",
+              "name": "English"
+            },
+            {
+              "value": "ar",
+              "name": "Arabic"
+            },
+            {
+              "value": "ca",
+              "name": "Catalan"
+            },
+            {
+              "value": "cs",
+              "name": "Czech"
+            },
+            {
+              "value": "cy-GB",
+              "name": "Welsh"
+            },
+            {
+              "value": "da",
+              "name": "Danish"
+            },
+            {
+              "value": "de",
+              "name": "German"
+            },
+            {
+              "value": "es",
+              "name": "Spanish"
+            },
+            {
+              "value": "es-LA",
+              "name": "Spanish (Latin America)"
+            },
+            {
+              "value": "et",
+              "name": "Estonian"
+            },
+            {
+              "value": "fi",
+              "name": "Finnish"
+            },
+            {
+              "value": "fr",
+              "name": "French"
+            },
+            {
+              "value": "he",
+              "name": "Hebrew"
+            },
+            {
+              "value": "hu",
+              "name": "Hungarian"
+            },
+            {
+              "value": "id",
+              "name": "Indonesian"
+            },
+            {
+              "value": "it",
+              "name": "Italian"
+            },
+            {
+              "value": "ja-JP",
+              "name": "Japanese"
+            },
+            {
+              "value": "ko",
+              "name": "Korean"
+            },
+            {
+              "value": "LV",
+              "name": "Latvian"
+            },
+            {
+              "value": "nb-NO",
+              "name": "Norwegian"
+            },
+            {
+              "value": "nl",
+              "name": "Dutch"
+            },
+            {
+              "value": "pl",
+              "name": "Polish"
+            },
+            {
+              "value": "pt",
+              "name": "Portuguese"
+            },
+            {
+              "value": "pt-BR",
+              "name": "Portuguese (Brazil)"
+            },
+            {
+              "value": "pt-PT",
+              "name": "Portuguese (Portugal)"
+            },
+            {
+              "value": "ru-RU",
+              "name": "Russian"
+            },
+            {
+              "value": "sk",
+              "name": "Slovak"
+            },
+            {
+              "value": "sk-SK",
+              "name": "Slovak"
+            },
+            {
+              "value": "sl",
+              "name": "Slovenian"
+            },
+            {
+              "value": "sv-SE",
+              "name": "Swedish"
+            },
+            {
+              "value": "th",
+              "name": "Thai"
+            },
+            {
+              "value": "tr",
+              "name": "Turkish"
+            },
+            {
+              "value": "UK",
+              "name": "Ukrainian"
+            },
+            {
+              "value": "vi",
+              "name": "Vietnamese"
+            },
+            {
+              "value": "zh-CN",
+              "name": "Chinese (Simplified)"
+            },
+            {
+              "value": "zh-TW",
+              "name": "Chinese (Traditional)"
+            }
+          ]
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Location Name or ID",
+          "name": "location_id",
+          "type": "options",
+          "default": "",
+          "description": "Choose from the list or specify an ID. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getLocations"
+          }
+        },
+        {
+          "displayName": "Mobile Phone Number",
+          "name": "mobile_phone_number",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Work Phone Number",
+          "name": "work_phone_number",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Agent ID",
+      "name": "agentId",
+      "description": "ID of the agent to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agent"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Background Information",
+          "name": "background_information",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Department Names or IDs",
+          "name": "department_ids",
+          "type": "multiOptions",
+          "default": [],
+          "description": "IDs of the departments to which the agent belongs. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": ""
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Job Title",
+          "name": "job_title",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Language",
+          "name": "language",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "value": "en",
+              "name": "English"
+            },
+            {
+              "value": "ar",
+              "name": "Arabic"
+            },
+            {
+              "value": "ca",
+              "name": "Catalan"
+            },
+            {
+              "value": "cs",
+              "name": "Czech"
+            },
+            {
+              "value": "cy-GB",
+              "name": "Welsh"
+            },
+            {
+              "value": "da",
+              "name": "Danish"
+            },
+            {
+              "value": "de",
+              "name": "German"
+            },
+            {
+              "value": "es",
+              "name": "Spanish"
+            },
+            {
+              "value": "es-LA",
+              "name": "Spanish (Latin America)"
+            },
+            {
+              "value": "et",
+              "name": "Estonian"
+            },
+            {
+              "value": "fi",
+              "name": "Finnish"
+            },
+            {
+              "value": "fr",
+              "name": "French"
+            },
+            {
+              "value": "he",
+              "name": "Hebrew"
+            },
+            {
+              "value": "hu",
+              "name": "Hungarian"
+            },
+            {
+              "value": "id",
+              "name": "Indonesian"
+            },
+            {
+              "value": "it",
+              "name": "Italian"
+            },
+            {
+              "value": "ja-JP",
+              "name": "Japanese"
+            },
+            {
+              "value": "ko",
+              "name": "Korean"
+            },
+            {
+              "value": "LV",
+              "name": "Latvian"
+            },
+            {
+              "value": "nb-NO",
+              "name": "Norwegian"
+            },
+            {
+              "value": "nl",
+              "name": "Dutch"
+            },
+            {
+              "value": "pl",
+              "name": "Polish"
+            },
+            {
+              "value": "pt",
+              "name": "Portuguese"
+            },
+            {
+              "value": "pt-BR",
+              "name": "Portuguese (Brazil)"
+            },
+            {
+              "value": "pt-PT",
+              "name": "Portuguese (Portugal)"
+            },
+            {
+              "value": "ru-RU",
+              "name": "Russian"
+            },
+            {
+              "value": "sk",
+              "name": "Slovak"
+            },
+            {
+              "value": "sk-SK",
+              "name": "Slovak"
+            },
+            {
+              "value": "sl",
+              "name": "Slovenian"
+            },
+            {
+              "value": "sv-SE",
+              "name": "Swedish"
+            },
+            {
+              "value": "th",
+              "name": "Thai"
+            },
+            {
+              "value": "tr",
+              "name": "Turkish"
+            },
+            {
+              "value": "UK",
+              "name": "Ukrainian"
+            },
+            {
+              "value": "vi",
+              "name": "Vietnamese"
+            },
+            {
+              "value": "zh-CN",
+              "name": "Chinese (Simplified)"
+            },
+            {
+              "value": "zh-TW",
+              "name": "Chinese (Traditional)"
+            }
+          ]
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Location Name or ID",
+          "name": "location_id",
+          "type": "options",
+          "default": "",
+          "description": "Choose from the list or specify an ID. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getLocations"
+          }
+        },
+        {
+          "displayName": "Group Names or IDs",
+          "name": "member_of",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of the groups that the agent is a member of. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Mobile Phone",
+          "name": "mobile_phone_number",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Observer of Group Names/IDs",
+          "name": "observer_of",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of the groups that the agent is an observer of. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Scoreboard Level ID",
+          "name": "scoreboard_level_id",
+          "type": "options",
+          "description": "ID of the level of the agent in the Arcade",
+          "default": 1,
+          "options": [
+            {
+              "name": "Beginner",
+              "value": 1
+            },
+            {
+              "name": "Intermediate",
+              "value": 2
+            },
+            {
+              "name": "Professional",
+              "value": 3
+            },
+            {
+              "name": "Expert",
+              "value": 4
+            },
+            {
+              "name": "Master",
+              "value": 5
+            },
+            {
+              "name": "Guru",
+              "value": 6
+            }
+          ]
+        },
+        {
+          "displayName": "Time Format",
+          "name": "time_format",
+          "type": "options",
+          "default": "12h",
+          "options": [
+            {
+              "name": "12-Hour Format",
+              "value": "12h"
+            },
+            {
+              "name": "24-Hour Format",
+              "value": "24h"
+            }
+          ]
+        },
+        {
+          "displayName": "Work Phone",
+          "name": "work_phone_number",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentGroup"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create an agent group",
+          "action": "Create an agent group"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete an agent group",
+          "action": "Delete an agent group"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve an agent group",
+          "action": "Get an agent group"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many agent groups",
+          "action": "Get many agent groups"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update an agent group",
+          "action": "Update an agent group"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentGroup"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentGroup"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Escalate to Agent Name or ID",
+          "name": "escalate_to",
+          "type": "options",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          },
+          "description": "ID of the user to whom an escalation email is sent if a ticket in this group is unassigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Member Names or IDs",
+          "name": "members",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of agents who are members of this group. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Observer Names or IDs",
+          "name": "observers",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated agent IDs who are observers of this group. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Unassigned For",
+          "name": "unassigned_for",
+          "description": "Time after which an escalation email is sent if a ticket in the group remains unassigned",
+          "type": "options",
+          "default": "30m",
+          "options": [
+            {
+              "name": "1 Day",
+              "value": "1d"
+            },
+            {
+              "name": "1 Hour",
+              "value": "1h"
+            },
+            {
+              "name": "12 Hours",
+              "value": "12h"
+            },
+            {
+              "name": "2 Days",
+              "value": "2d"
+            },
+            {
+              "name": "2 Hours",
+              "value": "2h"
+            },
+            {
+              "name": "3 Days",
+              "value": "3d"
+            },
+            {
+              "name": "30 Minutes",
+              "value": "30m"
+            },
+            {
+              "name": "8 Hours",
+              "value": "8h"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Agent Group ID",
+      "name": "agentGroupId",
+      "description": "ID of the agent group to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentGroup"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Agent Group ID",
+      "name": "agentGroupId",
+      "description": "ID of the agent group to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentGroup"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentGroup"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentGroup"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Agent Group ID",
+      "name": "agentGroupId",
+      "description": "ID of the agent group to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentGroup"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentGroup"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Escalate to Agent Name or ID",
+          "name": "escalate_to",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent to whom an escalation email is sent if a ticket in this group is unassigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Member Names or IDs",
+          "name": "members",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of agents who are members of this group. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Observer Names or IDs",
+          "name": "observers",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated agent user IDs who are observers of this group. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Unassigned For",
+          "name": "unassigned_for",
+          "description": "Time after which an escalation email is sent if a ticket in the group remains unassigned",
+          "type": "options",
+          "default": "30m",
+          "options": [
+            {
+              "name": "1 Day",
+              "value": "1d"
+            },
+            {
+              "name": "1 Hour",
+              "value": "1h"
+            },
+            {
+              "name": "12 Hours",
+              "value": "12h"
+            },
+            {
+              "name": "2 Days",
+              "value": "2d"
+            },
+            {
+              "name": "2 Hours",
+              "value": "2h"
+            },
+            {
+              "name": "3 Days",
+              "value": "3d"
+            },
+            {
+              "name": "30 Minutes",
+              "value": "30m"
+            },
+            {
+              "name": "8 Hours",
+              "value": "8h"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentRole"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve an agent role",
+          "action": "Get an agent role"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many agent roles",
+          "action": "Get many agent roles"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Agent Role ID",
+      "name": "agentRoleId",
+      "description": "ID of the agent role to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentRole"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentRole"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "agentRole"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create an announcement",
+          "action": "Create an announcement"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete an announcement",
+          "action": "Delete an announcement"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve an announcement",
+          "action": "Get an announcement"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many announcements",
+          "action": "Get many announcements"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update an announcement",
+          "action": "Update an announcement"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Title",
+      "name": "title",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Body",
+      "name": "bodyHtml",
+      "description": "HTML supported",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Visibility",
+      "name": "visibility",
+      "type": "options",
+      "required": true,
+      "default": "everyone",
+      "options": [
+        {
+          "name": "Agents Only",
+          "value": "agents_only"
+        },
+        {
+          "name": "Agents and Groups",
+          "value": "grouped_visibility"
+        },
+        {
+          "name": "Everyone",
+          "value": "everyone"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Visible From",
+      "name": "visibleFrom",
+      "description": "Timestamp at which announcement becomes active",
+      "type": "dateTime",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Additional Emails",
+          "name": "additional_emails",
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated additional email addresses to which the announcement needs to be sent"
+        },
+        {
+          "displayName": "Department Names or IDs",
+          "name": "departments",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of departments that may view this announcement. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Visible From",
+          "name": "visible_from",
+          "description": "Timestamp at which announcement is active",
+          "type": "dateTime",
+          "default": ""
+        },
+        {
+          "displayName": "Visible Until",
+          "name": "visible_till",
+          "description": "Timestamp until which announcement is active",
+          "type": "dateTime",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Announcement ID",
+      "name": "announcementId",
+      "description": "ID of the announcement to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Announcement ID",
+      "name": "announcementId",
+      "description": "ID of the announcement to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Announcement ID",
+      "name": "announcementId",
+      "description": "ID of the announcement to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "announcement"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Additional Emails",
+          "name": "additional_emails",
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated additional email addresses to which the announcement needs to be sent"
+        },
+        {
+          "displayName": "Body",
+          "name": "body_html",
+          "type": "string",
+          "default": "",
+          "description": "HTML supported"
+        },
+        {
+          "displayName": "Department Names or IDs",
+          "name": "departments",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of departments that may view this announcement. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Title",
+          "name": "title",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Visibility",
+          "name": "visibility",
+          "type": "options",
+          "default": "everyone",
+          "options": [
+            {
+              "name": "Agents Only",
+              "value": "agents_only"
+            },
+            {
+              "name": "Agents and Groups",
+              "value": "grouped_visibility"
+            },
+            {
+              "name": "Everyone",
+              "value": "everyone"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "assetType"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create an asset type",
+          "action": "Create an asset type"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete an asset type",
+          "action": "Delete an asset type"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve an asset type",
+          "action": "Get an asset type"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many asset types",
+          "action": "Get many asset types"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update an asset type",
+          "action": "Update an asset type"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "assetType"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "assetType"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Parent Asset Type Name or ID",
+          "name": "parent_asset_type_id",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "type": "options",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getAssetTypes"
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "Asset Type ID",
+      "name": "assetTypeId",
+      "description": "ID of the asset type to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "assetType"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Asset Type ID",
+      "name": "assetTypeId",
+      "description": "ID of the asset type to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "assetType"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "assetType"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "assetType"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Asset Type ID",
+      "name": "assetTypeId",
+      "description": "ID of the asset type to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "assetType"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "assetType"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a change",
+          "action": "Create a change"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a change",
+          "action": "Delete a change"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a change",
+          "action": "Get a change"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many changes",
+          "action": "Get many changes"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a change",
+          "action": "Update a change"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Requester Name or ID",
+      "name": "requesterId",
+      "description": "ID of the requester of the change. Choose from the list or specify an ID. You can also specify the ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "type": "options",
+      "required": true,
+      "default": "",
+      "typeOptions": {
+        "loadOptionsMethod": "getRequesters"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Planned Start Date",
+      "name": "plannedStartDate",
+      "type": "dateTime",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Planned End Date",
+      "name": "plannedEndDate",
+      "type": "dateTime",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Agent Name or ID",
+          "name": "agent_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent to whom the change is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Change Type",
+          "name": "change_type",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Minor",
+              "value": 1
+            },
+            {
+              "name": "Standard",
+              "value": 2
+            },
+            {
+              "name": "Major",
+              "value": 3
+            },
+            {
+              "name": "Emergency",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the department requesting the change. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "HTML supported"
+        },
+        {
+          "displayName": "Group Name or ID",
+          "name": "group_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent group to which the change is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Impact",
+          "name": "impact",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "displayName": "Priority",
+          "name": "priority",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            },
+            {
+              "name": "Urgent",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Risk",
+          "name": "risk",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            },
+            {
+              "name": "Very High",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Open",
+              "value": 1
+            },
+            {
+              "name": "Planning",
+              "value": 2
+            },
+            {
+              "name": "Approval",
+              "value": 3
+            },
+            {
+              "name": "Pending Release",
+              "value": 4
+            },
+            {
+              "name": "Pending Review",
+              "value": 5
+            },
+            {
+              "name": "Closed",
+              "value": 6
+            }
+          ]
+        },
+        {
+          "displayName": "Subject",
+          "name": "subject",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Change ID",
+      "name": "changeId",
+      "description": "ID of the change to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Change ID",
+      "name": "changeId",
+      "description": "ID of the change to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Predefined Filters",
+          "name": "filter",
+          "type": "options",
+          "default": "my_open",
+          "options": [
+            {
+              "name": "Closed",
+              "value": "closed"
+            },
+            {
+              "name": "My Open",
+              "value": "my_open"
+            },
+            {
+              "name": "Release Requested",
+              "value": "release_requested"
+            },
+            {
+              "name": "Requester ID",
+              "value": "requester_id"
+            },
+            {
+              "name": "Unassigned",
+              "value": "unassigned"
+            }
+          ]
+        },
+        {
+          "displayName": "Sort Order",
+          "name": "sort_by",
+          "type": "options",
+          "options": [
+            {
+              "name": "Ascending",
+              "value": "asc"
+            },
+            {
+              "name": "Descending",
+              "value": "desc"
+            }
+          ],
+          "default": "asc"
+        },
+        {
+          "displayName": "Updated Since",
+          "name": "updated_since",
+          "type": "dateTime",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Change ID",
+      "name": "changeId",
+      "description": "ID of the change to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "change"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Agent Name or ID",
+          "name": "agent_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent to whom the change is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Change Type",
+          "name": "change_type",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Minor",
+              "value": 1
+            },
+            {
+              "name": "Standard",
+              "value": 2
+            },
+            {
+              "name": "Major",
+              "value": 3
+            },
+            {
+              "name": "Emergency",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the department requesting the change. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "HTML supported"
+        },
+        {
+          "displayName": "Group Name or ID",
+          "name": "group_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent group to which the change is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Impact",
+          "name": "impact",
+          "type": "options",
+          "default": 1,
+          "description": "Impact of the change",
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "displayName": "Priority",
+          "name": "priority",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            },
+            {
+              "name": "Urgent",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Requester Name or ID",
+          "name": "requester_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the requester of the change. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getRequesters"
+          }
+        },
+        {
+          "displayName": "Risk",
+          "name": "risk",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            },
+            {
+              "name": "Very High",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Open",
+              "value": 1
+            },
+            {
+              "name": "Planning",
+              "value": 2
+            },
+            {
+              "name": "Approval",
+              "value": 3
+            },
+            {
+              "name": "Pending Release",
+              "value": 4
+            },
+            {
+              "name": "Pending Review",
+              "value": 5
+            },
+            {
+              "name": "Closed",
+              "value": 6
+            }
+          ]
+        },
+        {
+          "displayName": "Subject",
+          "name": "subject",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a department",
+          "action": "Create a department"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a department",
+          "action": "Delete a department"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a department",
+          "action": "Get a department"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many departments",
+          "action": "Get many departments"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a department",
+          "action": "Update a department"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Domains",
+          "name": "domains",
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated email domains associated with the department"
+        }
+      ]
+    },
+    {
+      "displayName": "Department ID",
+      "name": "departmentId",
+      "description": "ID of the department to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Department ID",
+      "name": "departmentId",
+      "description": "ID of the department to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "Name of the department"
+        }
+      ]
+    },
+    {
+      "displayName": "Department ID",
+      "name": "departmentId",
+      "description": "ID of the department to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Domains",
+          "name": "domains",
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated email domains associated with the department"
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "location"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a location",
+          "action": "Create a location"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a location",
+          "action": "Delete a location"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a location",
+          "action": "Get a location"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many locations",
+          "action": "Get many locations"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a location",
+          "action": "Update a location"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "description": "Name of the location",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "location"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "location"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "placeholder": "Add Address Fields",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Address Details",
+              "name": "addressFields",
+              "values": [
+                {
+                  "displayName": "Line 1",
+                  "name": "line1",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Line 2",
+                  "name": "line2",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "City",
+                  "name": "city",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Country",
+                  "name": "country",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "State",
+                  "name": "state",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Zip Code",
+                  "name": "zipcode",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Location ID",
+      "name": "locationId",
+      "description": "ID of the location to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "location"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Location ID",
+      "name": "locationId",
+      "description": "ID of the location to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "location"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "location"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "location"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Location ID",
+      "name": "locationId",
+      "description": "ID of the location to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "location"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "location"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Address",
+          "name": "address",
+          "placeholder": "Add Address Fields",
+          "type": "fixedCollection",
+          "default": {},
+          "options": [
+            {
+              "displayName": "Address Details",
+              "name": "addressFields",
+              "values": [
+                {
+                  "displayName": "Line 1",
+                  "name": "line1",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Line 2",
+                  "name": "line2",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "City",
+                  "name": "city",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Country",
+                  "name": "country",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "State",
+                  "name": "state",
+                  "type": "string",
+                  "default": ""
+                },
+                {
+                  "displayName": "Zip Code",
+                  "name": "zipcode",
+                  "type": "string",
+                  "default": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a problem",
+          "action": "Create a problem"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a problem",
+          "action": "Delete a problem"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a problem",
+          "action": "Get a problem"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many problems",
+          "action": "Get many problems"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a problem",
+          "action": "Update a problem"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Requester Name or ID",
+      "name": "requesterId",
+      "description": "ID of the initiator of the problem. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "type": "options",
+      "required": true,
+      "default": "",
+      "typeOptions": {
+        "loadOptionsMethod": "getRequesters"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Due By",
+      "name": "dueBy",
+      "description": "Date when the problem is due to be solved",
+      "type": "dateTime",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Agent Name or ID",
+          "name": "agent_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent to whom the problem is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the department initiating the problem. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "description": "HTML supported",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Group Name or ID",
+          "name": "group_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent group to which the problem is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Impact",
+          "name": "impact",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "displayName": "Priority",
+          "name": "priority",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            },
+            {
+              "name": "Urgent",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Open",
+              "value": 1
+            },
+            {
+              "name": "Change Requested",
+              "value": 2
+            },
+            {
+              "name": "Closed",
+              "value": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Problem ID",
+      "name": "problemId",
+      "description": "ID of the problem to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Problem ID",
+      "name": "problemId",
+      "description": "ID of the problem to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Problem ID",
+      "name": "problemId",
+      "description": "ID of the problem to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "problem"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Agent Name or ID",
+          "name": "agent_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent to whom the problem is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the department initiating the problem. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "HTML supported"
+        },
+        {
+          "displayName": "Due By",
+          "name": "due_by",
+          "description": "Date when the problem is due to be solved",
+          "type": "dateTime",
+          "default": ""
+        },
+        {
+          "displayName": "Group Name or ID",
+          "name": "group_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent group to which the problem is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Impact",
+          "name": "impact",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "displayName": "Priority",
+          "name": "priority",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            },
+            {
+              "name": "Urgent",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Requester Name or ID",
+          "name": "requester_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the initiator of the problem. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getRequesters"
+          }
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Open",
+              "value": 1
+            },
+            {
+              "name": "Change Requested",
+              "value": 2
+            },
+            {
+              "name": "Closed",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "displayName": "Subject",
+          "name": "subject",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a product",
+          "action": "Create a product"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a product",
+          "action": "Delete a product"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a product",
+          "action": "Get a product"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many products",
+          "action": "Get many products"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a product",
+          "action": "Update a product"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Asset Type Name or ID",
+      "name": "assetTypeId",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "required": true,
+      "default": "",
+      "typeOptions": {
+        "loadOptionsMethod": "getAssetTypes"
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "HTML supported"
+        },
+        {
+          "displayName": "Manufacturer",
+          "name": "manufacturer",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Mode of Procurement",
+          "name": "mode_of_procurement",
+          "type": "options",
+          "default": "Buy",
+          "options": [
+            {
+              "name": "Buy",
+              "value": "Buy"
+            },
+            {
+              "name": "Lease",
+              "value": "Lease"
+            },
+            {
+              "name": "Both",
+              "value": "Both"
+            }
+          ]
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": "In Production",
+          "options": [
+            {
+              "name": "In Production",
+              "value": "In Production"
+            },
+            {
+              "name": "In Pipeline",
+              "value": "In Pipeline"
+            },
+            {
+              "name": "Retired",
+              "value": "Retired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Product ID",
+      "name": "productId",
+      "description": "ID of the product to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Product ID",
+      "name": "productId",
+      "description": "ID of the product to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Product ID",
+      "name": "productId",
+      "description": "ID of the product to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "product"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Asset Type Name or ID",
+          "name": "asset_type_id",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getAssetTypes"
+          }
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "HTML supported"
+        },
+        {
+          "displayName": "Manufacturer",
+          "name": "manufacturer",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Mode of Procurement",
+          "name": "mode_of_procurement",
+          "type": "options",
+          "default": "Buy",
+          "options": [
+            {
+              "name": "Buy",
+              "value": "Buy"
+            },
+            {
+              "name": "Lease",
+              "value": "Lease"
+            },
+            {
+              "name": "Both",
+              "value": "Both"
+            }
+          ]
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": "In Production",
+          "options": [
+            {
+              "name": "In Production",
+              "value": "In Production"
+            },
+            {
+              "name": "In Pipeline",
+              "value": "In Pipeline"
+            },
+            {
+              "name": "Retired",
+              "value": "Retired"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a release",
+          "action": "Create a release"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a release",
+          "action": "Delete a release"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a release",
+          "action": "Get a release"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many releases",
+          "action": "Get many releases"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a release",
+          "action": "Update a release"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Release Type",
+      "name": "releaseType",
+      "type": "options",
+      "default": 1,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Minor",
+          "value": 1
+        },
+        {
+          "name": "Standard",
+          "value": 2
+        },
+        {
+          "name": "Major",
+          "value": 3
+        },
+        {
+          "name": "Emergency",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "displayName": "Priority",
+      "name": "priority",
+      "type": "options",
+      "default": 1,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Low",
+          "value": 1
+        },
+        {
+          "name": "Medium",
+          "value": 2
+        },
+        {
+          "name": "High",
+          "value": 3
+        },
+        {
+          "name": "Urgent",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "displayName": "Status",
+      "name": "status",
+      "type": "options",
+      "default": 1,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Open",
+          "value": 1
+        },
+        {
+          "name": "On Hold",
+          "value": 2
+        },
+        {
+          "name": "In Progress",
+          "value": 3
+        },
+        {
+          "name": "Incomplete",
+          "value": 4
+        },
+        {
+          "name": "Completed",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "displayName": "Planned Start Date",
+      "name": "plannedStartDate",
+      "type": "dateTime",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Planned End Date",
+      "name": "plannedEndDate",
+      "type": "dateTime",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the department initiating the release. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "description": "HTML supported",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Group Name or ID",
+          "name": "group_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent group to which the release is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "Release ID",
+      "name": "releaseId",
+      "description": "ID of the release to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Release ID",
+      "name": "releaseId",
+      "description": "ID of the release to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Release ID",
+      "name": "releaseId",
+      "description": "ID of the release to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "release"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the department initiating the release. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "HTML supported"
+        },
+        {
+          "displayName": "Group Name or ID",
+          "name": "group_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent group to which the release is assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Priority",
+          "name": "priority",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            },
+            {
+              "name": "Urgent",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Release Type",
+          "name": "release_type",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Minor",
+              "value": 1
+            },
+            {
+              "name": "Standard",
+              "value": 2
+            },
+            {
+              "name": "Major",
+              "value": 3
+            },
+            {
+              "name": "Emergency",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Open",
+              "value": 1
+            },
+            {
+              "name": "On Hold",
+              "value": 2
+            },
+            {
+              "name": "In Progress",
+              "value": 3
+            },
+            {
+              "name": "Incomplete",
+              "value": 4
+            },
+            {
+              "name": "Completed",
+              "value": 5
+            }
+          ]
+        },
+        {
+          "displayName": "Subject",
+          "name": "subject",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a requester",
+          "action": "Create a requester"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a requester",
+          "action": "Delete a requester"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a requester",
+          "action": "Get a requester"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many requesters",
+          "action": "Get many requesters"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a requester",
+          "action": "Update a requester"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "First Name",
+      "name": "firstName",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Primary Email",
+      "name": "primaryEmail",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Background Information",
+          "name": "background_information",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Department Names or IDs",
+          "name": "department_ids",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of the departments associated with the requester. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Job Title",
+          "name": "job_title",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Language",
+          "name": "language",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "value": "en",
+              "name": "English"
+            },
+            {
+              "value": "ar",
+              "name": "Arabic"
+            },
+            {
+              "value": "ca",
+              "name": "Catalan"
+            },
+            {
+              "value": "cs",
+              "name": "Czech"
+            },
+            {
+              "value": "cy-GB",
+              "name": "Welsh"
+            },
+            {
+              "value": "da",
+              "name": "Danish"
+            },
+            {
+              "value": "de",
+              "name": "German"
+            },
+            {
+              "value": "es",
+              "name": "Spanish"
+            },
+            {
+              "value": "es-LA",
+              "name": "Spanish (Latin America)"
+            },
+            {
+              "value": "et",
+              "name": "Estonian"
+            },
+            {
+              "value": "fi",
+              "name": "Finnish"
+            },
+            {
+              "value": "fr",
+              "name": "French"
+            },
+            {
+              "value": "he",
+              "name": "Hebrew"
+            },
+            {
+              "value": "hu",
+              "name": "Hungarian"
+            },
+            {
+              "value": "id",
+              "name": "Indonesian"
+            },
+            {
+              "value": "it",
+              "name": "Italian"
+            },
+            {
+              "value": "ja-JP",
+              "name": "Japanese"
+            },
+            {
+              "value": "ko",
+              "name": "Korean"
+            },
+            {
+              "value": "LV",
+              "name": "Latvian"
+            },
+            {
+              "value": "nb-NO",
+              "name": "Norwegian"
+            },
+            {
+              "value": "nl",
+              "name": "Dutch"
+            },
+            {
+              "value": "pl",
+              "name": "Polish"
+            },
+            {
+              "value": "pt",
+              "name": "Portuguese"
+            },
+            {
+              "value": "pt-BR",
+              "name": "Portuguese (Brazil)"
+            },
+            {
+              "value": "pt-PT",
+              "name": "Portuguese (Portugal)"
+            },
+            {
+              "value": "ru-RU",
+              "name": "Russian"
+            },
+            {
+              "value": "sk",
+              "name": "Slovak"
+            },
+            {
+              "value": "sk-SK",
+              "name": "Slovak"
+            },
+            {
+              "value": "sl",
+              "name": "Slovenian"
+            },
+            {
+              "value": "sv-SE",
+              "name": "Swedish"
+            },
+            {
+              "value": "th",
+              "name": "Thai"
+            },
+            {
+              "value": "tr",
+              "name": "Turkish"
+            },
+            {
+              "value": "UK",
+              "name": "Ukrainian"
+            },
+            {
+              "value": "vi",
+              "name": "Vietnamese"
+            },
+            {
+              "value": "zh-CN",
+              "name": "Chinese (Simplified)"
+            },
+            {
+              "value": "zh-TW",
+              "name": "Chinese (Traditional)"
+            }
+          ]
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Location Name or ID",
+          "name": "location_id",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "type": "options",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getLocations"
+          }
+        },
+        {
+          "displayName": "Mobile Phone",
+          "name": "mobile_phone_number",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Secondary Emails",
+          "name": "secondary_emails",
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated secondary emails associated with the requester"
+        },
+        {
+          "displayName": "Time Format",
+          "name": "time_format",
+          "type": "options",
+          "default": "12h",
+          "options": [
+            {
+              "name": "12-Hour Format",
+              "value": "12h"
+            },
+            {
+              "name": "24-Hour Format",
+              "value": "24h"
+            }
+          ]
+        },
+        {
+          "displayName": "Work Phone",
+          "name": "work_phone_number",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Requester ID",
+      "name": "requesterId",
+      "description": "ID of the requester to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Requester ID",
+      "name": "requesterId",
+      "description": "ID of the requester to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "type": "options",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Job Title",
+          "name": "job_title",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Language",
+          "name": "language",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "value": "en",
+              "name": "English"
+            },
+            {
+              "value": "ar",
+              "name": "Arabic"
+            },
+            {
+              "value": "ca",
+              "name": "Catalan"
+            },
+            {
+              "value": "cs",
+              "name": "Czech"
+            },
+            {
+              "value": "cy-GB",
+              "name": "Welsh"
+            },
+            {
+              "value": "da",
+              "name": "Danish"
+            },
+            {
+              "value": "de",
+              "name": "German"
+            },
+            {
+              "value": "es",
+              "name": "Spanish"
+            },
+            {
+              "value": "es-LA",
+              "name": "Spanish (Latin America)"
+            },
+            {
+              "value": "et",
+              "name": "Estonian"
+            },
+            {
+              "value": "fi",
+              "name": "Finnish"
+            },
+            {
+              "value": "fr",
+              "name": "French"
+            },
+            {
+              "value": "he",
+              "name": "Hebrew"
+            },
+            {
+              "value": "hu",
+              "name": "Hungarian"
+            },
+            {
+              "value": "id",
+              "name": "Indonesian"
+            },
+            {
+              "value": "it",
+              "name": "Italian"
+            },
+            {
+              "value": "ja-JP",
+              "name": "Japanese"
+            },
+            {
+              "value": "ko",
+              "name": "Korean"
+            },
+            {
+              "value": "LV",
+              "name": "Latvian"
+            },
+            {
+              "value": "nb-NO",
+              "name": "Norwegian"
+            },
+            {
+              "value": "nl",
+              "name": "Dutch"
+            },
+            {
+              "value": "pl",
+              "name": "Polish"
+            },
+            {
+              "value": "pt",
+              "name": "Portuguese"
+            },
+            {
+              "value": "pt-BR",
+              "name": "Portuguese (Brazil)"
+            },
+            {
+              "value": "pt-PT",
+              "name": "Portuguese (Portugal)"
+            },
+            {
+              "value": "ru-RU",
+              "name": "Russian"
+            },
+            {
+              "value": "sk",
+              "name": "Slovak"
+            },
+            {
+              "value": "sk-SK",
+              "name": "Slovak"
+            },
+            {
+              "value": "sl",
+              "name": "Slovenian"
+            },
+            {
+              "value": "sv-SE",
+              "name": "Swedish"
+            },
+            {
+              "value": "th",
+              "name": "Thai"
+            },
+            {
+              "value": "tr",
+              "name": "Turkish"
+            },
+            {
+              "value": "UK",
+              "name": "Ukrainian"
+            },
+            {
+              "value": "vi",
+              "name": "Vietnamese"
+            },
+            {
+              "value": "zh-CN",
+              "name": "Chinese (Simplified)"
+            },
+            {
+              "value": "zh-TW",
+              "name": "Chinese (Traditional)"
+            }
+          ]
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Location Name or ID",
+          "name": "location_id",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getLocations"
+          }
+        },
+        {
+          "displayName": "Mobile Phone Number",
+          "name": "mobile_phone_number",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Primary Email",
+          "name": "primary_email",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Work Phone Number",
+          "name": "work_phone_number",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Requester ID",
+      "name": "requesterId",
+      "description": "ID of the requester to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requester"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Address",
+          "name": "address",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Background Information",
+          "name": "background_information",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Department Names or IDs",
+          "name": "department_ids",
+          "type": "multiOptions",
+          "default": [],
+          "description": "Comma-separated IDs of the departments associated with the requester. Choose from the list or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Job Title",
+          "name": "job_title",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Language",
+          "name": "language",
+          "type": "options",
+          "default": "",
+          "options": [
+            {
+              "value": "en",
+              "name": "English"
+            },
+            {
+              "value": "ar",
+              "name": "Arabic"
+            },
+            {
+              "value": "ca",
+              "name": "Catalan"
+            },
+            {
+              "value": "cs",
+              "name": "Czech"
+            },
+            {
+              "value": "cy-GB",
+              "name": "Welsh"
+            },
+            {
+              "value": "da",
+              "name": "Danish"
+            },
+            {
+              "value": "de",
+              "name": "German"
+            },
+            {
+              "value": "es",
+              "name": "Spanish"
+            },
+            {
+              "value": "es-LA",
+              "name": "Spanish (Latin America)"
+            },
+            {
+              "value": "et",
+              "name": "Estonian"
+            },
+            {
+              "value": "fi",
+              "name": "Finnish"
+            },
+            {
+              "value": "fr",
+              "name": "French"
+            },
+            {
+              "value": "he",
+              "name": "Hebrew"
+            },
+            {
+              "value": "hu",
+              "name": "Hungarian"
+            },
+            {
+              "value": "id",
+              "name": "Indonesian"
+            },
+            {
+              "value": "it",
+              "name": "Italian"
+            },
+            {
+              "value": "ja-JP",
+              "name": "Japanese"
+            },
+            {
+              "value": "ko",
+              "name": "Korean"
+            },
+            {
+              "value": "LV",
+              "name": "Latvian"
+            },
+            {
+              "value": "nb-NO",
+              "name": "Norwegian"
+            },
+            {
+              "value": "nl",
+              "name": "Dutch"
+            },
+            {
+              "value": "pl",
+              "name": "Polish"
+            },
+            {
+              "value": "pt",
+              "name": "Portuguese"
+            },
+            {
+              "value": "pt-BR",
+              "name": "Portuguese (Brazil)"
+            },
+            {
+              "value": "pt-PT",
+              "name": "Portuguese (Portugal)"
+            },
+            {
+              "value": "ru-RU",
+              "name": "Russian"
+            },
+            {
+              "value": "sk",
+              "name": "Slovak"
+            },
+            {
+              "value": "sk-SK",
+              "name": "Slovak"
+            },
+            {
+              "value": "sl",
+              "name": "Slovenian"
+            },
+            {
+              "value": "sv-SE",
+              "name": "Swedish"
+            },
+            {
+              "value": "th",
+              "name": "Thai"
+            },
+            {
+              "value": "tr",
+              "name": "Turkish"
+            },
+            {
+              "value": "UK",
+              "name": "Ukrainian"
+            },
+            {
+              "value": "vi",
+              "name": "Vietnamese"
+            },
+            {
+              "value": "zh-CN",
+              "name": "Chinese (Simplified)"
+            },
+            {
+              "value": "zh-TW",
+              "name": "Chinese (Traditional)"
+            }
+          ]
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Location Name or ID",
+          "name": "location_id",
+          "type": "options",
+          "default": "",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsMethod": "getLocations"
+          }
+        },
+        {
+          "displayName": "Mobile Phone",
+          "name": "mobile_phone_number",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Primary Email",
+          "name": "primary_email",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Secondary Emails",
+          "name": "secondary_emails",
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated secondary emails associated with the requester"
+        },
+        {
+          "displayName": "Time Format",
+          "name": "time_format",
+          "type": "options",
+          "default": "12h",
+          "options": [
+            {
+              "name": "12-Hour Format",
+              "value": "12h"
+            },
+            {
+              "name": "24-Hour Format",
+              "value": "24h"
+            }
+          ]
+        },
+        {
+          "displayName": "Work Phone",
+          "name": "work_phone_number",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requesterGroup"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a requester group",
+          "action": "Create a requester group"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a requester group",
+          "action": "Delete a requester group"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a requester group",
+          "action": "Get a requester group"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many requester groups",
+          "action": "Get many requester groups"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a requester group",
+          "action": "Update a requester group"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requesterGroup"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requesterGroup"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Requester Group ID",
+      "name": "requesterGroupId",
+      "description": "ID of the requester group to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requesterGroup"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Requester Group ID",
+      "name": "requesterGroupId",
+      "description": "ID of the requester group to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requesterGroup"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requesterGroup"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requesterGroup"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Requester Group ID",
+      "name": "requesterGroupId",
+      "description": "ID of the requester group to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requesterGroup"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "requesterGroup"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "Description of the requester group"
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "Name of the requester group"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a software application",
+          "action": "Create a software application"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a software application",
+          "action": "Delete a software application"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a software application",
+          "action": "Get a software application"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many software applications",
+          "action": "Get many software applications"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a software application",
+          "action": "Update a software application"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Application Type",
+      "name": "applicationType",
+      "type": "options",
+      "required": true,
+      "options": [
+        {
+          "name": "Desktop",
+          "value": "desktop"
+        },
+        {
+          "name": "Mobile",
+          "value": "mobile"
+        },
+        {
+          "name": "SaaS",
+          "value": "saas"
+        }
+      ],
+      "default": "desktop",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Notes",
+          "name": "notes",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": "managed",
+          "options": [
+            {
+              "name": "Disabled",
+              "value": "disabled"
+            },
+            {
+              "name": "Ignored",
+              "value": "ignored"
+            },
+            {
+              "name": "Needs Review",
+              "value": "needs review"
+            },
+            {
+              "name": "Restricted",
+              "value": "restricted"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Software ID",
+      "name": "softwareId",
+      "description": "ID of the software application to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Software ID",
+      "name": "softwareId",
+      "description": "ID of the software application to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Software ID",
+      "name": "softwareId",
+      "description": "ID of the software application to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "software"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Application Type",
+          "name": "application_type",
+          "type": "options",
+          "default": "desktop",
+          "description": "Type of the software",
+          "options": [
+            {
+              "name": "Desktop",
+              "value": "desktop"
+            },
+            {
+              "name": "Mobile",
+              "value": "mobile"
+            },
+            {
+              "name": "SaaS",
+              "value": "saas"
+            }
+          ]
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Notes",
+          "name": "notes",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": "managed",
+          "options": [
+            {
+              "name": "Disabled",
+              "value": "disabled"
+            },
+            {
+              "name": "Ignored",
+              "value": "ignored"
+            },
+            {
+              "name": "Needs Review",
+              "value": "needs review"
+            },
+            {
+              "name": "Restricted",
+              "value": "restricted"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a ticket",
+          "action": "Create a ticket"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete a ticket",
+          "action": "Delete a ticket"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Retrieve a ticket",
+          "action": "Get a ticket"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Retrieve many tickets",
+          "action": "Get many tickets"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a ticket",
+          "action": "Update a ticket"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Email",
+      "name": "email",
+      "description": "Email address of the ticket author",
+      "type": "string",
+      "placeholder": "name@email.com",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Subject",
+      "name": "subject",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Description",
+      "name": "description",
+      "type": "string",
+      "default": "",
+      "description": "HTML supported",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Priority",
+      "name": "priority",
+      "type": "options",
+      "default": 1,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Low",
+          "value": 1
+        },
+        {
+          "name": "Medium",
+          "value": 2
+        },
+        {
+          "name": "High",
+          "value": 3
+        },
+        {
+          "name": "Urgent",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "displayName": "Status",
+      "name": "status",
+      "type": "options",
+      "default": 2,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Open",
+          "value": 2
+        },
+        {
+          "name": "Pending",
+          "value": 3
+        },
+        {
+          "name": "Resolved",
+          "value": 4
+        },
+        {
+          "name": "Closed",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "CC Emails",
+          "name": "cc_emails",
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated email addresses to add in the CC field of the ticket email"
+        },
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the department to which this ticket belongs. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Group Name or ID",
+          "name": "group_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the group to which the ticket has been assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Impact",
+          "name": "impact",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "Name of the ticket author"
+        },
+        {
+          "displayName": "Requester Name or ID",
+          "name": "requester_id",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "default": "",
+          "typeOptions": {
+            "loadOptionsMethod": "getRequesters"
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "Ticket ID",
+      "name": "ticketId",
+      "description": "ID of the ticket to delete",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Ticket ID",
+      "name": "ticketId",
+      "description": "ID of the ticket to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Filters",
+      "name": "filters",
+      "type": "collection",
+      "placeholder": "Add Filter",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Agent Name or ID",
+          "name": "agent_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the agent to whom the tickets have been assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgents"
+          }
+        },
+        {
+          "displayName": "Group Name or ID",
+          "name": "group_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the group to which the tickets have been assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Impact",
+          "name": "impact",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "displayName": "Priority",
+          "name": "priority",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            },
+            {
+              "name": "Urgent",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": 2,
+          "options": [
+            {
+              "name": "Open",
+              "value": 2
+            },
+            {
+              "name": "Pending",
+              "value": 3
+            },
+            {
+              "name": "Resolved",
+              "value": 4
+            },
+            {
+              "name": "Closed",
+              "value": 5
+            }
+          ]
+        },
+        {
+          "displayName": "Created On",
+          "name": "created_at",
+          "type": "dateTime",
+          "default": "",
+          "description": "Date when the ticket was created"
+        },
+        {
+          "displayName": "Due By",
+          "name": "due_by",
+          "description": "Date when the ticket is due to be resolved",
+          "type": "dateTime",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "displayName": "Ticket ID",
+      "name": "ticketId",
+      "description": "ID of the ticket to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "ticket"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Department Name or ID",
+          "name": "department_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the department to which this ticket has been assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getDepartments"
+          }
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "HTML supported"
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "Email address of the ticket author"
+        },
+        {
+          "displayName": "Group Name or ID",
+          "name": "group_id",
+          "type": "options",
+          "default": "",
+          "description": "ID of the group to which the ticket has been assigned. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "typeOptions": {
+            "loadOptionsMethod": "getAgentGroups"
+          }
+        },
+        {
+          "displayName": "Impact",
+          "name": "impact",
+          "type": "options",
+          "default": 1,
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "Name of the ticket author"
+        },
+        {
+          "displayName": "Phone",
+          "name": "phone",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Priority",
+          "name": "priority",
+          "type": "options",
+          "default": 1,
+          "description": "Priority of the ticket",
+          "options": [
+            {
+              "name": "Low",
+              "value": 1
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 3
+            },
+            {
+              "name": "Urgent",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "displayName": "Status",
+          "name": "status",
+          "type": "options",
+          "default": 2,
+          "options": [
+            {
+              "name": "Open",
+              "value": 2
+            },
+            {
+              "name": "Pending",
+              "value": 3
+            },
+            {
+              "name": "Resolved",
+              "value": 4
+            },
+            {
+              "name": "Closed",
+              "value": 5
+            }
+          ]
+        },
+        {
+          "displayName": "Subject",
+          "name": "subject",
+          "type": "string",
+          "default": ""
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.freshservice/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/freshservice/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Freshservice/freshservice.svg",
+  "name": "n8n-nodes-base.freshserviceTool"
+}

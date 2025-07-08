@@ -1,0 +1,63 @@
+{
+  "displayName": "PayPal Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Handle PayPal events via webhooks",
+  "defaults": {
+    "name": "PayPal Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "payPalApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Event Names or IDs",
+      "name": "events",
+      "type": "multiOptions",
+      "required": true,
+      "default": [],
+      "description": "The event to listen to. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "typeOptions": {
+        "loadOptionsMethod": "getEvents"
+      },
+      "options": []
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Finance & Accounting",
+      "Sales"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.paypaltrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/payPal/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/PayPal/paypal.svg",
+  "name": "n8n-nodes-base.payPalTrigger"
+}

@@ -1,0 +1,71 @@
+{
+  "displayName": "Execute Command Tool",
+  "icon": "fa:terminal",
+  "iconColor": "crimson",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "description": "Executes a command on the host",
+  "defaults": {
+    "name": "Execute Command",
+    "color": "#886644"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "properties": [
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Executes a command on the host",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often"
+    },
+    {
+      "displayName": "Execute Once",
+      "name": "executeOnce",
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to execute only once instead of once for each entry"
+    },
+    {
+      "displayName": "Command",
+      "name": "command",
+      "typeOptions": {
+        "rows": 5
+      },
+      "type": "string",
+      "default": "",
+      "placeholder": "echo \"test\"",
+      "description": "The command to execute",
+      "required": true
+    }
+  ],
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.executecommand/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.executeCommandTool"
+}

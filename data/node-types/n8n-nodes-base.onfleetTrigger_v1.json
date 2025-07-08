@@ -1,0 +1,151 @@
+{
+  "displayName": "Onfleet Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"triggerOn\"]}}",
+  "description": "Starts the workflow when Onfleet events occur",
+  "defaults": {
+    "name": "Onfleet Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "onfleetApi",
+      "required": true,
+      "testedBy": "onfleetApiTest"
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "setup",
+      "httpMethod": "GET",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    },
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Trigger On",
+      "name": "triggerOn",
+      "type": "options",
+      "options": [
+        {
+          "name": "SMS Recipient Opt Out",
+          "value": "SMSRecipientOptOut"
+        },
+        {
+          "name": "SMS Recipient Response Missed",
+          "value": "smsRecipientResponseMissed"
+        },
+        {
+          "name": "Task Arrival",
+          "value": "taskArrival"
+        },
+        {
+          "name": "Task Assigned",
+          "value": "taskAssigned"
+        },
+        {
+          "name": "Task Cloned",
+          "value": "taskCloned"
+        },
+        {
+          "name": "Task Completed",
+          "value": "taskCompleted"
+        },
+        {
+          "name": "Task Created",
+          "value": "taskCreated"
+        },
+        {
+          "name": "Task Delayed",
+          "value": "taskDelayed"
+        },
+        {
+          "name": "Task Deleted",
+          "value": "taskDeleted"
+        },
+        {
+          "name": "Task ETA",
+          "value": "taskEta"
+        },
+        {
+          "name": "Task Failed",
+          "value": "taskFailed"
+        },
+        {
+          "name": "Task Started",
+          "value": "taskStarted"
+        },
+        {
+          "name": "Task Unassigned",
+          "value": "taskUnassigned"
+        },
+        {
+          "name": "Task Updated",
+          "value": "taskUpdated"
+        },
+        {
+          "name": "Worker Created",
+          "value": "workerCreated"
+        },
+        {
+          "name": "Worker Deleted",
+          "value": "workerDeleted"
+        },
+        {
+          "name": "Worker Duty",
+          "value": "workerDuty"
+        }
+      ],
+      "required": true,
+      "default": []
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "A name for the webhook for identification"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Miscellaneous"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.onfleettrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/onfleet/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Onfleet/Onfleet.svg",
+  "name": "n8n-nodes-base.onfleetTrigger"
+}

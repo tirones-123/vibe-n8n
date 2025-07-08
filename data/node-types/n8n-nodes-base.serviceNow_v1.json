@@ -1,0 +1,3127 @@
+{
+  "displayName": "ServiceNow",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume ServiceNow API",
+  "defaults": {
+    "name": "ServiceNow"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "serviceNowOAuth2Api",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "oAuth2"
+          ]
+        }
+      }
+    },
+    {
+      "name": "serviceNowBasicApi",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "authentication": [
+            "basicAuth"
+          ]
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Authentication",
+      "name": "authentication",
+      "type": "options",
+      "options": [
+        {
+          "name": "Basic Auth",
+          "value": "basicAuth"
+        },
+        {
+          "name": "OAuth2",
+          "value": "oAuth2"
+        }
+      ],
+      "default": "oAuth2",
+      "description": "Authentication method to use"
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Attachment",
+          "value": "attachment"
+        },
+        {
+          "name": "Business Service",
+          "value": "businessService"
+        },
+        {
+          "name": "Configuration Item",
+          "value": "configurationItems"
+        },
+        {
+          "name": "Department",
+          "value": "department"
+        },
+        {
+          "name": "Dictionary",
+          "value": "dictionary"
+        },
+        {
+          "name": "Incident",
+          "value": "incident"
+        },
+        {
+          "name": "Table Record",
+          "value": "tableRecord"
+        },
+        {
+          "name": "User",
+          "value": "user"
+        },
+        {
+          "name": "User Group",
+          "value": "userGroup"
+        },
+        {
+          "name": "User Role",
+          "value": "userRole"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "user"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Upload",
+          "value": "upload",
+          "description": "Upload an attachment to a specific table record",
+          "action": "Upload an attachment"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "Delete an attachment",
+          "action": "Delete an attachment"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get an attachment",
+          "action": "Get an attachment"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many attachments on a table",
+          "action": "Get many attachments"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "upload"
+    },
+    {
+      "displayName": "Table Name or ID",
+      "name": "tableName",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getTables"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "upload",
+            "getAll"
+          ]
+        }
+      },
+      "required": true
+    },
+    {
+      "displayName": "Table Record ID",
+      "name": "id",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Sys_id of the record in the table specified in Table Name that you want to attach the file to"
+    },
+    {
+      "displayName": "Input Data Field Name",
+      "name": "inputDataFieldName",
+      "type": "string",
+      "default": "data",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      },
+      "description": "Name of the binary property that contains the data to upload"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "upload"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "File Name for the Attachment",
+          "name": "file_name",
+          "type": "string",
+          "default": "",
+          "description": "Name to give the attachment"
+        }
+      ]
+    },
+    {
+      "displayName": "Attachment ID",
+      "name": "attachmentId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Sys_id value of the attachment to delete"
+    },
+    {
+      "displayName": "Attachment ID",
+      "name": "attachmentId",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Sys_id value of the attachment to delete"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Download Attachments",
+      "name": "download",
+      "type": "boolean",
+      "default": false,
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "get",
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Output Field",
+      "name": "outputField",
+      "type": "string",
+      "default": "data",
+      "description": "Field name where downloaded data will be placed",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "get",
+            "getAll"
+          ],
+          "download": [
+            true
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attachment"
+          ],
+          "operation": [
+            "get",
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Filter",
+          "name": "queryFilter",
+          "type": "string",
+          "placeholder": "<col_name><operator><value>",
+          "default": "",
+          "description": "An encoded query string used to filter the results",
+          "hint": "All parameters are case-sensitive. Queries can contain more than one entry. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">more information</a>."
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "businessService"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many business services"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "businessService"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "businessService"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "businessService"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns"
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Filter",
+          "name": "sysparm_query",
+          "type": "string",
+          "default": "",
+          "description": "An encoded query string used to filter the results. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">More info</a>."
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "configurationItems"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many configuration items"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "configurationItems"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "configurationItems"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "configurationItems"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns"
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Filter",
+          "name": "sysparm_query",
+          "type": "string",
+          "default": "",
+          "description": "An encoded query string used to filter the results. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">More info</a>."
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many departments"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "department"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "department"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "department"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns"
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Filter",
+          "name": "sysparm_query",
+          "type": "string",
+          "default": "",
+          "description": "An encoded query string used to filter the results. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">More info</a>."
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "dictionary"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many dictionaries"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "dictionary"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "dictionary"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "dictionary"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns"
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Filter",
+          "name": "sysparm_query",
+          "type": "string",
+          "default": "",
+          "description": "An encoded query string used to filter the results. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">More info</a>."
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "incident"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create an incident"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete an incident"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get an incident"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many incidents"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "action": "Update an incident"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Short Description",
+      "name": "short_description",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "incident"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Short description of the incident"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "incident"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Assignee Name or ID",
+          "name": "assigned_to",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getUsers",
+            "loadOptionsDependsOn": [
+              "additionalFields.assignment_group"
+            ]
+          },
+          "default": "",
+          "description": "Which user is the incident assigned to. Requires the selection of an assignment group. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Assignment Group Name or ID",
+          "name": "assignment_group",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getAssignmentGroups"
+          },
+          "default": "",
+          "description": "The assignment group of the incident. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Business Service Name or ID",
+          "name": "business_service",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsMethod": "getBusinessServices"
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Caller ID",
+          "name": "caller_id",
+          "type": "string",
+          "default": "",
+          "description": "The unique identifier of the caller of the incident"
+        },
+        {
+          "displayName": "Category Name or ID",
+          "name": "category",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getIncidentCategories"
+          },
+          "default": "",
+          "description": "The category of the incident. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Close Notes",
+          "name": "close_notes",
+          "type": "string",
+          "default": "",
+          "description": "The close notes for the incident"
+        },
+        {
+          "displayName": "Configuration Item Names or IDs",
+          "name": "cmdb_ci",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getConfigurationItems"
+          },
+          "default": [],
+          "description": "Configuration Items, 'cmdb_ci' in metadata. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Contact Type",
+          "name": "contact_type",
+          "type": "options",
+          "options": [
+            {
+              "name": "Email",
+              "value": "email"
+            },
+            {
+              "name": "Phone",
+              "value": "phone"
+            },
+            {
+              "name": "Self Service",
+              "value": "self-service"
+            },
+            {
+              "name": "Walk In",
+              "value": "walk-in"
+            }
+          ],
+          "default": ""
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "The description of the incident"
+        },
+        {
+          "displayName": "Impact",
+          "name": "impact",
+          "type": "options",
+          "options": [
+            {
+              "name": "Low",
+              "value": 3
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 1
+            }
+          ],
+          "default": 1,
+          "description": "The impact of the incident"
+        },
+        {
+          "displayName": "Resolution Code Name or ID",
+          "name": "close_code",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getIncidentResolutionCodes"
+          },
+          "default": "",
+          "description": "The resolution code of the incident, 'close_code' in metadata. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "State Name or ID",
+          "name": "state",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getIncidentStates"
+          },
+          "default": "",
+          "description": "The state of the incident. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Subcategory Name or ID",
+          "name": "subcategory",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getIncidentSubcategories",
+            "loadOptionsDependsOn": [
+              "additionalFields.category"
+            ]
+          },
+          "default": "",
+          "description": "The subcategory of the incident. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Urgency",
+          "name": "urgency",
+          "type": "options",
+          "options": [
+            {
+              "name": "Low",
+              "value": 3
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 1
+            }
+          ],
+          "default": 1,
+          "description": "The urgency of the incident"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "incident"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "incident"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "incident"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns"
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Filter",
+          "name": "sysparm_query",
+          "type": "string",
+          "default": "",
+          "description": "An encoded query string used to filter the results. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">More info</a>."
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Incident ID",
+      "name": "id",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "incident"
+          ],
+          "operation": [
+            "delete",
+            "get"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of the incident"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "incident"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns"
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Incident ID",
+      "name": "id",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "incident"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of the incident"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "incident"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Assigned To Name or ID",
+          "name": "assigned_to",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getUsers",
+            "loadOptionsDependsOn": [
+              "additionalFields.assignment_group"
+            ]
+          },
+          "default": "",
+          "description": "Which user is the incident assigned to. Requires the selection of an assignment group. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Assignment Group Name or ID",
+          "name": "assignment_group",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getAssignmentGroups"
+          },
+          "default": "",
+          "description": "The assignment group of the incident. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Business Service Name or ID",
+          "name": "business_service",
+          "type": "options",
+          "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+          "typeOptions": {
+            "loadOptionsMethod": "getBusinessServices"
+          },
+          "default": ""
+        },
+        {
+          "displayName": "Caller ID",
+          "name": "caller_id",
+          "type": "string",
+          "default": "",
+          "description": "The unique identifier of the caller of the incident"
+        },
+        {
+          "displayName": "Category Name or ID",
+          "name": "category",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getIncidentCategories"
+          },
+          "default": "",
+          "description": "The category of the incident. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Close Notes",
+          "name": "close_notes",
+          "type": "string",
+          "default": "",
+          "description": "The close notes for the incident"
+        },
+        {
+          "displayName": "Configuration Item Names or IDs",
+          "name": "cmdb_ci",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getConfigurationItems"
+          },
+          "default": [],
+          "description": "Configuration Items, 'cmdb_ci' in metadata. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Contact Type",
+          "name": "contact_type",
+          "type": "options",
+          "options": [
+            {
+              "name": "Email",
+              "value": "email"
+            },
+            {
+              "name": "Phone",
+              "value": "phone"
+            },
+            {
+              "name": "Self Service",
+              "value": "self-service"
+            },
+            {
+              "name": "Walk In",
+              "value": "walk-in"
+            }
+          ],
+          "default": ""
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "The description of the incident"
+        },
+        {
+          "displayName": "Impact",
+          "name": "impact",
+          "type": "options",
+          "options": [
+            {
+              "name": "Low",
+              "value": 3
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 1
+            }
+          ],
+          "default": 1,
+          "description": "The impact of the incident"
+        },
+        {
+          "displayName": "Resolution Code Name or ID",
+          "name": "close_code",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getIncidentResolutionCodes"
+          },
+          "default": "",
+          "description": "The resolution code of the incident. 'close_code' in metadata. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "On Hold Reason Name or ID",
+          "name": "hold_reason",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getIncidentHoldReasons"
+          },
+          "default": "",
+          "description": "The on hold reason for the incident. It applies if the state is <code>On Hold</code>. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "State Name or ID",
+          "name": "state",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getIncidentStates"
+          },
+          "default": "",
+          "description": "The state of the incident. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Subcategory Name or ID",
+          "name": "subcategory",
+          "type": "options",
+          "typeOptions": {
+            "loadOptionsMethod": "getIncidentSubcategories",
+            "loadOptionsDependsOn": [
+              "additionalFields.category"
+            ]
+          },
+          "default": "",
+          "description": "The subcategory of the incident. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Urgency",
+          "name": "urgency",
+          "type": "options",
+          "options": [
+            {
+              "name": "Low",
+              "value": 3
+            },
+            {
+              "name": "Medium",
+              "value": 2
+            },
+            {
+              "name": "High",
+              "value": 1
+            }
+          ],
+          "default": 1,
+          "description": "The urgency of the incident"
+        },
+        {
+          "displayName": "Work Notes",
+          "name": "work_notes",
+          "type": "string",
+          "default": "",
+          "description": "Work notes for the incident"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a table record"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a table record"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a table record"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many table records"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "action": "Update a table record"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Table Name or ID",
+      "name": "tableName",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getTables"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "required": true
+    },
+    {
+      "displayName": "Data to Send",
+      "name": "dataToSend",
+      "type": "options",
+      "options": [
+        {
+          "name": "Auto-Map Input Data to Columns",
+          "value": "mapInput",
+          "description": "Use when node input names match destination field names"
+        },
+        {
+          "name": "Define Below for Each Column",
+          "value": "columns",
+          "description": "Set the value for each destination column"
+        },
+        {
+          "name": "Nothing",
+          "value": "nothing",
+          "description": "Don't send any column data"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": "columns"
+    },
+    {
+      "displayName": "Inputs to Ignore",
+      "name": "inputsToIgnore",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "create"
+          ],
+          "dataToSend": [
+            "mapInput"
+          ]
+        }
+      },
+      "default": "",
+      "description": "List of input properties to avoid sending, separated by commas. Leave empty to send all inputs."
+    },
+    {
+      "displayName": "Fields to Send",
+      "name": "fieldsToSend",
+      "type": "fixedCollection",
+      "placeholder": "Add field to send",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "create"
+          ],
+          "dataToSend": [
+            "columns"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Field",
+          "name": "field",
+          "values": [
+            {
+              "displayName": "Field Name or ID",
+              "name": "column",
+              "type": "options",
+              "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+              "typeOptions": {
+                "loadOptionsMethod": "getColumns",
+                "loadOptionsDependsOn": [
+                  "tableName"
+                ]
+              },
+              "default": ""
+            },
+            {
+              "displayName": "Field Value",
+              "name": "value",
+              "type": "string",
+              "default": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Table Name or ID",
+      "name": "tableName",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getTables"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "required": true
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "tableRecord"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "tableRecord"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns",
+            "loadOptionsDependsOn": [
+              "tableName"
+            ]
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Filter",
+          "name": "sysparm_query",
+          "type": "string",
+          "default": "",
+          "description": "An encoded query string used to filter the results. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">More info</a>."
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Table Name or ID",
+      "name": "tableName",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getTables"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "delete",
+            "get"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Name of the table in which the record exists. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+    },
+    {
+      "displayName": "Table Record ID",
+      "name": "id",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "delete",
+            "get"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of the record"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns",
+            "loadOptionsDependsOn": [
+              "tableName"
+            ]
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Table Name or ID",
+      "name": "tableName",
+      "type": "options",
+      "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+      "typeOptions": {
+        "loadOptionsMethod": "getTables"
+      },
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "required": true
+    },
+    {
+      "displayName": "Table Record ID",
+      "name": "id",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of the record"
+    },
+    {
+      "displayName": "Data to Send",
+      "name": "dataToSend",
+      "type": "options",
+      "options": [
+        {
+          "name": "Auto-Map Input Data to Columns",
+          "value": "mapInput",
+          "description": "Use when node input names match destination field names"
+        },
+        {
+          "name": "Define Below for Each Column",
+          "value": "columns",
+          "description": "Set the value for each destination column"
+        },
+        {
+          "name": "Nothing",
+          "value": "nothing",
+          "description": "Don't send any column data"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": "columns"
+    },
+    {
+      "displayName": "Inputs to Ignore",
+      "name": "inputsToIgnore",
+      "type": "string",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "update"
+          ],
+          "dataToSend": [
+            "mapInput"
+          ]
+        }
+      },
+      "default": "",
+      "description": "List of input properties to avoid sending, separated by commas. Leave empty to send all inputs."
+    },
+    {
+      "displayName": "Fields to Send",
+      "name": "fieldsToSend",
+      "type": "fixedCollection",
+      "placeholder": "Add field to send",
+      "typeOptions": {
+        "multipleValues": true
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tableRecord"
+          ],
+          "operation": [
+            "update"
+          ],
+          "dataToSend": [
+            "columns"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Field",
+          "name": "field",
+          "values": [
+            {
+              "displayName": "Field Name or ID",
+              "name": "column",
+              "type": "options",
+              "description": "Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>",
+              "typeOptions": {
+                "loadOptionsMethod": "getColumns",
+                "loadOptionsDependsOn": [
+                  "tableName"
+                ]
+              },
+              "default": ""
+            },
+            {
+              "displayName": "Field Value",
+              "name": "value",
+              "type": "string",
+              "default": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a user"
+        },
+        {
+          "name": "Delete",
+          "value": "delete",
+          "action": "Delete a user"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a user"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many users"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "action": "Update a user"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "get"
+    },
+    {
+      "displayName": "Short Description",
+      "name": "short_description",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Short description of the user"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Active",
+          "name": "active",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to activate the user"
+        },
+        {
+          "displayName": "Building",
+          "name": "building",
+          "type": "string",
+          "default": "",
+          "description": "The Building address"
+        },
+        {
+          "displayName": "City",
+          "name": "city",
+          "type": "string",
+          "default": "",
+          "description": "City of the user"
+        },
+        {
+          "displayName": "Company",
+          "name": "company",
+          "type": "string",
+          "default": "",
+          "description": "The name of the company for the user"
+        },
+        {
+          "displayName": "Country",
+          "name": "country",
+          "type": "string",
+          "default": "",
+          "description": "Country of the user"
+        },
+        {
+          "displayName": "Department",
+          "name": "department",
+          "type": "string",
+          "default": "",
+          "description": "Department of the user"
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "The email address associated with the user"
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": "",
+          "description": "The first name of the user"
+        },
+        {
+          "displayName": "Gender",
+          "name": "gender",
+          "type": "string",
+          "default": "",
+          "description": "The gender of the user"
+        },
+        {
+          "displayName": "Home Phone",
+          "name": "home_phone",
+          "type": "string",
+          "default": "",
+          "description": "Home phone of the user"
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": "",
+          "description": "The last name of the user"
+        },
+        {
+          "displayName": "Location",
+          "name": "location",
+          "type": "string",
+          "default": "",
+          "description": "Location of the user"
+        },
+        {
+          "displayName": "Manager",
+          "name": "manager",
+          "type": "string",
+          "default": "",
+          "description": "Manager of the user"
+        },
+        {
+          "displayName": "Middle Name",
+          "name": "middle_name",
+          "type": "string",
+          "default": "",
+          "description": "The middle name of the user"
+        },
+        {
+          "displayName": "Mobile Phone",
+          "name": "mobile_phone",
+          "type": "string",
+          "default": "",
+          "description": "Mobile phone number of the user"
+        },
+        {
+          "displayName": "Password",
+          "name": "user_password",
+          "type": "string",
+          "typeOptions": {
+            "password": true
+          },
+          "default": "",
+          "description": "The user's password"
+        },
+        {
+          "displayName": "Password Needs Reset",
+          "name": "password_needs_reset",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to require a password reset when the user logs in"
+        },
+        {
+          "displayName": "Phone",
+          "name": "phone",
+          "type": "string",
+          "default": "",
+          "description": "The main phone number of the user"
+        },
+        {
+          "displayName": "Role Names or IDs",
+          "name": "roles",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getUserRoles"
+          },
+          "default": [],
+          "description": "Roles of the user. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Source",
+          "name": "source",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "State",
+          "name": "state",
+          "type": "string",
+          "default": "",
+          "description": "State for the user"
+        },
+        {
+          "displayName": "Street",
+          "name": "street",
+          "type": "string",
+          "default": "",
+          "description": "Street information for the user separated by comma"
+        },
+        {
+          "displayName": "Username",
+          "name": "user_name",
+          "type": "string",
+          "default": "",
+          "description": "A username associated with the user (e.g. user_name.123)"
+        },
+        {
+          "displayName": "Zip Code",
+          "name": "zip",
+          "type": "string",
+          "default": "",
+          "description": "Zip code for the user"
+        }
+      ]
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "user"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "user"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns",
+            "loadOptionsDependsOn": [
+              "operation"
+            ]
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Filter",
+          "name": "sysparm_query",
+          "type": "string",
+          "default": "",
+          "description": "An encoded query string used to filter the results. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">More info</a>."
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Retrieve Identifier",
+      "name": "getOption",
+      "type": "options",
+      "default": "id",
+      "options": [
+        {
+          "name": "ID",
+          "value": "id"
+        },
+        {
+          "name": "Username",
+          "value": "user_name"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of the user"
+    },
+    {
+      "displayName": "Username",
+      "name": "user_name",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "get"
+          ],
+          "getOption": [
+            "user_name"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of the user"
+    },
+    {
+      "displayName": "User ID",
+      "name": "id",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "get"
+          ],
+          "getOption": [
+            "id"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of the user"
+    },
+    {
+      "displayName": "User ID",
+      "name": "id",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "delete"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of the user"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns",
+            "loadOptionsDependsOn": [
+              "operation"
+            ]
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "User ID",
+      "name": "id",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "required": true,
+      "description": "Unique identifier of the user"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "user"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Active",
+          "name": "active",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to activate the user"
+        },
+        {
+          "displayName": "Building",
+          "name": "building",
+          "type": "string",
+          "default": "",
+          "description": "The Building address"
+        },
+        {
+          "displayName": "City",
+          "name": "city",
+          "type": "string",
+          "default": "",
+          "description": "City of the user"
+        },
+        {
+          "displayName": "Company",
+          "name": "company",
+          "type": "string",
+          "default": "",
+          "description": "The name of the company for the user"
+        },
+        {
+          "displayName": "Country",
+          "name": "country",
+          "type": "string",
+          "default": "",
+          "description": "Country of the user"
+        },
+        {
+          "displayName": "Department",
+          "name": "department",
+          "type": "string",
+          "default": "",
+          "description": "Department of the user"
+        },
+        {
+          "displayName": "Email",
+          "name": "email",
+          "type": "string",
+          "placeholder": "name@email.com",
+          "default": "",
+          "description": "The email address associated with the user"
+        },
+        {
+          "displayName": "First Name",
+          "name": "first_name",
+          "type": "string",
+          "default": "",
+          "description": "The first name of the user"
+        },
+        {
+          "displayName": "Gender",
+          "name": "gender",
+          "type": "string",
+          "default": "",
+          "description": "The gender of the user"
+        },
+        {
+          "displayName": "Home Phone",
+          "name": "home_phone",
+          "type": "string",
+          "default": "",
+          "description": "Home phone of the user"
+        },
+        {
+          "displayName": "Last Name",
+          "name": "last_name",
+          "type": "string",
+          "default": "",
+          "description": "The last name of the user"
+        },
+        {
+          "displayName": "Location",
+          "name": "location",
+          "type": "string",
+          "default": "",
+          "description": "Location of the user"
+        },
+        {
+          "displayName": "Manager",
+          "name": "manager",
+          "type": "string",
+          "default": "",
+          "description": "Manager of the user"
+        },
+        {
+          "displayName": "Middle Name",
+          "name": "middle_name",
+          "type": "string",
+          "default": "",
+          "description": "The middle name of the user"
+        },
+        {
+          "displayName": "Mobile Phone",
+          "name": "mobile_phone",
+          "type": "string",
+          "default": "",
+          "description": "Mobile phone number of the user"
+        },
+        {
+          "displayName": "Password",
+          "name": "user_password",
+          "type": "string",
+          "typeOptions": {
+            "password": true
+          },
+          "default": "",
+          "description": "The user's password"
+        },
+        {
+          "displayName": "Password Needs Reset",
+          "name": "password_needs_reset",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to require a password reset when the user logs in"
+        },
+        {
+          "displayName": "Phone",
+          "name": "phone",
+          "type": "string",
+          "default": "",
+          "description": "The main phone number of the user"
+        },
+        {
+          "displayName": "Role Names or IDs",
+          "name": "roles",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getUserRoles"
+          },
+          "default": [],
+          "description": "Roles of the user. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>."
+        },
+        {
+          "displayName": "Source",
+          "name": "source",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "State",
+          "name": "state",
+          "type": "string",
+          "default": "",
+          "description": "State for the user"
+        },
+        {
+          "displayName": "Street",
+          "name": "street",
+          "type": "string",
+          "default": "",
+          "description": "Street information for the user separated by comma"
+        },
+        {
+          "displayName": "Username",
+          "name": "user_name",
+          "type": "string",
+          "default": "",
+          "description": "A username associated with the user (e.g. user_name.123)"
+        },
+        {
+          "displayName": "Zip Code",
+          "name": "zip",
+          "type": "string",
+          "default": "",
+          "description": "Zip code for the user"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many user groups"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "userGroup"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "userGroup"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userGroup"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns"
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Filter",
+          "name": "sysparm_query",
+          "type": "string",
+          "default": "",
+          "description": "An encoded query string used to filter the results. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">More info</a>."
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userRole"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many user roles"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "getAll"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "userRole"
+          ]
+        }
+      },
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit"
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "operation": [
+            "getAll"
+          ],
+          "resource": [
+            "userRole"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 500
+      },
+      "default": 50,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "userRole"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Exclude Reference Link",
+          "name": "sysparm_exclude_reference_link",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to exclude Table API links for reference fields"
+        },
+        {
+          "displayName": "Field Names or IDs",
+          "name": "sysparm_fields",
+          "type": "multiOptions",
+          "typeOptions": {
+            "loadOptionsMethod": "getColumns"
+          },
+          "default": [],
+          "description": "A list of fields to return. Choose from the list, or specify IDs using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+          "hint": "String of comma separated values or an array of strings can be set in an expression"
+        },
+        {
+          "displayName": "Filter",
+          "name": "sysparm_query",
+          "type": "string",
+          "default": "",
+          "description": "An encoded query string used to filter the results. <a href=\"https://developer.servicenow.com/dev.do#!/learn/learning-plans/quebec/servicenow_application_developer/app_store_learnv2_rest_quebec_more_about_query_parameters\">More info</a>."
+        },
+        {
+          "displayName": "Return Values",
+          "name": "sysparm_display_value",
+          "type": "options",
+          "options": [
+            {
+              "name": "Actual Values",
+              "value": "false"
+            },
+            {
+              "name": "Both",
+              "value": "all"
+            },
+            {
+              "name": "Display Values",
+              "value": "true"
+            }
+          ],
+          "default": "false",
+          "description": "Choose which values to return"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Productivity",
+      "Communication"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.servicenow/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/serviceNow/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/ServiceNow/servicenow.svg",
+  "name": "n8n-nodes-base.serviceNow"
+}

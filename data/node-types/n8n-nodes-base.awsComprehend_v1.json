@@ -1,0 +1,219 @@
+{
+  "displayName": "AWS Comprehend",
+  "group": [
+    "output"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Sends data to Amazon Comprehend",
+  "defaults": {
+    "name": "AWS Comprehend"
+  },
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "aws",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Text",
+          "value": "text"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "text",
+      "description": "The resource to perform"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Detect Dominant Language",
+          "value": "detectDominantLanguage",
+          "description": "Identify the dominant language",
+          "action": "Identify the dominant language"
+        },
+        {
+          "name": "Detect Entities",
+          "value": "detectEntities",
+          "description": "Inspects text for named entities, and returns information about them",
+          "action": "Inspect text for named entities, and returns information about them"
+        },
+        {
+          "name": "Detect Sentiment",
+          "value": "detectSentiment",
+          "description": "Analyse the sentiment of the text",
+          "action": "Analyze the sentiment of the text"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "detectDominantLanguage"
+    },
+    {
+      "displayName": "Language Code",
+      "name": "languageCode",
+      "type": "options",
+      "options": [
+        {
+          "name": "Arabic",
+          "value": "ar"
+        },
+        {
+          "name": "Chinese",
+          "value": "zh"
+        },
+        {
+          "name": "Chinese (T)",
+          "value": "zh-TW"
+        },
+        {
+          "name": "English",
+          "value": "en"
+        },
+        {
+          "name": "French",
+          "value": "fr"
+        },
+        {
+          "name": "German",
+          "value": "de"
+        },
+        {
+          "name": "Hindi",
+          "value": "hi"
+        },
+        {
+          "name": "Italian",
+          "value": "it"
+        },
+        {
+          "name": "Japanese",
+          "value": "ja"
+        },
+        {
+          "name": "Korean",
+          "value": "ko"
+        },
+        {
+          "name": "Portuguese",
+          "value": "pt"
+        },
+        {
+          "name": "Spanish",
+          "value": "es"
+        }
+      ],
+      "default": "en",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "text"
+          ],
+          "operation": [
+            "detectSentiment",
+            "detectEntities"
+          ]
+        }
+      },
+      "description": "The language code for text"
+    },
+    {
+      "displayName": "Text",
+      "name": "text",
+      "type": "string",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "text"
+          ]
+        }
+      },
+      "description": "The text to send"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "text"
+          ],
+          "operation": [
+            "detectDominantLanguage"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "text"
+          ],
+          "operation": [
+            "detectEntities"
+          ]
+        }
+      },
+      "default": {},
+      "options": [
+        {
+          "displayName": "Endpoint Arn",
+          "name": "endpointArn",
+          "type": "string",
+          "default": "",
+          "description": "The Amazon Resource Name of an endpoint that is associated with a custom entity recognition model"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Development"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.awscomprehend/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/aws/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Aws/Comprehend/comprehend.svg",
+  "name": "n8n-nodes-base.awsComprehend"
+}

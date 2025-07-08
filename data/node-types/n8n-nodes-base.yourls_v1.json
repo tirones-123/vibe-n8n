@@ -1,0 +1,179 @@
+{
+  "displayName": "Yourls",
+  "group": [
+    "input"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "description": "Consume Yourls API",
+  "defaults": {
+    "name": "Yourls"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "yourlsApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "URL",
+          "value": "url"
+        }
+      ],
+      "default": "url"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "url"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Expand",
+          "value": "expand",
+          "description": "Expand a URL",
+          "action": "Expand a URL"
+        },
+        {
+          "name": "Shorten",
+          "value": "shorten",
+          "description": "Shorten a URL",
+          "action": "Shorten a URL"
+        },
+        {
+          "name": "Stats",
+          "value": "stats",
+          "description": "Get stats about one short URL",
+          "action": "Get stats for a URL"
+        }
+      ],
+      "default": "shorten"
+    },
+    {
+      "displayName": "URL",
+      "name": "url",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "url"
+          ],
+          "operation": [
+            "shorten"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The URL to shorten"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "url"
+          ],
+          "operation": [
+            "shorten"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Keyword",
+          "name": "keyword",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Title",
+          "name": "title",
+          "type": "string",
+          "default": "",
+          "description": "Title for custom short URLs"
+        }
+      ]
+    },
+    {
+      "displayName": "Short URL",
+      "name": "shortUrl",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "url"
+          ],
+          "operation": [
+            "expand"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The short URL to expand"
+    },
+    {
+      "displayName": "Short URL",
+      "name": "shortUrl",
+      "type": "string",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "url"
+          ],
+          "operation": [
+            "stats"
+          ]
+        }
+      },
+      "default": "",
+      "description": "The short URL for which to get stats"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Utility"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.yourls/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/yourls/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Yourls/yourls.png",
+  "name": "n8n-nodes-base.yourls"
+}

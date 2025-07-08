@@ -1,0 +1,377 @@
+{
+  "displayName": "Notion Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Starts the workflow when Notion events occur",
+  "subtitle": "={{$parameter[\"event\"]}}",
+  "defaults": {
+    "name": "Notion Trigger"
+  },
+  "credentials": [
+    {
+      "name": "notionApi",
+      "required": true
+    }
+  ],
+  "polling": true,
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "properties": [
+    {
+      "displayName": "Poll Times",
+      "name": "pollTimes",
+      "type": "fixedCollection",
+      "typeOptions": {
+        "multipleValues": true,
+        "multipleValueButtonText": "Add Poll Time"
+      },
+      "default": {
+        "item": [
+          {
+            "mode": "everyMinute"
+          }
+        ]
+      },
+      "description": "Time at which polling should occur",
+      "placeholder": "Add Poll Time",
+      "options": [
+        {
+          "name": "item",
+          "displayName": "Item",
+          "values": [
+            {
+              "displayName": "Mode",
+              "name": "mode",
+              "type": "options",
+              "options": [
+                {
+                  "name": "Every Minute",
+                  "value": "everyMinute"
+                },
+                {
+                  "name": "Every Hour",
+                  "value": "everyHour"
+                },
+                {
+                  "name": "Every Day",
+                  "value": "everyDay"
+                },
+                {
+                  "name": "Every Week",
+                  "value": "everyWeek"
+                },
+                {
+                  "name": "Every Month",
+                  "value": "everyMonth"
+                },
+                {
+                  "name": "Every X",
+                  "value": "everyX"
+                },
+                {
+                  "name": "Custom",
+                  "value": "custom"
+                }
+              ],
+              "default": "everyDay",
+              "description": "How often to trigger."
+            },
+            {
+              "displayName": "Hour",
+              "name": "hour",
+              "type": "number",
+              "typeOptions": {
+                "minValue": 0,
+                "maxValue": 23
+              },
+              "displayOptions": {
+                "hide": {
+                  "mode": [
+                    "custom",
+                    "everyHour",
+                    "everyMinute",
+                    "everyX"
+                  ]
+                }
+              },
+              "default": 14,
+              "description": "The hour of the day to trigger (24h format)"
+            },
+            {
+              "displayName": "Minute",
+              "name": "minute",
+              "type": "number",
+              "typeOptions": {
+                "minValue": 0,
+                "maxValue": 59
+              },
+              "displayOptions": {
+                "hide": {
+                  "mode": [
+                    "custom",
+                    "everyMinute",
+                    "everyX"
+                  ]
+                }
+              },
+              "default": 0,
+              "description": "The minute of the day to trigger"
+            },
+            {
+              "displayName": "Day of Month",
+              "name": "dayOfMonth",
+              "type": "number",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyMonth"
+                  ]
+                }
+              },
+              "typeOptions": {
+                "minValue": 1,
+                "maxValue": 31
+              },
+              "default": 1,
+              "description": "The day of the month to trigger"
+            },
+            {
+              "displayName": "Weekday",
+              "name": "weekday",
+              "type": "options",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyWeek"
+                  ]
+                }
+              },
+              "options": [
+                {
+                  "name": "Monday",
+                  "value": "1"
+                },
+                {
+                  "name": "Tuesday",
+                  "value": "2"
+                },
+                {
+                  "name": "Wednesday",
+                  "value": "3"
+                },
+                {
+                  "name": "Thursday",
+                  "value": "4"
+                },
+                {
+                  "name": "Friday",
+                  "value": "5"
+                },
+                {
+                  "name": "Saturday",
+                  "value": "6"
+                },
+                {
+                  "name": "Sunday",
+                  "value": "0"
+                }
+              ],
+              "default": "1",
+              "description": "The weekday to trigger"
+            },
+            {
+              "displayName": "Cron Expression",
+              "name": "cronExpression",
+              "type": "string",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "custom"
+                  ]
+                }
+              },
+              "default": "* * * * * *",
+              "description": "Use custom cron expression. Values and ranges as follows:<ul><li>Seconds: 0-59</li><li>Minutes: 0 - 59</li><li>Hours: 0 - 23</li><li>Day of Month: 1 - 31</li><li>Months: 0 - 11 (Jan - Dec)</li><li>Day of Week: 0 - 6 (Sun - Sat)</li></ul>"
+            },
+            {
+              "displayName": "Value",
+              "name": "value",
+              "type": "number",
+              "typeOptions": {
+                "minValue": 0,
+                "maxValue": 1000
+              },
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyX"
+                  ]
+                }
+              },
+              "default": 2,
+              "description": "All how many X minutes/hours it should trigger"
+            },
+            {
+              "displayName": "Unit",
+              "name": "unit",
+              "type": "options",
+              "displayOptions": {
+                "show": {
+                  "mode": [
+                    "everyX"
+                  ]
+                }
+              },
+              "options": [
+                {
+                  "name": "Minutes",
+                  "value": "minutes"
+                },
+                {
+                  "name": "Hours",
+                  "value": "hours"
+                }
+              ],
+              "default": "hours",
+              "description": "If it should trigger all X minutes or hours"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "options": [
+        {
+          "name": "Page Added to Database",
+          "value": "pageAddedToDatabase"
+        },
+        {
+          "name": "Page Updated in Database",
+          "value": "pagedUpdatedInDatabase"
+        }
+      ],
+      "required": true,
+      "default": "pageAddedToDatabase"
+    },
+    {
+      "displayName": "In Notion, make sure to <a href=\"https://www.notion.so/help/add-and-manage-connections-with-the-api\" target=\"_blank\">add your connection</a> to the pages you want to access.",
+      "name": "notionNotice",
+      "type": "notice",
+      "default": ""
+    },
+    {
+      "displayName": "Database",
+      "name": "databaseId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "modes": [
+        {
+          "displayName": "Database",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Database...",
+          "typeOptions": {
+            "searchListMethod": "getDatabases",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "Link",
+          "name": "url",
+          "type": "string",
+          "placeholder": "https://www.notion.so/0fe2f7de558b471eab07e9d871cdf4a9?v=f2d424ba0c404733a3f500c78c881610",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "(?:https|http)://www\\.notion\\.so/(?:[a-z0-9-]{2,}/)?([0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}).*",
+                "errorMessage": "Not a valid Notion Database URL"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "(?:https|http)://www\\.notion\\.so/(?:[a-z0-9-]{2,}/)?([0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12})"
+          }
+        },
+        {
+          "displayName": "ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "ab1545b247fb49fa92d6f4b49f4d8116",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}).*",
+                "errorMessage": "Not a valid Notion Database ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12})"
+          },
+          "url": "=https://www.notion.so/{{$value.replace(/-/g, \"\")}}"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "event": [
+            "pageAddedToDatabase",
+            "pagedUpdatedInDatabase"
+          ]
+        }
+      },
+      "description": "The Notion Database to operate on"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "event": [
+            "pageAddedToDatabase",
+            "pagedUpdatedInDatabase"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Productivity"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.notiontrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/notion/"
+        }
+      ]
+    }
+  },
+  "iconUrl": {
+    "light": "icons/n8n-nodes-base/dist/nodes/Notion/notion.svg",
+    "dark": "icons/n8n-nodes-base/dist/nodes/Notion/notion.dark.svg"
+  },
+  "name": "n8n-nodes-base.notionTrigger"
+}

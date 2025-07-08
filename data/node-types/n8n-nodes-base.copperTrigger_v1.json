@@ -1,0 +1,114 @@
+{
+  "displayName": "Copper Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Handle Copper events via webhooks",
+  "defaults": {
+    "name": "Copper Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "copperApi",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "path": "webhook"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "required": true,
+      "default": "",
+      "options": [
+        {
+          "name": "Company",
+          "value": "company"
+        },
+        {
+          "name": "Lead",
+          "value": "lead"
+        },
+        {
+          "name": "Opportunity",
+          "value": "opportunity"
+        },
+        {
+          "name": "Person",
+          "value": "person"
+        },
+        {
+          "name": "Project",
+          "value": "project"
+        },
+        {
+          "name": "Task",
+          "value": "task"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "description": "The resource which will fire the event"
+    },
+    {
+      "displayName": "Event",
+      "name": "event",
+      "type": "options",
+      "required": true,
+      "default": "",
+      "options": [
+        {
+          "name": "Delete",
+          "value": "delete",
+          "description": "An existing record is removed"
+        },
+        {
+          "name": "New",
+          "value": "new",
+          "description": "A new record is created"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Any field in the existing entity record is changed"
+        }
+      ],
+      "description": "The event to listen to"
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Sales"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.coppertrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/copper/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Copper/copper.svg",
+  "name": "n8n-nodes-base.copperTrigger"
+}

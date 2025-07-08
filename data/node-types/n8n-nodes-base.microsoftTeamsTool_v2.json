@@ -1,0 +1,3031 @@
+{
+  "displayName": "Microsoft Teams Tool",
+  "group": [
+    "input"
+  ],
+  "description": "Consume Microsoft Teams API",
+  "defaultVersion": 2,
+  "version": 2,
+  "subtitle": "={{$parameter[\"operation\"] + \": \" + $parameter[\"resource\"]}}",
+  "defaults": {
+    "name": "Microsoft Teams"
+  },
+  "inputs": [],
+  "outputs": [
+    "ai_tool"
+  ],
+  "credentials": [
+    {
+      "name": "microsoftTeamsOAuth2Api",
+      "required": true
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "default",
+      "httpMethod": "GET",
+      "responseMode": "onReceived",
+      "responseData": "",
+      "path": "={{ $nodeId }}",
+      "restartWebhook": true,
+      "isFullPath": true
+    },
+    {
+      "name": "default",
+      "httpMethod": "POST",
+      "responseMode": "onReceived",
+      "responseData": "",
+      "path": "={{ $nodeId }}",
+      "restartWebhook": true,
+      "isFullPath": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Tool Description",
+      "name": "descriptionType",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Set Automatically",
+          "value": "auto",
+          "description": "Automatically set based on resource and operation"
+        },
+        {
+          "name": "Set Manually",
+          "value": "manual",
+          "description": "Manually set the description"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "displayName": "Description",
+      "name": "toolDescription",
+      "type": "string",
+      "default": "Consume Microsoft Teams API",
+      "required": true,
+      "typeOptions": {
+        "rows": 2
+      },
+      "description": "Explain to the LLM what this tool does, a good, specific description would allow LLMs to produce expected results much more often",
+      "displayOptions": {
+        "show": {
+          "descriptionType": [
+            "manual"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Channel",
+          "value": "channel"
+        },
+        {
+          "name": "Channel Message",
+          "value": "channelMessage"
+        },
+        {
+          "name": "Chat Message",
+          "value": "chatMessage"
+        },
+        {
+          "name": "Task",
+          "value": "task"
+        }
+      ],
+      "default": "channel"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a channel",
+          "action": "Create channel"
+        },
+        {
+          "name": "Delete",
+          "value": "deleteChannel",
+          "description": "Delete a channel",
+          "action": "Delete channel"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a channel",
+          "action": "Get channel"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many channels",
+          "action": "Get many channels"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a channel",
+          "action": "Update channel"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Team",
+      "name": "teamId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the team from the list, by URL, or by ID (the ID is the \"groupId\" parameter in the URL you get from \"Get a link to the team\")",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "e.g. My Team",
+          "typeOptions": {
+            "searchListMethod": "getTeams",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "From URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "e.g. https://teams.microsoft.com/l/team/19%3AP8l9gXd6oqlgq…",
+          "extractValue": {
+            "type": "regex",
+            "regex": "groupId=([a-f0-9-]+)\\&"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/teams.microsoft.com\\/.*groupId=[a-f0-9-]+\\&.*",
+                "errorMessage": "Not a valid Microsoft Teams URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "e.g. 61165b04-e4cc-4026-b43f-926b4e2a7182",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                "errorMessage": "Not a valid Microsoft Teams Team ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "New Channel Name",
+      "name": "name",
+      "required": true,
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. My New Channel",
+      "description": "The name of the new channel you want to create",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "default": {},
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "The description of the channel",
+          "typeOptions": {
+            "rows": 2
+          }
+        },
+        {
+          "displayName": "Type",
+          "name": "type",
+          "type": "options",
+          "options": [
+            {
+              "name": "Private",
+              "value": "private"
+            },
+            {
+              "name": "Standard",
+              "value": "standard"
+            }
+          ],
+          "default": "standard",
+          "description": "Standard: Accessible to everyone on the team. Private: Accessible only to a specific group of people within the team."
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Team",
+      "name": "teamId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the team from the list, by URL, or by ID (the ID is the \"groupId\" parameter in the URL you get from \"Get a link to the team\")",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "e.g. My Team",
+          "typeOptions": {
+            "searchListMethod": "getTeams",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "From URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "e.g. https://teams.microsoft.com/l/team/19%3AP8l9gXd6oqlgq…",
+          "extractValue": {
+            "type": "regex",
+            "regex": "groupId=([a-f0-9-]+)\\&"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/teams.microsoft.com\\/.*groupId=[a-f0-9-]+\\&.*",
+                "errorMessage": "Not a valid Microsoft Teams URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "e.g. 61165b04-e4cc-4026-b43f-926b4e2a7182",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                "errorMessage": "Not a valid Microsoft Teams Team ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "deleteChannel"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the channel from the list, by URL, or by ID (the ID is the \"threadId\" in the URL)",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "teamId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "19:-xlxyqXNSCxpI1SDzgQ_L9ZvzSR26pgphq1BJ9y7QJE1@thread.tacv2"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "deleteChannel"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Team",
+      "name": "teamId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the team from the list, by URL, or by ID (the ID is the \"groupId\" parameter in the URL you get from \"Get a link to the team\")",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "e.g. My Team",
+          "typeOptions": {
+            "searchListMethod": "getTeams",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "From URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "e.g. https://teams.microsoft.com/l/team/19%3AP8l9gXd6oqlgq…",
+          "extractValue": {
+            "type": "regex",
+            "regex": "groupId=([a-f0-9-]+)\\&"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/teams.microsoft.com\\/.*groupId=[a-f0-9-]+\\&.*",
+                "errorMessage": "Not a valid Microsoft Teams URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "e.g. 61165b04-e4cc-4026-b43f-926b4e2a7182",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                "errorMessage": "Not a valid Microsoft Teams Team ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the channel from the list, by URL, or by ID (the ID is the \"threadId\" in the URL)",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "teamId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "19:-xlxyqXNSCxpI1SDzgQ_L9ZvzSR26pgphq1BJ9y7QJE1@thread.tacv2"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Team",
+      "name": "teamId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the team from the list, by URL, or by ID (the ID is the \"groupId\" parameter in the URL you get from \"Get a link to the team\")",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "e.g. My Team",
+          "typeOptions": {
+            "searchListMethod": "getTeams",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "From URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "e.g. https://teams.microsoft.com/l/team/19%3AP8l9gXd6oqlgq…",
+          "extractValue": {
+            "type": "regex",
+            "regex": "groupId=([a-f0-9-]+)\\&"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/teams.microsoft.com\\/.*groupId=[a-f0-9-]+\\&.*",
+                "errorMessage": "Not a valid Microsoft Teams URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "e.g. 61165b04-e4cc-4026-b43f-926b4e2a7182",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                "errorMessage": "Not a valid Microsoft Teams Team ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "returnAll": [
+            false
+          ],
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Team",
+      "name": "teamId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the team from the list, by URL, or by ID (the ID is the \"groupId\" parameter in the URL you get from \"Get a link to the team\")",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "e.g. My Team",
+          "typeOptions": {
+            "searchListMethod": "getTeams",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "From URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "e.g. https://teams.microsoft.com/l/team/19%3AP8l9gXd6oqlgq…",
+          "extractValue": {
+            "type": "regex",
+            "regex": "groupId=([a-f0-9-]+)\\&"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/teams.microsoft.com\\/.*groupId=[a-f0-9-]+\\&.*",
+                "errorMessage": "Not a valid Microsoft Teams URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "e.g. 61165b04-e4cc-4026-b43f-926b4e2a7182",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                "errorMessage": "Not a valid Microsoft Teams Team ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the channel from the list, by URL, or by ID (the ID is the \"threadId\" in the URL)",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "teamId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "19:-xlxyqXNSCxpI1SDzgQ_L9ZvzSR26pgphq1BJ9y7QJE1@thread.tacv2"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. My New Channel name",
+      "description": "The name of the channel",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "default": {},
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "The description of the channel",
+          "typeOptions": {
+            "rows": 2
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channel"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channelMessage"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a message in a channel",
+          "action": "Create message"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many messages from a channel",
+          "action": "Get many messages"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Team",
+      "name": "teamId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the team from the list, by URL, or by ID (the ID is the \"groupId\" parameter in the URL you get from \"Get a link to the team\")",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "e.g. My Team",
+          "typeOptions": {
+            "searchListMethod": "getTeams",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "From URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "e.g. https://teams.microsoft.com/l/team/19%3AP8l9gXd6oqlgq…",
+          "extractValue": {
+            "type": "regex",
+            "regex": "groupId=([a-f0-9-]+)\\&"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/teams.microsoft.com\\/.*groupId=[a-f0-9-]+\\&.*",
+                "errorMessage": "Not a valid Microsoft Teams URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "e.g. 61165b04-e4cc-4026-b43f-926b4e2a7182",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                "errorMessage": "Not a valid Microsoft Teams Team ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channelMessage"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the channel from the list, by URL, or by ID (the ID is the \"threadId\" in the URL)",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "teamId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "19:-xlxyqXNSCxpI1SDzgQ_L9ZvzSR26pgphq1BJ9y7QJE1@thread.tacv2"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channelMessage"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Content Type",
+      "name": "contentType",
+      "required": true,
+      "type": "options",
+      "options": [
+        {
+          "name": "Text",
+          "value": "text"
+        },
+        {
+          "name": "HTML",
+          "value": "html"
+        }
+      ],
+      "default": "text",
+      "description": "Whether the message is plain text or HTML",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channelMessage"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message",
+      "name": "message",
+      "required": true,
+      "type": "string",
+      "default": "",
+      "description": "The content of the message to be sent",
+      "typeOptions": {
+        "rows": 2
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channelMessage"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Include Link to Workflow",
+          "name": "includeLinkToWorkflow",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to append a link to this workflow at the end of the message. This is helpful if you have many workflows sending messages."
+        },
+        {
+          "displayName": "Reply to ID",
+          "name": "makeReply",
+          "type": "string",
+          "default": "",
+          "placeholder": "e.g. 1673348720590",
+          "description": "An optional ID of the message you want to reply to. The message ID is the number before \"?tenantId\" in the message URL."
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channelMessage"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Team",
+      "name": "teamId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the team from the list, by URL, or by ID (the ID is the \"groupId\" parameter in the URL you get from \"Get a link to the team\")",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "e.g. My Team",
+          "typeOptions": {
+            "searchListMethod": "getTeams",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "From URL",
+          "name": "url",
+          "type": "string",
+          "placeholder": "e.g. https://teams.microsoft.com/l/team/19%3AP8l9gXd6oqlgq…",
+          "extractValue": {
+            "type": "regex",
+            "regex": "groupId=([a-f0-9-]+)\\&"
+          },
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "https:\\/\\/teams.microsoft.com\\/.*groupId=[a-f0-9-]+\\&.*",
+                "errorMessage": "Not a valid Microsoft Teams URL"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "e.g. 61165b04-e4cc-4026-b43f-926b4e2a7182",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                "errorMessage": "Not a valid Microsoft Teams Team ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channelMessage"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Channel",
+      "name": "channelId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the channel from the list, by URL, or by ID (the ID is the \"threadId\" in the URL)",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "teamId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Channel...",
+          "typeOptions": {
+            "searchListMethod": "getChannels",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "19:-xlxyqXNSCxpI1SDzgQ_L9ZvzSR26pgphq1BJ9y7QJE1@thread.tacv2"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channelMessage"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "channelMessage"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "returnAll": [
+            false
+          ],
+          "resource": [
+            "channelMessage"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a message in a chat",
+          "action": "Create chat message"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a message from a chat",
+          "action": "Get chat message"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many messages from a chat",
+          "action": "Get many chat messages"
+        },
+        {
+          "name": "Send and Wait for Response",
+          "value": "sendAndWait",
+          "description": "Send a message and wait for response",
+          "action": "Send message and wait for response"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Chat",
+      "name": "chatId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the chat from the list, by URL, or by ID (find the chat ID after \"conversations/\" in the URL)",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Chat...",
+          "typeOptions": {
+            "searchListMethod": "getChats",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "19:7e2f1174-e8ee-4859-b8b1-a8d1cc63d276_0c5cfdbb-596f-4d39-b557-5d9516c94107@unq.gbl.spaces",
+          "url": "=https://teams.microsoft.com/l/chat/{{encodeURIComponent($value)}}/0"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Content Type",
+      "name": "contentType",
+      "required": true,
+      "type": "options",
+      "options": [
+        {
+          "name": "Text",
+          "value": "text"
+        },
+        {
+          "name": "HTML",
+          "value": "html"
+        }
+      ],
+      "default": "text",
+      "description": "Whether the message is plain text or HTML",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message",
+      "name": "message",
+      "required": true,
+      "type": "string",
+      "default": "",
+      "description": "The content of the message to be sent",
+      "typeOptions": {
+        "rows": 2
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "default": {},
+      "description": "Other options to set",
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Include Link to Workflow",
+          "name": "includeLinkToWorkflow",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to append a link to this workflow at the end of the message. This is helpful if you have many workflows sending messages."
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Chat",
+      "name": "chatId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the chat from the list, by URL, or by ID (find the chat ID after \"conversations/\" in the URL)",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Chat...",
+          "typeOptions": {
+            "searchListMethod": "getChats",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "19:7e2f1174-e8ee-4859-b8b1-a8d1cc63d276_0c5cfdbb-596f-4d39-b557-5d9516c94107@unq.gbl.spaces",
+          "url": "=https://teams.microsoft.com/l/chat/{{encodeURIComponent($value)}}/0"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message ID",
+      "name": "messageId",
+      "required": true,
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. 1673355049064",
+      "description": "The ID of the message to retrieve",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Chat",
+      "name": "chatId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the chat from the list, by URL, or by ID (find the chat ID after \"conversations/\" in the URL)",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Chat...",
+          "typeOptions": {
+            "searchListMethod": "getChats",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "19:7e2f1174-e8ee-4859-b8b1-a8d1cc63d276_0c5cfdbb-596f-4d39-b557-5d9516c94107@unq.gbl.spaces",
+          "url": "=https://teams.microsoft.com/l/chat/{{encodeURIComponent($value)}}/0"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "returnAll": [
+            false
+          ],
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Chat",
+      "name": "chatId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "description": "Select the chat from the list, by URL, or by ID (find the chat ID after \"conversations/\" in the URL)",
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Chat...",
+          "typeOptions": {
+            "searchListMethod": "getChats",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "19:7e2f1174-e8ee-4859-b8b1-a8d1cc63d276_0c5cfdbb-596f-4d39-b557-5d9516c94107@unq.gbl.spaces",
+          "url": "=https://teams.microsoft.com/l/chat/{{encodeURIComponent($value)}}/0"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Message",
+      "name": "message",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "typeOptions": {
+        "rows": 4
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Response Type",
+      "name": "responseType",
+      "type": "options",
+      "default": "approval",
+      "options": [
+        {
+          "name": "Approval",
+          "value": "approval",
+          "description": "User can approve/disapprove from within the message"
+        },
+        {
+          "name": "Free Text",
+          "value": "freeText",
+          "description": "User can submit a response via a form"
+        },
+        {
+          "name": "Custom Form",
+          "value": "customForm",
+          "description": "User can submit a response via a custom form"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Define Form",
+      "name": "defineForm",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Using Fields Below",
+          "value": "fields"
+        },
+        {
+          "name": "Using JSON",
+          "value": "json"
+        }
+      ],
+      "default": "fields",
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "customForm"
+          ],
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Form Fields",
+      "name": "jsonOutput",
+      "type": "json",
+      "typeOptions": {
+        "rows": 5
+      },
+      "default": "[\n   {\n      \"fieldLabel\":\"Name\",\n      \"placeholder\":\"enter you name\",\n      \"requiredField\":true\n   },\n   {\n      \"fieldLabel\":\"Age\",\n      \"fieldType\":\"number\",\n      \"placeholder\":\"enter your age\"\n   },\n   {\n      \"fieldLabel\":\"Email\",\n      \"fieldType\":\"email\",\n      \"requiredField\":true\n   }\n]",
+      "validateType": "form-fields",
+      "ignoreValidationDuringExecution": true,
+      "hint": "<a href=\"https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.form/\" target=\"_blank\">See docs</a> for field syntax",
+      "displayOptions": {
+        "show": {
+          "defineForm": [
+            "json"
+          ],
+          "responseType": [
+            "customForm"
+          ],
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Form Elements",
+      "name": "formFields",
+      "placeholder": "Add Form Element",
+      "type": "fixedCollection",
+      "default": {},
+      "typeOptions": {
+        "multipleValues": true,
+        "sortable": true
+      },
+      "options": [
+        {
+          "displayName": "Values",
+          "name": "values",
+          "values": [
+            {
+              "displayName": "Field Name",
+              "name": "fieldLabel",
+              "type": "string",
+              "default": "",
+              "placeholder": "e.g. What is your name?",
+              "description": "Label that appears above the input field",
+              "required": true,
+              "displayOptions": {
+                "hide": {
+                  "fieldType": [
+                    "hiddenField",
+                    "html"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Element Type",
+              "name": "fieldType",
+              "type": "options",
+              "default": "text",
+              "description": "The type of field to add to the form",
+              "options": [
+                {
+                  "name": "Custom HTML",
+                  "value": "html"
+                },
+                {
+                  "name": "Date",
+                  "value": "date"
+                },
+                {
+                  "name": "Dropdown List",
+                  "value": "dropdown"
+                },
+                {
+                  "name": "Email",
+                  "value": "email"
+                },
+                {
+                  "name": "File",
+                  "value": "file"
+                },
+                {
+                  "name": "Hidden Field",
+                  "value": "hiddenField"
+                },
+                {
+                  "name": "Number",
+                  "value": "number"
+                },
+                {
+                  "name": "Password",
+                  "value": "password"
+                },
+                {
+                  "name": "Text",
+                  "value": "text"
+                },
+                {
+                  "name": "Textarea",
+                  "value": "textarea"
+                }
+              ],
+              "required": true
+            },
+            {
+              "displayName": "Element Name",
+              "name": "elementName",
+              "type": "string",
+              "default": "",
+              "placeholder": "e.g. content-section",
+              "description": "Optional field. It can be used to include the html in the output.",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "html"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Placeholder",
+              "name": "placeholder",
+              "description": "Sample text to display inside the field",
+              "type": "string",
+              "default": "",
+              "displayOptions": {
+                "hide": {
+                  "fieldType": [
+                    "dropdown",
+                    "date",
+                    "file",
+                    "html",
+                    "hiddenField"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Field Name",
+              "name": "fieldName",
+              "description": "The name of the field, used in input attributes and referenced by the workflow",
+              "type": "string",
+              "default": "",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "hiddenField"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Field Value",
+              "name": "fieldValue",
+              "description": "Input value can be set here or will be passed as a query parameter via Field Name if no value is set",
+              "type": "string",
+              "default": "",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "hiddenField"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Field Options",
+              "name": "fieldOptions",
+              "placeholder": "Add Field Option",
+              "description": "List of options that can be selected from the dropdown",
+              "type": "fixedCollection",
+              "default": {
+                "values": [
+                  {
+                    "option": ""
+                  }
+                ]
+              },
+              "required": true,
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "dropdown"
+                  ]
+                }
+              },
+              "typeOptions": {
+                "multipleValues": true,
+                "sortable": true
+              },
+              "options": [
+                {
+                  "displayName": "Values",
+                  "name": "values",
+                  "values": [
+                    {
+                      "displayName": "Option",
+                      "name": "option",
+                      "type": "string",
+                      "default": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "displayName": "Multiple Choice",
+              "name": "multiselect",
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to allow the user to select multiple options from the dropdown list",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "dropdown"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "HTML",
+              "name": "html",
+              "typeOptions": {
+                "editor": "htmlEditor"
+              },
+              "type": "string",
+              "noDataExpression": true,
+              "default": "<!-- Your custom HTML here --->\n\n\n",
+              "description": "HTML elements to display on the form page",
+              "hint": "Does not accept <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code> or <code>&lt;input&gt;</code> tags",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "html"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Multiple Files",
+              "name": "multipleFiles",
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to allow the user to select multiple files from the file input or just one",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "file"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Accepted File Types",
+              "name": "acceptFileTypes",
+              "type": "string",
+              "default": "",
+              "description": "Comma-separated list of allowed file extensions",
+              "hint": "Leave empty to allow all file types",
+              "placeholder": "e.g. .jpg, .png",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "file"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "The displayed date is formatted based on the locale of the user's browser",
+              "name": "formatDate",
+              "type": "notice",
+              "default": "",
+              "displayOptions": {
+                "show": {
+                  "fieldType": [
+                    "date"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Required Field",
+              "name": "requiredField",
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to require the user to enter a value for this field before submitting the form",
+              "displayOptions": {
+                "hide": {
+                  "fieldType": [
+                    "html",
+                    "hiddenField"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "defineForm": [
+            "fields"
+          ],
+          "responseType": [
+            "customForm"
+          ],
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Approval Options",
+      "name": "approvalOptions",
+      "type": "fixedCollection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Values",
+          "name": "values",
+          "values": [
+            {
+              "displayName": "Type of Approval",
+              "name": "approvalType",
+              "type": "options",
+              "placeholder": "Add option",
+              "default": "single",
+              "options": [
+                {
+                  "name": "Approve Only",
+                  "value": "single"
+                },
+                {
+                  "name": "Approve and Disapprove",
+                  "value": "double"
+                }
+              ]
+            },
+            {
+              "displayName": "Approve Button Label",
+              "name": "approveLabel",
+              "type": "string",
+              "default": "✓ Approve",
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "single",
+                    "double"
+                  ]
+                }
+              }
+            },
+            {
+              "displayName": "Disapprove Button Label",
+              "name": "disapproveLabel",
+              "type": "string",
+              "default": "✗ Decline",
+              "displayOptions": {
+                "show": {
+                  "approvalType": [
+                    "double"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "approval"
+          ],
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Limit Wait Time",
+          "name": "limitWaitTime",
+          "type": "fixedCollection",
+          "description": "Whether the workflow will automatically resume execution after the specified limit type",
+          "default": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "options": [
+            {
+              "displayName": "Values",
+              "name": "values",
+              "values": [
+                {
+                  "displayName": "Limit Type",
+                  "name": "limitType",
+                  "type": "options",
+                  "default": "afterTimeInterval",
+                  "description": "Sets the condition for the execution to resume. Can be a specified date or after some time.",
+                  "options": [
+                    {
+                      "name": "After Time Interval",
+                      "description": "Waits for a certain amount of time",
+                      "value": "afterTimeInterval"
+                    },
+                    {
+                      "name": "At Specified Time",
+                      "description": "Waits until the set date and time to continue",
+                      "value": "atSpecifiedTime"
+                    }
+                  ]
+                },
+                {
+                  "displayName": "Amount",
+                  "name": "resumeAmount",
+                  "type": "number",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "typeOptions": {
+                    "minValue": 0,
+                    "numberPrecision": 2
+                  },
+                  "default": 1,
+                  "description": "The time to wait"
+                },
+                {
+                  "displayName": "Unit",
+                  "name": "resumeUnit",
+                  "type": "options",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "options": [
+                    {
+                      "name": "Minutes",
+                      "value": "minutes"
+                    },
+                    {
+                      "name": "Hours",
+                      "value": "hours"
+                    },
+                    {
+                      "name": "Days",
+                      "value": "days"
+                    }
+                  ],
+                  "default": "hours",
+                  "description": "Unit of the interval value"
+                },
+                {
+                  "displayName": "Max Date and Time",
+                  "name": "maxDateAndTime",
+                  "type": "dateTime",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "atSpecifiedTime"
+                      ]
+                    }
+                  },
+                  "default": "",
+                  "description": "Continue execution after the specified date and time"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Append n8n Attribution",
+          "name": "appendAttribution",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the phrase \"This message was sent automatically with n8n\" to the end of the message"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "approval"
+          ],
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "Message Button Label",
+          "name": "messageButtonLabel",
+          "type": "string",
+          "default": "Respond"
+        },
+        {
+          "displayName": "Response Form Title",
+          "name": "responseFormTitle",
+          "description": "Title of the form that the user can access to provide their response",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Response Form Description",
+          "name": "responseFormDescription",
+          "description": "Description of the form that the user can access to provide their response",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "displayName": "Response Form Button Label",
+          "name": "responseFormButtonLabel",
+          "type": "string",
+          "default": "Submit"
+        },
+        {
+          "displayName": "Limit Wait Time",
+          "name": "limitWaitTime",
+          "type": "fixedCollection",
+          "description": "Whether the workflow will automatically resume execution after the specified limit type",
+          "default": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "options": [
+            {
+              "displayName": "Values",
+              "name": "values",
+              "values": [
+                {
+                  "displayName": "Limit Type",
+                  "name": "limitType",
+                  "type": "options",
+                  "default": "afterTimeInterval",
+                  "description": "Sets the condition for the execution to resume. Can be a specified date or after some time.",
+                  "options": [
+                    {
+                      "name": "After Time Interval",
+                      "description": "Waits for a certain amount of time",
+                      "value": "afterTimeInterval"
+                    },
+                    {
+                      "name": "At Specified Time",
+                      "description": "Waits until the set date and time to continue",
+                      "value": "atSpecifiedTime"
+                    }
+                  ]
+                },
+                {
+                  "displayName": "Amount",
+                  "name": "resumeAmount",
+                  "type": "number",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "typeOptions": {
+                    "minValue": 0,
+                    "numberPrecision": 2
+                  },
+                  "default": 1,
+                  "description": "The time to wait"
+                },
+                {
+                  "displayName": "Unit",
+                  "name": "resumeUnit",
+                  "type": "options",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "afterTimeInterval"
+                      ]
+                    }
+                  },
+                  "options": [
+                    {
+                      "name": "Minutes",
+                      "value": "minutes"
+                    },
+                    {
+                      "name": "Hours",
+                      "value": "hours"
+                    },
+                    {
+                      "name": "Days",
+                      "value": "days"
+                    }
+                  ],
+                  "default": "hours",
+                  "description": "Unit of the interval value"
+                },
+                {
+                  "displayName": "Max Date and Time",
+                  "name": "maxDateAndTime",
+                  "type": "dateTime",
+                  "displayOptions": {
+                    "show": {
+                      "limitType": [
+                        "atSpecifiedTime"
+                      ]
+                    }
+                  },
+                  "default": "",
+                  "description": "Continue execution after the specified date and time"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Append n8n Attribution",
+          "name": "appendAttribution",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to include the phrase \"This message was sent automatically with n8n\" to the end of the message"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "responseType": [
+            "freeText",
+            "customForm"
+          ],
+          "resource": [
+            "chatMessage"
+          ],
+          "operation": [
+            "sendAndWait"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "description": "Create a task",
+          "action": "Create task"
+        },
+        {
+          "name": "Delete",
+          "value": "deleteTask",
+          "description": "Delete a task",
+          "action": "Delete task"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "description": "Get a task",
+          "action": "Get task"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "description": "Get many tasks",
+          "action": "Get many tasks"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "description": "Update a task",
+          "action": "Update task"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Team",
+      "name": "groupId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "groupSource"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Team...",
+          "typeOptions": {
+            "searchListMethod": "getGroups",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "12f0ca7d-b77f-4c4e-93d2-5cbdb4f464c6",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                "errorMessage": "Not a valid Microsoft Teams Team ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Plan",
+      "name": "planId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "groupId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Plan...",
+          "typeOptions": {
+            "searchListMethod": "getPlans",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "rl1HYb0cUEiHPc7zgB_KWWUAA7Of"
+        }
+      ],
+      "description": "The plan for the task to belong to",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Bucket",
+      "name": "bucketId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "planId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Bucket...",
+          "typeOptions": {
+            "searchListMethod": "getBuckets",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "rl1HYb0cUEiHPc7zgB_KWWUAA7Of"
+        }
+      ],
+      "description": "The bucket for the task to belong to",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Title",
+      "name": "title",
+      "required": true,
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. new task",
+      "description": "Title of the task",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "default": {},
+      "placeholder": "Add option",
+      "options": [
+        {
+          "displayName": "Assigned To",
+          "name": "assignedTo",
+          "type": "resourceLocator",
+          "default": {
+            "mode": "list",
+            "value": ""
+          },
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "groupId.balue"
+            ]
+          },
+          "modes": [
+            {
+              "displayName": "From List",
+              "name": "list",
+              "type": "list",
+              "placeholder": "Select a Member...",
+              "typeOptions": {
+                "searchListMethod": "getMembers",
+                "searchable": true
+              }
+            },
+            {
+              "displayName": "By ID",
+              "name": "id",
+              "type": "string",
+              "placeholder": "7e2f1174-e8ee-4859-b8b1-a8d1cc63d276",
+              "validation": [
+                {
+                  "type": "regex",
+                  "properties": {
+                    "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                    "errorMessage": "Not a valid Microsoft Teams Team ID"
+                  }
+                }
+              ],
+              "extractValue": {
+                "type": "regex",
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+              }
+            }
+          ],
+          "description": "Who the task should be assigned to"
+        },
+        {
+          "displayName": "Due Date Time",
+          "name": "dueDateTime",
+          "type": "string",
+          "validateType": "dateTime",
+          "default": "",
+          "description": "Date and time at which the task is due. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time."
+        },
+        {
+          "displayName": "Percent Complete",
+          "name": "percentComplete",
+          "type": "number",
+          "typeOptions": {
+            "minValue": 0,
+            "maxValue": 100
+          },
+          "default": 0,
+          "placeholder": "e.g. 75",
+          "description": "Percentage of task completion. When set to 100, the task is considered completed."
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Task ID",
+      "name": "taskId",
+      "required": true,
+      "type": "string",
+      "placeholder": "e.g. h3ufgLvXPkSRzYm-zO5cY5gANtBQ",
+      "description": "The ID of the task to delete",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "deleteTask"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Task ID",
+      "name": "taskId",
+      "required": true,
+      "type": "string",
+      "description": "The ID of the task to retrieve",
+      "placeholder": "e.g. h3ufgLvXPkSRzYm-zO5cY5gANtBQ",
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Tasks For",
+      "name": "tasksFor",
+      "default": "member",
+      "required": true,
+      "type": "options",
+      "description": "Whether to retrieve the tasks for a user or for a plan",
+      "options": [
+        {
+          "name": "Group Member",
+          "value": "member",
+          "description": "Tasks assigned to group member"
+        },
+        {
+          "name": "Plan",
+          "value": "plan",
+          "description": "Tasks in group plan"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Team",
+      "name": "groupId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "groupSource"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Team...",
+          "typeOptions": {
+            "searchListMethod": "getGroups",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "12f0ca7d-b77f-4c4e-93d2-5cbdb4f464c6",
+          "validation": [
+            {
+              "type": "regex",
+              "properties": {
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                "errorMessage": "Not a valid Microsoft Teams Team ID"
+              }
+            }
+          ],
+          "extractValue": {
+            "type": "regex",
+            "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+          }
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Plan",
+      "name": "planId",
+      "type": "resourceLocator",
+      "default": {
+        "mode": "list",
+        "value": ""
+      },
+      "required": true,
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "groupId.value"
+        ]
+      },
+      "modes": [
+        {
+          "displayName": "From List",
+          "name": "list",
+          "type": "list",
+          "placeholder": "Select a Plan...",
+          "typeOptions": {
+            "searchListMethod": "getPlans",
+            "searchable": true
+          }
+        },
+        {
+          "displayName": "By ID",
+          "name": "id",
+          "type": "string",
+          "placeholder": "rl1HYb0cUEiHPc7zgB_KWWUAA7Of"
+        }
+      ],
+      "description": "The plan for the task to belong to",
+      "displayOptions": {
+        "show": {
+          "tasksFor": [
+            "plan"
+          ],
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "displayOptions": {
+        "show": {
+          "returnAll": [
+            false
+          ],
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "typeOptions": {
+        "minValue": 1
+      },
+      "default": 100,
+      "description": "Max number of results to return"
+    },
+    {
+      "displayName": "Task ID",
+      "name": "taskId",
+      "required": true,
+      "type": "string",
+      "default": "",
+      "placeholder": "e.g. h3ufgLvXPkSRzYm-zO5cY5gANtBQ",
+      "description": "The ID of the task to update",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "default": {},
+      "placeholder": "Add Field",
+      "options": [
+        {
+          "displayName": "Assigned To",
+          "name": "assignedTo",
+          "type": "resourceLocator",
+          "default": {
+            "mode": "list",
+            "value": ""
+          },
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "updateFields.groupId.value"
+            ]
+          },
+          "modes": [
+            {
+              "displayName": "From List",
+              "name": "list",
+              "type": "list",
+              "placeholder": "Select a Member...",
+              "typeOptions": {
+                "searchListMethod": "getMembers",
+                "searchable": true
+              }
+            },
+            {
+              "displayName": "By ID",
+              "name": "id",
+              "type": "string",
+              "placeholder": "7e2f1174-e8ee-4859-b8b1-a8d1cc63d276",
+              "validation": [
+                {
+                  "type": "regex",
+                  "properties": {
+                    "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                    "errorMessage": "Not a valid Microsoft Teams Team ID"
+                  }
+                }
+              ],
+              "extractValue": {
+                "type": "regex",
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+              }
+            }
+          ],
+          "description": "Who the task should be assigned to",
+          "hint": "Select 'Team' from options first",
+          "required": false
+        },
+        {
+          "displayName": "Bucket",
+          "name": "bucketId",
+          "type": "resourceLocator",
+          "default": {
+            "mode": "list",
+            "value": ""
+          },
+          "required": false,
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "updateFields.planId.value"
+            ]
+          },
+          "modes": [
+            {
+              "displayName": "From List",
+              "name": "list",
+              "type": "list",
+              "placeholder": "Select a Bucket...",
+              "typeOptions": {
+                "searchListMethod": "getBuckets",
+                "searchable": true
+              }
+            },
+            {
+              "displayName": "By ID",
+              "name": "id",
+              "type": "string",
+              "placeholder": "rl1HYb0cUEiHPc7zgB_KWWUAA7Of"
+            }
+          ],
+          "description": "The bucket for the task to belong to"
+        },
+        {
+          "displayName": "Due Date Time",
+          "name": "dueDateTime",
+          "type": "string",
+          "validateType": "dateTime",
+          "default": "",
+          "description": "Date and time at which the task is due. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time."
+        },
+        {
+          "displayName": "Team",
+          "name": "groupId",
+          "type": "resourceLocator",
+          "default": {
+            "mode": "list",
+            "value": ""
+          },
+          "required": false,
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "/groupSource"
+            ]
+          },
+          "modes": [
+            {
+              "displayName": "From List",
+              "name": "list",
+              "type": "list",
+              "placeholder": "Select a Team...",
+              "typeOptions": {
+                "searchListMethod": "getGroups",
+                "searchable": true
+              }
+            },
+            {
+              "displayName": "By ID",
+              "name": "id",
+              "type": "string",
+              "placeholder": "12f0ca7d-b77f-4c4e-93d2-5cbdb4f464c6",
+              "validation": [
+                {
+                  "type": "regex",
+                  "properties": {
+                    "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})[ \t]*",
+                    "errorMessage": "Not a valid Microsoft Teams Team ID"
+                  }
+                }
+              ],
+              "extractValue": {
+                "type": "regex",
+                "regex": "^([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})"
+              }
+            }
+          ]
+        },
+        {
+          "displayName": "Percent Complete",
+          "name": "percentComplete",
+          "type": "number",
+          "typeOptions": {
+            "minValue": 0,
+            "maxValue": 100
+          },
+          "default": 0,
+          "placeholder": "e.g. 75",
+          "description": "Percentage of task completion. When set to 100, the task is considered completed."
+        },
+        {
+          "displayName": "Plan",
+          "name": "planId",
+          "type": "resourceLocator",
+          "default": {
+            "mode": "list",
+            "value": ""
+          },
+          "required": false,
+          "typeOptions": {
+            "loadOptionsDependsOn": [
+              "updateFields.groupId.value"
+            ]
+          },
+          "modes": [
+            {
+              "displayName": "From List",
+              "name": "list",
+              "type": "list",
+              "placeholder": "Select a Plan...",
+              "typeOptions": {
+                "searchListMethod": "getPlans",
+                "searchable": true
+              }
+            },
+            {
+              "displayName": "By ID",
+              "name": "id",
+              "type": "string",
+              "placeholder": "rl1HYb0cUEiHPc7zgB_KWWUAA7Of"
+            }
+          ],
+          "description": "The plan for the task to belong to",
+          "hint": "Select 'Team' from options first"
+        },
+        {
+          "displayName": "Title",
+          "name": "title",
+          "type": "string",
+          "default": "",
+          "placeholder": "e.g. my task",
+          "description": "Title of the task"
+        }
+      ],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "task"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    }
+  ],
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Microsoft/Teams/teams.svg",
+  "codex": {
+    "categories": [
+      "AI"
+    ],
+    "subcategories": {
+      "AI": [
+        "Tools"
+      ],
+      "Tools": [
+        "Other Tools"
+      ]
+    },
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.microsoftteams/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/microsoft/"
+        }
+      ]
+    }
+  },
+  "name": "n8n-nodes-base.microsoftTeamsTool"
+}

@@ -1,0 +1,76 @@
+{
+  "displayName": "Redis Trigger",
+  "group": [
+    "trigger"
+  ],
+  "version": 1,
+  "description": "Subscribe to redis channel",
+  "defaults": {
+    "name": "Redis Trigger"
+  },
+  "inputs": [],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "redis",
+      "required": true,
+      "testedBy": "redisConnectionTest"
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Channels",
+      "name": "channels",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "description": "Channels to subscribe to, multiple channels be defined with comma. Wildcard character(*) is supported."
+    },
+    {
+      "displayName": "Options",
+      "name": "options",
+      "type": "collection",
+      "placeholder": "Add option",
+      "default": {},
+      "options": [
+        {
+          "displayName": "JSON Parse Body",
+          "name": "jsonParseBody",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to try to parse the message to an object"
+        },
+        {
+          "displayName": "Only Message",
+          "name": "onlyMessage",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to return only the message property"
+        }
+      ]
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Communication",
+      "Development",
+      "Data & Storage"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.redistrigger/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/redis/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/Redis/redis.svg",
+  "name": "n8n-nodes-base.redisTrigger"
+}

@@ -1,0 +1,2350 @@
+{
+  "displayName": "Action Network",
+  "group": [
+    "transform"
+  ],
+  "version": 1,
+  "subtitle": "={{$parameter[\"resource\"] + \": \" + $parameter[\"operation\"]}}",
+  "description": "Consume the Action Network API",
+  "defaults": {
+    "name": "Action Network"
+  },
+  "usableAsTool": true,
+  "inputs": [
+    "main"
+  ],
+  "outputs": [
+    "main"
+  ],
+  "credentials": [
+    {
+      "name": "actionNetworkApi",
+      "required": true
+    }
+  ],
+  "properties": [
+    {
+      "displayName": "Resource",
+      "name": "resource",
+      "type": "options",
+      "noDataExpression": true,
+      "options": [
+        {
+          "name": "Attendance",
+          "value": "attendance"
+        },
+        {
+          "name": "Event",
+          "value": "event"
+        },
+        {
+          "name": "Person",
+          "value": "person"
+        },
+        {
+          "name": "Person Tag",
+          "value": "personTag"
+        },
+        {
+          "name": "Petition",
+          "value": "petition"
+        },
+        {
+          "name": "Signature",
+          "value": "signature"
+        },
+        {
+          "name": "Tag",
+          "value": "tag"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "attendance"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create an attendance"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get an attendance"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many attendances"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Person ID",
+      "name": "personId",
+      "description": "ID of the person to create an attendance for",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Event ID",
+      "name": "eventId",
+      "description": "ID of the event to create an attendance for",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Event ID",
+      "name": "eventId",
+      "description": "ID of the event whose attendance to retrieve",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Attendance ID",
+      "name": "attendanceId",
+      "description": "ID of the attendance to retrieve",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Event ID",
+      "name": "eventId",
+      "description": "ID of the event to create an attendance for",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "attendance"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create an event"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get an event"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many events"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Origin System",
+      "name": "originSystem",
+      "description": "Source where the event originated",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Title",
+      "name": "title",
+      "description": "Title of the event to create",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Browser URL",
+          "name": "browser_url",
+          "type": "string",
+          "default": "",
+          "description": "URL to this event’s page on the Action Network or a third party"
+        },
+        {
+          "displayName": "Description",
+          "name": "description",
+          "type": "string",
+          "default": "",
+          "description": "Description of the event. HTML supported."
+        },
+        {
+          "displayName": "End Date",
+          "name": "end_date",
+          "type": "dateTime",
+          "default": "",
+          "description": "End date and time of the event"
+        },
+        {
+          "displayName": "Featured Image URL",
+          "name": "featured_image_url",
+          "type": "string",
+          "default": "",
+          "description": "URL to this event’s featured image on the Action Network"
+        },
+        {
+          "displayName": "Instructions",
+          "name": "instructions",
+          "type": "string",
+          "default": "",
+          "description": "Event's instructions for activists, visible after they RSVP. HTML supported."
+        },
+        {
+          "displayName": "Location",
+          "name": "location",
+          "type": "fixedCollection",
+          "default": {},
+          "placeholder": "Add Location Field",
+          "typeOptions": {
+            "multipleValues": false
+          },
+          "options": [
+            {
+              "displayName": "Postal Addresses Fields",
+              "name": "postal_addresses_fields",
+              "placeholder": "Add Postal Address Field",
+              "values": [
+                {
+                  "displayName": "Primary",
+                  "name": "primary",
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether this is the person's primary address"
+                },
+                {
+                  "displayName": "Address Line",
+                  "name": "address_lines",
+                  "type": "string",
+                  "default": "",
+                  "description": "Line for a person's address"
+                },
+                {
+                  "displayName": "Locality",
+                  "name": "locality",
+                  "type": "string",
+                  "default": "",
+                  "description": "City or other local administrative area. If blank, this will be filled in based on Action Network's geocoding."
+                },
+                {
+                  "displayName": "Region",
+                  "name": "region",
+                  "type": "string",
+                  "default": "",
+                  "description": "State or subdivision code per ISO 3166-2"
+                },
+                {
+                  "displayName": "Postal Code",
+                  "name": "postal_code",
+                  "type": "string",
+                  "default": "",
+                  "description": "Region specific postal code, such as ZIP code"
+                },
+                {
+                  "displayName": "Country",
+                  "name": "country",
+                  "type": "string",
+                  "default": "",
+                  "description": "Country code according to ISO 3166-1 Alpha-2. Defaults to US."
+                },
+                {
+                  "displayName": "Language",
+                  "name": "language",
+                  "type": "string",
+                  "default": "",
+                  "description": "Language in which the address is recorded, per ISO 639"
+                },
+                {
+                  "displayName": "Location",
+                  "name": "location",
+                  "type": "fixedCollection",
+                  "default": {},
+                  "options": [
+                    {
+                      "displayName": "Location Fields",
+                      "name": "location_fields",
+                      "values": [
+                        {
+                          "displayName": "Latitude",
+                          "name": "latitude",
+                          "type": "string",
+                          "default": "",
+                          "description": "Latitude of the location of the address"
+                        },
+                        {
+                          "displayName": "Longitude",
+                          "name": "longitude",
+                          "type": "string",
+                          "default": "",
+                          "description": "Longitude of the location of the address"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "Internal (not public) title of the event"
+        },
+        {
+          "displayName": "Start Date",
+          "name": "start_date",
+          "type": "dateTime",
+          "default": "",
+          "description": "Start date and time of the event"
+        }
+      ]
+    },
+    {
+      "displayName": "Event ID",
+      "name": "eventId",
+      "description": "ID of the event to retrieve",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "event"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a person"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a person"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many people"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "action": "Update a person"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Email Address",
+      "name": "email_addresses",
+      "type": "fixedCollection",
+      "default": {},
+      "placeholder": "Add Email Address Field",
+      "description": "Person’s email addresses",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Email Addresses Fields",
+          "name": "email_addresses_fields",
+          "values": [
+            {
+              "displayName": "Address",
+              "name": "address",
+              "type": "string",
+              "default": "",
+              "description": "Person's email address"
+            },
+            {
+              "displayName": "Primary",
+              "name": "primary",
+              "type": "hidden",
+              "default": true,
+              "description": "Whether this is the person's primary email address"
+            },
+            {
+              "displayName": "Status",
+              "name": "status",
+              "type": "options",
+              "default": "subscribed",
+              "description": "Subscription status of this email address",
+              "options": [
+                {
+                  "name": "Bouncing",
+                  "value": "bouncing"
+                },
+                {
+                  "name": "Previous Bounce",
+                  "value": "previous bounce"
+                },
+                {
+                  "name": "Previous Spam Complaint",
+                  "value": "previous spam complaint"
+                },
+                {
+                  "name": "Spam Complaint",
+                  "value": "spam complaint"
+                },
+                {
+                  "name": "Subscribed",
+                  "value": "subscribed"
+                },
+                {
+                  "name": "Unsubscribed",
+                  "value": "unsubscribed"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Family Name",
+          "name": "family_name",
+          "type": "string",
+          "default": "",
+          "description": "Person’s last name"
+        },
+        {
+          "displayName": "Given Name",
+          "name": "given_name",
+          "type": "string",
+          "default": "",
+          "description": "Person’s first name"
+        },
+        {
+          "displayName": "Language Spoken",
+          "name": "languages_spoken",
+          "type": "options",
+          "default": [],
+          "description": "Language spoken by the person",
+          "options": [
+            {
+              "name": "Danish",
+              "value": "da"
+            },
+            {
+              "name": "Dutch",
+              "value": "nl"
+            },
+            {
+              "name": "English",
+              "value": "en"
+            },
+            {
+              "name": "Finnish",
+              "value": "fi"
+            },
+            {
+              "name": "French",
+              "value": "fr"
+            },
+            {
+              "name": "German",
+              "value": "de"
+            },
+            {
+              "name": "Hungarian",
+              "value": "hu"
+            },
+            {
+              "name": "Indonesian",
+              "value": "id"
+            },
+            {
+              "name": "Japanese",
+              "value": "ja"
+            },
+            {
+              "name": "Portuguese - Portugal",
+              "value": "pt"
+            },
+            {
+              "name": "Portuguese - Brazil",
+              "value": "br"
+            },
+            {
+              "name": "Rumanian",
+              "value": "ru"
+            },
+            {
+              "name": "Spanish",
+              "value": "es"
+            },
+            {
+              "name": "Swedish",
+              "value": "sv"
+            },
+            {
+              "name": "Turkish",
+              "value": "tr"
+            },
+            {
+              "name": "Welsh",
+              "value": "cy"
+            }
+          ]
+        },
+        {
+          "displayName": "Phone Number",
+          "name": "phone_numbers",
+          "type": "fixedCollection",
+          "default": {},
+          "placeholder": "Add Phone Numbers Field",
+          "options": [
+            {
+              "displayName": "Phone Numbers Fields",
+              "name": "phone_numbers_fields",
+              "placeholder": "Add Phone Number Field",
+              "values": [
+                {
+                  "displayName": "Number",
+                  "name": "number",
+                  "type": "string",
+                  "default": "",
+                  "description": "Person's mobile number, in international format without the plus sign"
+                },
+                {
+                  "displayName": "Primary",
+                  "name": "primary",
+                  "type": "hidden",
+                  "default": true,
+                  "description": "Whether this is the person's primary phone number"
+                },
+                {
+                  "displayName": "Status",
+                  "name": "status",
+                  "type": "options",
+                  "default": "subscribed",
+                  "description": "Subscription status of this number",
+                  "options": [
+                    {
+                      "name": "Bouncing",
+                      "value": "bouncing"
+                    },
+                    {
+                      "name": "Previous Bounce",
+                      "value": "previous bounce"
+                    },
+                    {
+                      "name": "Subscribed",
+                      "value": "subscribed"
+                    },
+                    {
+                      "name": "Unsubscribed",
+                      "value": "unsubscribed"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Postal Addresses",
+          "name": "postal_addresses",
+          "type": "fixedCollection",
+          "default": {},
+          "placeholder": "Add Postal Addresses Field",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "displayName": "Postal Addresses Fields",
+              "name": "postal_addresses_fields",
+              "placeholder": "Add Postal Address Field",
+              "values": [
+                {
+                  "displayName": "Primary",
+                  "name": "primary",
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether this is the person's primary address"
+                },
+                {
+                  "displayName": "Address Line",
+                  "name": "address_lines",
+                  "type": "string",
+                  "default": "",
+                  "description": "Line for a person's address"
+                },
+                {
+                  "displayName": "Locality",
+                  "name": "locality",
+                  "type": "string",
+                  "default": "",
+                  "description": "City or other local administrative area. If blank, this will be filled in based on Action Network's geocoding."
+                },
+                {
+                  "displayName": "Region",
+                  "name": "region",
+                  "type": "string",
+                  "default": "",
+                  "description": "State or subdivision code per ISO 3166-2"
+                },
+                {
+                  "displayName": "Postal Code",
+                  "name": "postal_code",
+                  "type": "string",
+                  "default": "",
+                  "description": "Region specific postal code, such as ZIP code"
+                },
+                {
+                  "displayName": "Country",
+                  "name": "country",
+                  "type": "string",
+                  "default": "",
+                  "description": "Country code according to ISO 3166-1 Alpha-2. Defaults to US."
+                },
+                {
+                  "displayName": "Language",
+                  "name": "language",
+                  "type": "string",
+                  "default": "",
+                  "description": "Language in which the address is recorded, per ISO 639"
+                },
+                {
+                  "displayName": "Location",
+                  "name": "location",
+                  "type": "fixedCollection",
+                  "default": {},
+                  "options": [
+                    {
+                      "displayName": "Location Fields",
+                      "name": "location_fields",
+                      "values": [
+                        {
+                          "displayName": "Latitude",
+                          "name": "latitude",
+                          "type": "string",
+                          "default": "",
+                          "description": "Latitude of the location of the address"
+                        },
+                        {
+                          "displayName": "Longitude",
+                          "name": "longitude",
+                          "type": "string",
+                          "default": "",
+                          "description": "Longitude of the location of the address"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Person ID",
+      "name": "personId",
+      "description": "ID of the person to retrieve",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 25,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1,
+        "maxValue": 25
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Person ID",
+      "name": "personId",
+      "description": "ID of the person to update",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "person"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Family Name",
+          "name": "family_name",
+          "type": "string",
+          "default": "",
+          "description": "Person’s last name"
+        },
+        {
+          "displayName": "Given Name",
+          "name": "given_name",
+          "type": "string",
+          "default": "",
+          "description": "Person’s first name"
+        },
+        {
+          "displayName": "Language Spoken",
+          "name": "languages_spoken",
+          "type": "options",
+          "default": [],
+          "description": "Language spoken by the person",
+          "options": [
+            {
+              "name": "Danish",
+              "value": "da"
+            },
+            {
+              "name": "Dutch",
+              "value": "nl"
+            },
+            {
+              "name": "English",
+              "value": "en"
+            },
+            {
+              "name": "Finnish",
+              "value": "fi"
+            },
+            {
+              "name": "French",
+              "value": "fr"
+            },
+            {
+              "name": "German",
+              "value": "de"
+            },
+            {
+              "name": "Hungarian",
+              "value": "hu"
+            },
+            {
+              "name": "Indonesian",
+              "value": "id"
+            },
+            {
+              "name": "Japanese",
+              "value": "ja"
+            },
+            {
+              "name": "Portuguese - Portugal",
+              "value": "pt"
+            },
+            {
+              "name": "Portuguese - Brazil",
+              "value": "br"
+            },
+            {
+              "name": "Rumanian",
+              "value": "ru"
+            },
+            {
+              "name": "Spanish",
+              "value": "es"
+            },
+            {
+              "name": "Swedish",
+              "value": "sv"
+            },
+            {
+              "name": "Turkish",
+              "value": "tr"
+            },
+            {
+              "name": "Welsh",
+              "value": "cy"
+            }
+          ]
+        },
+        {
+          "displayName": "Phone Number",
+          "name": "phone_numbers",
+          "type": "fixedCollection",
+          "default": {},
+          "placeholder": "Add Phone Numbers Field",
+          "options": [
+            {
+              "displayName": "Phone Numbers Fields",
+              "name": "phone_numbers_fields",
+              "placeholder": "Add Phone Number Field",
+              "values": [
+                {
+                  "displayName": "Number",
+                  "name": "number",
+                  "type": "string",
+                  "default": "",
+                  "description": "Person's mobile number, in international format without the plus sign"
+                },
+                {
+                  "displayName": "Primary",
+                  "name": "primary",
+                  "type": "hidden",
+                  "default": true,
+                  "description": "Whether this is the person's primary phone number"
+                },
+                {
+                  "displayName": "Status",
+                  "name": "status",
+                  "type": "options",
+                  "default": "subscribed",
+                  "description": "Subscription status of this number",
+                  "options": [
+                    {
+                      "name": "Bouncing",
+                      "value": "bouncing"
+                    },
+                    {
+                      "name": "Previous Bounce",
+                      "value": "previous bounce"
+                    },
+                    {
+                      "name": "Subscribed",
+                      "value": "subscribed"
+                    },
+                    {
+                      "name": "Unsubscribed",
+                      "value": "unsubscribed"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "displayName": "Postal Addresses",
+          "name": "postal_addresses",
+          "type": "fixedCollection",
+          "default": {},
+          "placeholder": "Add Postal Addresses Field",
+          "typeOptions": {
+            "multipleValues": true
+          },
+          "options": [
+            {
+              "displayName": "Postal Addresses Fields",
+              "name": "postal_addresses_fields",
+              "placeholder": "Add Postal Address Field",
+              "values": [
+                {
+                  "displayName": "Primary",
+                  "name": "primary",
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether this is the person's primary address"
+                },
+                {
+                  "displayName": "Address Line",
+                  "name": "address_lines",
+                  "type": "string",
+                  "default": "",
+                  "description": "Line for a person's address"
+                },
+                {
+                  "displayName": "Locality",
+                  "name": "locality",
+                  "type": "string",
+                  "default": "",
+                  "description": "City or other local administrative area. If blank, this will be filled in based on Action Network's geocoding."
+                },
+                {
+                  "displayName": "Region",
+                  "name": "region",
+                  "type": "string",
+                  "default": "",
+                  "description": "State or subdivision code per ISO 3166-2"
+                },
+                {
+                  "displayName": "Postal Code",
+                  "name": "postal_code",
+                  "type": "string",
+                  "default": "",
+                  "description": "Region specific postal code, such as ZIP code"
+                },
+                {
+                  "displayName": "Country",
+                  "name": "country",
+                  "type": "string",
+                  "default": "",
+                  "description": "Country code according to ISO 3166-1 Alpha-2. Defaults to US."
+                },
+                {
+                  "displayName": "Language",
+                  "name": "language",
+                  "type": "string",
+                  "default": "",
+                  "description": "Language in which the address is recorded, per ISO 639"
+                },
+                {
+                  "displayName": "Location",
+                  "name": "location",
+                  "type": "fixedCollection",
+                  "default": {},
+                  "options": [
+                    {
+                      "displayName": "Location Fields",
+                      "name": "location_fields",
+                      "values": [
+                        {
+                          "displayName": "Latitude",
+                          "name": "latitude",
+                          "type": "string",
+                          "default": "",
+                          "description": "Latitude of the location of the address"
+                        },
+                        {
+                          "displayName": "Longitude",
+                          "name": "longitude",
+                          "type": "string",
+                          "default": "",
+                          "description": "Longitude of the location of the address"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a petition"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a petition"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many petitions"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "action": "Update a petition"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Origin System",
+      "name": "originSystem",
+      "description": "Source where the petition originated",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Title",
+      "name": "title",
+      "description": "Title of the petition to create",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Browser URL",
+          "name": "browser_url",
+          "type": "string",
+          "default": "",
+          "description": "URL to this petition’s page on the Action Network or a third party"
+        },
+        {
+          "displayName": "Featured Image URL",
+          "name": "featured_image_url",
+          "type": "string",
+          "default": "",
+          "description": "URL to this action’s featured image on the Action Network"
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "Internal (not public) title of the petition"
+        },
+        {
+          "displayName": "Petition Text",
+          "name": "petition_text",
+          "type": "string",
+          "default": "",
+          "description": "Text of the letter to the petition’s target"
+        },
+        {
+          "displayName": "Targets",
+          "name": "target",
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated names of targets for this petition"
+        }
+      ]
+    },
+    {
+      "displayName": "Petition ID",
+      "name": "petitionId",
+      "description": "ID of the petition to retrieve",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Petition ID",
+      "name": "petitionId",
+      "description": "ID of the petition to update",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "petition"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Browser URL",
+          "name": "browser_url",
+          "type": "string",
+          "default": "",
+          "description": "URL to this petition’s page on the Action Network or a third party"
+        },
+        {
+          "displayName": "Featured Image URL",
+          "name": "featured_image_url",
+          "type": "string",
+          "default": "",
+          "description": "URL to this action’s featured image on the Action Network"
+        },
+        {
+          "displayName": "Name",
+          "name": "name",
+          "type": "string",
+          "default": "",
+          "description": "Internal (not public) title of the petition"
+        },
+        {
+          "displayName": "Petition Text",
+          "name": "petition_text",
+          "type": "string",
+          "default": "",
+          "description": "Text of the letter to the petition’s target"
+        },
+        {
+          "displayName": "Targets",
+          "name": "target",
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated names of targets for this petition"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a signature"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a signature"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many signatures"
+        },
+        {
+          "name": "Update",
+          "value": "update",
+          "action": "Update a signature"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Petition ID",
+      "name": "petitionId",
+      "description": "ID of the petition to sign",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Person ID",
+      "name": "personId",
+      "description": "ID of the person whose signature to create",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Additional Fields",
+      "name": "additionalFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Comments",
+          "name": "comments",
+          "type": "string",
+          "default": "",
+          "description": "Comments to leave when signing this petition"
+        }
+      ]
+    },
+    {
+      "displayName": "Petition ID",
+      "name": "petitionId",
+      "description": "ID of the petition whose signature to retrieve",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Signature ID",
+      "name": "signatureId",
+      "description": "ID of the signature to retrieve",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Petition ID",
+      "name": "petitionId",
+      "description": "ID of the petition whose signatures to retrieve",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Petition ID",
+      "name": "petitionId",
+      "description": "ID of the petition whose signature to update",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Signature ID",
+      "name": "signatureId",
+      "description": "ID of the signature to update",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Update Fields",
+      "name": "updateFields",
+      "type": "collection",
+      "placeholder": "Add Field",
+      "default": {},
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "signature"
+          ],
+          "operation": [
+            "update"
+          ]
+        }
+      },
+      "options": [
+        {
+          "displayName": "Comments",
+          "name": "comments",
+          "type": "string",
+          "default": "",
+          "description": "Comments to leave when signing this petition"
+        }
+      ]
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Create",
+          "value": "create",
+          "action": "Create a tag"
+        },
+        {
+          "name": "Get",
+          "value": "get",
+          "action": "Get a tag"
+        },
+        {
+          "name": "Get Many",
+          "value": "getAll",
+          "action": "Get many tags"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "create"
+    },
+    {
+      "displayName": "Name",
+      "name": "name",
+      "description": "Name of the tag to create",
+      "type": "string",
+      "required": true,
+      "default": "",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "create"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Tag ID",
+      "name": "tagId",
+      "description": "ID of the tag to retrieve",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "get"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Return All",
+      "name": "returnAll",
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to return all results or only up to a given limit",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Limit",
+      "name": "limit",
+      "type": "number",
+      "default": 50,
+      "description": "Max number of results to return",
+      "typeOptions": {
+        "minValue": 1
+      },
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "getAll"
+          ],
+          "returnAll": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Simplify",
+      "name": "simple",
+      "type": "boolean",
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "tag"
+          ],
+          "operation": [
+            "getAll"
+          ]
+        }
+      },
+      "default": true,
+      "description": "Whether to return a simplified version of the response instead of the raw data"
+    },
+    {
+      "displayName": "Operation",
+      "name": "operation",
+      "type": "options",
+      "noDataExpression": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "personTag"
+          ]
+        }
+      },
+      "options": [
+        {
+          "name": "Add",
+          "value": "add",
+          "action": "Add a person tag"
+        },
+        {
+          "name": "Remove",
+          "value": "remove",
+          "action": "Remove a person tag"
+        },
+        {
+          "name": "Custom API Call",
+          "value": "__CUSTOM_API_CALL__"
+        }
+      ],
+      "default": "add"
+    },
+    {
+      "displayName": "Tag Name or ID",
+      "name": "tagId",
+      "description": "ID of the tag to add. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getTags"
+      },
+      "required": true,
+      "default": [],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "personTag"
+          ],
+          "operation": [
+            "add"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Person ID",
+      "name": "personId",
+      "description": "ID of the person to add the tag to",
+      "type": "string",
+      "default": "",
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "personTag"
+          ],
+          "operation": [
+            "add"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Tag Name or ID",
+      "name": "tagId",
+      "description": "ID of the tag whose tagging to delete. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsMethod": "getTags"
+      },
+      "default": [],
+      "required": true,
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "personTag"
+          ],
+          "operation": [
+            "remove"
+          ]
+        }
+      }
+    },
+    {
+      "displayName": "Tagging Name or ID",
+      "name": "taggingId",
+      "description": "ID of the tagging to remove. Choose from the list, or specify an ID using an <a href=\"https://docs.n8n.io/code/expressions/\">expression</a>.",
+      "type": "options",
+      "typeOptions": {
+        "loadOptionsDependsOn": [
+          "tagId"
+        ],
+        "loadOptionsMethod": "getTaggings"
+      },
+      "required": true,
+      "default": [],
+      "displayOptions": {
+        "show": {
+          "resource": [
+            "personTag"
+          ],
+          "operation": [
+            "remove"
+          ]
+        }
+      }
+    }
+  ],
+  "codex": {
+    "categories": [
+      "Sales",
+      "Marketing"
+    ],
+    "resources": {
+      "primaryDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.actionnetwork/"
+        }
+      ],
+      "credentialDocumentation": [
+        {
+          "url": "https://docs.n8n.io/integrations/builtin/credentials/actionNetwork/"
+        }
+      ]
+    }
+  },
+  "iconUrl": "icons/n8n-nodes-base/dist/nodes/ActionNetwork/actionNetwork.svg",
+  "name": "n8n-nodes-base.actionNetwork"
+}
