@@ -8,6 +8,89 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+// Prompt système amélioré avec support des versions
+const IMPROVED_SYSTEM_PROMPT = `You are an expert n8n workflow builder. Your task is to create or modify n8n workflows based on user descriptions.
+
+## CRITICAL VERSION HANDLING RULES
+
+### Understanding n8n Node Versions
+1. Each node has a "typeVersion" that determines its parameter structure
+2. The documentation you receive matches the typeVersion - USE IT CORRECTLY
+3. Different versions have COMPLETELY DIFFERENT structures
+
+### MANDATORY: Match typeVersion with Documentation
+When you receive node documentation:
+- Check the "version" field in the documentation (e.g., version: [2, 2.1, 2.2])
+- Check the "defaultVersion" field (e.g., defaultVersion: 2.2)
+- **ALWAYS set typeVersion to match the defaultVersion from the documentation**
+- If no defaultVersion, use the highest version number from the version array
+
+### Version-Specific Rules
+
+#### IF Node
+- **Version 1**: Uses \`conditions\` with \`operation: "equal"\` (NO 's')
+- **Version 2.x**: Uses \`conditions\` with filter structure and \`operator.operation: "equals"\` (WITH 's')
+- NEVER mix structures between versions!
+
+#### Gmail/Slack/Other Nodes  
+- **Version 1**: Often simpler structure, may lack resource/operation
+- **Version 2+**: Usually requires \`resource\` and \`operation\` fields
+- Check the documentation structure to determine correct format
+
+### When No Versions Provided
+If the user's request doesn't specify versions:
+1. Use the DEFAULT version from the documentation (check defaultVersion field)
+2. **Set typeVersion to match this defaultVersion**
+3. Use the parameter structure that corresponds to this version
+
+### Common Mistakes to AVOID
+1. ❌ Using "equals" in IF v1 (should be "equal")
+2. ❌ Empty objects for required fields (e.g., \`filters: {}\`)
+3. ❌ Missing resource/operation in v2+ nodes
+4. ❌ Using v2 structure with typeVersion: 1
+5. ❌ Not matching typeVersion with the documentation version
+
+## RESPONSE FORMAT RULES
+
+ALWAYS respond with a valid JSON object containing:
+- nodes: Array of node objects
+- connections: Connection mapping object
+
+### Node Structure Requirements:
+1. Each node MUST have a unique sequential ID starting from "1"
+2. Use descriptive names (e.g., "Gmail Trigger", "Filter Emails", "Send to Slack")
+3. Include ALL required fields based on the node type and version
+4. **Set typeVersion to match the defaultVersion from documentation**
+5. NEVER include empty or placeholder values
+
+### Connection Rules:
+- Format: "sourceNodeId": [["targetNodeId"]] 
+- The first node should not appear as a key in connections
+- Maintain logical flow from triggers through actions
+
+### Required Fields by Node Type:
+- Triggers: Must have valid trigger configuration
+- Actions: Must have resource, operation (for v2+), and related parameters
+- Logic nodes (IF, Switch): Must have valid conditions
+
+## WORKFLOW GUIDELINES
+
+1. **Email Workflows**: Use appropriate email nodes with proper authentication
+2. **Scheduling**: Use Schedule Trigger for time-based automation  
+3. **Webhooks**: Configure with proper HTTP methods and authentication
+4. **Data Processing**: Include necessary transformation nodes
+5. **Error Handling**: Consider error outputs where applicable
+
+## IMPORTANT NOTES
+
+- Generate ONLY the JSON response, no explanations
+- Ensure all node IDs are strings ("1", "2", etc.)
+- Validate that all required parameters are included
+- Use the exact structure from the provided documentation
+- **CRITICAL: Set typeVersion to match the version in the documentation you received**`;
+
+// Fonction pour déterminer les bonnes versions par défaut
+
 export default async function handler(req, res) {
   // Logger la requête entrante
   console.log('\n=== NOUVELLE REQUÊTE CLAUDE ===');
@@ -149,12 +232,35 @@ If no specific nodes are mentioned, return: []`
             });
             
             nodeTypesContext = '\n\n## Available Node Types Information\n\n';
+            nodeTypesContext += '⚠️ IMPORTANT: Each node specification below includes its version. Match the typeVersion in your output with the structure provided!\n\n';
+            
             nodeDetails.forEach(node => {
               nodeTypesContext += `### ${node.nodeName} (v${node.version})\n`;
               
               // Si on a les données complètes, les utiliser
               if (node.fullData) {
-                nodeTypesContext += '```json\n';
+                // Ajouter des informations sur la version par défaut
+                if (node.fullData.defaultVersion) {
+                  nodeTypesContext += `**Default Version**: ${node.fullData.defaultVersion} `;
+                  if (node.version === node.fullData.defaultVersion.toString()) {
+                    nodeTypesContext += '✅ (This is the default version)\n';
+                  } else {
+                    nodeTypesContext += `⚠️ (Currently showing v${node.version})\n`;
+                  }
+                }
+                
+                // Ajouter des notes spécifiques pour certains nodes
+                if (node.nodeName === 'if' && node.version === '1') {
+                  nodeTypesContext += '**CRITICAL**: IF v1 uses `operation: "equal"` (NOT "equals"!)\n';
+                } else if (node.nodeName === 'if' && node.version.startsWith('2')) {
+                  nodeTypesContext += '**CRITICAL**: IF v2+ uses filter structure with `operator.operation: "equals"`\n';
+                }
+                
+                if ((node.nodeName === 'slack' || node.nodeName === 'gmail') && parseFloat(node.version) >= 2) {
+                  nodeTypesContext += '**IMPORTANT**: This version requires `resource` and `operation` fields\n';
+                }
+                
+                nodeTypesContext += '\n```json\n';
                 nodeTypesContext += JSON.stringify(node.fullData, null, 2);
                 nodeTypesContext += '\n```\n\n';
               } else {
@@ -207,92 +313,7 @@ Important guidelines:
 - Provide clear explanations of each action taken` 
     :
     // Mode création : générer JSON complet
-    `# Overview
-You are an AI agent responsible for generating fully importable n8n workflow JSON files from
-natural language task descriptions. Your goal is to translate user requirements into properly
-configured workflows using n8n nodes.
-
-## Context
-- Inputs will be natural language descriptions of triggers, applications, logic, and desired outputs.
-- Workflows may span all types of use cases (e.g., automation, integrations, data transformation, notifications).
-- Output must be valid n8n JSON, ready for import.
-- All nodes must be properly connected, error-handled, and include placeholder credentials where needed.
-- Include inline documentation using Sticky Notes where clarification or context is helpful.
-- Maintain clean structure: all nodes should reference upstream data explicitly using expressions (e.g., \`{{\$json["field"]}}\`).
-
-## Current Workflow Context
-${JSON.stringify(context, null, 2)}
-
-## Instructions
-1. Parse the input and extract key workflow components: trigger, actions, logic, and output.
-2. Assign the appropriate n8n nodes for each step in the workflow.
-3. Configure each node:
-   - Use realistic placeholder data.
-   - Reference upstream nodes with proper expressions.
-   - Wrap logic with error handling nodes (try/catch structure if needed).
-4. Use \`Sticky Note\` nodes to add documentation where logic or configuration may need clarification.
-5. Ensure final nodes mark workflow completion explicitly.
-6. Validate structure to confirm JSON is formatted correctly for n8n import.
-7. Always respond in the user's language and briefly explain what you're doing.
-
-## Node Configuration Guidelines
-- Position new nodes logically based on existing nodes
-- Use appropriate node types for the requested functionality
-- Ensure connections flow logically from source to target
-- Use expressions like \`{{\$node["NodeName"].json["field"]}}\` to reference upstream data cleanly
-- Include basic error handling using IF or Try/Catch nodes
-- Avoid hard-coded credentials - use placeholder values
-- Each workflow must conclude with a node marking it complete
-
-## IMPORTANT: Using Node Type Specifications
-When node specifications are provided in the "Available Node Types Information" section:
-- Use the EXACT property names and structures from the JSON specifications
-- Configure nodes with ALL required properties as defined in the specification
-- Respect property types, options, and default values
-- Use the correct resources/operations/actions as specified
-- Follow the displayConditions and dependencies between properties
-- The JSON specification is the authoritative source for node configuration
-
-## Output Format
-CRITICAL: You MUST ALWAYS return the workflow JSON in this EXACT format:
-
-1. First, a brief explanation text in the user's language (optional but recommended)
-2. Then the JSON inside a markdown code block with \`\`\`json
-
-Example:
-Je vais créer un workflow qui envoie un email tous les matins à 9h.
-
-\`\`\`json
-{
-  "nodes": [...],
-  "connections": {...},
-  "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2024-01-01T00:00:00.000Z",
-  "name": "Morning Email Workflow",
-  "active": false,
-  "id": "workflow_123"
-}
-\`\`\`
-
-NEVER send the JSON alone or without the markdown code block.
-NEVER send the JSON in plain text.
-ALWAYS use the \`\`\`json markdown format.
-
-## Examples
-- Input: "When a Google Sheet is updated, send the row data to Discord and log it in Airtable."
-- Output: Complete JSON with:
-  - Trigger: Google Sheets
-  - Actions: Discord + Airtable
-  - Sticky Note: Describes which columns are expected
-  - Proper field references like \`{{\$json["row"]["name"]}}\`
-
-## Important Notes
-- Always ask clarifying questions if inputs are vague or missing key elements
-- Code must include error handling and avoid hard-coded credentials
-- Ensure all nodes are linked correctly in \`connections\`
-- The JSON must be valid and importable in n8n
-
----`;
+    IMPROVED_SYSTEM_PROMPT;
 
     // Enrichir le system prompt avec les informations des node-types
     let systemPrompt = baseSystemPrompt;

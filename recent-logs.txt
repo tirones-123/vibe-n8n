@@ -16,7 +16,7 @@ NodeTypes RAG prêt !
 📊 Index stats: 732 nodes indexés
 
 === NOUVELLE REQUÊTE CLAUDE ===
-Timestamp: 2025-07-08T17:56:43.031Z
+Timestamp: 2025-07-08T18:33:40.551Z
 Method: POST
 Headers: {
   "host": "vibe-n8n-production.up.railway.app",
@@ -25,35 +25,42 @@ Headers: {
   "accept": "*/*",
   "accept-encoding": "gzip, deflate, br, zstd",
   "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-  "x-request-start": "1751997403017"
   "authorization": "Bearer d5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2",
   "content-type": "application/json",
-}
-Body: {
   "origin": "chrome-extension://idfdhdlngfmjdakobboknommonkdalhe",
   "priority": "u=1, i",
-  "prompt": "fais moi un workflow qui fais que quand maxime.marsal18@gmail.com m'envoi un mail sur ma boite gmail minfreestyle@gmail.com ça m'envoi un message sur slack avec son contenu",
   "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "cross-site",
+  "x-forwarded-for": "194.65.139.14",
+  "x-forwarded-host": "vibe-n8n-production.up.railway.app",
+  "x-forwarded-proto": "https",
+  "x-railway-edge": "railway/europe-west4-drams3a",
+  "x-railway-request-id": "f0jWe0CzRES4JzIAss7a6g",
+  "x-real-ip": "194.65.139.14",
+  "x-request-start": "1751999620542"
+}
+Body: {
+  "prompt": "fais moi un workflow qui fais que quand maxime.marsal18@gmail.com m'envoi un mail sur ma boite gmail minfreestyle@gmail.com ça m'envoi un message sur slack avec son contenu",
   "mode": "create",
   "hasContext": true,
-  "sec-fetch-mode": "cors",
   "hasTools": false,
-  "sec-fetch-site": "cross-site",
   "versions": "none"
 }
-  "x-forwarded-for": "194.65.139.14",
 Identification des nodes n8n mentionnés...
-  "x-forwarded-host": "vibe-n8n-production.up.railway.app",
 Réponse Haiku brute: ["gmail", "slack"]
-  "x-forwarded-proto": "https",
 Nodes identifiés: [ 'gmail', 'slack' ]
+Récupération des fiches pour: [ 'gmail', 'slack' ]
+Avec versions: null
+Erreur système node-types: TypeError: Cannot read properties of null (reading 'gmail')
+    at NodeTypesRAG.fetchNodesByNames (file:///app/api/rag/node-types-rag.js:403:31)
+    at getNodeTypesByNames (file:///app/api/rag/node-types-rag.js:748:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handler (file:///app/api/claude.js:143:31)
 
-  "x-railway-edge": "railway/europe-west4-drams3a",
 --- CONTEXTE ENVOYÉ À CLAUDE OPUS ---
-  "x-railway-request-id": "YUJtXUV5Q3aCpNIrss7a6g",
 Model: claude-opus-4-20250514
 Mode: création
-  "x-real-ip": "194.65.139.14",
 Nodes enrichis: gmail, slack
 Taille du system prompt: 3882 caractères
 -----------------------------------

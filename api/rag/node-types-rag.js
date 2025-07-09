@@ -423,45 +423,71 @@ class NodeTypesRAG {
             });
             
             if (nodeFiles.length > 0) {
-              // Extraire les versions et prendre la plus haute
-              const versions = nodeFiles.map(f => {
-                const match = f.match(/_v([\d.]+)\.json$/);
-                return match ? match[1] : null;
-              }).filter(v => v !== null);
+              // D'abord, essayer de trouver la version par défaut
+              let selectedVersion = null;
+              let defaultVersion = null;
               
-              if (versions.length > 0) {
-                // Trier les versions pour prendre la plus haute
-                // Comparer les versions en tenant compte des points (ex: 2.3 > 2.1 > 1)
-                const maxVersion = versions.sort((a, b) => {
-                  const aParts = a.split('.').map(Number);
-                  const bParts = b.split('.').map(Number);
+              // Charger tous les fichiers pour trouver la defaultVersion
+              for (const file of nodeFiles) {
+                const match = file.match(/_v([\d.]+)\.json$/);
+                if (match) {
+                  const fileVersion = match[1];
+                  const filePath = path.join(this.storageDir, file);
+                  const nodeData = JSON.parse(await fs.readFile(filePath, 'utf-8'));
                   
-                  for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
-                    const aPart = aParts[i] || 0;
-                    const bPart = bParts[i] || 0;
-                    if (aPart !== bPart) {
-                      return bPart - aPart; // Ordre décroissant
+                  if (nodeData.defaultVersion) {
+                    defaultVersion = nodeData.defaultVersion.toString();
+                    // Si cette version correspond à la defaultVersion, l'utiliser
+                    if (fileVersion === defaultVersion) {
+                      selectedVersion = fileVersion;
+                      break;
                     }
                   }
-                  return 0;
-                })[0];
+                }
+              }
+              
+              // Si pas de defaultVersion trouvée, prendre la plus haute version
+              if (!selectedVersion) {
+                const versions = nodeFiles.map(f => {
+                  const match = f.match(/_v([\d.]+)\.json$/);
+                  return match ? match[1] : null;
+                }).filter(v => v !== null);
                 
-                const nodeId = `${possibleName}|v${maxVersion}`;
+                if (versions.length > 0) {
+                  // Trier les versions pour prendre la plus haute
+                  selectedVersion = versions.sort((a, b) => {
+                    const aParts = a.split('.').map(Number);
+                    const bParts = b.split('.').map(Number);
+                    
+                    for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+                      const aPart = aParts[i] || 0;
+                      const bPart = bParts[i] || 0;
+                      if (aPart !== bPart) {
+                        return bPart - aPart; // Ordre décroissant
+                      }
+                    }
+                    return 0;
+                  })[0];
+                }
+              }
+              
+              if (selectedVersion) {
+                const nodeId = `${possibleName}|v${selectedVersion}`;
                 
-                console.log(`📌 Pas de version spécifiée pour ${nodeName}, utilisation de v${maxVersion} (trouvée sur le volume)`);
+                console.log(`📌 Pas de version spécifiée pour ${nodeName}, utilisation de v${selectedVersion} (${defaultVersion ? 'version par défaut' : 'dernière version'})`);
                 
                 // Charger les données depuis le volume
                 const fullData = await this.loadNodeFromVolume(nodeId);
                 
                 if (fullData) {
-                  console.log(`✅ Données complètes chargées depuis le volume pour ${nodeName} v${maxVersion} (${JSON.stringify(fullData).length} caractères)`);
+                  console.log(`✅ Données complètes chargées depuis le volume pour ${nodeName} v${selectedVersion} (${JSON.stringify(fullData).length} caractères)`);
                   
                   // Essayer de récupérer les métadonnées depuis Pinecone si possible
                   let metadata = {
                     nodeName: possibleName,
                     displayName: fullData.displayName || possibleName,
                     description: fullData.description || '',
-                    version: maxVersion,
+                    version: selectedVersion,
                     group: fullData.group || []
                   };
                   
@@ -476,7 +502,7 @@ class NodeTypesRAG {
                   
                   results.push({
                     nodeName,
-                    version: maxVersion,
+                    version: selectedVersion,
                     metadata,
                     fullData
                   });
