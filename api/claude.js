@@ -50,6 +50,22 @@ If the user's request doesn't specify versions:
 4. ❌ Using v2 structure with typeVersion: 1
 5. ❌ Not matching typeVersion with the documentation version
 
+### Node-Specific Rules
+
+#### Gmail Trigger
+- NEVER include empty \`filters: {}\`
+- If no filters needed, omit the filters field entirely
+- Use \`simple: false\` for advanced filtering, \`simple: true\` for basic
+
+#### Slack Node v2+
+- MUST have \`resource: "message"\` (NOT "chat")
+- MUST have \`operation: "post"\` (NOT "message")
+- Channel selection: use \`select: "channel"\` with \`channelId\`
+
+#### IF Node
+- v1: \`operation: "contains"\`, \`"equal"\` (no 's')
+- v2+: \`operator: { type: "string", operation: "equals" }\`
+
 ## RESPONSE FORMAT RULES
 
 ALWAYS respond with a valid JSON object containing:
@@ -194,10 +210,23 @@ export default async function handler(req, res) {
           max_tokens: 500,
           messages: [{
             role: 'user',
-            content: `Analyze this user prompt and return ONLY a JSON array of n8n node names mentioned (canonical names only, e.g., "slack", "discord", "httpRequest", etc.):
+            content: `Analyze this user prompt and identify ALL n8n nodes that would be needed to build the workflow.
 
-"${prompt}"
+User prompt: "${prompt}"
 
+Return ONLY a JSON array of n8n node canonical names. Include:
+- Trigger nodes (e.g., "gmailTrigger", "scheduleTrigger", "webhookTrigger")
+- Logic nodes (e.g., "if", "switch", "merge", "splitInBatches")
+- Action nodes (e.g., "slack", "gmail", "httpRequest", "code")
+- Data nodes (e.g., "set", "itemLists", "spreadsheetFile")
+
+Examples:
+- For "when I receive an email": ["gmailTrigger"]
+- For "send to Slack": ["slack"]
+- For "if condition is true": ["if"]
+- For "every morning at 9am": ["scheduleTrigger"]
+
+Be specific and use exact n8n node names (lowercase, no spaces).
 Return format: ["node1", "node2", ...]
 If no specific nodes are mentioned, return: []`
           }],
