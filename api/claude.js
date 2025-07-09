@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { getNodeTypesByNames } from './rag/node-types-rag.js';
+import { getNodeTypesByNames, getAllAvailableNodes } from './rag/node-types-rag.js';
 
 // Configuration CORS
 const corsHeaders = {
@@ -49,22 +49,6 @@ If the user's request doesn't specify versions:
 3. ❌ Missing resource/operation in v2+ nodes
 4. ❌ Using v2 structure with typeVersion: 1
 5. ❌ Not matching typeVersion with the documentation version
-
-### Node-Specific Rules
-
-#### Gmail Trigger
-- NEVER include empty \`filters: {}\`
-- If no filters needed, omit the filters field entirely
-- Use \`simple: false\` for advanced filtering, \`simple: true\` for basic
-
-#### Slack Node v2+
-- MUST have \`resource: "message"\` (NOT "chat")
-- MUST have \`operation: "post"\` (NOT "message")
-- Channel selection: use \`select: "channel"\` with \`channelId\`
-
-#### IF Node
-- v1: \`operation: "contains"\`, \`"equal"\` (no 's')
-- v2+: \`operator: { type: "string", operation: "equals" }\`
 
 ## RESPONSE FORMAT RULES
 
@@ -200,6 +184,18 @@ export default async function handler(req, res) {
       if (process.env.OPENAI_API_KEY && process.env.PINECONE_API_KEY) {
         console.log('Identification des nodes n8n mentionnés...');
         
+        // Récupérer la liste complète des nodes disponibles
+        const availableNodes = await getAllAvailableNodes();
+        console.log(`📋 ${availableNodes.length} nodes disponibles dans le système`);
+        
+        // Créer une liste formatée pour Haiku
+        const nodesList = availableNodes.map(n => ({
+          name: n.shortName,
+          displayName: n.displayName,
+          isTrigger: n.isTrigger || false,
+          description: n.description ? n.description.substring(0, 100) : ''
+        }));
+        
         // Étape 1 : Identifier les nodes mentionnés dans le prompt
         const anthropic = new Anthropic({
           apiKey: process.env.CLAUDE_API_KEY,
@@ -210,25 +206,23 @@ export default async function handler(req, res) {
           max_tokens: 500,
           messages: [{
             role: 'user',
-            content: `Analyze this user prompt and identify ALL n8n nodes that would be needed to build the workflow.
+            content: `Here is the complete list of available n8n nodes:
+
+${JSON.stringify(nodesList, null, 2)}
+
+Analyze this user prompt and identify which nodes from the list above would be needed:
 
 User prompt: "${prompt}"
 
-Return ONLY a JSON array of n8n node canonical names. Include:
-- Trigger nodes (e.g., "gmailTrigger", "scheduleTrigger", "webhookTrigger")
-- Logic nodes (e.g., "if", "switch", "merge", "splitInBatches")
-- Action nodes (e.g., "slack", "gmail", "httpRequest", "code")
-- Data nodes (e.g., "set", "itemLists", "spreadsheetFile")
+Instructions:
+- For email triggers, use nodes with "Trigger" in the name (e.g., "gmailTrigger")
+- For sending messages, use the main node (e.g., "slack" not "slackTool")
+- For conditions, use "if" node
+- For filtering emails by sender, you might need "if" node
+- Only return nodes that exist in the list above
 
-Examples:
-- For "when I receive an email": ["gmailTrigger"]
-- For "send to Slack": ["slack"]
-- For "if condition is true": ["if"]
-- For "every morning at 9am": ["scheduleTrigger"]
-
-Be specific and use exact n8n node names (lowercase, no spaces).
-Return format: ["node1", "node2", ...]
-If no specific nodes are mentioned, return: []`
+Return ONLY a JSON array of node shortNames that match.
+Return format: ["node1", "node2", ...]`
           }],
           temperature: 0
         });

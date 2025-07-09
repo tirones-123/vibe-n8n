@@ -643,7 +643,76 @@ class NodeTypesRAG {
     this.initialized = true;
   }
 
-  // Statistiques
+  // Obtenir une liste simplifiée de tous les nodes disponibles
+  async getAllNodeNames() {
+    try {
+      const files = await fs.readdir(this.storageDir);
+      const nodeMap = new Map();
+      
+      // Parser tous les fichiers pour extraire les noms uniques
+      for (const file of files) {
+        if (file.endsWith('.json')) {
+          try {
+            const match = file.match(/^(.+?)_v[\d.]+\.json$/);
+            if (match) {
+              const fullName = match[1].replace(/_/g, '|');
+              // Extraire le nom court (après le dernier .)
+              const parts = fullName.split('.');
+              const shortName = parts[parts.length - 1];
+              
+              // Ignorer les nodes Tool si le node principal existe
+              if (shortName.endsWith('Tool')) {
+                const baseName = shortName.replace(/Tool$/, '');
+                // Vérifier si le node principal existe
+                const hasMainNode = files.some(f => 
+                  f.includes(`${baseName}_v`) && !f.includes(`${baseName}Tool_v`)
+                );
+                if (hasMainNode) continue;
+              }
+              
+              if (!nodeMap.has(shortName)) {
+                nodeMap.set(shortName, {
+                  shortName,
+                  fullName,
+                  displayName: ''
+                });
+              }
+            }
+          } catch (error) {
+            // Ignorer les erreurs de parsing
+          }
+        }
+      }
+      
+      // Enrichir avec les displayNames si possible
+      for (const [shortName, nodeInfo] of nodeMap) {
+        try {
+          const nodeFile = files.find(f => 
+            f.startsWith(nodeInfo.fullName.replace(/[|:]/g, '_') + '_v')
+          );
+          if (nodeFile) {
+            const content = JSON.parse(await fs.readFile(path.join(this.storageDir, nodeFile), 'utf-8'));
+            nodeInfo.displayName = content.displayName || shortName;
+            
+            // Ajouter des infos utiles pour l'identification
+            nodeInfo.isTrigger = shortName.toLowerCase().includes('trigger');
+            nodeInfo.description = content.description || '';
+          }
+        } catch (error) {
+          // Ignorer
+        }
+      }
+      
+      return Array.from(nodeMap.values()).sort((a, b) => 
+        a.shortName.localeCompare(b.shortName)
+      );
+    } catch (error) {
+      console.error('Erreur getAllNodeNames:', error);
+      return [];
+    }
+  }
+
+  // Obtenir les statistiques
   async getStats() {
     try {
       const stats = await this.index.namespace(NAMESPACE).describeIndexStats();
@@ -772,4 +841,10 @@ export async function updateNodeTypesIndex() {
 export async function getNodeTypesByNames(nodeNames, versions = {}) {
   await nodeTypesRAG.initialize();
   return await nodeTypesRAG.fetchNodesByNames(nodeNames, versions);
+}
+
+// Fonction helper pour obtenir tous les noms de nodes disponibles
+export async function getAllAvailableNodes() {
+  await nodeTypesRAG.initialize();
+  return await nodeTypesRAG.getAllNodeNames();
 } 
