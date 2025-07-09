@@ -122,52 +122,66 @@ const workflow = {
   "updatedAt": "2024-01-01T00:00:00.000Z"
 };
 
-console.log('🔍 Analyse du workflow Gmail → Slack\n');
+console.log('🔍 Analyse du workflow généré par Claude\n');
 
-const prompt = "fais moi un workflow qui fais que quand maxime.marsal18@gmail.com m'envoi un mail sur ma boite gmail minfreestyle@gmail.com ça m'envoi un message sur slack avec son contenu";
+// Analyser chaque node
+workflow.nodes.forEach(node => {
+  console.log(`\n📌 Node: ${node.name} (${node.type})`);
+  console.log(`   Version: ${node.typeVersion}`);
+  console.log(`   Paramètres:`, JSON.stringify(node.parameters, null, 2));
+  
+  // Identifier les problèmes potentiels
+  if (node.type === 'n8n-nodes-base.gmailTrigger') {
+    console.log('\n   ⚠️  Problèmes potentiels pour Gmail Trigger:');
+    console.log('   - "simple" devrait peut-être être true');
+    console.log('   - "filters" est vide - pourrait causer l\'erreur');
+  }
+  
+  if (node.type === 'n8n-nodes-base.if') {
+    console.log('\n   ⚠️  Problèmes potentiels pour IF:');
+    console.log('   - "operation": "equals" pourrait ne pas être supporté');
+    console.log('   - Essayer "equal" au lieu de "equals"');
+  }
+  
+  if (node.type === 'n8n-nodes-base.slack') {
+    console.log('\n   ⚠️  Problèmes potentiels pour Slack:');
+    console.log('   - Le node Slack v2 pourrait avoir besoin de "resource" et "operation"');
+    console.log('   - Structure actuelle pourrait être pour v1');
+  }
+});
 
-console.log('📝 Prompt utilisateur:');
-console.log(`"${prompt}"\n`);
+console.log('\n\n🔧 Corrections suggérées:\n');
 
-console.log('🤔 Analyse des besoins:\n');
+// Créer une version corrigée
+const correctedWorkflow = JSON.parse(JSON.stringify(workflow));
 
-console.log('1. DÉCLENCHEUR:');
-console.log('   - Gmail Trigger: Surveille les nouveaux emails');
-console.log('   - Boîte email: minfreestyle@gmail.com');
+// Corriger Gmail Trigger
+const gmailNode = correctedWorkflow.nodes.find(n => n.type === 'n8n-nodes-base.gmailTrigger');
+if (gmailNode) {
+  gmailNode.parameters.simple = true;
+  delete gmailNode.parameters.filters; // Supprimer si vide
+  console.log('✅ Gmail Trigger: Mis simple=true et supprimé filters vide');
+}
 
-console.log('\n2. CONDITION (IF nécessaire ?):');
-console.log('   - Filtrer par expéditeur: maxime.marsal18@gmail.com');
-console.log('   - ❓ Option A: Utiliser un node IF pour filtrer');
-console.log('   - ❓ Option B: Utiliser les filtres du Gmail Trigger');
+// Corriger IF node
+const ifNode = correctedWorkflow.nodes.find(n => n.type === 'n8n-nodes-base.if');
+if (ifNode) {
+  ifNode.parameters.conditions.string[0].operation = 'equal'; // "equal" au lieu de "equals"
+  console.log('✅ IF Node: Changé "equals" en "equal"');
+}
 
-console.log('\n3. ACTION:');
-console.log('   - Envoyer le contenu sur Slack');
+// Corriger Slack node pour v2
+const slackNode = correctedWorkflow.nodes.find(n => n.type === 'n8n-nodes-base.slack');
+if (slackNode) {
+  slackNode.parameters = {
+    resource: 'message',
+    operation: 'post',
+    channel: '#general',
+    text: slackNode.parameters.text,
+    otherOptions: {}
+  };
+  console.log('✅ Slack Node: Ajouté resource et operation pour v2');
+}
 
-console.log('\n📊 Comparaison des approches:\n');
-
-console.log('APPROCHE 1: Avec node IF (3 nodes)');
-console.log('  [Gmail Trigger] → [IF: from == maxime.marsal18] → [Slack]');
-console.log('  ✅ Plus flexible pour des conditions complexes');
-console.log('  ❌ Plus de nodes, plus complexe');
-console.log('  ❌ Tous les emails sont récupérés puis filtrés');
-
-console.log('\nAPPROCHE 2: Sans node IF (2 nodes)');
-console.log('  [Gmail Trigger avec filters.from] → [Slack]');
-console.log('  ✅ Plus simple et efficace');
-console.log('  ✅ Seuls les emails de Maxime sont traités');
-console.log('  ✅ Moins de ressources utilisées');
-
-console.log('\n💡 RECOMMANDATION:');
-console.log('Pour ce cas simple, utiliser les filtres du Gmail Trigger est préférable.');
-console.log('Le node IF n\'est pas nécessaire car Gmail Trigger peut filtrer directement.');
-
-console.log('\n🎯 Nodes nécessaires:');
-console.log('1. gmailTrigger (avec filters.from configuré)');
-console.log('2. slack');
-console.log('\nTotal: 2 nodes suffisent !');
-
-console.log('\n📌 Quand utiliser un node IF:');
-console.log('- Conditions multiples complexes');
-console.log('- Logique qui combine plusieurs champs');
-console.log('- Besoin de router vers différentes branches');
-console.log('- Conditions qui changent dynamiquement'); 
+console.log('\n\n📄 Workflow corrigé:\n');
+console.log(JSON.stringify(correctedWorkflow, null, 2)); 

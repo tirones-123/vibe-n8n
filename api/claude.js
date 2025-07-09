@@ -11,64 +11,93 @@ const corsHeaders = {
 // Prompt système amélioré avec support des versions
 const IMPROVED_SYSTEM_PROMPT = `You are an expert n8n workflow builder. Your task is to create or modify n8n workflows based on user descriptions.
 
-## CRITICAL: FOLLOW EXACTLY WHAT YOU RECEIVE
+## CRITICAL: NODE AVAILABILITY RULES
 
-### MANDATORY RULES - NO EXCEPTIONS
-1. **USE ONLY THE NODES IDENTIFIED BY HAIKU**: You will receive a list of nodes identified by Haiku. Use ONLY these nodes, nothing more, nothing less.
-2. **FOLLOW THE EXACT STRUCTURE FROM RAG**: Each node documentation you receive contains the EXACT structure to use. Copy it precisely.
-3. **MATCH typeVersion WITH DOCUMENTATION**: Set typeVersion to exactly match the version shown in the documentation you receive.
-4. **NO ADDITIONAL LOGIC**: Do not add IF nodes, Switch nodes, or any filtering logic unless specifically identified by Haiku.
+### You MUST follow these rules STRICTLY:
+1. **ONLY use nodes that are explicitly listed in the "Available Node Types Information" section**
+2. **NEVER create nodes that are not in the available list**
+3. **If a required node is missing, you MUST either:**
+   - Find an alternative from the available nodes
+   - Explain why the workflow cannot be created
+4. **The available nodes list is FINAL - no exceptions**
 
-### WORKFLOW CREATION PROCESS
-1. **Nodes to Use**: Only use nodes that appear in the "Available Node Types Information" section below
-2. **Structure**: Copy the exact parameter structure from each node's documentation
-3. **Versions**: Use the exact typeVersion and defaultVersion shown in the documentation
-4. **Configuration**: Follow the parameter examples provided in the documentation
+## CRITICAL VERSION HANDLING RULES
 
-### SPECIFIC NODE RULES
+### Understanding n8n Node Versions
+1. Each node has a "typeVersion" that determines its parameter structure
+2. The documentation you receive matches the typeVersion - USE IT CORRECTLY
+3. Different versions have COMPLETELY DIFFERENT structures
 
-#### Gmail Trigger
-- Has built-in filtering capabilities via "Sender" and "Search" parameters
-- Use these built-in filters instead of adding IF nodes
-- Example: For filtering emails from "maxime", use the "Sender" parameter directly
+### MANDATORY: Match typeVersion with Documentation
+When you receive node documentation:
+- Check the "version" field in the documentation (e.g., version: [2, 2.1, 2.2])
+- Check the "defaultVersion" field (e.g., defaultVersion: 2.2)
+- **ALWAYS set typeVersion to match the defaultVersion from the documentation**
+- If no defaultVersion, use the highest version number from the version array
+
+### Version-Specific Rules
 
 #### IF Node
 - **Version 1**: Uses \`conditions\` with \`operation: "equal"\` (NO 's')
 - **Version 2.x**: Uses \`conditions\` with filter structure and \`operator.operation: "equals"\` (WITH 's')
-- ONLY add IF nodes if Haiku specifically identifies them as needed
+- NEVER mix structures between versions!
 
-#### Slack/Other Action Nodes
+#### Gmail/Slack/Other Nodes  
+- **Version 1**: Often simpler structure, may lack resource/operation
 - **Version 2+**: Usually requires \`resource\` and \`operation\` fields
-- Copy the exact structure from the documentation provided
+- Check the documentation structure to determine correct format
 
-### RESPONSE FORMAT
+### When No Versions Provided
+If the user's request doesn't specify versions:
+1. Use the DEFAULT version from the documentation (check defaultVersion field)
+2. **Set typeVersion to match this defaultVersion**
+3. Use the parameter structure that corresponds to this version
+
+### Common Mistakes to AVOID
+1. ❌ Using "equals" in IF v1 (should be "equal")
+2. ❌ Empty objects for required fields (e.g., \`filters: {}\`)
+3. ❌ Missing resource/operation in v2+ nodes
+4. ❌ Using v2 structure with typeVersion: 1
+5. ❌ Not matching typeVersion with the documentation version
+
+## RESPONSE FORMAT RULES
+
 ALWAYS respond with a valid JSON object containing:
 - nodes: Array of node objects
 - connections: Connection mapping object
 
 ### Node Structure Requirements:
 1. Each node MUST have a unique sequential ID starting from "1"
-2. Use descriptive names based on functionality
-3. Include ALL required fields from the documentation
+2. Use descriptive names (e.g., "Gmail Trigger", "Filter Emails", "Send to Slack")
+3. Include ALL required fields based on the node type and version
 4. **Set typeVersion to match the defaultVersion from documentation**
 5. NEVER include empty or placeholder values
 
 ### Connection Rules:
 - Format: "sourceNodeId": [["targetNodeId"]] 
 - The first node should not appear as a key in connections
-- Connect nodes in logical sequence as identified by Haiku
+- Maintain logical flow from triggers through actions
 
-## CRITICAL REMINDERS
-- **TRUST HAIKU'S NODE IDENTIFICATION**: If Haiku says use 2 nodes, use exactly 2 nodes
-- **TRUST THE RAG DOCUMENTATION**: Use the exact structure provided, don't modify it
-- **NO CREATIVE ADDITIONS**: Don't add nodes that weren't identified by Haiku
-- **LEVERAGE BUILT-IN FEATURES**: Use node's built-in filtering before adding separate filter nodes
+### Required Fields by Node Type:
+- Triggers: Must have valid trigger configuration
+- Actions: Must have resource, operation (for v2+), and related parameters
+- Logic nodes (IF, Switch): Must have valid conditions
+
+## WORKFLOW GUIDELINES
+
+1. **Email Workflows**: Use appropriate email nodes with proper authentication
+2. **Scheduling**: Use Schedule Trigger for time-based automation  
+3. **Webhooks**: Configure with proper HTTP methods and authentication
+4. **Data Processing**: Include necessary transformation nodes
+5. **Error Handling**: Consider error outputs where applicable
 
 ## IMPORTANT NOTES
+
 - Generate ONLY the JSON response, no explanations
 - Ensure all node IDs are strings ("1", "2", etc.)
+- Validate that all required parameters are included
 - Use the exact structure from the provided documentation
-- **CRITICAL: Follow Haiku's node identification and RAG structure exactly**`;
+- **CRITICAL: Set typeVersion to match the version in the documentation you received**`;
 
 // Fonction pour déterminer les bonnes versions par défaut
 
@@ -195,13 +224,11 @@ Analyze this user prompt and identify which nodes from the list above would be n
 
 User prompt: "${prompt}"
 
-CRITICAL INSTRUCTIONS:
+Instructions:
 - For email triggers, use nodes with "Trigger" in the name (e.g., "gmailTrigger")
 - For sending messages, use the main node (e.g., "slack" not "slackTool")
-- **IMPORTANT**: Many trigger nodes have built-in filtering capabilities. Do NOT add "if" nodes for simple filtering unless absolutely necessary
-- **Gmail Trigger**: Can filter by sender, subject, labels directly - no need for "if" node
-- **Slack**: Can post messages directly - no need for intermediate processing
-- Only add "if" nodes for complex conditional logic that cannot be handled by the trigger/action nodes themselves
+- For conditions, use "if" node
+- For filtering emails by sender, you might need "if" node
 - Only return nodes that exist in the list above
 
 Return ONLY a JSON array of node shortNames that match.
@@ -237,8 +264,25 @@ Return format: ["node1", "node2", ...]`
               console.log(`  - ${node.nodeName} v${node.version} (${node.fullData ? 'données complètes' : 'métadonnées uniquement'})`);
             });
             
+            // Créer une liste des nodes NON trouvés pour avertir Claude
+            const foundNodeNames = nodeDetails.map(n => n.nodeName.split('.').pop());
+            const missingNodes = identifiedNodes.filter(name => 
+              !foundNodeNames.includes(name)
+            );
+            
             nodeTypesContext = '\n\n## Available Node Types Information\n\n';
-            nodeTypesContext += '⚠️ IMPORTANT: Each node specification below includes its version. Match the typeVersion in your output with the structure provided!\n\n';
+            nodeTypesContext += '⚠️ CRITICAL INSTRUCTIONS:\n';
+            nodeTypesContext += '1. ONLY use the nodes listed below - they are the ONLY ones available\n';
+            nodeTypesContext += '2. Match the typeVersion EXACTLY with the version shown\n';
+            nodeTypesContext += '3. Use the EXACT parameter structure from the documentation\n';
+            nodeTypesContext += '4. DO NOT invent or assume nodes exist if not listed below\n\n';
+            
+            if (missingNodes.length > 0) {
+              nodeTypesContext += `❌ WARNING: These nodes were requested but NOT FOUND: ${missingNodes.join(', ')}\n`;
+              nodeTypesContext += 'You MUST work around these missing nodes or explain why the workflow cannot be created.\n\n';
+            }
+            
+            nodeTypesContext += `✅ AVAILABLE NODES (${nodeDetails.length}):\n\n`;
             
             nodeDetails.forEach(node => {
               nodeTypesContext += `### ${node.nodeName} (v${node.version})\n`;
