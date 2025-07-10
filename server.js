@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import './scripts/ensure-mcp-db.js';
 import claudeHandler from './api/claude.js';
 import { nodeTypesRAG } from './api/rag/node-types-rag.js';
 
