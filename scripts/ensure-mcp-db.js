@@ -20,7 +20,8 @@ if (!fs.existsSync(DB_DIR)) {
 
 if (fs.existsSync(DB_PATH)) {
   log(`Database already present at ${DB_PATH}`);
-  process.exit(0);
+  // Already present, nothing more to do when imported as a module
+  return;
 }
 
 log('Database not found, rebuilding via n8n-mcp rebuild (may take ~30s)...');
@@ -31,12 +32,11 @@ const result = spawnSync('npx', ['--yes', 'n8n-mcp', 'rebuild', '--db', DB_PATH]
 
 if (result.status !== 0) {
   console.error('Failed to rebuild nodes.db');
-  process.exit(result.status || 1);
+  throw new Error('Failed to rebuild nodes.db');
 }
 
 if (fs.existsSync(DB_PATH)) {
   log('Database rebuilt successfully.');
 } else {
-  console.error('Rebuild completed but database still missing.');
-  process.exit(1);
+  throw new Error('Rebuild completed but database still missing.');
 } 
