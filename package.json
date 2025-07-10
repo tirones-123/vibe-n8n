@@ -16,7 +16,8 @@
     "update-nodes:docker": "node scripts/update-node-types.js --docker",
     "cron:weekly": "node cron.js --weekly",
     "cron": "node cron.js",
-    "test:system": "node scripts/test-system.js"
+    "test:system": "node scripts/test-system.js",
+    "postinstall": "node scripts/ensure-mcp-db.js"
   },
   "keywords": [
     "n8n",
@@ -35,7 +36,8 @@
     "dotenv": "^16.6.1",
     "express": "^4.18.2",
     "node-fetch": "^3.3.2",
-    "openai": "^4.104.0"
+    "openai": "^4.104.0",
+    "n8n-mcp": "^0.0.28"
   },
   "engines": {
     "node": ">=18.0.0"

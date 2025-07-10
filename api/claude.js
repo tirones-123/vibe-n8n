@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { getNodeTypesByNames, getAllAvailableNodes } from './rag/node-types-rag.js';
+import { getAllAvailableNodes } from './rag/node-types-rag.js';
+import { callTool } from '../utils/mcpClient.js';
 
 // Configuration CORS
 const corsHeaders = {
@@ -10,16 +11,6 @@ const corsHeaders = {
 
 // Prompt système amélioré avec support des versions
 const IMPROVED_SYSTEM_PROMPT = `You are an expert n8n workflow builder. Your task is to create or modify n8n workflows based on user descriptions.
-
-## CRITICAL: NODE AVAILABILITY RULES
-
-### You MUST follow these rules STRICTLY:
-1. **ONLY use nodes that are explicitly listed in the "Available Node Types Information" section**
-2. **NEVER create nodes that are not in the available list**
-3. **If a required node is missing, you MUST either:**
-   - Find an alternative from the available nodes
-   - Explain why the workflow cannot be created
-4. **The available nodes list is FINAL - no exceptions**
 
 ## CRITICAL VERSION HANDLING RULES
 
@@ -256,7 +247,18 @@ Return format: ["node1", "node2", ...]`
           // Gérer le cas où versions est "none" ou pas un objet valide
           const versionsObject = (versions === 'none' || typeof versions !== 'object') ? {} : versions;
           
-          const nodeDetails = await getNodeTypesByNames(identifiedNodes, versionsObject);
+          // Récupérer les fiches via MCP (get_node_essentials)
+          const nodeDetails = (await Promise.all(
+            identifiedNodes.map(async (node) => {
+              try {
+                const data = await callTool('get_node_essentials', { nodeType: node });
+                return { nodeName: node, data };
+              } catch (err) {
+                console.error(`Erreur MCP pour ${node}:`, err.message);
+                return null;
+              }
+            })
+          )).filter(Boolean);
           
           if (nodeDetails.length > 0) {
             console.log(`✅ ${nodeDetails.length} fiches récupérées:`);
@@ -264,61 +266,14 @@ Return format: ["node1", "node2", ...]`
               console.log(`  - ${node.nodeName} v${node.version} (${node.fullData ? 'données complètes' : 'métadonnées uniquement'})`);
             });
             
-            // Créer une liste des nodes NON trouvés pour avertir Claude
-            const foundNodeNames = nodeDetails.map(n => n.nodeName.split('.').pop());
-            const missingNodes = identifiedNodes.filter(name => 
-              !foundNodeNames.includes(name)
-            );
-            
             nodeTypesContext = '\n\n## Available Node Types Information\n\n';
-            nodeTypesContext += '⚠️ CRITICAL INSTRUCTIONS:\n';
-            nodeTypesContext += '1. ONLY use the nodes listed below - they are the ONLY ones available\n';
-            nodeTypesContext += '2. Match the typeVersion EXACTLY with the version shown\n';
-            nodeTypesContext += '3. Use the EXACT parameter structure from the documentation\n';
-            nodeTypesContext += '4. DO NOT invent or assume nodes exist if not listed below\n\n';
-            
-            if (missingNodes.length > 0) {
-              nodeTypesContext += `❌ WARNING: These nodes were requested but NOT FOUND: ${missingNodes.join(', ')}\n`;
-              nodeTypesContext += 'You MUST work around these missing nodes or explain why the workflow cannot be created.\n\n';
-            }
-            
-            nodeTypesContext += `✅ AVAILABLE NODES (${nodeDetails.length}):\n\n`;
+            nodeTypesContext += '⚠️ IMPORTANT: Each node specification below includes its version. Match the typeVersion in your output with the structure provided!\n\n';
             
             nodeDetails.forEach(node => {
-              nodeTypesContext += `### ${node.nodeName} (v${node.version})\n`;
-              
-              // Si on a les données complètes, les utiliser
-              if (node.fullData) {
-                // Ajouter des informations sur la version par défaut
-                if (node.fullData.defaultVersion) {
-                  nodeTypesContext += `**Default Version**: ${node.fullData.defaultVersion} `;
-                  if (node.version === node.fullData.defaultVersion.toString()) {
-                    nodeTypesContext += '✅ (This is the default version)\n';
-                  } else {
-                    nodeTypesContext += `⚠️ (Currently showing v${node.version})\n`;
-                  }
-                }
-                
-                // Ajouter des notes spécifiques pour certains nodes
-                if (node.nodeName === 'if' && node.version === '1') {
-                  nodeTypesContext += '**CRITICAL**: IF v1 uses `operation: "equal"` (NOT "equals"!)\n';
-                } else if (node.nodeName === 'if' && node.version.startsWith('2')) {
-                  nodeTypesContext += '**CRITICAL**: IF v2+ uses filter structure with `operator.operation: "equals"`\n';
-                }
-                
-                if ((node.nodeName === 'slack' || node.nodeName === 'gmail') && parseFloat(node.version) >= 2) {
-                  nodeTypesContext += '**IMPORTANT**: This version requires `resource` and `operation` fields\n';
-                }
-                
-                nodeTypesContext += '\n```json\n';
-                nodeTypesContext += JSON.stringify(node.fullData, null, 2);
-                nodeTypesContext += '\n```\n\n';
-              } else {
-                // Fallback sur les métadonnées basiques
-                nodeTypesContext += `Display Name: ${node.metadata.displayName}\n`;
-                nodeTypesContext += `Description: ${node.metadata.description}\n`;
-                nodeTypesContext += '\n';
-              }
+              nodeTypesContext += `### ${node.nodeName}\n`;
+              nodeTypesContext += '\n```json\n';
+              nodeTypesContext += JSON.stringify(node.data, null, 2);
+              nodeTypesContext += '\n```\n\n';
             });
             
             console.log(`${nodeDetails.length} fiches de nodes récupérées avec leurs métadonnées complètes`);
