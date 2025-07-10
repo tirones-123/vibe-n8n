@@ -1,6 +1,5 @@
 // scripts/ensure-mcp-db.js
 // Ensures the MCP SQLite database exists in the persistent volume.
-// Called during postinstall (Railway build) and at runtime if needed.
 
 import fs from 'fs';
 import { spawnSync } from 'child_process';
@@ -18,25 +17,22 @@ if (!fs.existsSync(DB_DIR)) {
   log(`Created directory ${DB_DIR}`);
 }
 
-if (fs.existsSync(DB_PATH)) {
-  log(`Database already present at ${DB_PATH}`);
-  // Already present, nothing more to do when imported as a module
-  return;
-}
+if (!fs.existsSync(DB_PATH)) {
+  log('Database not found, rebuilding via n8n-mcp rebuild (may take ~30s)...');
 
-log('Database not found, rebuilding via n8n-mcp rebuild (may take ~30s)...');
+  const result = spawnSync('npx', ['--yes', 'n8n-mcp', 'rebuild', '--db', DB_PATH], {
+    stdio: 'inherit',
+  });
 
-const result = spawnSync('npx', ['--yes', 'n8n-mcp', 'rebuild', '--db', DB_PATH], {
-  stdio: 'inherit',
-});
+  if (result.status !== 0) {
+    throw new Error(`Failed to rebuild nodes.db (exit ${result.status})`);
+  }
 
-if (result.status !== 0) {
-  console.error('Failed to rebuild nodes.db');
-  throw new Error('Failed to rebuild nodes.db');
-}
+  if (!fs.existsSync(DB_PATH)) {
+    throw new Error('Rebuild completed but database still missing.');
+  }
 
-if (fs.existsSync(DB_PATH)) {
   log('Database rebuilt successfully.');
 } else {
-  throw new Error('Rebuild completed but database still missing.');
+  log(`Database already present at ${DB_PATH}`);
 } 
