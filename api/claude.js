@@ -277,10 +277,7 @@ Important guidelines:
       model: 'claude-opus-4-20250514',
       max_tokens: 16384, // Augmenté de 8192 à 16384 pour workflows complexes
       system: systemPrompt,
-      thinking: {
-        type: "enabled",
-        budget_tokens: 6554
-      },
+      // Extended thinking disabled to ensure compatibility with forced tool use
       stream: false,
     };
 
