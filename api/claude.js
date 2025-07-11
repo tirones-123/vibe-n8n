@@ -7,6 +7,11 @@ const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
   type: 'url',
   url: process.env.MCP_SERVER_URL,
   name: process.env.MCP_SERVER_NAME || 'remote-mcp',
+  authorization_token: process.env.MCP_AUTH_TOKEN || undefined,
+  tool_configuration: {
+    enabled: true,
+    // Permettre tous les outils par défaut
+  }
 } : null;
 
 // Configuration CORS
@@ -332,7 +337,13 @@ Important guidelines:
 
     if (USE_REMOTE_MCP) {
       // Le streaming est obligatoire pour les opérations MCP
-      console.log('[MCP] Tentative de connexion MCP avec config:', JSON.stringify(REMOTE_MCP_CONFIG, null, 2));
+      console.log('[MCP] Configuration MCP:', JSON.stringify(REMOTE_MCP_CONFIG, null, 2));
+      console.log('[MCP] Paramètres Claude:', JSON.stringify({
+        model: claudeParams.model,
+        betas: claudeParams.betas,
+        mcp_servers: claudeParams.mcp_servers,
+        max_tokens: claudeParams.max_tokens
+      }, null, 2));
       
       const stream = await anthropic.beta.messages.create({
         ...claudeParams,
@@ -343,7 +354,10 @@ Important guidelines:
       console.log('[MCP] Stream créé avec succès');
       
       for await (const event of stream) {
-        console.log('[MCP] Event reçu:', event.type, event);
+        console.log('[MCP] Event reçu:', event.type);
+        if (event.type === 'mcp_tool_use' || event.type === 'mcp_tool_result') {
+          console.log('[MCP] Détails event:', JSON.stringify(event, null, 2));
+        }
         
         // Les événements peuvent être "content_block_start", "content_block_delta", "content_block_stop",
         // ou directement des blobs "content" dans certaines versions.
