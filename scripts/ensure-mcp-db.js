@@ -26,16 +26,16 @@ if (fs.existsSync(DB_PATH)) {
 log('Database not found, trying to copy pre-built DB shipped with n8n-mcp...');
 
 try {
-  const pkgJson = require.resolve('n8n-mcp/package.json');
-  const pkgDir = path.dirname(pkgJson);
-  const shippedDb = path.join(pkgDir, 'data', 'nodes.db');
+  const shippedDb = path.join(process.cwd(), 'node_modules', 'n8n-mcp', 'data', 'nodes.db');
   if (fs.existsSync(shippedDb)) {
     fs.copyFileSync(shippedDb, DB_PATH);
-    log('Copied bundled nodes.db from n8n-mcp package.');
+    log(`Copied bundled nodes.db from ${shippedDb}`);
     process.exit(0);
+  } else {
+    log('Bundled DB not found at ' + shippedDb);
   }
 } catch (copyErr) {
-  log('Could not copy bundled DB (' + copyErr.message + '), falling back to rebuild.');
+  log('Error while copying bundled DB: ' + copyErr.message + ' – falling back to rebuild.');
 }
 
 log('Rebuilding via n8n-mcp (timeout 60s)...');
