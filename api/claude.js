@@ -111,6 +111,20 @@ You have access to the MCP tool catalogue provided in the request.
 - NEVER describe a tool call inside markdown or \`<Tool>\` tags – actually call it.
 - After receiving a \`tool_result\`, continue until the workflow JSON is built and validated.
 - IF you attempt to skip tool calls or output pseudo-tags, respond with the JSON error {"error":"tool_skipped"}.
+
+## Example of a correct tool call
+When you need to search nodes you MUST output a content block like:
+
+\`\`\`json
+{
+  "type": "tool_use",
+  "id": "id_search",
+  "name": "search_nodes",
+  "input": { "query": "dropbox" }
+}
+\`\`\`
+
+After receiving the tool_result, continue the conversation.
 `;
 
 // Fonction pour déterminer les bonnes versions par défaut
