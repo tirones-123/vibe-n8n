@@ -332,19 +332,34 @@ Important guidelines:
     }
 
     if (USE_REMOTE_MCP) {
-      // Test sans streaming d'abord pour diagnostiquer
+      // Le streaming est obligatoire pour les opérations MCP
       console.log('[MCP] Tentative de connexion MCP avec config:', JSON.stringify(REMOTE_MCP_CONFIG, null, 2));
       
-      const response = await anthropic.beta.messages.create({
+      const stream = await anthropic.beta.messages.create({
         ...claudeParams,
         messages,
-        stream: false, // Désactiver le streaming temporairement
+        stream: true, // Obligatoire pour MCP
       });
 
-      console.log('[MCP] Réponse reçue:', JSON.stringify(response, null, 2));
+      console.log('[MCP] Stream créé avec succès');
       
-      // Envoyer la réponse au client
-      sendEvent({ type: 'final', content: response });
+      for await (const event of stream) {
+        console.log('[MCP] Event reçu:', event.type, event);
+        
+        // Les événements peuvent être "content_block_start", "content_block_delta", "content_block_stop",
+        // ou directement des blobs "content" dans certaines versions.
+        if (event.type === 'content_block_delta' && event.delta?.text) {
+          sendEvent({ type: 'assistant_text_delta', text: event.delta.text });
+        } else if (event.type === 'content_block_start' && event.content_block?.text) {
+          sendEvent({ type: 'assistant_text', text: event.content_block.text });
+        } else if (event.type === 'mcp_tool_use') {
+          sendEvent({ type: 'mcp_tool_use', name: event.name, id: event.id, server: event.server_name, input: event.input });
+        } else if (event.type === 'mcp_tool_result') {
+          sendEvent({ type: 'mcp_tool_result', tool_use_id: event.tool_use_id, is_error: event.is_error, content: event.content });
+        }
+      }
+
+      console.log('[MCP] Stream terminé');
       res.end();
     } else {
       // === Comportement local historique ===
