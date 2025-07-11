@@ -108,7 +108,7 @@ If essential details are missing, **do NOT ask the user**. Instead:
 ## Tool Invocation Rules
 You have access to the MCP tool catalogue provided in the request.
 - ALWAYS invoke tools with a proper \`tool_use\` block (Anthropic function calling format).
-- NEVER describe a tool call inside markdown or `<Tool>` tags – actually call it.
+- NEVER describe a tool call inside markdown or \`<Tool>\` tags – actually call it.
 - After receiving a \`tool_result\`, continue until the workflow JSON is built and validated.
 `;
 
