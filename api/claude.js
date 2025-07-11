@@ -288,7 +288,8 @@ Important guidelines:
     const mergedTools = [...(global.mcpToolsCache || []), ...(Array.isArray(tools) ? tools : [])];
     if (mergedTools.length > 0) {
       claudeParams.tools = mergedTools;
-      claudeParams.tool_choice = { type: 'required' };
+      // Force Claude to invoke at least one tool (but let it choose which one)
+      claudeParams.tool_choice = { type: 'any' };
     }
     
     // Logger le contexte final envoyé à Claude
