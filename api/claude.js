@@ -286,9 +286,12 @@ Important guidelines:
       stream: false,
     };
 
-    // Injecter la liste complète des tools MCP pour tous les modes
-    claudeParams.tools = [...(global.mcpToolsCache || []), ...(Array.isArray(tools) ? tools : [])];
-    claudeParams.tool_choice = { type: 'auto' };
+    // Injecter les tools MCP si disponibles
+    const mergedTools = [...(global.mcpToolsCache || []), ...(Array.isArray(tools) ? tools : [])];
+    if (mergedTools.length > 0) {
+      claudeParams.tools = mergedTools;
+      claudeParams.tool_choice = { type: 'auto' };
+    }
     
     // Logger le contexte final envoyé à Claude
     console.log('\n--- CONTEXTE ENVOYÉ À CLAUDE OPUS ---');
