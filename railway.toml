@@ -2,10 +2,11 @@
 builder = "NIXPACKS"
 
 [deploy]
+# autorise jusqu'à 45 min (2 700 s) pour le build
+timeoutSeconds = 2700
 startCommand = "npm start"
 restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 3
-cronCommand = "npm run cron"
+restartPolicyMaxRetries = 3 
 
 [healthcheck]
 path = "/api"

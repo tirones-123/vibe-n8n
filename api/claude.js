@@ -1,6 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { getAllAvailableNodes } from './rag/node-types-rag.js';
-import { callTool } from '../utils/mcpClient.js';
+import { callTool, listTools } from '../utils/mcpClient.js';
 
 // Configuration CORS
 const corsHeaders = {
@@ -9,86 +8,126 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-// Prompt système amélioré avec support des versions
-const IMPROVED_SYSTEM_PROMPT = `You are an expert n8n workflow builder. Your task is to create or modify n8n workflows based on user descriptions.
+// Prompt système recommandé par l'utilisateur (optimisé pour n8n-MCP)
+const MCP_BASE_PROMPT = `You are an expert in n8n automation software using n8n-MCP tools. Your role is to design, build, and validate n8n workflows with maximum accuracy and efficiency.
 
-## CRITICAL VERSION HANDLING RULES
+## Core Workflow Process
 
-### Understanding n8n Node Versions
-1. Each node has a "typeVersion" that determines its parameter structure
-2. The documentation you receive matches the typeVersion - USE IT CORRECTLY
-3. Different versions have COMPLETELY DIFFERENT structures
+1. **ALWAYS start new conversation with**: \`tools_documentation()\` to understand best practices and available tools.
 
-### MANDATORY: Match typeVersion with Documentation
-When you receive node documentation:
-- Check the "version" field in the documentation (e.g., version: [2, 2.1, 2.2])
-- Check the "defaultVersion" field (e.g., defaultVersion: 2.2)
-- **ALWAYS set typeVersion to match the defaultVersion from the documentation**
-- If no defaultVersion, use the highest version number from the version array
+2. **Discovery Phase** - Find the right nodes:
+   - Think deeply about user request and the logic you are going to build to fulfill it. Ask follow-up questions to clarify the user's intent, if something is unclear. Then, proceed with the rest of your instructions.
+   - \`search_nodes({query: 'keyword'})\` - Search by functionality
+   - \`list_nodes({category: 'trigger'})\` - Browse by category
+   - \`list_ai_tools()\` - See AI-capable nodes (remember: ANY node can be an AI tool!)
 
-### Version-Specific Rules
+3. **Configuration Phase** - Get node details efficiently:
+   - \`get_node_essentials(nodeType)\` - Start here! Only 10-20 essential properties
+   - \`search_node_properties(nodeType, 'auth')\` - Find specific properties
+   - \`get_node_for_task('send_email')\` - Get pre-configured templates
+   - \`get_node_documentation(nodeType)\` - Human-readable docs when needed
+   - It is good common practice to show a visual representation of the workflow architecture to the user and asking for opinion, before moving forward. 
 
-#### IF Node
-- **Version 1**: Uses \`conditions\` with \`operation: "equal"\` (NO 's')
-- **Version 2.x**: Uses \`conditions\` with filter structure and \`operator.operation: "equals"\` (WITH 's')
-- NEVER mix structures between versions!
+4. **Pre-Validation Phase** - Validate BEFORE building:
+   - \`validate_node_minimal(nodeType, config)\` - Quick required fields check
+   - \`validate_node_operation(nodeType, config, profile)\` - Full operation-aware validation
+   - Fix any validation errors before proceeding
 
-#### Gmail/Slack/Other Nodes  
-- **Version 1**: Often simpler structure, may lack resource/operation
-- **Version 2+**: Usually requires \`resource\` and \`operation\` fields
-- Check the documentation structure to determine correct format
+5. **Building Phase** - Create the workflow:
+   - Use validated configurations from step 4
+   - Connect nodes with proper structure
+   - Add error handling where appropriate
+   - Use expressions like $json, $node["NodeName"].json
+   - Build the workflow in an artifact for easy editing downstream (unless the user asked to create in n8n instance)
 
-### When No Versions Provided
-If the user's request doesn't specify versions:
-1. Use the DEFAULT version from the documentation (check defaultVersion field)
-2. **Set typeVersion to match this defaultVersion**
-3. Use the parameter structure that corresponds to this version
+6. **Workflow Validation Phase** - Validate complete workflow:
+   - \`validate_workflow(workflow)\` - Complete validation including connections
+   - \`validate_workflow_connections(workflow)\` - Check structure and AI tool connections
+   - \`validate_workflow_expressions(workflow)\` - Validate all n8n expressions
+   - Fix any issues found before deployment
 
-### Common Mistakes to AVOID
-1. ❌ Using "equals" in IF v1 (should be "equal")
-2. ❌ Empty objects for required fields (e.g., \`filters: {}\`)
-3. ❌ Missing resource/operation in v2+ nodes
-4. ❌ Using v2 structure with typeVersion: 1
-5. ❌ Not matching typeVersion with the documentation version
+7. **Deployment Phase** (if n8n API configured):
+   - \`n8n_create_workflow(workflow)\` - Deploy validated workflow
+   - \`n8n_validate_workflow({id: 'workflow-id'})\` - Post-deployment validation
+   - \`n8n_update_partial_workflow()\` - Make incremental updates using diffs
+   - \`n8n_trigger_webhook_workflow()\` - Test webhook workflows
 
-## RESPONSE FORMAT RULES
+## Key Insights
 
-ALWAYS respond with a valid JSON object containing:
-- nodes: Array of node objects
-- connections: Connection mapping object
+- **USE CODE NODE ONLY WHEN IT IS NECESSARY** - always prefer to use standard nodes over code node. Use code node only when you are sure you need it.
+- **VALIDATE EARLY AND OFTEN** - Catch errors before they reach deployment
+- **USE DIFF UPDATES** - Use n8n_update_partial_workflow for 80-90% token savings
+- **ANY node can be an AI tool** - not just those with usableAsTool=true
+- **Pre-validate configurations** - Use validate_node_minimal before building
+- **Post-validate workflows** - Always validate complete workflows before deployment
+- **Incremental updates** - Use diff operations for existing workflows
+- **Test thoroughly** - Validate both locally and after deployment to n8n
 
-### Node Structure Requirements:
-1. Each node MUST have a unique sequential ID starting from "1"
-2. Use descriptive names (e.g., "Gmail Trigger", "Filter Emails", "Send to Slack")
-3. Include ALL required fields based on the node type and version
-4. **Set typeVersion to match the defaultVersion from documentation**
-5. NEVER include empty or placeholder values
+## Validation Strategy
 
-### Connection Rules:
-- Format: "sourceNodeId": [["targetNodeId"]] 
-- The first node should not appear as a key in connections
-- Maintain logical flow from triggers through actions
+### Before Building:
+1. validate_node_minimal() - Check required fields
+2. validate_node_operation() - Full configuration validation
+3. Fix all errors before proceeding
 
-### Required Fields by Node Type:
-- Triggers: Must have valid trigger configuration
-- Actions: Must have resource, operation (for v2+), and related parameters
-- Logic nodes (IF, Switch): Must have valid conditions
+### After Building:
+1. validate_workflow() - Complete workflow validation
+2. validate_workflow_connections() - Structure validation
+3. validate_workflow_expressions() - Expression syntax check
 
-## WORKFLOW GUIDELINES
+### After Deployment:
+1. n8n_validate_workflow({id}) - Validate deployed workflow
+2. n8n_list_executions() - Monitor execution status
+3. n8n_update_partial_workflow() - Fix issues using diffs
 
-1. **Email Workflows**: Use appropriate email nodes with proper authentication
-2. **Scheduling**: Use Schedule Trigger for time-based automation  
-3. **Webhooks**: Configure with proper HTTP methods and authentication
-4. **Data Processing**: Include necessary transformation nodes
-5. **Error Handling**: Consider error outputs where applicable
+## Response Structure
 
-## IMPORTANT NOTES
+1. **Discovery**: Show available nodes and options
+2. **Pre-Validation**: Validate node configurations first
+3. **Configuration**: Show only validated, working configs
+4. **Building**: Construct workflow with validated components
+5. **Workflow Validation**: Full workflow validation results
+6. **Deployment**: Deploy only after all validations pass
+7. **Post-Validation**: Verify deployment succeeded
 
-- Generate ONLY the JSON response, no explanations
-- Ensure all node IDs are strings ("1", "2", etc.)
-- Validate that all required parameters are included
-- Use the exact structure from the provided documentation
-- **CRITICAL: Set typeVersion to match the version in the documentation you received**`;
+## Example Workflow
+
+### 1. Discovery & Configuration
+search_nodes({query: 'slack'})
+get_node_essentials('n8n-nodes-base.slack')
+
+### 2. Pre-Validation
+validate_node_minimal('n8n-nodes-base.slack', {resource:'message', operation:'send'})
+validate_node_operation('n8n-nodes-base.slack', fullConfig, 'runtime')
+
+### 3. Build Workflow
+// Create workflow JSON with validated configs
+
+### 4. Workflow Validation
+validate_workflow(workflowJson)
+validate_workflow_connections(workflowJson)
+validate_workflow_expressions(workflowJson)
+
+### 5. Deploy (if configured)
+n8n_create_workflow(validatedWorkflow)
+n8n_validate_workflow({id: createdWorkflowId})
+
+### 6. Update Using Diffs
+n8n_update_partial_workflow({
+  workflowId: id,
+  operations: [
+    {type: 'updateNode', nodeId: 'slack1', changes: {position: [100, 200]}}
+  ]
+})
+
+## Important Rules
+
+- ALWAYS validate before building
+- ALWAYS validate after building
+- NEVER deploy unvalidated workflows
+- USE diff operations for updates (80-90% token savings)
+- STATE validation results clearly
+- FIX all errors before proceeding`;
 
 // Fonction pour déterminer les bonnes versions par défaut
 
@@ -177,116 +216,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Nouveau système : identifier les nodes mentionnés et récupérer leurs fiches
-    let nodeTypesContext = '';
-    let identifiedNodes = [];
-    
-    try {
-      if (process.env.OPENAI_API_KEY && process.env.PINECONE_API_KEY) {
-        console.log('Identification des nodes n8n mentionnés...');
-        
-        // Récupérer la liste complète des nodes disponibles
-        const availableNodes = await getAllAvailableNodes();
-        console.log(`📋 ${availableNodes.length} nodes disponibles dans le système`);
-        
-        // Créer une liste formatée pour Haiku
-        const nodesList = availableNodes.map(n => ({
-          name: n.shortName,
-          displayName: n.displayName,
-          isTrigger: n.isTrigger || false,
-          description: n.description ? n.description.substring(0, 100) : ''
-        }));
-        
-        // Étape 1 : Identifier les nodes mentionnés dans le prompt
-        const anthropic = new Anthropic({
-          apiKey: process.env.CLAUDE_API_KEY,
-        });
-        
-        const identificationResponse = await anthropic.messages.create({
-          model: 'claude-3-haiku-20240307', // Modèle rapide pour l'identification
-          max_tokens: 500,
-          messages: [{
-            role: 'user',
-            content: `Here is the complete list of available n8n nodes:
-
-${JSON.stringify(nodesList, null, 2)}
-
-Analyze this user prompt and identify which nodes from the list above would be needed:
-
-User prompt: "${prompt}"
-
-Instructions:
-- For email triggers, use nodes with "Trigger" in the name (e.g., "gmailTrigger")
-- For sending messages, use the main node (e.g., "slack" not "slackTool")
-- For conditions, use "if" node
-- For filtering emails by sender, you might need "if" node
-- Only return nodes that exist in the list above
-
-Return ONLY a JSON array of node shortNames that match.
-Return format: ["node1", "node2", ...]`
-          }],
-          temperature: 0
-        });
-        
-        try {
-          const responseText = identificationResponse.content[0].text.trim();
-          console.log('Réponse Haiku brute:', responseText);
-          identifiedNodes = JSON.parse(responseText);
-          console.log('Nodes identifiés:', identifiedNodes);
-        } catch (parseError) {
-          console.error('Erreur parsing nodes:', parseError);
-          console.error('Texte reçu:', identificationResponse.content[0].text);
-          identifiedNodes = [];
-        }
-        
-        // Étape 2 : Récupérer les fiches des nodes depuis Pinecone
-        if (identifiedNodes.length > 0) {
-          console.log('Récupération des fiches pour:', identifiedNodes);
-          console.log('Avec versions:', versions);
-          
-          // Gérer le cas où versions est "none" ou pas un objet valide
-          const versionsObject = (versions === 'none' || typeof versions !== 'object') ? {} : versions;
-          
-          // Récupérer les fiches via MCP (get_node_essentials)
-          const nodeDetails = (await Promise.all(
-            identifiedNodes.map(async (node) => {
-              try {
-                const data = await callTool('get_node_essentials', { nodeType: node });
-                return { nodeName: node, data };
-              } catch (err) {
-                console.error(`Erreur MCP pour ${node}:`, err.message);
-                return null;
-              }
-            })
-          )).filter(Boolean);
-          
-          if (nodeDetails.length > 0) {
-            console.log(`✅ ${nodeDetails.length} fiches récupérées:`);
-            nodeDetails.forEach(node => {
-              console.log(`  - ${node.nodeName} v${node.version} (${node.fullData ? 'données complètes' : 'métadonnées uniquement'})`);
-            });
-            
-            nodeTypesContext = '\n\n## Available Node Types Information\n\n';
-            nodeTypesContext += '⚠️ IMPORTANT: Each node specification below includes its version. Match the typeVersion in your output with the structure provided!\n\n';
-            
-            nodeDetails.forEach(node => {
-              nodeTypesContext += `### ${node.nodeName}\n`;
-              nodeTypesContext += '\n```json\n';
-              nodeTypesContext += JSON.stringify(node.data, null, 2);
-              nodeTypesContext += '\n```\n\n';
-            });
-            
-            console.log(`${nodeDetails.length} fiches de nodes récupérées avec leurs métadonnées complètes`);
-          } else {
-            console.log('❌ Aucune fiche trouvée pour ces nodes');
-          }
-        }
-      }
-    } catch (ragError) {
-      console.error('Erreur système node-types:', ragError);
-      // Continuer sans le contexte des node-types
+    // Désormais : découverte dynamique des tools via MCP
+    if (!global.mcpToolsCache) {
+      const res = await listTools();
+      global.mcpToolsCache = (res?.tools || []).map(t => ({
+        name: t.name,
+        description: t.description,
+        input_schema: t.inputSchema,
+      }));
+      console.log(`[Claude] ${global.mcpToolsCache.length} outils MCP injectés`);
     }
 
+    // Plus de RAG local => on ne construit plus nodeTypesContext
+    const nodeTypesContext = '';
+    const identifiedNodes = [];
+     
     // Initialiser le client Anthropic
     const anthropic = new Anthropic({
       apiKey: process.env.CLAUDE_API_KEY,
@@ -318,15 +262,12 @@ Important guidelines:
 - Provide clear explanations of each action taken` 
     :
     // Mode création : générer JSON complet
-    IMPROVED_SYSTEM_PROMPT;
+    MCP_BASE_PROMPT;
 
     // Enrichir le system prompt avec les informations des node-types
     let systemPrompt = baseSystemPrompt;
     
-    // Ajouter le mapping des versions si disponible
-    if (versions && Object.keys(versions).length > 0) {
-      systemPrompt += `\n\n## Node Version Mapping\nThe user's n8n instance has the following node versions available:\n${JSON.stringify(versions, null, 2)}\n\nIMPORTANT: When creating nodes, use the appropriate typeVersion based on this mapping to ensure compatibility.`;
-    }
+    // (Version mapping section retiré pour alléger le prompt)
     
     // Ajouter les détails des node-types si disponibles
     if (nodeTypesContext) {
@@ -337,70 +278,90 @@ Important guidelines:
     const claudeParams = {
       model: 'claude-opus-4-20250514',
       max_tokens: 16384, // Augmenté de 8192 à 16384 pour workflows complexes
-      messages: [{ 
-        role: 'user', 
-        content: prompt 
-      }],
       system: systemPrompt,
       thinking: {
         type: "enabled",
         budget_tokens: 6554
       },
-      stream: true,
+      stream: false,
     };
 
-    // Ajouter tools et tool_choice seulement s'il y a des outils ET si on est en mode modification
-    if (tools && tools.length > 0 && isModification) {
-      claudeParams.tools = tools;
-      claudeParams.tool_choice = { type: 'auto' };
-    }
+    // Injecter la liste complète des tools MCP pour tous les modes
+    claudeParams.tools = [...(global.mcpToolsCache || []), ...(Array.isArray(tools) ? tools : [])];
+    claudeParams.tool_choice = { type: 'auto' };
     
     // Logger le contexte final envoyé à Claude
     console.log('\n--- CONTEXTE ENVOYÉ À CLAUDE OPUS ---');
     console.log('Model:', claudeParams.model);
     console.log('Mode:', isModification ? 'modification' : 'création');
-    console.log('Nodes enrichis:', identifiedNodes.length > 0 ? identifiedNodes.join(', ') : 'aucun');
+    console.log('Nodes enrichis (désactivé):', identifiedNodes.length);
     console.log('Taille du system prompt:', systemPrompt.length, 'caractères');
     if (nodeTypesContext) {
       console.log('Contexte node-types inclus:', nodeTypesContext.length, 'caractères');
     }
     console.log('-----------------------------------\n');
 
-    // Créer le stream avec l'API Claude
-    const stream = await anthropic.messages.create(claudeParams);
+    // Préparer l'historique des messages Claude
+    const messages = [{ role: 'user', content: prompt }];
 
-    // Configurer les headers pour Server-Sent Events
+    // SSE headers
     res.writeHead(200, {
       ...corsHeaders,
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
-      'X-Accel-Buffering': 'no', // Désactiver le buffering
+      'X-Accel-Buffering': 'no',
     });
 
-    // Transmettre le stream de Claude vers le client
-    try {
-      for await (const chunk of stream) {
-        // Envoyer chaque chunk comme un événement SSE
-        res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-        
-        // Flush pour s'assurer que les données sont envoyées immédiatement
-        if (res.flush) res.flush();
+    function sendEvent(data) {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+      if (res.flush) res.flush();
+    }
+
+    let continueLoop = true;
+    while (continueLoop) {
+      const response = await anthropic.messages.create({
+        ...claudeParams,
+        messages,
+        stream: false,
+      });
+
+      // Envoyer la réponse brute (texte) au client
+      const textBlock = response.content.find(c => c.type === 'text');
+      if (textBlock && textBlock.text) {
+        sendEvent({ type: 'assistant_text', text: textBlock.text });
       }
 
-      // Envoyer un événement de fin personnalisé
-      res.write(`data: ${JSON.stringify({ type: 'stream_end' })}\n\n`);
-      res.end();
-    } catch (streamError) {
-      console.error('Stream error:', streamError);
-      
-      // Envoyer l'erreur dans le stream si possible
-      if (!res.finished) {
-        res.write(`data: ${JSON.stringify({ 
-          type: 'error', 
-          error: 'Stream interrupted',
-          message: streamError.message 
-        })}\n\n`);
+      if (response.stop_reason === 'tool_use') {
+        // Exécuter tous les tool_use bloc
+        for (const block of response.content) {
+          if (block.type !== 'tool_use') continue;
+
+          sendEvent({ type: 'tool_use', name: block.name, id: block.id, input: block.input });
+
+          try {
+            const result = await callTool(block.name, block.input);
+            sendEvent({ type: 'tool_result', id: block.id, result });
+
+            // Ajouter au thread
+            messages.push({ role: 'assistant', content: [block] });
+            messages.push({
+              role: 'user',
+              content: [{ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) }]
+            });
+          } catch (err) {
+            sendEvent({ type: 'tool_error', id: block.id, error: err.message });
+            messages.push({ role: 'assistant', content: [block] });
+            messages.push({
+              role: 'user',
+              content: [{ type: 'tool_result', tool_use_id: block.id, content: `ERROR: ${err.message}` }]
+            });
+          }
+        }
+      } else {
+        // Conversation terminée
+        continueLoop = false;
+        sendEvent({ type: 'final', content: response });
         res.end();
       }
     }

@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import './scripts/ensure-mcp-db.js';
 import claudeHandler from './api/claude.js';
 import { nodeTypesRAG } from './api/rag/node-types-rag.js';
+import { startMcpHttp } from './utils/mcpServer.js';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -140,5 +140,7 @@ async function initializeServices() {
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 Claude endpoint: http://localhost:${PORT}/api/claude`);
+  // Start local MCP server (HTTP mode) so that the backend and Claude can use it
+  startMcpHttp();
   await initializeServices();
 }); 

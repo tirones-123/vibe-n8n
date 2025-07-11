@@ -16,7 +16,8 @@
     "update-nodes:docker": "node scripts/update-node-types.js --docker",
     "cron:weekly": "node cron.js --weekly",
     "cron": "node cron.js",
-    "test:system": "node scripts/test-system.js"
+    "test:system": "node scripts/test-system.js",
+    "postinstall": "node scripts/ensure-mcp-db.js"
   },
   "keywords": [
     "n8n",

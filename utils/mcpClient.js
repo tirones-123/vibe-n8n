@@ -78,4 +78,14 @@ export async function callTool(name, args = {}) {
       }
     }, 30000);
   });
+}
+
+export async function listTools() {
+  try {
+    const result = await callTool('tools/list', {});
+    return result;
+  } catch (err) {
+    console.error('[MCP] tools/list failed:', err.message);
+    return { tools: [] };
+  }
 } 
