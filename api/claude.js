@@ -5,9 +5,9 @@ import { callTool, listTools } from '../utils/mcpClient.js';
 const USE_REMOTE_MCP = process.env.USE_REMOTE_MCP === 'true';
 const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
   type: 'url',
-  url: 'https://gitmcp.io/czlonkowski/n8n-mcp/sse', // Test avec un serveur MCP public connu
-  name: 'n8n-mcp-test',
-  // Pas d'auth token pour le test public
+  url: process.env.MCP_SERVER_URL || 'https://gitmcp.io/czlonkowski/n8n-mcp/sse',
+  name: process.env.MCP_SERVER_NAME || 'n8n-mcp-remote',
+  ...(process.env.MCP_AUTH_TOKEN ? { authorization_token: process.env.MCP_AUTH_TOKEN } : {})
 } : null;
 
 // Configuration CORS
