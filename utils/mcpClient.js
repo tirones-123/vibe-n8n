@@ -81,11 +81,19 @@ export async function callTool(name, args = {}) {
 }
 
 export async function listTools() {
+  // Try official tool name list_tools (snake_case)
+  try {
+    const result = await callTool('list_tools', {});
+    if (result && Array.isArray(result.tools)) return result;
+  } catch (err) {
+    // ignore and fallback
+  }
+  // Fallback to tools/list if server supports that
   try {
     const result = await callTool('tools/list', {});
     return result;
   } catch (err) {
-    console.error('[MCP] tools/list failed:', err.message);
+    console.error('[MCP] listTools failed:', err.message);
     return { tools: [] };
   }
 } 
