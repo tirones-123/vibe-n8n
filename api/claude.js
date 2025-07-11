@@ -332,24 +332,28 @@ Important guidelines:
     }
 
     if (USE_REMOTE_MCP) {
-      // Une seule requête suffit : les tools sont appelés côté Claude via le connecteur
-      const response = await anthropic.beta.messages.create({
+      // Utilisation du streaming obligatoire pour les tool-calls distants
+      const stream = await anthropic.beta.messages.create({
         ...claudeParams,
         messages,
-        stream: false,
+        stream: true,
       });
 
-      for (const block of response.content) {
-        if (block.type === 'text') {
-          sendEvent({ type: 'assistant_text', text: block.text });
-        } else if (block.type === 'mcp_tool_use') {
-          sendEvent({ type: 'mcp_tool_use', name: block.name, id: block.id, server: block.server_name, input: block.input });
-        } else if (block.type === 'mcp_tool_result') {
-          sendEvent({ type: 'mcp_tool_result', tool_use_id: block.tool_use_id, is_error: block.is_error, content: block.content });
+      for await (const event of stream) {
+        // Les événements peuvent être "content_block_start", "content_block_delta", "content_block_stop",
+        // ou directement des blobs "content" dans certaines versions.
+        if (event.type === 'content_block_delta' && event.delta?.text) {
+          sendEvent({ type: 'assistant_text_delta', text: event.delta.text });
+        } else if (event.type === 'content_block_start' && event.content_block?.text) {
+          sendEvent({ type: 'assistant_text', text: event.content_block.text });
+        } else if (event.type === 'mcp_tool_use') {
+          sendEvent({ type: 'mcp_tool_use', name: event.name, id: event.id, server: event.server_name, input: event.input });
+        } else if (event.type === 'mcp_tool_result') {
+          sendEvent({ type: 'mcp_tool_result', tool_use_id: event.tool_use_id, is_error: event.is_error, content: event.content });
         }
       }
 
-      sendEvent({ type: 'final', content: response });
+      // Stream terminé
       res.end();
     } else {
       // === Comportement local historique ===
