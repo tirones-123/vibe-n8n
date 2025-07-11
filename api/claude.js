@@ -90,36 +90,6 @@ const MCP_BASE_PROMPT = `You are an expert in n8n automation software using n8n-
 6. **Deployment**: Deploy only after all validations pass
 7. **Post-Validation**: Verify deployment succeeded
 
-## Example Workflow
-
-### 1. Discovery & Configuration
-search_nodes({query: 'slack'})
-get_node_essentials('n8n-nodes-base.slack')
-
-### 2. Pre-Validation
-validate_node_minimal('n8n-nodes-base.slack', {resource:'message', operation:'send'})
-validate_node_operation('n8n-nodes-base.slack', fullConfig, 'runtime')
-
-### 3. Build Workflow
-// Create workflow JSON with validated configs
-
-### 4. Workflow Validation
-validate_workflow(workflowJson)
-validate_workflow_connections(workflowJson)
-validate_workflow_expressions(workflowJson)
-
-### 5. Deploy (if configured)
-n8n_create_workflow(validatedWorkflow)
-n8n_validate_workflow({id: createdWorkflowId})
-
-### 6. Update Using Diffs
-n8n_update_partial_workflow({
-  workflowId: id,
-  operations: [
-    {type: 'updateNode', nodeId: 'slack1', changes: {position: [100, 200]}}
-  ]
-})
-
 ## Important Rules
 
 - ALWAYS validate before building
@@ -133,7 +103,14 @@ n8n_update_partial_workflow({
 If essential details are missing, **do NOT ask the user**. Instead:
 1. Choose sensible defaults (ex: Manual Trigger; first Dropbox file matching *.pdf; Slack channel #general; empty message).
 2. Proceed through all phases and generate the final n8n JSON in one go.
-3. Mention assumptions made in a short comment field inside the JSON (e.g., \`notes\`).`;
+3. Mention assumptions made in a short comment field inside the JSON (e.g., \`notes\`).
+
+## Tool Invocation Rules
+You have access to the MCP tool catalogue provided in the request.
+- ALWAYS invoke tools with a proper `tool_use` block (Anthropic function calling format).
+- NEVER describe a tool call inside markdown or `<Tool>` tags – actually call it.
+- After receiving a `tool_result`, continue until the workflow JSON is built and validated.
+`;
 
 // Fonction pour déterminer les bonnes versions par défaut
 
