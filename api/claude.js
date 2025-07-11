@@ -1,6 +1,15 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { callTool, listTools } from '../utils/mcpClient.js';
 
+// Flag: use remote MCP connector instead of local n8n-mcp process
+const USE_REMOTE_MCP = process.env.USE_REMOTE_MCP === 'true';
+const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
+  type: 'url',
+  url: process.env.MCP_SERVER_URL,
+  name: process.env.MCP_SERVER_NAME || 'remote-mcp',
+  ...(process.env.MCP_AUTH_TOKEN ? { authorization_token: process.env.MCP_AUTH_TOKEN } : {}),
+} : null;
+
 // Configuration CORS
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -214,8 +223,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Désormais : découverte dynamique des tools via MCP
-    if (!global.mcpToolsCache) {
+    // Découverte dynamique des tools via MCP local uniquement si non-remote
+    if (!USE_REMOTE_MCP && !global.mcpToolsCache) {
       const res = await listTools();
       global.mcpToolsCache = (res?.tools || []).map(t => ({
         name: t.name,
@@ -280,12 +289,18 @@ Important guidelines:
       stream: false,
     };
 
-    // Injecter les tools MCP si disponibles
-    const mergedTools = [...(global.mcpToolsCache || []), ...(Array.isArray(tools) ? tools : [])];
-    if (mergedTools.length > 0) {
-      claudeParams.tools = mergedTools;
-      // Force Claude to invoke at least one tool (but let it choose which one)
-      claudeParams.tool_choice = { type: 'any' };
+    // Mode remote : utiliser la feature MCP connector
+    if (USE_REMOTE_MCP) {
+      claudeParams.betas = ['mcp-client-2025-04-04'];
+      claudeParams.mcp_servers = [REMOTE_MCP_CONFIG];
+    } else {
+      // Injection locale des tools comme avant
+      const mergedTools = [...(global.mcpToolsCache || []), ...(Array.isArray(tools) ? tools : [])];
+      if (mergedTools.length > 0) {
+        claudeParams.tools = mergedTools;
+        // Force Claude to invoke at least one tool (but let it choose which one)
+        claudeParams.tool_choice = { type: 'any' };
+      }
     }
     
     // Logger le contexte final envoyé à Claude
@@ -316,51 +331,72 @@ Important guidelines:
       if (res.flush) res.flush();
     }
 
-    let continueLoop = true;
-    while (continueLoop) {
-      const response = await anthropic.messages.create({
+    if (USE_REMOTE_MCP) {
+      // Une seule requête suffit : les tools sont appelés côté Claude via le connecteur
+      const response = await anthropic.beta.messages.create({
         ...claudeParams,
         messages,
         stream: false,
       });
 
-      // Envoyer la réponse brute (texte) au client
-      const textBlock = response.content.find(c => c.type === 'text');
-      if (textBlock && textBlock.text) {
-        sendEvent({ type: 'assistant_text', text: textBlock.text });
+      for (const block of response.content) {
+        if (block.type === 'text') {
+          sendEvent({ type: 'assistant_text', text: block.text });
+        } else if (block.type === 'mcp_tool_use') {
+          sendEvent({ type: 'mcp_tool_use', name: block.name, id: block.id, server: block.server_name, input: block.input });
+        } else if (block.type === 'mcp_tool_result') {
+          sendEvent({ type: 'mcp_tool_result', tool_use_id: block.tool_use_id, is_error: block.is_error, content: block.content });
+        }
       }
 
-      if (response.stop_reason === 'tool_use') {
-        // Exécuter tous les tool_use bloc
-        for (const block of response.content) {
-          if (block.type !== 'tool_use') continue;
+      sendEvent({ type: 'final', content: response });
+      res.end();
+    } else {
+      // === Comportement local historique ===
+      let continueLoop = true;
+      while (continueLoop) {
+        const response = await anthropic.messages.create({
+          ...claudeParams,
+          messages,
+          stream: false,
+        });
 
-          sendEvent({ type: 'tool_use', name: block.name, id: block.id, input: block.input });
-
-          try {
-            const result = await callTool(block.name, block.input);
-            sendEvent({ type: 'tool_result', id: block.id, result });
-
-            // Ajouter au thread
-            messages.push({ role: 'assistant', content: [block] });
-            messages.push({
-              role: 'user',
-              content: [{ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) }]
-            });
-          } catch (err) {
-            sendEvent({ type: 'tool_error', id: block.id, error: err.message });
-            messages.push({ role: 'assistant', content: [block] });
-            messages.push({
-              role: 'user',
-              content: [{ type: 'tool_result', tool_use_id: block.id, content: `ERROR: ${err.message}` }]
-            });
-          }
+        // Envoyer la réponse brute (texte) au client
+        const textBlock = response.content.find(c => c.type === 'text');
+        if (textBlock && textBlock.text) {
+          sendEvent({ type: 'assistant_text', text: textBlock.text });
         }
-      } else {
-        // Conversation terminée
-        continueLoop = false;
-        sendEvent({ type: 'final', content: response });
-        res.end();
+
+        if (response.stop_reason === 'tool_use') {
+          for (const block of response.content) {
+            if (block.type !== 'tool_use') continue;
+
+            sendEvent({ type: 'tool_use', name: block.name, id: block.id, input: block.input });
+
+            try {
+              const result = await callTool(block.name, block.input);
+              sendEvent({ type: 'tool_result', id: block.id, result });
+
+              // Ajouter au thread
+              messages.push({ role: 'assistant', content: [block] });
+              messages.push({
+                role: 'user',
+                content: [{ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) }]
+              });
+            } catch (err) {
+              sendEvent({ type: 'tool_error', id: block.id, error: err.message });
+              messages.push({ role: 'assistant', content: [block] });
+              messages.push({
+                role: 'user',
+                content: [{ type: 'tool_result', tool_use_id: block.id, content: `ERROR: ${err.message}` }]
+              });
+            }
+          }
+        } else {
+          continueLoop = false;
+          sendEvent({ type: 'final', content: response });
+          res.end();
+        }
       }
     }
   } catch (error) {

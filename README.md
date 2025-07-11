@@ -124,6 +124,9 @@ Dans Railway, ajouter toutes les variables de votre `.env`
 4. **URL publique**
 Railway génère automatiquement une URL `https://your-app.railway.app/`
 
+4. **URL publique acutelle**
+actuellement c'est `https://vibe-n8n-production.up.railway.app`
+
 ## 💾 Configuration du Volume Railway (IMPORTANT)
 
 Le système utilise un volume persistant pour stocker les données complètes des nodes n8n sans limite de taille. Ceci est crucial pour les nodes volumineux comme Slack qui dépassent la limite de 40KB de Pinecone.
@@ -282,3 +285,22 @@ railway logs --follow
 ## 📄 License
 
 MIT License - Voir LICENSE pour plus de détails 
+
+## 🔌 Option : Utiliser un MCP distant sans process local
+
+Depuis mai 2025, Claude peut se connecter directement à un serveur MCP public via le paramètre `mcp_servers` de l’API Messages (bêta `mcp-client-2025-04-04`).
+
+Pour activer ce mode dans le backend :
+
+1. Dans `.env` :
+   ```env
+   USE_REMOTE_MCP=true
+   MCP_SERVER_URL=https://gitmcp.io/czlonkowski/n8n-mcp
+   MCP_SERVER_NAME=n8n-docs       # identifiant interne coté Claude
+   # MCP_AUTH_TOKEN=...          # à remplir si votre serveur demande un Bearer
+   ```
+2. Redémarrer le backend.
+
+Le backend ne lance plus `n8n-mcp` en local ; Claude découvrira et appellera les outils directement sur `gitmcp.io`. Cela réduit l’usage mémoire et simplifie le déploiement ; vous n’avez plus besoin du volume Railway pour SQLite si vous n’indexez pas de node-types personnalisés.
+
+⚠️ Les fonctions avancées (notifications, handshake) ne sont pas encore supportées par le connecteur, mais la génération/validation de workflows fonctionne parfaitement. 
