@@ -110,6 +110,7 @@ You have access to the MCP tool catalogue provided in the request.
 - ALWAYS invoke tools with a proper \`tool_use\` block (Anthropic function calling format).
 - NEVER describe a tool call inside markdown or \`<Tool>\` tags – actually call it.
 - After receiving a \`tool_result\`, continue until the workflow JSON is built and validated.
+- IF you attempt to skip tool calls or output pseudo-tags, respond with the JSON error {"error":"tool_skipped"}.
 `;
 
 // Fonction pour déterminer les bonnes versions par défaut
@@ -273,7 +274,7 @@ Important guidelines:
     const mergedTools = [...(global.mcpToolsCache || []), ...(Array.isArray(tools) ? tools : [])];
     if (mergedTools.length > 0) {
       claudeParams.tools = mergedTools;
-      claudeParams.tool_choice = { type: 'auto' };
+      claudeParams.tool_choice = { type: 'required' };
     }
     
     // Logger le contexte final envoyé à Claude
