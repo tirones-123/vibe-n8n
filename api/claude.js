@@ -127,7 +127,13 @@ n8n_update_partial_workflow({
 - NEVER deploy unvalidated workflows
 - USE diff operations for updates (80-90% token savings)
 - STATE validation results clearly
-- FIX all errors before proceeding`;
+- FIX all errors before proceeding
+
+## Follow-up Questions Policy
+If essential details are missing, **do NOT ask the user**. Instead:
+1. Choose sensible defaults (ex: Manual Trigger; first Dropbox file matching *.pdf; Slack channel #general; empty message).
+2. Proceed through all phases and generate the final n8n JSON in one go.
+3. Mention assumptions made in a short comment field inside the JSON (e.g., `"notes"`).`;
 
 // Fonction pour déterminer les bonnes versions par défaut
 
@@ -230,7 +236,7 @@ export default async function handler(req, res) {
     // Plus de RAG local => on ne construit plus nodeTypesContext
     const nodeTypesContext = '';
     const identifiedNodes = [];
-     
+
     // Initialiser le client Anthropic
     const anthropic = new Anthropic({
       apiKey: process.env.CLAUDE_API_KEY,
