@@ -277,7 +277,6 @@ Important guidelines:
       model: 'claude-opus-4-20250514',
       max_tokens: 16384, // Augmenté de 8192 à 16384 pour workflows complexes
       system: systemPrompt,
-      // Extended thinking disabled to ensure compatibility with forced tool use
       stream: false,
     };
 
@@ -286,7 +285,7 @@ Important guidelines:
     if (mergedTools.length > 0) {
       claudeParams.tools = mergedTools;
       // Force Claude to invoke at least one tool (but let it choose which one)
-      claudeParams.tool_choice = { type: 'any' };
+      claudeParams.tool_choice = 'any';
     }
     
     // Logger le contexte final envoyé à Claude
