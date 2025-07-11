@@ -7,7 +7,6 @@ const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
   type: 'url',
   url: process.env.MCP_SERVER_URL,
   name: process.env.MCP_SERVER_NAME || 'remote-mcp',
-  headers: process.env.MCP_AUTH_TOKEN ? { 'Authorization': `Bearer ${process.env.MCP_AUTH_TOKEN}` } : {},
 } : null;
 
 // Configuration CORS
