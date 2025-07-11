@@ -285,7 +285,7 @@ Important guidelines:
     if (mergedTools.length > 0) {
       claudeParams.tools = mergedTools;
       // Force Claude to invoke at least one tool (but let it choose which one)
-      claudeParams.tool_choice = 'any';
+      claudeParams.tool_choice = { type: 'any' };
     }
     
     // Logger le contexte final envoyé à Claude
