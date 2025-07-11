@@ -133,7 +133,7 @@ n8n_update_partial_workflow({
 If essential details are missing, **do NOT ask the user**. Instead:
 1. Choose sensible defaults (ex: Manual Trigger; first Dropbox file matching *.pdf; Slack channel #general; empty message).
 2. Proceed through all phases and generate the final n8n JSON in one go.
-3. Mention assumptions made in a short comment field inside the JSON (e.g., `"notes"`).`;
+3. Mention assumptions made in a short comment field inside the JSON (e.g., \`notes\`).`;
 
 // Fonction pour déterminer les bonnes versions par défaut
 
