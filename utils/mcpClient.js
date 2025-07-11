@@ -1,6 +1,6 @@
 // utils/mcpClient.js
-// Utility to communicate with n8n-mcp server via stdio.
-// Starts the MCP process lazily and keeps a map of pending requests.
+// Utility to communicate with n8n-mcp server via stdio using JSON-RPC 2.0 protocol.
+// Implements the Model Context Protocol specification.
 // Usage: await callTool('get_node_essentials', { nodeType: 'n8n-nodes-base.httpRequest' });
 
 import { spawn } from 'child_process';
@@ -16,14 +16,16 @@ const pending = new Map();
 function startProcess() {
   if (mcpProcess) return;
 
-  const args = ['--mode', 'stdio', '--db', MCP_DB_PATH, '--log-level', 'error'];
-  mcpProcess = spawn('n8n-mcp', args, {
+  const args = ['n8n-mcp', '--mode', 'stdio', '--db', MCP_DB_PATH, '--log-level', 'error'];
+  mcpProcess = spawn('npx', args, {
     stdio: ['pipe', 'pipe', 'inherit'],
     env: {
       ...process.env,
       DISABLE_CONSOLE_OUTPUT: 'true',
     },
   });
+
+  console.log('[MCP] Starting n8n-mcp server via npx...');
 
   let buffer = '';
   mcpProcess.stdout.on('data', (chunk) => {
@@ -33,24 +35,35 @@ function startProcess() {
       const line = buffer.slice(0, idx).trim();
       buffer = buffer.slice(idx + 1);
       if (!line) continue;
+      
       try {
         const msg = JSON.parse(line);
-        const { id, result, error } = msg;
-        const resolver = pending.get(id);
-        if (resolver) {
-          if (error) resolver.reject(new Error(error.message || String(error)));
-          else resolver.resolve(result);
-          pending.delete(id);
+        
+        // Handle JSON-RPC 2.0 response
+        if (msg.jsonrpc === '2.0' && msg.id !== undefined) {
+          const resolver = pending.get(msg.id);
+          if (resolver) {
+            if (msg.error) {
+              resolver.reject(new Error(msg.error.message || String(msg.error)));
+            } else {
+              resolver.resolve(msg.result);
+            }
+            pending.delete(msg.id);
+          }
+        }
+        // Handle notifications (no response expected)
+        else if (msg.jsonrpc === '2.0' && msg.method) {
+          console.log('[MCP] Notification:', msg.method, msg.params);
         }
       } catch (err) {
         // Ignore malformed lines
-        console.error('Failed to parse MCP line:', err, 'line:', line);
+        console.error('[MCP] Failed to parse line:', err.message, 'line:', line);
       }
     }
   });
 
   mcpProcess.on('exit', (code, signal) => {
-    console.error(`mcpProcess exited with code ${code} signal ${signal}`);
+    console.error(`[MCP] mcpProcess exited with code ${code} signal ${signal}`);
     // Reject all pending
     for (const { reject } of pending.values()) {
       reject(new Error('MCP process exited'));
@@ -58,14 +71,67 @@ function startProcess() {
     pending.clear();
     mcpProcess = null;
   });
+
+  mcpProcess.on('error', (err) => {
+    console.error('[MCP] Process error:', err);
+  });
+}
+
+// Initialize MCP connection with handshake
+async function initializeMCP() {
+  startProcess();
+  
+  // Send initialize request
+  const initRequest = {
+    jsonrpc: '2.0',
+    id: requestId++,
+    method: 'initialize',
+    params: {
+      protocolVersion: '2024-11-05',
+      capabilities: {
+        roots: {
+          listChanged: false
+        },
+        sampling: {}
+      },
+      clientInfo: {
+        name: 'n8n-backend',
+        version: '1.0.0'
+      }
+    }
+  };
+
+  return new Promise((resolve, reject) => {
+    pending.set(initRequest.id, { resolve, reject });
+    mcpProcess.stdin.write(JSON.stringify(initRequest) + '\n');
+    
+    setTimeout(() => {
+      if (pending.has(initRequest.id)) {
+        pending.delete(initRequest.id);
+        reject(new Error('MCP initialization timed out'));
+      }
+    }, 10000);
+  });
 }
 
 export async function callTool(name, args = {}) {
-  startProcess();
+  // Ensure MCP is initialized
+  if (!mcpProcess) {
+    await initializeMCP();
+  }
+  
   const id = requestId++;
-  const payload = { id, name, arguments: args };
+  const request = {
+    jsonrpc: '2.0',
+    id,
+    method: 'tools/call',
+    params: {
+      name,
+      arguments: args
+    }
+  };
 
-  const json = JSON.stringify(payload);
+  const json = JSON.stringify(request);
   mcpProcess.stdin.write(json + '\n');
 
   return new Promise((resolve, reject) => {
@@ -81,19 +147,30 @@ export async function callTool(name, args = {}) {
 }
 
 export async function listTools() {
-  // Try official tool name list_tools (snake_case)
-  try {
-    const result = await callTool('list_tools', {});
-    if (result && Array.isArray(result.tools)) return result;
-  } catch (err) {
-    // ignore and fallback
+  // Ensure MCP is initialized
+  if (!mcpProcess) {
+    await initializeMCP();
   }
-  // Fallback to tools/list if server supports that
-  try {
-    const result = await callTool('tools/list', {});
-    return result;
-  } catch (err) {
-    console.error('[MCP] listTools failed:', err.message);
-    return { tools: [] };
-  }
+  
+  const id = requestId++;
+  const request = {
+    jsonrpc: '2.0',
+    id,
+    method: 'tools/list',
+    params: {}
+  };
+
+  const json = JSON.stringify(request);
+  mcpProcess.stdin.write(json + '\n');
+
+  return new Promise((resolve, reject) => {
+    pending.set(id, { resolve, reject });
+    
+    setTimeout(() => {
+      if (pending.has(id)) {
+        pending.delete(id);
+        reject(new Error('MCP listTools timed out'));
+      }
+    }, 10000);
+  });
 } 
