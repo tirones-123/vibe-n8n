@@ -9,7 +9,9 @@ const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
   url: 'https://n8n-my-repo-production.up.railway.app/sse',
   // url: process.env.MCP_SERVER_URL ? process.env.MCP_SERVER_URL.replace(/\/mcp$/, '') : 'https://n8n-my-repo-production.up.railway.app/sse',
   name: process.env.MCP_SERVER_NAME || 'n8n-mcp-remote',
-  ...(process.env.MCP_AUTH_TOKEN ? { authorization_token: process.env.MCP_AUTH_TOKEN } : {})
+  // Test avec token en dur pour vérifier si le problème vient des variables d'environnement
+  authorization_token: 'WuME0GaBa34fyl75AfDx1o5hfUJQ2gKiMd/Qr2Vudzg='
+  // ...(process.env.MCP_AUTH_TOKEN ? { authorization_token: process.env.MCP_AUTH_TOKEN } : {})
 } : null;
 
 // Configuration CORS
