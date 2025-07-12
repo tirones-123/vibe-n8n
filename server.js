@@ -140,7 +140,14 @@ async function initializeServices() {
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 Claude endpoint: http://localhost:${PORT}/api/claude`);
-  // Start local MCP server (HTTP mode) so that the backend and Claude can use it
-  startMcpHttp();
+  
+  // Start local MCP server only if not using remote MCP
+  if (process.env.USE_REMOTE_MCP !== 'true') {
+    console.log('🔧 Starting local MCP server...');
+    startMcpHttp();
+  } else {
+    console.log('🌐 Using remote MCP server:', process.env.MCP_SERVER_URL);
+  }
+  
   await initializeServices();
 }); 
