@@ -5,7 +5,7 @@ import { callTool, listTools } from '../utils/mcpClient.js';
 const USE_REMOTE_MCP = process.env.USE_REMOTE_MCP === 'true';
 const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
   type: 'url',
-  url: process.env.MCP_SERVER_URL ? process.env.MCP_SERVER_URL.replace('/mcp', '') : 'https://gitmcp.io/czlonkowski/n8n-mcp/sse',
+  url: process.env.MCP_SERVER_URL ? process.env.MCP_SERVER_URL.replace(/\/mcp$/, '') : 'https://gitmcp.io/czlonkowski/n8n-mcp/sse',
   name: process.env.MCP_SERVER_NAME || 'n8n-mcp-remote',
   ...(process.env.MCP_AUTH_TOKEN ? { authorization_token: process.env.MCP_AUTH_TOKEN } : {})
 } : null;
