@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { callTool, listTools } from '../utils/mcpClient.js';
 
 // Flag: use remote MCP connector instead of local n8n-mcp process
-const USE_REMOTE_MCP = false; // Temporairement désactivé pour tester
+const USE_REMOTE_MCP = true; // Réactivé pour utiliser votre serveur MCP avec SSE
 const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
   type: 'url',
   // Claude s'attend à un endpoint /sse pour les connexions SSE
