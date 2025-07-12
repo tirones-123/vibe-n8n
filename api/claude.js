@@ -5,13 +5,11 @@ import { callTool, listTools } from '../utils/mcpClient.js';
 const USE_REMOTE_MCP = true; // Réactivé pour utiliser votre serveur MCP avec SSE
 const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
   type: 'url',
-  // Claude s'attend à un endpoint /sse pour les connexions SSE
-  url: 'https://n8n-my-repo-production.up.railway.app/sse',
-  // url: process.env.MCP_SERVER_URL ? process.env.MCP_SERVER_URL.replace(/\/mcp$/, '') : 'https://n8n-my-repo-production.up.railway.app/sse',
-  name: process.env.MCP_SERVER_NAME || 'n8n-mcp-remote',
-  // Test avec token en dur pour vérifier si le problème vient des variables d'environnement
-  authorization_token: 'WuME0GaBa34fyl75AfDx1o5hfUJQ2gKiMd/Qr2Vudzg='
-  // ...(process.env.MCP_AUTH_TOKEN ? { authorization_token: process.env.MCP_AUTH_TOKEN } : {})
+  // Nouveau serveur MCP public (gitmcp) avec endpoint /sse pour le streaming
+  url: 'https://gitmcp.io/czlonkowski/n8n-mcp/sse',
+  name: 'n8n-mcp',
+  // Activer explicitement le MCP côté Anthropic
+  tool_configuration: { enabled: true }
 } : null;
 
 // Configuration CORS
