@@ -285,7 +285,7 @@ Important guidelines:
 
     // Préparer les paramètres pour l'API Claude
     const claudeParams = {
-      model: 'claude-opus-4-20250514',
+      model: 'claude-sonnet-4-20250514', // Changé d'Opus à Sonnet 4 pour meilleure gestion MCP
       max_tokens: 16384, // Augmenté de 8192 à 16384 pour workflows complexes
       system: systemPrompt,
       stream: true, // Toujours utiliser le streaming pour éviter les timeouts
