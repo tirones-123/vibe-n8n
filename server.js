@@ -136,7 +136,7 @@ async function initializeServices() {
   }
 }
 
-// Démarrer le serveur
+// Démarrer le serveur 
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 Claude endpoint: http://localhost:${PORT}/api/claude`);
