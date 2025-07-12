@@ -5,9 +5,9 @@ import { callTool, listTools } from '../utils/mcpClient.js';
 const USE_REMOTE_MCP = process.env.USE_REMOTE_MCP === 'true';
 const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
   type: 'url',
-  // Utiliser votre nouveau serveur MCP avec support SSE
-  url: 'https://n8n-my-repo-production.up.railway.app/mcp',
-  // url: process.env.MCP_SERVER_URL ? process.env.MCP_SERVER_URL.replace(/\/mcp$/, '') : 'https://n8n-my-repo-production.up.railway.app/mcp',
+  // Claude s'attend à un endpoint /sse pour les connexions SSE
+  url: 'https://n8n-my-repo-production.up.railway.app/sse',
+  // url: process.env.MCP_SERVER_URL ? process.env.MCP_SERVER_URL.replace(/\/mcp$/, '') : 'https://n8n-my-repo-production.up.railway.app/sse',
   name: process.env.MCP_SERVER_NAME || 'n8n-mcp-remote',
   ...(process.env.MCP_AUTH_TOKEN ? { authorization_token: process.env.MCP_AUTH_TOKEN } : {})
 } : null;
