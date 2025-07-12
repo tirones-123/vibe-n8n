@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { callTool, listTools } from '../utils/mcpClient.js';
 
 // Flag: use remote MCP connector instead of local n8n-mcp process
-const USE_REMOTE_MCP = process.env.USE_REMOTE_MCP === 'true';
+const USE_REMOTE_MCP = false; // Temporairement désactivé pour tester
 const REMOTE_MCP_CONFIG = USE_REMOTE_MCP ? {
   type: 'url',
   // Claude s'attend à un endpoint /sse pour les connexions SSE
@@ -288,7 +288,7 @@ Important guidelines:
       model: 'claude-opus-4-20250514',
       max_tokens: 16384, // Augmenté de 8192 à 16384 pour workflows complexes
       system: systemPrompt,
-      stream: false,
+      stream: true, // Toujours utiliser le streaming pour éviter les timeouts
     };
 
     // Mode remote : utiliser la feature MCP connector
@@ -374,23 +374,38 @@ Important guidelines:
       console.log('[MCP] Stream terminé');
       res.end();
     } else {
-      // === Comportement local historique ===
+      // === Comportement local avec streaming ===
       let continueLoop = true;
       while (continueLoop) {
-        const response = await anthropic.messages.create({
+        const stream = await anthropic.messages.create({
           ...claudeParams,
           messages,
-          stream: false,
+          stream: true, // Utiliser le streaming même en local
         });
 
-        // Envoyer la réponse brute (texte) au client
-        const textBlock = response.content.find(c => c.type === 'text');
-        if (textBlock && textBlock.text) {
-          sendEvent({ type: 'assistant_text', text: textBlock.text });
+        let currentResponse = { content: [] };
+        
+        for await (const event of stream) {
+          if (event.type === 'content_block_start') {
+            currentResponse.content.push(event.content_block);
+          } else if (event.type === 'content_block_delta') {
+            if (event.delta?.text) {
+              sendEvent({ type: 'assistant_text_delta', text: event.delta.text });
+              // Mettre à jour le contenu pour le traitement des outils
+              const lastBlock = currentResponse.content[currentResponse.content.length - 1];
+              if (lastBlock && lastBlock.type === 'text') {
+                lastBlock.text = (lastBlock.text || '') + event.delta.text;
+              }
+            }
+          } else if (event.type === 'content_block_stop') {
+            // Bloc terminé
+          } else if (event.type === 'message_delta') {
+            currentResponse.stop_reason = event.delta.stop_reason;
+          }
         }
 
-        if (response.stop_reason === 'tool_use') {
-          for (const block of response.content) {
+        if (currentResponse.stop_reason === 'tool_use') {
+          for (const block of currentResponse.content) {
             if (block.type !== 'tool_use') continue;
 
             sendEvent({ type: 'tool_use', name: block.name, id: block.id, input: block.input });
@@ -416,7 +431,7 @@ Important guidelines:
           }
         } else {
           continueLoop = false;
-          sendEvent({ type: 'final', content: response });
+          sendEvent({ type: 'final', content: currentResponse });
           res.end();
         }
       }
