@@ -469,6 +469,52 @@ if (!isN8n || !isWorkflowPage) {
         
         responseDiv.innerHTML = `<strong>Assistant:</strong> ❌ Erreur: ${message.error}`;
         break;
+      
+      case 'WORKFLOW_CHUNKS_START':
+        // Préparer le buffer pour recevoir les chunks
+        window.__ragWorkflowBuffer = '';
+        window.__ragWorkflowTotalChunks = message.totalChunks;
+        window.__ragWorkflowChunksReceived = 0;
+        window.__ragWorkflowExplanation = message.explanation;
+        responseDiv.innerHTML = '<strong>Assistant:</strong> 📦 Réception du workflow (plusieurs chunks)...';
+        break;
+      
+      case 'WORKFLOW_CHUNK':
+        if (typeof window.__ragWorkflowBuffer === 'string') {
+          window.__ragWorkflowBuffer += message.chunk;
+          window.__ragWorkflowChunksReceived++;
+          responseDiv.innerHTML = `<strong>Assistant:</strong> 📦 Réception du workflow... (${window.__ragWorkflowChunksReceived}/${window.__ragWorkflowTotalChunks})`;
+        }
+        break;
+      
+      case 'WORKFLOW_CHUNKS_END':
+        if (typeof window.__ragWorkflowBuffer === 'string') {
+          try {
+            const workflowObj = JSON.parse(window.__ragWorkflowBuffer);
+            console.log('🎉 Workflow complet (reconstruit) :', workflowObj);
+            
+            // Importer le workflow
+            responseDiv.innerHTML = '<strong>Assistant:</strong> ✅ Workflow reçu, import en cours...';
+            importWorkflow(workflowObj);
+            
+            // Afficher l'explication si on l'a
+            if (window.__ragWorkflowExplanation) {
+              const exp = window.__ragWorkflowExplanation;
+              const expDiv = document.createElement('div');
+              expDiv.style.cssText = 'margin-top: 12px; padding: 10px; background: #f0f9ff; border-radius: 4px; color: #0369a1;';
+              expDiv.innerHTML = `<strong>Résumé :</strong> ${exp.summary}<br><strong>Flux :</strong> ${exp.flow}`;
+              responseDiv.appendChild(expDiv);
+            }
+          } catch (parseErr) {
+            console.error('❌ Erreur parsing workflow chunks:', parseErr);
+            responseDiv.innerHTML = '<strong>Assistant:</strong> ❌ Erreur lors de la reconstruction du workflow';
+          }
+          // Nettoyer buffer
+          window.__ragWorkflowBuffer = null;
+          window.__ragWorkflowTotalChunks = 0;
+          window.__ragWorkflowChunksReceived = 0;
+        }
+        break;
         
       default:
         console.log('Type de message inconnu:', message.type);

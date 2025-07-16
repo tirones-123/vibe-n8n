@@ -117,12 +117,28 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
 
         const { done, value } = result;
         if (done) {
+          // Traiter tout éventuel contenu restant dans le buffer (dernier événement non suivi d'un \n)
+          if (buffer.trim().startsWith('data: ')) {
+            try {
+              const data = JSON.parse(buffer.trim().slice(6));
+              eventCount++;
+              console.log('📡 Événement final (buffer) reçu:', data.type);
+              await processWorkflowRAGResponse(data, tabId);
+            } catch (e) {
+              console.log('⚠️ Parse error (buffer final):', e.message);
+            }
+          }
+
           console.log('✅ Stream terminé. Total événements:', eventCount);
+          console.log('🔍 DEBUG: Stream terminé, derniers types d\'événements:', eventCount > 0 ? 'OK' : 'AUCUN');
+          
           if (eventCount === 0) {
             chrome.tabs.sendMessage(tabId, {
               type: 'CLAUDE_ERROR',
               error: 'Aucune donnée reçue du serveur. Vérifiez la configuration backend.'
             });
+          } else {
+            console.log('🔍 DEBUG: Le stream s\'est terminé normalement après', eventCount, 'événements');
           }
           break;
         }
@@ -138,6 +154,12 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
               eventCount++;
               lastEventTime = Date.now();
               console.log('📡 Événement reçu:', data.type);
+              
+              // DEBUG : Log complet pour event complete
+              if (data.type === 'complete') {
+                console.log('🚨 EVENT COMPLETE REÇU ! Data complète:', JSON.stringify(data, null, 2));
+              }
+              
               await processWorkflowRAGResponse(data, tabId);
             } catch (e) {
               // Ignorer les erreurs de parsing
@@ -238,6 +260,17 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
  */
 async function processWorkflowRAGResponse(data, tabId) {
   console.log('📨 Réponse workflow RAG:', data.type);
+  
+  // DEBUG : Log détaillé de chaque événement
+  if (data.type === 'complete') {
+    console.log('🔍 DEBUG Complete Event:', JSON.stringify(data, null, 2));
+    console.log('🔍 DEBUG data.data:', data.data);
+    console.log('🔍 DEBUG success:', data.data?.success);
+    console.log('🔍 DEBUG workflow présent:', !!data.data?.workflow);
+    if (data.data?.workflow) {
+      console.log('🔍 DEBUG workflow nodes:', data.data.workflow.nodes?.length);
+    }
+  }
 
   switch (data.type) {
     case 'setup':
@@ -274,13 +307,37 @@ async function processWorkflowRAGResponse(data, tabId) {
       if (data.data.success && data.data.workflow) {
         console.log('✅ Workflow généré avec succès');
         
-        // Envoyer le workflow complet et l'explication
+        // --- NOUVELLE MÉTHODE : envoi en chunks pour éviter la limite de taille Chrome ---
+        const workflowString = JSON.stringify(data.data.workflow);
+        const CHUNK_SIZE = 400000; // 400 KB (~0.4 Mo) - largement sous la limite 4 Mo
+        const totalChunks = Math.ceil(workflowString.length / CHUNK_SIZE);
+
+        console.log(`📦 Envoi du workflow en ${totalChunks} chunks (taille totale ${workflowString.length} caractères)`);
+
+        // 1. Message de démarrage
         chrome.tabs.sendMessage(tabId, {
-          type: 'WORKFLOW_COMPLETE',
-          workflow: data.data.workflow,
+          type: 'WORKFLOW_CHUNKS_START',
+          totalChunks,
           explanation: data.data.explanation,
           message: data.data.message
         });
+
+        // 2. Envoyer chaque chunk séquentiellement
+        for (let i = 0; i < totalChunks; i++) {
+          const chunk = workflowString.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+          chrome.tabs.sendMessage(tabId, {
+            type: 'WORKFLOW_CHUNK',
+            index: i,
+            chunk
+          });
+        }
+
+        // 3. Message de fin
+        chrome.tabs.sendMessage(tabId, {
+          type: 'WORKFLOW_CHUNKS_END',
+          message: 'Tous les chunks du workflow ont été envoyés'
+        });
+
       } else {
         console.error('❌ Échec de génération');
         chrome.tabs.sendMessage(tabId, {
