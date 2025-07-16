@@ -1,0 +1,159 @@
+{
+  "id": "W1ugowsjzt1SC4hH",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Validate Seatable Webhooks with HMAC SHA256 Authentication",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "ec4bdb4f-3c3e-4405-af80-2ad7ab3d57fc",
+      "name": "200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        420,
+        -20
+      ],
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        },
+        "respondWith": "noData"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "1b6c9f8c-1b5b-499d-abb5-bb1059b73ce7",
+      "name": "403",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        420,
+        180
+      ],
+      "parameters": {
+        "options": {
+          "responseCode": 403
+        },
+        "respondWith": "noData"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e3976bf3-60e0-4c1c-bfdb-22ad336760a5",
+      "name": "Calculate sha256",
+      "type": "n8n-nodes-base.crypto",
+      "position": [
+        -20,
+        -20
+      ],
+      "parameters": {
+        "type": "SHA256",
+        "action": "hmac",
+        "binaryData": true,
+        "dataPropertyName": "seatable-signature"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "5e74ba50-e0fe-41e0-9b84-7078f1d150a3",
+      "name": "Seatable Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -240,
+        -20
+      ],
+      "webhookId": "8c9d8c0f-d5ea-469d-afc9-d4e8a352f1a4",
+      "parameters": {
+        "path": "s0m3-d4nd0m-1d",
+        "options": {
+          "rawBody": true
+        },
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "dbfcc59f-5411-4d99-8cde-26ae91cdd6af",
+      "name": "Add nodes for processing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        420,
+        -220
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "a508534f-abb4-4455-b47a-1aaf56ce1124",
+      "name": "hash matches",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        200,
+        -20
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ String($json['seatable-signature']) }}",
+              "value2": "={{ String($json.headers['x-seatable-signature'].replace(\"sha256=\", \"\")) }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "hash matches": {
+      "main": [
+        [
+          {
+            "node": "200",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Add nodes for processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "403",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate sha256": {
+      "main": [
+        [
+          {
+            "node": "hash matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seatable Webhook": {
+      "main": [
+        [
+          {
+            "node": "Calculate sha256",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

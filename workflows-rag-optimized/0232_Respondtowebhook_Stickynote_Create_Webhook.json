@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "f80aceed-b676-42aa-bf25-f7a44408b1bc",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        375,
+        115
+      ],
+      "webhookId": "6f7b288e-1efe-4504-a6fd-660931327269",
+      "parameters": {
+        "path": "6f7b288e-1efe-4504-a6fd-660931327269",
+        "options": {},
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "9c36dae5-0700-450c-9739-e9f3eff31bfe",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        815,
+        115
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "text",
+        "responseBody": "=The URL of the Google search query for the term \"{{$node[\"Webhook\"].json[\"query\"][\"first_name\"]}} {{$node[\"Webhook\"].json[\"query\"][\"last_name\"]}}\" is: {{$json[\"product\"]}}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "5a228fcb-78b9-4a28-95d2-d7c9fdf1d4ea",
+      "name": "Create URL string",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        595,
+        115
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "product",
+              "value": "=https://www.google.com/search?q={{$json[\"query\"][\"first_name\"]}}+{{$json[\"query\"][\"last_name\"]}}"
+            }
+          ]
+        },
+        "options": {},
+        "keepOnlySet": true
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create URL string",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create URL string": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,353 @@
+{
+  "id": "cGTxHYV93kS71hLL",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Send Discord message from Webflow form submission",
+  "tags": [
+    {
+      "id": "7cKuF8oYmXKMRDsD",
+      "name": "webflow",
+      "createdAt": "2024-01-09T02:22:11.773Z",
+      "updatedAt": "2024-01-09T02:22:11.773Z"
+    },
+    {
+      "id": "3Rn4VbTINmdaOxoY",
+      "name": "discord",
+      "createdAt": "2024-01-16T06:00:48.375Z",
+      "updatedAt": "2024-01-16T06:00:48.375Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "5de5b2ea-5257-4782-8f11-ea9c746083eb",
+      "name": "Does the channel exist?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1420,
+        360
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b8fa7e94-ea10-40f0-ab0c-795620a5ee60",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.channel }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "325ac193-b72f-4753-8d74-4e3d5cd5172c",
+      "name": "Transform data to send message",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1880,
+        540
+      ],
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "formData",
+              "type": "objectValue",
+              "objectValue": "={{ $('Filter existing Discord channel').item.json.formData }}"
+            },
+            {
+              "name": "formName",
+              "stringValue": "={{ $('Filter existing Discord channel').item.json.formName }}"
+            },
+            {
+              "name": "channel",
+              "type": "objectValue",
+              "objectValue": "={\"id\":\"{{ $json.id }}\", \"name\": \"{{ $json.name }}\" }"
+            }
+          ]
+        },
+        "include": "none",
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "1f084545-53a6-4460-81bb-d5109cb06db4",
+      "name": "Webflow Form Submission Trigger",
+      "type": "n8n-nodes-base.webflowTrigger",
+      "position": [
+        780,
+        360
+      ],
+      "webhookId": "4f11dae8-d23f-43c7-992b-04460b38f488",
+      "parameters": {
+        "site": "60e6f0f07c46af62aa2b1c98"
+      },
+      "credentials": {
+        "webflowApi": {
+          "id": "<webflowApi-id>",
+          "name": "Webflow Tutum Access"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "a6076ef4-5b8a-45dc-8f44-02ccf9d2ba34",
+      "name": "Compose Slack message",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2140,
+        340
+      ],
+      "parameters": {
+        "jsCode": "const webflowFormData = $input.all()[0].json.formData;\n\nconst objectToMarkdown = (obj) => {\n  return Object.entries(obj)\n    .map(([key, value]) => `**${key}**: ${value}`)\n    .join('\\n');\n}\n\nconst discordChannelMessage = {\n\t\"content\": `New form submission: \\n ${objectToMarkdown(webflowFormData)}`\n\t\n};\nconst data = {...$input.all()[0].json, discordChannelMessage: discordChannelMessage};\nreturn data;\n"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "76dd8d4f-5b65-4171-a921-9d32a8e5c893",
+      "name": "List Discord Channels",
+      "type": "n8n-nodes-base.discord",
+      "position": [
+        1000,
+        360
+      ],
+      "parameters": {
+        "guildId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "987961215550623794",
+          "cachedResultUrl": "https://discord.com/channels/987961215550623794",
+          "cachedResultName": "kreonovo"
+        },
+        "options": {},
+        "operation": "getAll"
+      },
+      "credentials": {
+        "discordBotApi": {
+          "id": "<discordBotApi-id>",
+          "name": "Discord Bot KN"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "7551d395-6364-4d28-b778-c2a16b04db96",
+      "name": "Filter existing Discord channel",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1200,
+        360
+      ],
+      "parameters": {
+        "jsCode": "\nconst transformedFormName = (inputString)=> {\n    // Convert to lowercase\n  const lowercaseString = inputString.toLowerCase();\n\n  // Split by space\n  const wordsArray = lowercaseString.split(' ');\n\n  // Join with hyphens\n  const resultString = wordsArray.join('-');\n\n  return resultString;\n}\n\nconst currentForm = transformedFormName($('Webflow Form Submission Trigger').all()[0].json[\"name\"]);\n\nconst doesChannelExist = (channelName)=> {\n  return channelName == currentForm\n}\n\nlet channels = [];\nfor (const item of $input.all()) {\n  let channel = {\n    name: item.json[\"name\"],\n    id: item.json[\"id\"],\n    channelExists: doesChannelExist(item.json[\"name\"]),\n  };\n  channels.push(channel);\n}\n\nlet data = [ { \n  channel: channels.filter((c)=>{return c.channelExists === true})[0],\n  formName: currentForm,\n  formData: $('Webflow Form Submission Trigger').all()[0].json[\"data\"]\n}\n  \n]\n\nreturn data;"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "df38e67b-f76d-4b43-8da4-8e39230a5d0a",
+      "name": "Create Discord channel with form name",
+      "type": "n8n-nodes-base.discord",
+      "position": [
+        1640,
+        540
+      ],
+      "parameters": {
+        "name": "={{ $json.formName }}",
+        "guildId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "987961215550623794",
+          "cachedResultUrl": "https://discord.com/channels/987961215550623794",
+          "cachedResultName": "kreonovo"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "discordBotApi": {
+          "id": "<discordBotApi-id>",
+          "name": "Discord Bot KN"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "8a4fb8af-f156-48cf-b6cd-52235ced1de9",
+      "name": "Notify #general channel of newly created channel1",
+      "type": "n8n-nodes-base.discord",
+      "position": [
+        1880,
+        780
+      ],
+      "parameters": {
+        "content": "=A new channel was created <#{{ $json['id']  }}>",
+        "guildId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "987961215550623794",
+          "cachedResultUrl": "https://discord.com/channels/987961215550623794",
+          "cachedResultName": "kreonovo"
+        },
+        "options": {},
+        "resource": "message",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "987961215550623797",
+          "cachedResultUrl": "https://discord.com/channels/987961215550623794/987961215550623797",
+          "cachedResultName": "general"
+        }
+      },
+      "credentials": {
+        "discordBotApi": {
+          "id": "<discordBotApi-id>",
+          "name": "Discord Bot KN"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "1c1a20ee-303e-4015-9465-9674f17fca46",
+      "name": "Send form submission to Discord channel",
+      "type": "n8n-nodes-base.discord",
+      "position": [
+        2360,
+        340
+      ],
+      "parameters": {
+        "content": "={{ $json.discordChannelMessage.content }}",
+        "guildId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "987961215550623794",
+          "cachedResultUrl": "https://discord.com/channels/987961215550623794",
+          "cachedResultName": "kreonovo"
+        },
+        "options": {},
+        "resource": "message",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.channel.id }}"
+        }
+      },
+      "credentials": {
+        "discordBotApi": {
+          "id": "<discordBotApi-id>",
+          "name": "Discord Bot KN"
+        }
+      },
+      "typeVersion": 2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Compose Slack message": {
+      "main": [
+        [
+          {
+            "node": "Send form submission to Discord channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Discord Channels": {
+      "main": [
+        [
+          {
+            "node": "Filter existing Discord channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Does the channel exist?": {
+      "main": [
+        [
+          {
+            "node": "Compose Slack message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Discord channel with form name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform data to send message": {
+      "main": [
+        [
+          {
+            "node": "Compose Slack message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter existing Discord channel": {
+      "main": [
+        [
+          {
+            "node": "Does the channel exist?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webflow Form Submission Trigger": {
+      "main": [
+        [
+          {
+            "node": "List Discord Channels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Discord channel with form name": {
+      "main": [
+        [
+          {
+            "node": "Transform data to send message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify #general channel of newly created channel1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "38da57b7-2161-415d-8473-783ccdc7b975",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -260,
+        840
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "40bab53a-fcbc-4acc-8d59-c20b3e1b2697",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        1200,
+        980
+      ],
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"is_qualified\": true,\n\t\"reason\": \"\"\n}"
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "d75fb7ab-cfbc-419d-b803-deb9e99114ba",
+      "name": "Should Proceed To Stage 2?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1360,
+        820
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "4dd69ba3-bf07-43b3-86b7-d94b07e9eea6",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.output.is_qualified }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "d21fe4dd-0879-4e5a-a70d-10f09b25eee2",
+      "name": "Download Resume",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -80,
+        840
+      ],
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1MORAdeev6cMcTJBV2EYALAwll8gCDRav"
+        },
+        "options": {},
+        "operation": "download"
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "<googleDriveOAuth2Api-id>",
+          "name": "Google Drive account"
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "d60214c6-c67e-4433-9121-4d54f782b19d",
+      "name": "PDF-to-Image API",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        340,
+        880
+      ],
+      "parameters": {
+        "url": "https://stirlingpdf.io/api/v1/convert/pdf/img",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "fileInput",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "imageFormat",
+              "value": "jpg"
+            },
+            {
+              "name": "singleOrMultiple",
+              "value": "single"
+            },
+            {
+              "name": "dpi",
+              "value": "300"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "847de537-ad8f-47f5-a1c1-d207c3fc15ef",
+      "name": "Resize Converted Image",
+      "type": "n8n-nodes-base.editImage",
+      "position": [
+        530,
+        880
+      ],
+      "parameters": {
+        "width": 75,
+        "height": 75,
+        "options": {},
+        "operation": "resize",
+        "resizeOption": "percent"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "5fb6ac7e-b910-4dce-bba7-19b638fd817a",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        1000,
+        980
+      ],
+      "parameters": {
+        "options": {},
+        "modelName": "models/gemini-1.5-pro-latest"
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "<googlePalmApi-id>",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "2580b583-544a-47ee-b248-9cca528c9866",
+      "name": "Candidate Resume Analyser",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        1000,
+        820
+      ],
+      "parameters": {
+        "text": "=Evaluate the candidate's resume.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Assess the given Candiate Resume for the role of Plumber.\nDetermine if the candidate's skills match the role and if they qualify for an in-person interview."
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageBinary"
+            }
+          ]
+        },
+        "promptType": "define",
+        "hasOutputParser": true
+      },
+      "typeVersion": 1.4
+    }
+  ],
+  "connections": {
+    "Download Resume": {
+      "main": [
+        [
+          {
+            "node": "PDF-to-Image API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF-to-Image API": {
+      "main": [
+        [
+          {
+            "node": "Resize Converted Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resize Converted Image": {
+      "main": [
+        [
+          {
+            "node": "Candidate Resume Analyser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Candidate Resume Analyser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Candidate Resume Analyser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Candidate Resume Analyser": {
+      "main": [
+        [
+          {
+            "node": "Should Proceed To Stage 2?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

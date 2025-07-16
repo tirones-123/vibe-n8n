@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "4da16859-d29b-4eb7-90a4-3904c1bfff68",
+      "name": "Create item",
+      "type": "n8n-nodes-base.mondayCom",
+      "position": [
+        620,
+        240
+      ],
+      "parameters": {
+        "name": "={{$node[\"On created contact\"].json[\"mautic.lead_post_save_new\"][0][\"contact\"][\"fields\"][\"core\"][\"firstname\"][\"value\"]}} {{$node[\"On created contact\"].json[\"mautic.lead_post_save_new\"][0][\"contact\"][\"fields\"][\"core\"][\"lastname\"][\"value\"]}}",
+        "boardId": "3461879764",
+        "groupId": "topics",
+        "resource": "boardItem",
+        "additionalFields": {
+          "columnValues": "={\n  \"email\": {\n    \"email\": \"{{$node[\"On created contact\"].json[\"mautic.lead_post_save_new\"][0][\"contact\"][\"fields\"][\"core\"][\"email\"][\"value\"]}}\",\n    \"text\" : \"{{$node[\"On created contact\"].json[\"mautic.lead_post_save_new\"][0][\"contact\"][\"fields\"][\"core\"][\"email\"][\"value\"]}}\"\n  }\n}"
+        }
+      },
+      "credentials": {
+        "mondayComApi": {
+          "id": "<mondayComApi-id>",
+          "name": "[UPDATE ME]"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "88655428-439e-4324-8d8f-865625650c7a",
+      "name": "On created contact",
+      "type": "n8n-nodes-base.mauticTrigger",
+      "position": [
+        400,
+        240
+      ],
+      "webhookId": "8c80d932-4c37-4ebe-92ad-e456249db2c5",
+      "parameters": {
+        "events": [
+          "mautic.lead_post_save_new"
+        ]
+      },
+      "credentials": {
+        "mauticApi": {
+          "id": "<mauticApi-id>",
+          "name": "[UPDATE ME]"
+        }
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "On created contact": {
+      "main": [
+        [
+          {
+            "node": "Create item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

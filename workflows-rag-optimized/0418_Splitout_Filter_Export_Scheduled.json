@@ -1,0 +1,495 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>",
+    "templateId": "2113"
+  },
+  "nodes": [
+    {
+      "id": "2e93b7a1-f22c-4e34-8bbe-09763d428ab6",
+      "name": "Get Leads",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1040,
+        522
+      ],
+      "parameters": {
+        "url": "=https://api.leadfeeder.com/accounts/{{ $json.id }}/leads",
+        "options": {},
+        "sendQuery": true,
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "start_date",
+              "value": "={{ $now.minus(1, 'day').toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "end_date",
+              "value": "={{ $now.toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Leapfeeder Token"
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "0274033f-582a-40f6-9c08-161a81cfb2ab",
+      "name": "Filter Leads by company criteria",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        640,
+        762.4643026004727
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "077363ca-c785-497c-bae9-24829bb321cd",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ $json.metrics.employees }}",
+              "rightValue": 100
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "918af2ea-38ab-4d36-abf0-628119216835",
+      "name": "Enrich company",
+      "type": "n8n-nodes-base.clearbit",
+      "position": [
+        420,
+        762
+      ],
+      "parameters": {
+        "domain": "={{ $json.attributes.website_url }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "clearbitApi": {
+          "id": "<clearbitApi-id>",
+          "name": "Clearbit account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "5ee23d2a-5eb6-4edd-8668-6053294d26cb",
+      "name": "Setup",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        640,
+        282.4643026004727
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b5f7c85-7455-439a-8427-7b45c67c7903",
+              "name": "Leadfeeder Accounts",
+              "type": "array",
+              "value": "=[\"n8n\",\"someOtherAccount\"]"
+            },
+            {
+              "id": "61e2ddbd-380e-4b6e-8652-048b948994e5",
+              "name": "Google Sheets URL",
+              "type": "string",
+              "value": "https://docs.google.com/spreadsheets/d/1a2gfBjZZpN0jiD7apR8fPplRp2aPHVy2_5lp4Yzp778/edit?usp=sharing"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "425b3030-d745-4fe0-a489-c6d79f1d6dca",
+      "name": "Get all Leedfeeder accounts",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        420,
+        522.4643026004727
+      ],
+      "parameters": {
+        "url": "https://api.leadfeeder.com/accounts",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Leapfeeder Token"
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "2a547ddc-131d-4628-83f1-516d07dddde9",
+      "name": "Only for wanted accounts",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        840,
+        522.4643026004727
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "7c08f7c1-b6d4-47cc-91f8-e55a6d800eb3",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $('Setup').first().json[\"Leadfeeder Accounts\"].includes($json.attributes.name) }}",
+              "rightValue": "n8n"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "8083e9c2-ffcd-4060-87eb-f726349d1bc3",
+      "name": "Split out accounts",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        640,
+        522.4643026004727
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "data"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "59696b1e-ff16-49d4-abc2-d830ce612fb5",
+      "name": "Split Out Leads",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1220,
+        522.4643026004727
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "data"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c23e9507-6413-4343-add3-ee1539b424fd",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        420,
+        282.4643026004727
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "bc1e5cb1-fb6b-45a8-a23b-b3d890b7cc79",
+      "name": "Filter leads by engagement",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1420,
+        522.4643026004727
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b97c4134-48e9-4a55-b002-5db3e4304e0d",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ $json.attributes.visits }}",
+              "rightValue": 3
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "9ee5c6ac-544b-42fa-9432-92ae45ee40dd",
+      "name": "Save leads to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        840,
+        762.4643026004727
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "name": "={{ $json.name }}",
+            "domain": "={{ $json.domain }}",
+            "visits": "={{ $('Split Out Leads').item.json.attributes.visits }}",
+            "quality": "={{ $('Split Out Leads').item.json.attributes.quality }}",
+            "twitter": "={{ $json.twitter.handle ? $json.twitter.handle : $('Split Out Leads').item.json.attributes.twitter_handle  }}",
+            "linkedin": "={{ $json.linkedin.handle ? $json.linkedin.handle  : $('Split Out Leads').item.json.attributes.linkedin_handle  }}",
+            "employees": "={{ $json.metrics.employees ? $json.metrics.employees :  $('Split Out Leads').item.json.attributes.employee_count }}",
+            "description": "={{ $json.description }}"
+          },
+          "schema": [
+            {
+              "id": "domain",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "domain",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "description",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "employees",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "employees",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "twitter",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "twitter",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "linkedin",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "linkedin",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "quality",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "visits",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "visits",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "domain"
+          ]
+        },
+        "options": {},
+        "operation": "appendOrUpdate",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a2gfBjZZpN0jiD7apR8fPplRp2aPHVy2_5lp4Yzp778/edit#gid=0",
+          "cachedResultName": "Visitors"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "={{ $('Setup').first().json[\"Google Sheets URL\"] }}"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Nik's Google"
+        }
+      },
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "Setup": {
+      "main": [
+        [
+          {
+            "node": "Get all Leedfeeder accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Leads": {
+      "main": [
+        [
+          {
+            "node": "Split Out Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich company": {
+      "main": [
+        [
+          {
+            "node": "Filter Leads by company criteria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Leads": {
+      "main": [
+        [
+          {
+            "node": "Filter leads by engagement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Setup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split out accounts": {
+      "main": [
+        [
+          {
+            "node": "Only for wanted accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only for wanted accounts": {
+      "main": [
+        [
+          {
+            "node": "Get Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter leads by engagement": {
+      "main": [
+        [
+          {
+            "node": "Enrich company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all Leedfeeder accounts": {
+      "main": [
+        [
+          {
+            "node": "Split out accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Leads by company criteria": {
+      "main": [
+        [
+          {
+            "node": "Save leads to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

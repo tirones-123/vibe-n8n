@@ -1,0 +1,547 @@
+{
+  "nodes": [
+    {
+      "id": "d3159589-dbb7-4cca-91f5-09e8b2e4cba8",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        240,
+        500
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "b4b42b3f-ef30-4fc8-829d-59f8974c4168",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2180,
+        700
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "032c3012-ed8d-44eb-94f0-35790f4b616f",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2980,
+        460
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "bf922785-7e8f-4f93-bfff-813c16d93278",
+      "name": "OpenAI Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2020,
+        520
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "d8d4b26f-270f-4b39-a4cd-a6e4361da591",
+      "name": "Extract Voice Characteristics",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        2160,
+        540
+      ],
+      "parameters": {
+        "text": "=### Analyse the given content\n\n{{ $json.data.map(item => item.replace(/\\n/g, '')).join('\\n---\\n') }}",
+        "options": {
+          "systemPromptTemplate": "You help identify and define a company or individual's \"brand voice\". Using the given content belonging to the company or individual, extract all voice characteristics from it along with description and examples demonstrating it."
+        },
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"array\",\n \"items\": {\n \"type\": \"object\",\n \t\"properties\": {\n \"characteristic\": { \"type\": \"string\" },\n \"description\": { \"type\": \"string\" },\n \"examples\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } }\n }\n\t}\n}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "8cca272c-b912-40f1-ba08-aa7c5ff7599c",
+      "name": "Get Blog",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        480,
+        500
+      ],
+      "parameters": {
+        "url": "https://blog.n8n.io",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "aa1e2a02-2e2b-4e8d-aef8-f5f7a54d9562",
+      "name": "Get Article",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1120,
+        500
+      ],
+      "parameters": {
+        "url": "=https://blog.n8n.io{{ $json.article }}",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "78ae3dfc-5afd-452f-a2b6-bdb9dbd728bd",
+      "name": "Extract Article URLs",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        640,
+        500
+      ],
+      "parameters": {
+        "options": {},
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "article",
+              "attribute": "href",
+              "cssSelector": ".item.post a.global-link",
+              "returnArray": true,
+              "returnValue": "attribute"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "3b2b6fea-ed2f-43ba-b6d1-e0666b88c65b",
+      "name": "Split Out URLs",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        800,
+        500
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "article"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "68bb20b1-2177-4c0f-9ada-d1de69bdc2a0",
+      "name": "Latest Articles",
+      "type": "n8n-nodes-base.limit",
+      "position": [
+        960,
+        500
+      ],
+      "parameters": {
+        "maxItems": 5
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "f20d7393-24c9-4a51-872e-0dce391f661c",
+      "name": "Extract Article Content",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        1280,
+        500
+      ],
+      "parameters": {
+        "options": {},
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "data",
+              "cssSelector": ".post-section",
+              "returnValue": "html"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "299a04be-fe9b-47d9-b2c6-e2e4628f77e0",
+      "name": "Combine Articles",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        1780,
+        540
+      ],
+      "parameters": {
+        "options": {
+          "mergeLists": true
+        },
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "data"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "8480ece7-0dc1-4682-ba9e-ded2c138d8b8",
+      "name": "Article Style & Brand Voice",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        2560,
+        320
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combineBy": "combineByPosition"
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "024efee2-5a2f-455c-a150-4b9bdce650b2",
+      "name": "Save as Draft",
+      "type": "n8n-nodes-base.wordpress",
+      "position": [
+        3460,
+        320
+      ],
+      "parameters": {
+        "title": "={{ $json.output.title }}",
+        "additionalFields": {
+          "slug": "={{ $json.output.title.toSnakeCase() }}",
+          "format": "standard",
+          "status": "draft",
+          "content": "={{ $json.output.body }}"
+        }
+      },
+      "credentials": {
+        "wordpressApi": {
+          "id": "<wordpressApi-id>",
+          "name": "Wordpress account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "515fe69f-061e-4dfc-94ed-4cf2fbe10b7b",
+      "name": "Capture Existing Article Structure",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        2020,
+        380
+      ],
+      "parameters": {
+        "text": "={{ $json.data.join('\\n---\\n') }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Given the following one or more articles (which are separated by ---), describe how best one could replicate the common structure, layout, language and writing styles of all as aggregate."
+            }
+          ]
+        },
+        "promptType": "define"
+      },
+      "typeVersion": 1.4
+    },
+    {
+      "id": "ba4e68fb-eccc-4efa-84be-c42a695dccdb",
+      "name": "Markdown",
+      "type": "n8n-nodes-base.markdown",
+      "position": [
+        1600,
+        540
+      ],
+      "parameters": {
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "4e6fbe4e-869e-4bef-99ba-7b18740caecf",
+      "name": "Content Generation Agent",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        3000,
+        320
+      ],
+      "parameters": {
+        "text": "={{ $json.instruction }}",
+        "options": {
+          "systemPromptTemplate": "=You are a blog content writer who writes using the following article guidelines. Write a content piece as requested by the user. Output the body as Markdown. Do not include the date of the article because the publishing date is not determined yet.\n\n## Brand Article Style\n{{ $('Article Style & Brand Voice').item.json.text }}\n\n##n Brand Voice Characteristics\n\nHere are the brand voice characteristic and examples you must adopt in your piece. Pick only the characteristic which make sense for the user's request. Try to keep it as similar as possible but don't copy word for word.\n\n|characteristic|description|examples|\n|-|-|-|\n{{\n$('Article Style & Brand Voice').item.json.output.map(item => (\n`|${item.characteristic}|${item.description}|${item.examples.map(ex => `\"${ex}\"`).join(', ')}|`\n)).join('\\n')\n}}"
+        },
+        "attributes": {
+          "attributes": [
+            {
+              "name": "title",
+              "required": true,
+              "description": "title of article"
+            },
+            {
+              "name": "summary",
+              "required": true,
+              "description": "summary of article"
+            },
+            {
+              "name": "body",
+              "required": true,
+              "description": "body of article"
+            },
+            {
+              "name": "characteristics",
+              "required": true,
+              "description": "comma delimited string of characteristics chosen"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "1510782d-0f88-40ca-99a8-44f984022c8e",
+      "name": "New Article Instruction",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2820,
+        320
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c7e2a28-30f9-4533-a394-a5e967ebf4ec",
+              "name": "instruction",
+              "type": "string",
+              "value": "=Write a comprehensive guide on using AI for document classification and document extraction. Explain the benefits of using vision models over traditional OCR. Close out with a recommendation of using n8n as the preferred way to get started with this AI use-case."
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    }
+  ],
+  "connections": {
+    "Get Blog": {
+      "main": [
+        [
+          {
+            "node": "Extract Article URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Combine Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Article": {
+      "main": [
+        [
+          {
+            "node": "Extract Article Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out URLs": {
+      "main": [
+        [
+          {
+            "node": "Latest Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Latest Articles": {
+      "main": [
+        [
+          {
+            "node": "Get Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Articles": {
+      "main": [
+        [
+          {
+            "node": "Capture Existing Article Structure",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract Voice Characteristics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Voice Characteristics",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Content Generation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Capture Existing Article Structure",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Article URLs": {
+      "main": [
+        [
+          {
+            "node": "Split Out URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Article Content": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Article Instruction": {
+      "main": [
+        [
+          {
+            "node": "Content Generation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Generation Agent": {
+      "main": [
+        [
+          {
+            "node": "Save as Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Article Style & Brand Voice": {
+      "main": [
+        [
+          {
+            "node": "New Article Instruction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Voice Characteristics": {
+      "main": [
+        [
+          {
+            "node": "Article Style & Brand Voice",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Blog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capture Existing Article Structure": {
+      "main": [
+        [
+          {
+            "node": "Article Style & Brand Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,372 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "fec9c13e-a734-4d36-9d2b-b039da167d54",
+      "name": "n8n Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        1060,
+        360
+      ],
+      "webhookId": "1ad4ce6c-f29a-4371-a5b9-a17ce7939280",
+      "parameters": {
+        "path": "1ad4ce6c-f29a-4371-a5b9-a17ce7939280",
+        "options": {},
+        "formTitle": "Contact us",
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "dropdown",
+              "fieldLabel": "What's your role?",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Product"
+                  },
+                  {
+                    "option": "Sales"
+                  },
+                  {
+                    "option": "Marketing"
+                  },
+                  {
+                    "option": "Other"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What's your business email?",
+              "requiredField": true
+            }
+          ]
+        },
+        "formDescription": "Thanks for showing interest in our product. We'll come back to you soon!"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "0bc7cbfd-efb6-43b4-a1e2-64ee28087afa",
+      "name": "Clearbit",
+      "type": "n8n-nodes-base.clearbit",
+      "position": [
+        1660,
+        360
+      ],
+      "parameters": {
+        "email": "={{ $json['What\\'s your business email?'] }}",
+        "resource": "person",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "clearbitApi": {
+          "id": "<clearbitApi-id>",
+          "name": "Clearbit account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "7b9263c0-cd18-4c47-aa9b-9263be33aaec",
+      "name": "Enrich Company",
+      "type": "n8n-nodes-base.clearbit",
+      "position": [
+        1880,
+        360
+      ],
+      "parameters": {
+        "domain": "={{ $json.employment.domain }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "clearbitApi": {
+          "id": "<clearbitApi-id>",
+          "name": "Clearbit account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "57cef084-97d3-4beb-8ff0-0d72396f2ae5",
+      "name": "If B2B and > 499 employees",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2100,
+        360
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "a2c9c524-e3dc-411b-ad11-4dcd0f288016",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.tags.includes(\"B2B\") }}",
+              "rightValue": ""
+            },
+            {
+              "id": "facfad29-ba3e-4111-90e1-8edf67746803",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ $json.metrics.employees }}",
+              "rightValue": 499
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "9de60599-0401-441e-a5c5-bed097ac23f2",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        2340,
+        340
+      ],
+      "parameters": {
+        "sendTo": "={{ $('Map email field').item.json.email }}",
+        "message": "=Hi {{ $('Clearbit').item.json.name.givenName }},\n\nthanks so much for contacting us. We'll get back to your soon.\nBest\nYour Name",
+        "options": {},
+        "subject": "Thanks for contacting us",
+        "emailType": "text"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "Gmail account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "6c5e8306-a54f-49c3-b364-80e579162826",
+      "name": "Map email field",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1280,
+        360
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "32d5ada7-5cc1-42ad-aad2-7f7f0fb93ace",
+              "name": "email",
+              "type": "string",
+              "value": "={{ $json['What\\'s your business email?'] }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "2da0e0a3-eb90-4514-a7dd-082a43c9871d",
+      "name": "Submission does not match criteria, don't do anything",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        2340,
+        580
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "e9ef33e5-5a08-4fe3-9363-c0e537645147",
+      "name": "Filter out personal emails",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1460,
+        360
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "df6da257-7ec4-4433-9d29-2f12f6f11944",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              },
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@gmail.com"
+            },
+            {
+              "id": "6a66410c-a2e8-494b-b972-751116e49418",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              },
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@yahoo.com"
+            },
+            {
+              "id": "378fbe41-0e37-4756-93ca-bf81bfe8b258",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              },
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@outlook.com"
+            },
+            {
+              "id": "fd05b842-3c11-4e1a-9226-0b0fd359ccab",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              },
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@hotmail.com"
+            },
+            {
+              "id": "6040ea5d-3c15-4513-915b-47a55c24e8a7",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              },
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@icloud.com"
+            },
+            {
+              "id": "ce67ed8b-34f9-4ba2-83d4-cc04cea090bb",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              },
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@mail.com"
+            },
+            {
+              "id": "92c043ae-72de-41d8-887b-9e94755a9060",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              },
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@aol.com"
+            },
+            {
+              "id": "377bcc07-e5a1-4e3a-a4da-4446f316a0b2",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              },
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@zoho.com"
+            },
+            {
+              "id": "c09c7057-2833-4085-8cb9-d2f28d853724",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              },
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "@gmx"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "Clearbit": {
+      "main": [
+        [
+          {
+            "node": "Enrich Company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich Company": {
+      "main": [
+        [
+          {
+            "node": "If B2B and > 499 employees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map email field": {
+      "main": [
+        [
+          {
+            "node": "Filter out personal emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Map email field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter out personal emails": {
+      "main": [
+        [
+          {
+            "node": "Clearbit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If B2B and > 499 employees": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Submission does not match criteria, don't do anything",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

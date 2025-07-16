@@ -1,0 +1,396 @@
+{
+  "id": "5NAbfX550LJsfz6f",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Make OpenAI Citation for File Retrieval RAG",
+  "tags": [
+    {
+      "id": "urxRtGxxLObZWPvX",
+      "name": "sample",
+      "createdAt": "2024-09-13T02:43:13.014Z",
+      "updatedAt": "2024-09-13T02:43:13.014Z"
+    },
+    {
+      "id": "nMXS3c9l1WqDwWF5",
+      "name": "assist",
+      "createdAt": "2024-12-23T16:09:38.737Z",
+      "updatedAt": "2024-12-23T16:09:38.737Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "b9033511-3421-467a-9bfa-73af01b99c4f",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        740,
+        120
+      ],
+      "parameters": {
+        "options": {},
+        "aggregate": "aggregateAllItemData"
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "a61dd9d3-4faa-4878-a6f3-ba8277279002",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        980,
+        -320
+      ],
+      "parameters": {},
+      "typeVersion": 1.3
+    },
+    {
+      "id": "539a4e40-9745-4a26-aba8-2cc2b0dd6364",
+      "name": "Create a simple Trigger to have the Chat button within N8N",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "notes": "https://www.npmjs.com/package/@n8n/chat",
+      "position": [
+        260,
+        -520
+      ],
+      "webhookId": "8ccaa299-6f99-427b-9356-e783893a3d0c",
+      "parameters": {
+        "options": {}
+      },
+      "notesInFlow": true,
+      "typeVersion": 1.1
+    },
+    {
+      "id": "aa5b2951-df32-43ac-9939-83b02d818e73",
+      "name": "OpenAI Assistant with Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        580,
+        -520
+      ],
+      "parameters": {
+        "options": {
+          "preserveOriginalTools": false
+        },
+        "resource": "assistant",
+        "assistantId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "asst_QAfdobVCVCMJz8LmaEC7nlId",
+          "cachedResultName": "Teste"
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi Lourival"
+        }
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "16429226-e850-4698-b419-fd9805a03fb7",
+      "name": "Get ALL Thread Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1260,
+        -520
+      ],
+      "parameters": {
+        "url": "=https://api.openai.com/v1/threads/{{ $json.threadId }}/messages",
+        "options": {},
+        "sendHeaders": true,
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "OpenAI-Beta",
+              "value": "assistants=v2"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi Lourival"
+        }
+      },
+      "typeVersion": 4.2,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "0f51e09f-2782-4e2d-b797-d4d58fcabdaf",
+      "name": "Split all message iterations from a thread",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        220,
+        -300
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "data"
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "4d569993-1ce3-4b32-beaf-382feac25da9",
+      "name": "Split all content from a single message",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        460,
+        -300
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "content"
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "999e1c2b-1927-4483-aac1-6e8903f7ed25",
+      "name": "Split all citations from a single message",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        700,
+        -300
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "text.annotations"
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "98af62f5-adb0-4e07-a146-fc2f13b851ce",
+      "name": "Retrieve file name from a file ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "onError": "continueRegularOutput",
+      "position": [
+        220,
+        120
+      ],
+      "parameters": {
+        "url": "=https://api.openai.com/v1/files/{{ $json.file_citation.file_id }}",
+        "options": {},
+        "sendQuery": true,
+        "authentication": "predefinedCredentialType",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi Lourival"
+        }
+      },
+      "typeVersion": 4.2,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "b11f0d3d-bdc4-4845-b14b-d0b0de214f01",
+      "name": "Regularize output",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        120
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2dcaafee-5037-4a97-942a-bcdd02bc2ad9",
+              "name": "id",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "id": "b63f967d-ceea-4aa8-98b9-91f5ab21bfe8",
+              "name": "filename",
+              "type": "string",
+              "value": "={{ $json.filename }}"
+            },
+            {
+              "id": "f611e749-054a-441d-8610-df8ba42de2e1",
+              "name": "text",
+              "type": "string",
+              "value": "={{ $('Split all citations from a single message').item.json.text }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "d0cbb943-57ab-4850-8370-1625610a852a",
+      "name": "Optional Markdown to HTML",
+      "type": "n8n-nodes-base.markdown",
+      "disabled": true,
+      "position": [
+        1220,
+        120
+      ],
+      "parameters": {
+        "html": "={{ $json.output }}",
+        "options": {},
+        "destinationKey": "output"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "589e2418-5dec-47d0-ba08-420d84f09da7",
+      "name": "Finnaly format the output",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        980,
+        120
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let saida = $('OpenAI Assistant with Vector Store').item.json.output;\n\nfor (let i of $input.item.json.data) {\n  saida = saida.replaceAll(i.text, \"  _(\"+ i.filename+\")_  \");\n}\n\n$input.item.json.output = saida;\nreturn $input.item;"
+      },
+      "typeVersion": 2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Finnaly format the output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Regularize output": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "OpenAI Assistant with Vector Store",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get ALL Thread Content": {
+      "main": [
+        [
+          {
+            "node": "Split all message iterations from a thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finnaly format the output": {
+      "main": [
+        [
+          {
+            "node": "Optional Markdown to HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve file name from a file ID": {
+      "main": [
+        [
+          {
+            "node": "Regularize output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Assistant with Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Get ALL Thread Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split all content from a single message": {
+      "main": [
+        [
+          {
+            "node": "Split all citations from a single message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split all citations from a single message": {
+      "main": [
+        [
+          {
+            "node": "Retrieve file name from a file ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split all message iterations from a thread": {
+      "main": [
+        [
+          {
+            "node": "Split all content from a single message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a simple Trigger to have the Chat button within N8N": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Assistant with Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

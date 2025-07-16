@@ -1,0 +1,399 @@
+{
+  "id": "SiQUWOBCyXCAA5f9",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Generate New Keywords with Search Volumes⚒️⚒️🟢🟢",
+  "tags": [
+    {
+      "id": "bNah9fcKNwQQBzJ1",
+      "name": "SEO DOCTOR",
+      "createdAt": "2024-12-04T12:32:00.284Z",
+      "updatedAt": "2024-12-04T12:32:00.284Z"
+    },
+    {
+      "id": "L5zcJfTllY0jsuUO",
+      "name": "SEO REPORTS",
+      "createdAt": "2024-12-07T05:13:55.254Z",
+      "updatedAt": "2024-12-07T05:13:55.254Z"
+    },
+    {
+      "id": "koKAFcp5uch8EPTB",
+      "name": "Public",
+      "createdAt": "2024-12-03T14:36:18.275Z",
+      "updatedAt": "2024-12-03T14:36:18.275Z"
+    },
+    {
+      "id": "kOC8RBaSMppaZ55G",
+      "name": "Template",
+      "createdAt": "2024-12-14T05:16:52.018Z",
+      "updatedAt": "2024-12-14T05:16:52.018Z"
+    },
+    {
+      "id": "ntzMTw91GMiOdxEa",
+      "name": "Tools",
+      "createdAt": "2024-12-08T05:39:07.599Z",
+      "updatedAt": "2024-12-08T05:39:07.599Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "43c6b3ba-ebea-4bd0-ac27-1468d953dc60",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        580,
+        60
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "results"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "b7f0cd29-9475-4871-ad66-dc1bb58e7db3",
+      "name": "Generate new keywords",
+      "type": "n8n-nodes-base.httpRequest",
+      "notes": "Call the endpoint: \n\nhttps://googleads.googleapis.com/v18/customers/{customer_id}:generateKeywordIdeas \n\nwith your Customer id",
+      "position": [
+        360,
+        60
+      ],
+      "parameters": {
+        "url": "https://googleads.googleapis.com/v18/customers/{customer-id}:generateKeywordIdeas",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"geoTargetConstants\": [\"geoTargetConstants/2840\"], \n  \"includeAdultKeywords\": false,\n  \"pageToken\": \"\",\n  \"pageSize\": 2,\n  \"keywordPlanNetwork\": \"GOOGLE_SEARCH\",\n  \"language\": \"languageConstants/1000\", \n  \"keywordSeed\": {\n    \"keywords\": {{ $json.Keyword }}\n  }\n}",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            },
+            {
+              "name": "developer-token",
+              "value": "{developer-token}"
+            },
+            {
+              "name": "login-customer-id",
+              "value": "{login-customer-id}"
+            }
+          ]
+        },
+        "nodeCredentialType": "googleAdsOAuth2Api"
+      },
+      "credentials": {
+        "googleAdsOAuth2Api": {
+          "id": "<googleAdsOAuth2Api-id>",
+          "name": "Google Ads account 2"
+        }
+      },
+      "notesInFlow": true,
+      "retryOnFail": true,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "26ab01fa-b16c-410b-b2cb-e31d81e40c1d",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        800,
+        60
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7413e132-d68a-4f28-91f6-d6e814f95343",
+              "name": "keyword",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "21526a09-e58d-48e0-b7f7-9766772e3c1d",
+              "name": "competition",
+              "type": "string",
+              "value": "={{ $json.keywordIdeaMetrics.competition }}"
+            },
+            {
+              "id": "88771e43-8429-49cb-bc49-90b10b3a399c",
+              "name": "avgMonthlySearches",
+              "type": "string",
+              "value": "={{ $json.keywordIdeaMetrics.avgMonthlySearches }}"
+            },
+            {
+              "id": "41437fb7-4de4-4820-835d-c3fa459dc7ed",
+              "name": "competitionIndex",
+              "type": "string",
+              "value": "={{ $json.keywordIdeaMetrics.competitionIndex }}"
+            },
+            {
+              "id": "6237440a-cf99-4c25-8b09-015df07f42ef",
+              "name": "lowTopOfPageBidMicros",
+              "type": "string",
+              "value": "={{ ($json[\"keywordIdeaMetrics\"].lowTopOfPageBidMicros / 1000000).toFixed(2) }}"
+            },
+            {
+              "id": "68fc20e6-ffff-4e72-9da1-7132aad57ca1",
+              "name": "highTopOfPageBidMicros",
+              "type": "string",
+              "value": "={{ ($json.keywordIdeaMetrics.highTopOfPageBidMicros  / 1000000).toFixed(2) }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "fa983780-9b3d-4213-b672-bf2f049b162a",
+      "name": "Set Keywords",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        140,
+        60
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "973e949e-1afd-4378-8482-d2168532eff6",
+              "name": "Keyword",
+              "type": "string",
+              "value": "={{ $json.query.Keyword }}"
+            }
+          ]
+        }
+      },
+      "notesInFlow": true,
+      "typeVersion": 3.4
+    },
+    {
+      "id": "2a6c342a-d471-4a88-aea0-382d4688632f",
+      "name": "Upsert",
+      "type": "n8n-nodes-base.googleSheets",
+      "notes": "Upsert the new keywords to sheets",
+      "position": [
+        1000,
+        60
+      ],
+      "parameters": {
+        "columns": {
+          "value": {},
+          "schema": [
+            {
+              "id": "keyword",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "keyword",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "domain",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "domain",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "uuid",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "uuid",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "keywordAnnotations",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "keywordAnnotations",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "closeVariants",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "closeVariants",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "competition",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "competition",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "monthlySearchVolumes",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "monthlySearchVolumes",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "avgMonthlySearches",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "avgMonthlySearches",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "competitionIndex",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "competitionIndex",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lowTopOfPageBidMicros",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "lowTopOfPageBidMicros",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "highTopOfPageBidMicros",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "highTopOfPageBidMicros",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": []
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 1475484115,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10mXXLB987b7UySHtS9F4EilxeqbQjTkLOfMabnR2i5s/edit#gid=1475484115",
+          "cachedResultName": "Keyword"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "10mXXLB987b7UySHtS9F4EilxeqbQjTkLOfMabnR2i5s",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10mXXLB987b7UySHtS9F4EilxeqbQjTkLOfMabnR2i5s/edit?usp=drivesdk",
+          "cachedResultName": "SEO DOCTOR: Keyword Tool"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account✅ "
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "81f7aea8-8bd4-42da-8115-0e6ffb6a69d2",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -80,
+        60
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Keywords": {
+      "main": [
+        [
+          {
+            "node": "Generate new keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate new keywords": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

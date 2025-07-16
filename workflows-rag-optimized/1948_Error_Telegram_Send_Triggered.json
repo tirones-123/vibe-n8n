@@ -1,0 +1,99 @@
+{
+  "id": "ozo5jlbwPHgaMnVt",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Error Handler send Telegram",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "3968e71e-d9fb-4810-81bb-18ecf073b3ee",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        520,
+        -200
+      ],
+      "webhookId": "b3f6e388-8313-4bc1-8077-d81471b2f95d",
+      "parameters": {
+        "text": "=Workflow: {{ $('Error Trigger').first().json.workflow.name }}\nData & Time: {{ $now }}\nURL: {{ $('Error Trigger').first().json.execution.url }}\nLast Node: {{ $('Error Trigger').first().json.execution.lastNodeExecuted }}\nError Detal: {{ $('Error Trigger').first().json.execution.error.message }}\n",
+        "chatId": "={{ $('Config').item.json.telegramChatId }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "<telegramApi-id>",
+          "name": "Telegram n8n Log Test"
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 1.2,
+      "waitBetweenTries": 3000
+    },
+    {
+      "id": "bbb54150-b749-49e2-9c49-720341691151",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        60,
+        -200
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "6bcf5a24-643d-4fbe-81c9-c8830dc8f1b6",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        300,
+        -200
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bf7b1294-b50d-49f7-a5f1-76b0d6845aea",
+              "name": "telegramChatId",
+              "type": "string",
+              "value": "123456789"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

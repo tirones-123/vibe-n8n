@@ -1,0 +1,335 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "39e0c9eb-5736-46a0-b4ce-64425f56ba8c",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        160,
+        80
+      ],
+      "webhookId": "34e91943-c4e0-4a87-8a0f-68cbd2bca3fb",
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "38dad34c-116b-4673-b338-6fbf1d019bab",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        340,
+        300
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "78af18c4-3541-4ff2-8526-fb186614051b",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        520,
+        300
+      ],
+      "parameters": {},
+      "typeVersion": 1.3
+    },
+    {
+      "id": "45f17ad3-f7da-4d98-a597-f66c2efdbbea",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        120,
+        660
+      ],
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "chatInput"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "135ac846-fcc7-4754-8127-6a810b76594a",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        320,
+        900
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "8e9d8b39-a7a4-44fb-8ac4-0555e632f0df",
+      "name": "Work out activity type and number of people1",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        340,
+        660
+      ],
+      "parameters": {
+        "text": "={{ $('When Executed by Another Workflow').item.json.chatInput }}",
+        "options": {},
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"required\": [\"type\",\"participants\"],\n  \"properties\": {\n    \"type\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"data\": {\n          \"enum\": [\"education\", \"recreational\",\"social\",\"diy\",\"charity\",\"cooking\",\"relaxation\",\"music\",\"busywork\"]\n        }\n      }\n    },\n    \"participants\": {\n      \"type\": \"number\"\n    }\n  }\n}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "312f12d9-db30-48b0-aca3-a6c3a0250b2d",
+      "name": "Call the API",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        700,
+        660
+      ],
+      "parameters": {
+        "url": "https://bored-api.appbrewery.com/filter",
+        "options": {},
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "={{ $json.output.type.data }}"
+            },
+            {
+              "name": "participicants",
+              "value": "={{ $json.output.participants }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "0e97b6c1-3291-44a2-bf35-39335b9b90a1",
+      "name": "Activity Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        700,
+        300
+      ],
+      "parameters": {
+        "name": "activity_tool",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "description": "Suggest an activity for a person to do. Use this tool if someone is bored, or asking for ideas of things to do.",
+        "workflowInputs": {
+          "value": {
+            "chatInput": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('chatInput', ``, 'string') }}"
+          },
+          "schema": [
+            {
+              "id": "chatInput",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "chatInput",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "256b8adc-ef71-40da-a40c-10a1045c9d7d",
+      "name": "Set 'response' value",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1060,
+        660
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c78b10cd-7d6d-4512-ad0b-6f6ec3c706b2",
+              "name": "response",
+              "type": "string",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "ede9e3c2-c3ce-44bd-92be-51eb90d086dc",
+      "name": "Combine",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        880,
+        660
+      ],
+      "parameters": {
+        "include": "specifiedFields",
+        "options": {},
+        "aggregate": "aggregateAllItemData",
+        "fieldsToInclude": "activity"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "b4b49c7f-5491-416c-98d1-518372329c77",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        420,
+        80
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.8
+    }
+  ],
+  "connections": {
+    "Combine": {
+      "main": [
+        [
+          {
+            "node": "Set 'response' value",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call the API": {
+      "main": [
+        [
+          {
+            "node": "Combine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activity Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Work out activity type and number of people1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Work out activity type and number of people1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Work out activity type and number of people1": {
+      "main": [
+        [
+          {
+            "node": "Call the API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

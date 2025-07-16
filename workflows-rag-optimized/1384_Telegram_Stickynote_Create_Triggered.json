@@ -1,0 +1,78 @@
+{
+  "id": "CoYwFuZTq5kUuiba",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Post new Google Calendar events to Telegram",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "be284a6b-7daf-48c8-99af-e939ecb96f32",
+      "name": "Google Calendar Trigger",
+      "type": "n8n-nodes-base.googleCalendarTrigger",
+      "position": [
+        100,
+        80
+      ],
+      "parameters": {
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "eventCreated",
+        "calendarId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": ""
+        }
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "",
+          "name": ""
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "978e80b6-9b18-4fec-87e8-17fa2335ef48",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        400,
+        80
+      ],
+      "webhookId": "dbb6a96e-db3b-4827-9455-a91007b89616",
+      "parameters": {
+        "text": "=Event Name:  {{ $json.summary }}\nDescription: {{ $json.description }}\nEvent Location: {{ $json.location }}\nStart Date: {{ $json.start.dateTime }}\nEnd Date: {{ $json.end.dateTime }}\nCreator: {{ $json.creator.email }}\n\n",
+        "chatId": "",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "typeVersion": 1.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Google Calendar Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

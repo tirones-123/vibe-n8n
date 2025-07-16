@@ -1,0 +1,258 @@
+{
+  "id": "s8YgrWCxnGJxbctt",
+  "meta": {
+    "instanceId": "<UUID-chain>",
+    "templateId": "1750"
+  },
+  "name": "Google Doc Summarizer to Google Sheets",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "9098b59a-68b1-48bd-9b52-41a971e689b3",
+      "name": "Google Docs",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        340,
+        240
+      ],
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $json.id }}",
+        "authentication": "serviceAccount"
+      },
+      "credentials": {
+        "googleApi": {
+          "id": "<googleApi-id>",
+          "name": "Google Drive account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "a7f224d4-232b-4201-82a0-d762830b546a",
+      "name": "Wikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "position": [
+        680,
+        180
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "12bb798e-fe7e-4340-846b-5caeb824959b",
+      "name": "Calculator",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "position": [
+        940,
+        180
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "7d479725-f973-45c5-a798-d1868aefdd82",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1280,
+        280
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "Name": "={{ $('Google Drive ').item.json.lastModifyingUser.displayName }}",
+            "Email ": "={{ $('Google Drive ').item.json.lastModifyingUser.emailAddress }}",
+            "Summarise Conetent data ": "={{ $json.message.content }}"
+          },
+          "schema": [
+            {
+              "id": "Email ",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Email ",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summarise Conetent data ",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Summarise Conetent data ",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": []
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s1v58pqGaVha9g_evNX4UEMchzteO7CyLNp87tcKJ1Q/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1s1v58pqGaVha9g_evNX4UEMchzteO7CyLNp87tcKJ1Q",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s1v58pqGaVha9g_evNX4UEMchzteO7CyLNp87tcKJ1Q/edit?usp=drivesdk",
+          "cachedResultName": "Docs Summarise Data"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "fc3ac84f-887f-4908-a870-e6c3d46f4576",
+      "name": "Google Drive ",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "notes": "Received the doc",
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "event": "fileCreated",
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1H8Xe2uIO0sI-QdxFsDH0Yg_w9RaPOoD_",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1H8Xe2uIO0sI-QdxFsDH0Yg_w9RaPOoD_",
+          "cachedResultName": "yashdata"
+        },
+        "authentication": "serviceAccount"
+      },
+      "credentials": {
+        "googleApi": {
+          "id": "<googleApi-id>",
+          "name": "Google Drive account"
+        }
+      },
+      "notesInFlow": true,
+      "typeVersion": 1
+    },
+    {
+      "id": "81f80bd2-aa10-49a8-ae63-3a3322bcac80",
+      "name": "Generate Summary AI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        700,
+        20
+      ],
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "options": {},
+        "messages": {
+          "values": [
+            {
+              "content": "=Summarise the below content\n {{ $json.content }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.7
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generate Summary AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generate Summary AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive ": {
+      "main": [
+        [
+          {
+            "node": "Google Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Summary AI": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

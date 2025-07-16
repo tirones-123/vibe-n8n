@@ -1,0 +1,66 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "23dc1873-b376-473e-935b-b1df5e663c9e",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        1100,
+        1120
+      ],
+      "webhookId": "c80ce133-899b-41c9-b2ae-2c876694f9fd",
+      "parameters": {
+        "path": "c80ce133-899b-41c9-b2ae-2c876694f9fd",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "417ddfd1-8a27-498b-b203-0f410f8092b8",
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1320,
+        1120
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "email",
+              "value": "={{ $json.body.data.results.emails[0].email }}"
+            },
+            {
+              "name": "firstname",
+              "value": "={{ $json.body.data.results.firstname }}"
+            },
+            {
+              "name": "lastname",
+              "value": "={{ $json.body.data.results.lastname }}"
+            }
+          ]
+        },
+        "options": {},
+        "keepOnlySet": true
+      },
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

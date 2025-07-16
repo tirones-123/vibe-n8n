@@ -1,0 +1,350 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "92b8375b-92a3-41ca-874e-d9c4567e21d4",
+      "name": "Read Binary File",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "notes": "Fetches a local file",
+      "disabled": true,
+      "position": [
+        920,
+        1140
+      ],
+      "parameters": {
+        "filePath": "/files/customer-datastore.xlsx"
+      },
+      "notesInFlow": true,
+      "typeVersion": 1
+    },
+    {
+      "id": "c2e2cc7e-01a2-4138-ba6f-344be3dd91f3",
+      "name": "On clicking 'execute'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        500,
+        1140
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "a5419c12-4be4-4fdf-8b9f-f6c73104477a",
+      "name": "Write Binary File",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "position": [
+        2520,
+        860
+      ],
+      "parameters": {
+        "options": {},
+        "fileName": "=/tmp/{{$binary.data.fileName}}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "529b03fb-b81d-40f3-bade-684cc9776cba",
+      "name": "Download from Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "disabled": true,
+      "position": [
+        920,
+        1440
+      ],
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1ffuj8v-s0h8LeEmrA2hBk-b7qKF_c9uT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ffuj8v-s0h8LeEmrA2hBk-b7qKF_c9uT/edit?usp=drivesdk&ouid=112909978107527312058&rtpof=true&sd=true",
+          "cachedResultName": "customer-datastore.xlsx"
+        },
+        "options": {},
+        "operation": "download"
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "<googleDriveOAuth2Api-id>",
+          "name": "FPS"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "b63c9748-0c7d-4d2a-aa5b-db76d31af957",
+      "name": "Download from Microsoft OneDrive",
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "disabled": true,
+      "position": [
+        920,
+        1640
+      ],
+      "parameters": {
+        "fileId": "549D14658E697C62!2087",
+        "operation": "download"
+      },
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "<microsoftOneDriveOAuth2Api-id>",
+          "name": "Microsoft Drive account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "6333d0b5-d58b-4a19-af9a-0e5ea4fa15e8",
+      "name": "Download Excel File",
+      "type": "n8n-nodes-base.httpRequest",
+      "notes": "Fetches file from server",
+      "position": [
+        920,
+        860
+      ],
+      "parameters": {
+        "url": "https://internal.users.n8n.cloud/webhook/709a234d-add7-41d2-9326-8d981f58120b",
+        "options": {}
+      },
+      "notesInFlow": true,
+      "typeVersion": 3
+    },
+    {
+      "id": "88b24dbb-dc9f-4f03-a5b3-71ba89295346",
+      "name": "Work out Age",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1760,
+        820
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "age",
+              "value": "={{ Math.trunc($today.diff(DateTime.fromFormat($json[\"created\"], 'yyyy-MM-dd'), 'years').toObject().years) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "2f1f2fa9-4995-46c9-a415-3768a0895e88",
+      "name": "Upload to SFTP",
+      "type": "n8n-nodes-base.ftp",
+      "disabled": true,
+      "position": [
+        2520,
+        1140
+      ],
+      "parameters": {
+        "path": "=/home/n8n/{{$binary.data.fileName}}",
+        "protocol": "sftp",
+        "operation": "upload"
+      },
+      "credentials": {
+        "sftp": {
+          "id": "<sftp-id>",
+          "name": "SFTP"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "81c06f12-83f1-4973-a1ec-6d58e26eb8c9",
+      "name": "Upload to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "disabled": true,
+      "position": [
+        2520,
+        1440
+      ],
+      "parameters": {
+        "name": "={{$binary.data.fileName}}",
+        "options": {},
+        "binaryData": true
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "<googleDriveOAuth2Api-id>",
+          "name": "FPS"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "a0ef4740-8716-4fab-8498-c13ee32842cb",
+      "name": "Upload to Microsoft OneDrive",
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "disabled": true,
+      "position": [
+        2520,
+        1640
+      ],
+      "parameters": {
+        "fileName": "={{$binary.data.fileName}}",
+        "parentId": "root",
+        "binaryData": true
+      },
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "<microsoftOneDriveOAuth2Api-id>",
+          "name": "Microsoft Drive account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "01e6575d-bb92-4f32-82b4-acfe7448a364",
+      "name": "Read Spreadsheet File",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "position": [
+        1360,
+        820
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "ed09f502-109f-42dc-a62c-6b6f54aad46e",
+      "name": "Write Spreadsheet File",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "position": [
+        2160,
+        820
+      ],
+      "parameters": {
+        "options": {
+          "fileName": "=customer-datastore_{{$today.toFormat('yyyyMMdd')}}.xlsx"
+        },
+        "operation": "toFile",
+        "fileFormat": "xlsx"
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Work out Age": {
+      "main": [
+        [
+          {
+            "node": "Write Spreadsheet File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Binary File": {
+      "main": [
+        [
+          {
+            "node": "Read Spreadsheet File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Excel File": {
+      "main": [
+        [
+          {
+            "node": "Read Spreadsheet File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On clicking 'execute'": {
+      "main": [
+        [
+          {
+            "node": "Read Binary File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Download Excel File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Download from Google Drive",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Download from Microsoft OneDrive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Spreadsheet File": {
+      "main": [
+        [
+          {
+            "node": "Work out Age",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Spreadsheet File": {
+      "main": [
+        [
+          {
+            "node": "Upload to SFTP",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload to Google Drive",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Write Binary File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload to Microsoft OneDrive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download from Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Read Spreadsheet File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download from Microsoft OneDrive": {
+      "main": [
+        [
+          {
+            "node": "Read Spreadsheet File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "f3001828-f10b-41d5-a056-5327e1f694f3",
+      "name": "HTML to PDF",
+      "type": "@custom-js/n8n-nodes-pdf-toolkit.html2Pdf",
+      "position": [
+        -500,
+        380
+      ],
+      "parameters": {
+        "htmlInput": "<h1>Hello World</h1>"
+      },
+      "credentials": {
+        "customJsApi": {
+          "id": "<customJsApi-id>",
+          "name": "CustomJS account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "f3141220-b384-4efe-84f5-0a896b09a887",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -720,
+        460
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "cee26b9b-7109-4336-8d7e-762cf40b4d8b",
+      "name": "Convert PDF into PNG1",
+      "type": "@custom-js/n8n-nodes-pdf-toolkit.PdfToPng",
+      "position": [
+        -280,
+        540
+      ],
+      "parameters": {
+        "resource": "url",
+        "field_name": "={{ $json.path }}"
+      },
+      "credentials": {
+        "customJsApi": {
+          "id": "<customJsApi-id>",
+          "name": "CustomJS account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "46f47df0-a301-41a9-8d3a-f98977b56eda",
+      "name": "Convert PDF into PNG",
+      "type": "@custom-js/n8n-nodes-pdf-toolkit.PdfToPng",
+      "position": [
+        -280,
+        380
+      ],
+      "parameters": {},
+      "credentials": {
+        "customJsApi": {
+          "id": "<customJsApi-id>",
+          "name": "CustomJS account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "98dfdf38-6b1c-4fd3-b956-8d59f62b280d",
+      "name": "Set PDF URL",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -500,
+        540
+      ],
+      "parameters": {
+        "jsCode": "return {\"json\": {\"path\": \"https://www.nlbk.niedersachsen.de/download/164891/Test-pdf_3.pdf.pdf\"}};"
+      },
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "HTML to PDF": {
+      "main": [
+        [
+          {
+            "node": "Convert PDF into PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set PDF URL": {
+      "main": [
+        [
+          {
+            "node": "Convert PDF into PNG1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTML to PDF",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set PDF URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

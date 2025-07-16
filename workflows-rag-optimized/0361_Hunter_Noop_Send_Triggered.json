@@ -1,0 +1,174 @@
+{
+  "id": "1blBTEfOEjamDB0N",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Email form",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "0994dde9-bad8-49b8-b164-1f191decf9ff",
+      "name": "Email is not valid, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        940,
+        480
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "b27e140e-7758-42d4-bf07-39b17f85fc82",
+      "name": "Check if the email is valid",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        620,
+        260
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 1,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "54d84c8a-63ee-40ed-8fb2-301fff0194ba",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "valid"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "a691af9a-f66f-4fd1-ab82-3d3450098d67",
+      "name": "Verify email",
+      "type": "n8n-nodes-base.hunter",
+      "position": [
+        360,
+        260
+      ],
+      "parameters": {
+        "email": "={{ $json.Email }}",
+        "operation": "emailVerifier"
+      },
+      "credentials": {
+        "hunterApi": {
+          "id": "<hunterApi-id>",
+          "name": "Hunter account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "cfe4d91b-209c-49df-8483-141f5e27fba2",
+      "name": "Submit form",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        80,
+        260
+      ],
+      "webhookId": "80be3272-e1bc-47e4-8112-d39488e84f4b",
+      "parameters": {
+        "options": {},
+        "formTitle": "Join my mailing list now",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Email",
+              "requiredField": true
+            }
+          ]
+        },
+        "formDescription": "10x your productivity with my A.I. tips. I'll cut the B.S. and give you the most practical tips for A.I. automation."
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "30d816d9-7a91-47b2-8c06-da0b9114f375",
+      "name": "Add contact to list",
+      "type": "n8n-nodes-base.sendGrid",
+      "position": [
+        940,
+        240
+      ],
+      "parameters": {
+        "email": "={{ $json.Email }}",
+        "resource": "contact",
+        "additionalFields": {
+          "listIdsUi": {
+            "listIdValues": {
+              "listIds": [
+                "11a55438-d4a8-4740-b054-d273359b7dfe"
+              ]
+            }
+          }
+        }
+      },
+      "credentials": {
+        "sendGridApi": {
+          "id": "<sendGridApi-id>",
+          "name": "SendGrid account"
+        }
+      },
+      "typeVersion": 1
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Submit form": {
+      "main": [
+        [
+          {
+            "node": "Verify email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify email": {
+      "main": [
+        [
+          {
+            "node": "Check if the email is valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if the email is valid": {
+      "main": [
+        [
+          {
+            "node": "Add contact to list",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email is not valid, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

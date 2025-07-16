@@ -1,0 +1,333 @@
+{
+  "id": "YOUR_WORKFLOW_ID",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Automated Content Generation & Publishing - Wordpress",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "9cd63357-19dc-4420-baa9-1e1389c7120f",
+      "name": "Create posts on Wordpress",
+      "type": "n8n-nodes-base.wordpress",
+      "position": [
+        1180,
+        280
+      ],
+      "parameters": {
+        "title": "={{ $('Save to Sheet').item.json['title'] }}",
+        "additionalFields": {
+          "status": "publish",
+          "content": "=<img src=\"{{ $('Automated Image Retrieval from Pexels').item.json.photos[0].src.landscape }}\" alt=\"image text\" style=\"width:100%; height:auto;\"><br><br>\n<br><br>\n{{ $node['Save to Sheet'].json['content'] }}"
+        }
+      },
+      "credentials": {
+        "wordpressApi": {
+          "id": "<wordpressApi-id>",
+          "name": "Wordpress account 2"
+        }
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": false
+    },
+    {
+      "id": "65f62f19-d10f-4ca1-a853-9cedb3506743",
+      "name": "Processing Delay",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        180,
+        580
+      ],
+      "parameters": {
+        "jsCode": "const delay = Math.floor(Math.random() * (6 * 60 * 60 * 1000)); // random delay 0-6 hour\nreturn {\n  json: {\n    delay: delay,\n    delay_minutes: Math.round(delay / 60000),  // to minutes\n    delay_hours: (delay / 3600000).toFixed(2) // to hours\n  }\n};\n"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "193d2876-c50e-4b9e-8856-9fd11baa025e",
+      "name": "Random Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        180,
+        760
+      ],
+      "webhookId": "61377399-ce9f-497a-80b1-aab29fc9fb69",
+      "parameters": {
+        "amount": "={{$json[\"delay\"] / 1000}}"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "cf510c21-7c19-4e84-a43a-62d170277cdf",
+      "name": "Save to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        780,
+        280
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "title": "={{ $json.message.content.title }}",
+            "content": "={{ $json.message.content.content }}",
+            "Image search keyword": "={{ $json.message.content.keywords.join(\"+\") }}"
+          },
+          "schema": [
+            {
+              "id": "title",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "title",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "content",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "content",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Image search keyword",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Image search keyword",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": []
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "YOURDOCUMENT_URL"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account_正確"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "6f385e8c-b3e6-4456-9738-e85ea2cbbea1",
+      "name": "1. Auto Start",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "disabled": true,
+      "position": [
+        180,
+        20
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "6d7712e8-9033-453b-ad52-09f718bcb701",
+      "name": "2. When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "disabled": true,
+      "position": [
+        180,
+        200
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "0fd8fe8f-a0d5-42d9-b728-53340c6e4233",
+      "name": "3. Schedule Your Posts",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        180,
+        380
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                2,
+                4,
+                0
+              ],
+              "triggerAtHour": "={{ 12 }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "26876b53-aa27-4e16-991e-c3618e751c17",
+      "name": "Automated Image Retrieval from Pexels",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        980,
+        280
+      ],
+      "parameters": {
+        "url": "=https://api.pexels.com/v1/search?per_page=1&orientation=landscape&query={{ $json[\"Image search keyword\"] }}\n",
+        "options": {},
+        "sendQuery": true,
+        "sendHeaders": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json['Image search keyword'] }}"
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "YOUR_PEXELS_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "e0489552-a7b5-4161-9553-95e23605a9d5",
+      "name": "Generate AI Content",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        440,
+        280
+      ],
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o",
+          "cachedResultName": "GPT-4O"
+        },
+        "options": {},
+        "messages": {
+          "values": [
+            {
+              "content": "(YOUR PROMPT)\n(YOUR PROMPT)\n\n**Image Search Keywords (For Visual Alignment)**\n\n- Automatically generates 3-5 English keywords for image searches based on the article content.\n- Keywords should be specific objects, locations, or atmospheres rather than abstract concepts.\n\n**Article Formatting Requirements**\n\n1️⃣ Title (H1): Ensure unique and trend-driven headlines.\n2️⃣ H2 / H3 Subheadings: Structure content in an SEO-optimized format.\n3️⃣ Article Structure (Enhanced Readability)\n\n** Introduction **\n- Go straight to the point, avoiding excessive background.\n- Use question hooks or market trend data to engage readers.\n\n** Core Content **\n- Include at least three knowledge points to ensure depth.\n- Balance short and long sentences for better flow.\n\n** Conclusion **\n- Avoid generic AI-style summaries; instead, provide insights or actionable takeaways.\n- Optionally include a CTA (Call to Action).\n\n** HTML Formatting **\nEnsure the article is properly structured in HTML format:\n- Headings: Use <h1>, <h2>, <h3> appropriately.\n- Paragraphs: Enclose text within <p>.\n- Emphasized Words: Use <strong> to highlight key terms.\n- Lists: Use <ul> and <li> for bullet points.\n\nEnsure a clean, well-structured output instead of plain text.\n\n### **Final JSON Format\nEnsure the output follows this structure:\n\n{\n  \"title\": \"{Generate an H1 title that aligns with market trends, ensures high click-through rates, and follows keyword strategy}\",\n  \"content\": \"{Generate a complete HTML article including H1, H2, H3 headings, paragraphs, lists, etc.}\",\n  \"keywords\": [\"{Image search keyword 1}\", \"{Image search keyword 2}\", \"{Image search keyword 3}\", \"{Image search keyword 4}\", \"{Image search keyword 5}\"]\n}"
+            }
+          ]
+        },
+        "jsonOutput": true
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.6
+    }
+  ],
+  "active": false,
+  "settings": {
+    "timezone": "Asia/Taipei",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1",
+    "executionTimeout": -1,
+    "saveManualExecutions": true
+  },
+  "connections": {
+    "Random Wait": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Automated Image Retrieval from Pexels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processing Delay": {
+      "main": [
+        [
+          {
+            "node": "Random Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Content": {
+      "main": [
+        [
+          {
+            "node": "Save to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Schedule Your Posts": {
+      "main": [
+        [
+          {
+            "node": "Processing Delay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Automated Image Retrieval from Pexels": {
+      "main": [
+        [
+          {
+            "node": "Create posts on Wordpress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

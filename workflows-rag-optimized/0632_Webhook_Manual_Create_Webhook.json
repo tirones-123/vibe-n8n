@@ -1,0 +1,323 @@
+{
+  "nodes": [
+    {
+      "id": "061bf344-8e0d-46df-a097-dfc000b63bbd",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        1240,
+        1020
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "3d66c4ce-e150-4f51-a9f9-4e7f61981ba4",
+      "name": "Set link to audio",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1440,
+        1020
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "745e32ae-61e6-429b-a107-f20c9b17e65e",
+              "name": "url",
+              "type": "string",
+              "value": "https://cflobdhpqwnoisuctsoc.supabase.co/storage/v1/object/public/5minai/OUTBOUNDSAMPLE_01.mp3"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "a52fc9df-20b5-4b2e-956d-66604be12660",
+      "name": "AssemblyAI - Transcribe",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1680,
+        1020
+      ],
+      "parameters": {
+        "url": "=https://api.assemblyai.com/v2/transcript",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "audio_url",
+              "value": "={{ $json.url }}"
+            },
+            {
+              "name": "language_code",
+              "value": "en_us"
+            },
+            {
+              "name": "speaker_labels",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "speakers_expected",
+              "value": "={{ 2 }}"
+            },
+            {
+              "name": "webhook_url",
+              "value": "https://n8n.lowcoding.dev/webhook/d1e5fdd0-b51d-4447-8af3-6754017d240b"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Assembly"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "89af9ab5-d59b-4224-af00-7b55c4905022",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1580,
+        1500
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "1e41aa3d-7ea3-4e9f-8d99-e8199e7ec449",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $('Webhook').item.json.body.status }}",
+              "rightValue": "completed"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "27653ac0-6703-4d25-bc0f-53b93b293b05",
+      "name": "AssemblyAI - Get transcription",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1800,
+        1500
+      ],
+      "parameters": {
+        "url": "=https://api.assemblyai.com/v2/transcript/{{ $('Webhook').item.json.body.transcript_id }}",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Assembly"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "50166503-27a2-435d-a455-1ea33384585f",
+      "name": "OpenAI - Analyze call",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1980,
+        1500
+      ],
+      "parameters": {
+        "url": "=https://api.openai.com/v1/chat/completions",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n    \"model\": \"gpt-4o-2024-08-06\",\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": \"{{ $('Set vars').item.json.prompt }}\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": {{ JSON.stringify($json.utterances.map(u => `Speaker ${u.speaker}: ${u.text}`).join(\"\\n\\n\"))}}\n      }\n    ],\n  \"response_format\":{ \"type\": \"json_schema\", \"json_schema\":   {{ JSON.stringify($('Set vars').item.json.json_schema) }} }\n  }",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "Test club key"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "266a2e6a-e0cc-4130-a8f0-038d2ba5992c",
+      "name": "Set vars",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1400,
+        1500
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c93d6cfb-cd36-4d8b-acc5-b3718bfc82c8",
+              "name": "prompt",
+              "type": "string",
+              "value": "Analyze this call with a focus on sales performance and potential upselling opportunities. Use the following metrics to evaluate the effectiveness of the interaction from a sales perspective. Be specific in identifying areas of strength and those needing improvement, and provide actionable insights for future calls.\\r\\n\\r\\nClient Intent: Identify the client\\u2019s primary intent and motivation for engaging in the call. Is there a clear indication of their needs or desired outcomes? How well does the agent align with or address these intentions?\\r\\n\\r\\nInterest Score (0-100): Evaluate the level of genuine interest shown by the client based on their responses, tone, and any probing questions they asked. Assign a score and explain the reasoning behind it.\\r\\n\\r\\nService Presentation Score (0-100): Assess how effectively the agent presented the service options. Did they clarify benefits that align with the client\\u2019s needs? Rate the agent\\u2019s performance in this area and provide a brief explanation.\\r\\n\\r\\nUpsell Opportunity Identified: Indicate whether any upselling opportunities were identified (e.g., suggesting advanced programs, certifications, or additional services). If opportunities were missed, explain how they could have been approached.\\r\\n\\r\\nObjection Handling Score (0-100): If the client expressed objections or hesitations, analyze how effectively the agent addressed them. Did they provide relevant solutions or reassurances? Assign a score and justify it with specific examples from the call.\\r\\n\\r\\nConversion Probability (0-100): Based on the client\\u2019s interest level and engagement, estimate the likelihood of conversion. What signals from the client suggest a high or low probability of moving forward?\\r\\n\\r\\nCall Outcome: Summarize the outcome of the call (e.g., \\u201Cclient expressed strong interest,\\u201D \\u201Cclient requested more information,\\u201D or \\u201Cclient expressed no interest\\u201D). Was a clear next step established?\\r\\n\\r\\nKey Client Needs: Highlight the client\\u2019s specific needs, preferences, or pain points mentioned during the call. How could these be addressed in future interactions to improve alignment with the client\\u2019s goals?\\r\\n\\r\\nInsights for Agent Improvement: Provide constructive feedback for the agent\\u2019s performance, focusing on areas such as empathy, product knowledge, and upsell strategy. Suggest improvements that could enhance their approach to increase client engagement.\\r\\n\\r\\nNext Steps Recommended: Recommend specific follow-up actions, such as providing customized information, sending relevant resources, or setting up a consultation. Focus on actions that will nurture the client relationship and increase conversion chances.\\r\\n\\r\\nIn your analysis, emphasize clarity and actionable feedback that leverages sales best practices. Highlight how well the agent built rapport, presented the product, and worked towards a favorable outcome for both the client and company"
+            },
+            {
+              "id": "4305764d-202c-4ab9-ae1e-d753cd68b7be",
+              "name": "json_schema",
+              "type": "object",
+              "value": "={{   {   \"name\": \"sales_call_analysis\",   \"description\": \"Analysis of customer engagement, interest, and potential sales conversion based on call data\",   \"strict\": true,   \"schema\": {     \"$schema\": \"http://json-schema.org/draft-04/schema#\",     \"type\": \"object\",     \"properties\": {       \"client_intent\": {         \"type\": \"string\",         \"description\": \"Client's primary intent for engaging (e.g., 'interest in education', 'general inquiry')\"       },       \"interest_score\": {         \"type\": \"integer\",         \"description\": \"Score indicating client's interest level based on responses (0-100)\"       },       \"service_presentation_score\": {         \"type\": \"integer\",         \"description\": \"Score for how effectively the agent presented the educational opportunities (0-100)\"       },       \"upsell_opportunity_identified\": {         \"type\": \"boolean\",         \"description\": \"Indicates if any upsell opportunity was identified\"       },       \"objection_handling_score\": {         \"type\": \"integer\",         \"description\": \"Score for handling client objections (0-100)\"       },       \"conversion_probability\": {         \"type\": \"integer\",         \"description\": \"Estimated likelihood of conversion based on call interaction (0-100)\"       },       \"call_outcome\": {         \"type\": \"string\",         \"description\": \"Outcome of the call (e.g., 'interest confirmed', 'no interest', 'appointment set')\"       },       \"key_client_needs\": {         \"type\": \"string\",         \"description\": \"Identified needs or requirements of the client, useful for customization or follow-up\"       },       \"insights_for_agent_improvement\": {         \"type\": \"string\",         \"description\": \"Insights and tips for the agent to improve performance\"       },       \"next_steps_recommended\": {         \"type\": \"string\",         \"description\": \"Suggested follow-up actions to improve conversion potential\"       }     },     \"additionalProperties\": false,     \"required\": [       \"client_intent\",       \"interest_score\",       \"service_presentation_score\",       \"upsell_opportunity_identified\",       \"objection_handling_score\",       \"conversion_probability\",       \"call_outcome\",       \"key_client_needs\",       \"insights_for_agent_improvement\",       \"next_steps_recommended\"     ]   } }       }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "60dca514-d064-41e9-8ea6-ac3bb29edb74",
+      "name": "Create record",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        2180,
+        1500
+      ],
+      "parameters": {
+        "tableId": "demo_calls",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "output",
+              "fieldValue": "={{ JSON.parse($json.choices[0].message.content)  }}"
+            },
+            {
+              "fieldId": "input",
+              "fieldValue": "={{ {\"text\":  JSON.stringify($('AssemblyAI - Get transcription').item.json.utterances.map(u => `Speaker ${u.speaker}: ${u.text}`).join(\"\\n\\n\")) , \"audio_url\": $('AssemblyAI - Get transcription').item.json.audio_url, \"transcription_id\":$('AssemblyAI - Get transcription').item.json.id } }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "<supabaseApi-id>",
+          "name": "Supabase 5minAI"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "dcaf9ed5-face-4199-ae8c-dc70c97588f6",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        1220,
+        1500
+      ],
+      "webhookId": "d1e5fdd0-b51d-4447-8af3-6754017d240b",
+      "parameters": {
+        "path": "d1e5fdd0-b51d-4447-8af3-6754017d240b",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AssemblyAI - Get transcription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set vars",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set vars": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set link to audio": {
+      "main": [
+        [
+          {
+            "node": "AssemblyAI - Transcribe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Analyze call": {
+      "main": [
+        [
+          {
+            "node": "Create record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AssemblyAI - Get transcription": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Analyze call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set link to audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

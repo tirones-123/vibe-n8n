@@ -1,0 +1,284 @@
+{
+  "id": "hmgR6wOkuqrn5y4Y",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "N_01_Simple_Lead_Tracker_Automation_v4",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "a69ff573-797d-4a77-a831-940168046448",
+      "name": "Google Sheets Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "position": [
+        -720,
+        300
+      ],
+      "parameters": {
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 1001688681,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16xNeIG_QLUtOoFulbWemXrUAOKwxaHaGU7DywJLDiRk/edit#gid=1001688681",
+          "cachedResultName": "Form Responses 1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "16xNeIG_QLUtOoFulbWemXrUAOKwxaHaGU7DywJLDiRk",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16xNeIG_QLUtOoFulbWemXrUAOKwxaHaGU7DywJLDiRk/edit?usp=drivesdk",
+          "cachedResultName": "Simple Lead Tracker  (Responses)"
+        }
+      },
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "<googleSheetsTriggerOAuth2Api-id>",
+          "name": "Google Sheets Trigger account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "ce9845a5-09da-44f9-b0c4-da380cf828d4",
+      "name": "Slack",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        20,
+        120
+      ],
+      "webhookId": "e376c2f4-7894-48c0-a510-b2869bcff786",
+      "parameters": {
+        "text": "=🎯 *New Lead Alert!*\n\n*Name:* {{ $json['Name Surname'] }}\n*Email:* {{ $json['E-Mail'] }}\n*Phone:* {{$json[\"Phone\"]}}\n*Interest Level:* {{ $json['  Interest Level  '] }}\n*Source:* {{ $json['  Lead Source  '] }}\n\n📝 Notes:\n{{ $json['Notes '] }}",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "C08FJNLQP5G",
+          "cachedResultName": "test-automation-workflow"
+        },
+        "otherOptions": {},
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "<slackOAuth2Api-id>",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "1c2b7aa2-6d30-4b88-ae36-f138fd98f02d",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        20,
+        320
+      ],
+      "webhookId": "8db2d0be-4071-431a-8c8b-28bbe3dd80a2",
+      "parameters": {
+        "sendTo": "dataplusminuss@gmail.com",
+        "message": "=<h3>New Lead Received!</h3> \n<ul>   \n<li><strong>Name:</strong> {{ $json['Name Surname'] }}</li>   \n<li><strong>Email:</strong> {{ $json['E-Mail'] }}</li>   \n<li><strong>Phone:</strong> {{$json[\"Phone\"]}}</li>   \n<li><strong>Interest Level:</strong> {{ $json['  Interest Level  '] }}</li>   \n<li><strong>Source:</strong> {{ $json['  Lead Source  '] }}</li> \n</ul> \n<p><strong>Notes:</strong> {{ $json['Notes '] }}</p>",
+        "options": {},
+        "subject": "=📩 New Lead Received: {{ $json['Name Surname'] }}"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "Gmail account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "4fa70ae1-efe9-4da4-8753-aff1540b3420",
+      "name": "HubSpot",
+      "type": "n8n-nodes-base.hubspot",
+      "position": [
+        -340,
+        80
+      ],
+      "parameters": {
+        "email": "={{ $json['E-Mail'] }}",
+        "options": {},
+        "authentication": "oAuth2",
+        "additionalFields": {
+          "message": "={{ $json['Notes '] }}",
+          "salutation": "={{ $json['  Lead Source  '] }}",
+          "phoneNumber": "={{ $json.Phone }}",
+          "relationshipStatus": "={{ $json['  Interest Level  '] }}"
+        }
+      },
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "<hubspotOAuth2Api-id>",
+          "name": "HubSpot account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "0cfe0651-5558-420d-8bc2-4ce49f9d2d9c",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        220,
+        620
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "3d4b99e0-4b1e-4dd1-8775-7e89042c43a8",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json['Followed Up?'] }}",
+              "rightValue": ""
+            },
+            {
+              "id": "fe99deab-c331-46a2-8649-233600fcd36f",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json['  Interest Level  '] }}",
+              "rightValue": "Hot"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "df1270cb-63e3-48a1-8334-a66b9d6b815e",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        440,
+        720
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "1999928c-954a-4a68-b4b3-8cfc649ff575",
+      "name": "Gmail_Reminder",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        440,
+        520
+      ],
+      "webhookId": "a6650ad1-7597-4b36-98f6-59e770de9166",
+      "parameters": {
+        "sendTo": "dataplusminuss@gmail.com",
+        "message": "=<h3>🔔 The following lead has not been followed up yet! 🔥 Interest level is hot </h3>\n<ul>\n  <li><strong>Name:</strong> {{ $json['Name Surname'] }}</li>\n  <li><strong>Email:</strong> {{ $json['E-Mail'] }}</li>\n  <li><strong>Interest Level:</strong> {{ $json['  Interest Level  '] }}</li>\n</ul>\n<p><strong>Please follow up and update the spreadsheet ✅</p>\n\n",
+        "options": {
+          "senderName": "N_01_tester"
+        },
+        "subject": "⏰ *Follow-up Reminder!*"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "Gmail account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "b0700cc4-06c7-4a97-8936-d1ff69b928e3",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        0,
+        620
+      ],
+      "webhookId": "04b4c335-c2a5-41b0-9f4c-65a98a41d39a",
+      "parameters": {
+        "unit": "minutes",
+        "amount": 3
+      },
+      "typeVersion": 1.1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Gmail_Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HubSpot",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

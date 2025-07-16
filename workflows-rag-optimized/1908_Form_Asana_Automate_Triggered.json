@@ -1,0 +1,99 @@
+{
+  "id": "lWfWe93aNGuNPLBz",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Automate Your Customer Service With WhatsApp Business Cloud & Asana",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "9d2a824a-6344-499e-a28a-454cf27b18e1",
+      "name": "n8n Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        40,
+        620
+      ],
+      "webhookId": "15e05cd5-c58d-4bf2-8358-f0cd1917334f",
+      "parameters": {
+        "path": "15e05cd5-c58d-4bf2-8358-f0cd1917334f",
+        "options": {},
+        "formTitle": "Contact Us!",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Whats is your Name?",
+              "requiredField": true
+            },
+            {
+              "fieldType": "number",
+              "fieldLabel": "What is your Phone Number?",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What is your problem?",
+              "requiredField": true
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "ac7cca4a-e42b-4eaa-bd8b-121c27b4f976",
+      "name": "WhatsApp Business Cloud",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        800,
+        480
+      ],
+      "parameters": {
+        "textBody": "=Hello {{ $json[\"Whats is your Name?\"] }},\n\nThank you for filling out the contact form.\nOur customer support team will get back to you as soon as possible.",
+        "operation": "send",
+        "phoneNumberId": "YOUR_PHONE_NUMBER",
+        "additionalFields": {},
+        "recipientPhoneNumber": "=+{{ $json['What is your Phone Number?'] }}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "71310c11-bb13-4b97-a183-da9a5e0ee007",
+      "name": "Asana",
+      "type": "n8n-nodes-base.asana",
+      "position": [
+        800,
+        820
+      ],
+      "parameters": {
+        "name": "=Support Ticket -  {{ $json.submittedAt }}",
+        "workspace": "YOUR_WORKSPACE_ID",
+        "otherProperties": {
+          "notes": "={{ $json['What is your problem?'] }}"
+        }
+      },
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "n8n Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Business Cloud",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Asana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

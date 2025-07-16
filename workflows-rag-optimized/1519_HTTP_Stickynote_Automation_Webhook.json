@@ -1,0 +1,225 @@
+{
+  "id": "IyhH1KHtXidKNSIA",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "🐋DeepSeek V3 Chat & R1 Reasoning Quick Start",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "54c59cae-fbd0-4f0d-b633-6304e6c66d89",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        -840,
+        -740
+      ],
+      "webhookId": "b740bd14-1b9e-4b1b-abd2-1ecf1184d53a",
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "ef85680e-569f-4e74-a1b4-aae9923a0dcb",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "onError": "continueErrorOutput",
+      "position": [
+        -320,
+        40
+      ],
+      "parameters": {
+        "agent": "conversationalAgent",
+        "options": {
+          "systemMessage": "You are a helpful assistant."
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 1.7,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "07a8c74c-768e-4b38-854f-251f2fe5b7bf",
+      "name": "DeepSeek",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -360,
+        220
+      ],
+      "parameters": {
+        "model": "=deepseek-reasoner",
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "deepseek"
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "a6d58a8c-2d16-4c91-adde-acac98868150",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -220,
+        220
+      ],
+      "parameters": {},
+      "typeVersion": 1.3
+    },
+    {
+      "id": "401a5932-9f3e-4b17-a531-3a19a6a7788a",
+      "name": "Basic LLM Chain2",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        -320,
+        -800
+      ],
+      "parameters": {
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a helpful assistant."
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.5
+    },
+    {
+      "id": "2ac8b41f-b27d-4074-abcc-430a8f5928e8",
+      "name": "Ollama DeepSeek",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "position": [
+        -320,
+        -640
+      ],
+      "parameters": {
+        "model": "deepseek-r1:14b",
+        "options": {
+          "format": "default",
+          "numCtx": 16384,
+          "temperature": 0.6
+        }
+      },
+      "credentials": {
+        "ollamaApi": {
+          "id": "<ollamaApi-id>",
+          "name": "Ollama account 127.0.0.1"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "ec46acef-60f6-4d34-b636-3654125f5897",
+      "name": "DeepSeek JSON Body",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        160,
+        -320
+      ],
+      "parameters": {
+        "url": "https://api.deepseek.com/chat/completions",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"model\": \"deepseek-chat\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"{{ $json.chatInput }}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Hello!\"\n    }\n  ],\n  \"stream\": false\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "deepseek"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "e5295120-57f9-4e02-8b73-f00e4d6baa48",
+      "name": "DeepSeek Raw Body",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -300,
+        -320
+      ],
+      "parameters": {
+        "url": "https://api.deepseek.com/chat/completions",
+        "body": "={\n        \"model\": \"deepseek-reasoner\",\n        \"messages\": [\n          {\"role\": \"user\", \"content\": \"{{ $json.chatInput.trim() }}\"}\n        ],\n        \"stream\": false\n      }",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "authentication": "genericCredentialType",
+        "rawContentType": "application/json",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "deepseek"
+        }
+      },
+      "typeVersion": 4.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "DeepSeek": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama DeepSeek": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

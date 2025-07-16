@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "f1142274-898d-43da-a7ff-2b2e03f2dc73",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        1220,
+        840
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "1f407421-2dd6-4e0c-bc74-cfb291e475ed",
+      "name": "Query Confluence",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1640,
+        840
+      ],
+      "parameters": {
+        "url": "https://n8n-labs.atlassian.net/wiki/rest/api/search",
+        "options": {},
+        "sendQuery": true,
+        "sendHeaders": true,
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "cql",
+              "value": "=text ~ \"{{ $json.query }}\""
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "<httpBasicAuth-id>",
+          "name": "Confluence API Key"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "f1ab7e79-6bd8-4b87-b6dc-96f9d46cdd16",
+      "name": "Return Tool Response",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2040,
+        840
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1d46e59-9340-43f3-bc2a-fbd4e0def74f",
+              "name": "response",
+              "type": "string",
+              "value": "=\"Title\": \"{{ $json.results[0].content.title }}\"\n\"Link\": \"{{ $json._links.base }}{{ $json.results[0].content._links.webui }}\"\n\"Content\": {{ $json[\"results\"][0][\"excerpt\"] }}\nWhen users request the password, make sure to send them the link above to reset it in markdown. "
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.3
+    }
+  ],
+  "connections": {
+    "Query Confluence": {
+      "main": [
+        [
+          {
+            "node": "Return Tool Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Query Confluence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

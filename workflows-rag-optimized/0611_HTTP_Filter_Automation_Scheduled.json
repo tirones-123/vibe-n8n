@@ -1,0 +1,203 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "b6582c37-00c3-467c-95cb-fc6eb7ccd27d",
+      "name": "Filter",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1080,
+        420
+      ],
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.meta.total }}",
+              "value2": 4,
+              "operation": "largerEqual"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "54b0f895-7e56-40eb-bc6c-f657457d004a",
+      "name": "List Snapshots for a Droplet",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        840,
+        420
+      ],
+      "parameters": {
+        "url": "=https://api.digitalocean.com/v2/droplets/{{ $json.droplets[0].id }}/snapshots ",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Digital Ocean Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": false
+    },
+    {
+      "id": "7c47438f-db04-41f7-aed6-a460d0a6889b",
+      "name": "List All Droplets",
+      "type": "n8n-nodes-base.httpRequest",
+      "notes": "f3bc462f9219860aafe79747ee369e2f79ccd7f9b096dfe66b55d946871e8942",
+      "position": [
+        600,
+        420
+      ],
+      "parameters": {
+        "url": "https://api.digitalocean.com/v2/droplets",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Digital Ocean Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e751f6a4-0fdc-4be5-84f0-fecba100da09",
+      "name": "Delete a Snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "notes": "f3bc462f9219860aafe79747ee369e2f79ccd7f9b096dfe66b55d946871e8942",
+      "position": [
+        1320,
+        420
+      ],
+      "parameters": {
+        "url": "=https://api.digitalocean.com/v2/snapshots/{{ $json.snapshots[0].id }}",
+        "options": {},
+        "requestMethod": "DELETE",
+        "authentication": "headerAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Digital Ocean Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "d4cc4a72-f909-4c10-bada-e5c731e46c5e",
+      "name": "Droplet Actions snapshot (n8n.optimus01.co.za)",
+      "type": "n8n-nodes-base.httpRequest",
+      "notes": "f3bc462f9219860aafe79747ee369e2f79ccd7f9b096dfe66b55d946871e8942",
+      "position": [
+        1560,
+        420
+      ],
+      "parameters": {
+        "url": "=https://api.digitalocean.com/v2/droplets/{{ $('List All Droplets').item.json.droplets[0].id }}/actions ",
+        "options": {},
+        "requestMethod": "POST",
+        "authentication": "headerAuth",
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "type",
+              "value": "snapshot"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Digital Ocean Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "4f3be74a-add7-4a2c-99df-d5d47f17efee",
+      "name": "Runs every 48hrs",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        360,
+        420
+      ],
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 48
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Delete a Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Runs every 48hrs": {
+      "main": [
+        [
+          {
+            "node": "List All Droplets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Droplet Actions snapshot (n8n.optimus01.co.za)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List All Droplets": {
+      "main": [
+        [
+          {
+            "node": "List Snapshots for a Droplet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Snapshots for a Droplet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "d2e53ca7-07e1-499b-8f29-9a2a1de10824",
+      "name": "Filter incomplete tasks only",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        220,
+        380
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.Status }}",
+              "value2": "Done",
+              "operation": "notEqual"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "2ff58ec6-58a3-4bf0-adba-d2d0ae87944e",
+      "name": "Get All Slack Users (Darryn)",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        440,
+        380
+      ],
+      "parameters": {
+        "resource": "user",
+        "operation": "getAll",
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "<slackOAuth2Api-id>",
+          "name": "Slack Account (OAuth)  (darryn@optimus01.co.za)"
+        }
+      },
+      "executeOnce": false,
+      "typeVersion": 1
+    },
+    {
+      "id": "ff9a6853-b254-4a4f-aa8d-89546e78de0b",
+      "name": "Get To Dos from Tasks Database",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        20,
+        380
+      ],
+      "parameters": {
+        "options": {},
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1197be57-c54f-815f-8d3b-fdbbb741b19c",
+          "cachedResultUrl": "https://www.notion.so/1197be57c54f815f8d3bfdbbb741b19c",
+          "cachedResultName": "Tasks "
+        }
+      },
+      "credentials": {
+        "notionApi": {
+          "id": "<notionApi-id>",
+          "name": "Notion Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c9856834-1a6b-4e2e-bb77-9b3c74c34ccf",
+      "name": "Schedule Mon - Friday @ 09:00am",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        -600,
+        380
+      ],
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "custom",
+              "cronExpression": "0 9 * * 1,2,3,4,5"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "41e67948-1d4a-4654-8817-dbcf61eb061d",
+      "name": "Set Notion User Emails",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -380,
+        380
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "94663427-c288-446a-96df-ddfc3fe332f0",
+              "name": "User 1 Notion Email",
+              "type": "string",
+              "value": "darryn@optimus01.co.za"
+            },
+            {
+              "id": "bed7739d-640a-43cc-9fb5-4472844ccc09",
+              "name": "User 2 Notion Email",
+              "type": "string",
+              "value": "cassie@optimus01.com"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "3a59b653-dd65-4443-b2d0-44cce3e780dd",
+      "name": "Set Slack User Full Name",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -180,
+        380
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "94663427-c288-446a-96df-ddfc3fe332f0",
+              "name": "User 1 Slack Full Name",
+              "type": "string",
+              "value": "Darryn Balanco"
+            },
+            {
+              "id": "bed7739d-640a-43cc-9fb5-4472844ccc09",
+              "name": "User 2 Slack Full Name",
+              "type": "string",
+              "value": "Cassandra Balanco"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "340af945-5e22-408f-86de-b4e4160ec751",
+      "name": "Send a Direct Message to User 1",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1200,
+        260
+      ],
+      "parameters": {
+        "text": "# TO DO",
+        "channel": "={{ $json.id }}",
+        "attachments": [
+          {
+            "title": "=☑️  {{ $('Filter incomplete tasks only').item.json.Task }} (Due: {{ $('Filter incomplete tasks only').item.json.Due.start }})"
+          }
+        ],
+        "otherOptions": {
+          "mrkdwn": true
+        },
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "<slackOAuth2Api-id>",
+          "name": "Slack Account (OAuth)  (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "df9bc0b5-7a34-407d-a412-dd4022943e41",
+      "name": "Send a Direct Message to User 2",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1200,
+        500
+      ],
+      "parameters": {
+        "text": "# TO DO",
+        "channel": "={{ $json.id }}",
+        "attachments": [
+          {
+            "title": "=☑️  {{ $('Filter incomplete tasks only').item.json.Task }} (Due: {{ $('Filter incomplete tasks only').item.json.Due.start }})"
+          }
+        ],
+        "otherOptions": {
+          "mrkdwn": true
+        },
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "<slackOAuth2Api-id>",
+          "name": "Slack Account (OAuth)  (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "f6ab26d3-27d9-4b06-886d-64bbaf5d4f92",
+      "name": "Switch for Notion Users Emails",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        720,
+        380
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "User 1 Notion Tasks",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "leftValue": "={{ $('Filter incomplete tasks only').item.json['Notion User'].toString() }}",
+                    "rightValue": "={{ $('Set Notion User Emails').item.json['User 1 Notion Email'] }}"
+                  }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "User 2 Notion Tasks",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "d0bf512b-15e4-4dd6-b468-50cec25c3e2c",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "leftValue": "={{ $('Filter incomplete tasks only').item.json['Notion User'].toString() }}",
+                    "rightValue": "={{ $('Set Notion User Emails').item.json['User 2 Notion Email'] }}"
+                  }
+                ]
+              },
+              "renameOutput": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "4492bc68-e8ef-4417-b3d2-d7fb9418db17",
+      "name": "Filter Slack User 1 Full Name",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        980,
+        260
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "6aafbbd7-065c-4253-b905-07c7df9210c1",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.profile.real_name }}",
+              "rightValue": "={{ $('Set Slack User Full Name').item.json['User 1 Slack Full Name'] }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "159b3436-9141-4769-a495-14e9fdd37f1d",
+      "name": "Filter Slack User 2 Full Name",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        980,
+        500
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "6aafbbd7-065c-4253-b905-07c7df9210c1",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.profile.real_name }}",
+              "rightValue": "={{ $('Set Slack User Full Name').item.json['User 2 Slack Full Name'] }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    }
+  ],
+  "connections": {
+    "Set Notion User Emails": {
+      "main": [
+        [
+          {
+            "node": "Set Slack User Full Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Slack User Full Name": {
+      "main": [
+        [
+          {
+            "node": "Get To Dos from Tasks Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter incomplete tasks only": {
+      "main": [
+        [
+          {
+            "node": "Get All Slack Users (Darryn)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Slack Users (Darryn)": {
+      "main": [
+        [
+          {
+            "node": "Switch for Notion Users Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Slack User 1 Full Name": {
+      "main": [
+        [
+          {
+            "node": "Send a Direct Message to User 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Slack User 2 Full Name": {
+      "main": [
+        [
+          {
+            "node": "Send a Direct Message to User 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get To Dos from Tasks Database": {
+      "main": [
+        [
+          {
+            "node": "Filter incomplete tasks only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch for Notion Users Emails": {
+      "main": [
+        [
+          {
+            "node": "Filter Slack User 1 Full Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter Slack User 2 Full Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Mon - Friday @ 09:00am": {
+      "main": [
+        [
+          {
+            "node": "Set Notion User Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

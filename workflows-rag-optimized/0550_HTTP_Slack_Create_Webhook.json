@@ -1,0 +1,264 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "6f938c83-45fd-4189-b9ec-c7a6de4beb2d",
+      "name": "Retrieve deals Ids",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        660,
+        440
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bad2435b-ec9b-4995-ab39-2dac1c2daa3a",
+              "name": "deal_id_won",
+              "type": "string",
+              "value": "={{ $json.query.deal_id_won }}"
+            },
+            {
+              "id": "2376fad4-c305-4c38-8daa-fd86014ae14b",
+              "name": "deal_id_created",
+              "type": "string",
+              "value": "={{ $json.query.deal_id_created.match(/0-3-(\\d+)$/)[1] }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "abc534f2-03b4-4f34-8292-bc8011c62c44",
+      "name": "Get deal won line items",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        920,
+        440
+      ],
+      "parameters": {
+        "url": "https://api.hubapi.com/crm/v4/associations/deals/line_items/batch/read",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"inputs\": [\n    {\n      \"id\": \"{{ $json.deal_id_won }}\"\n    }\n  ]\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken"
+      },
+      "credentials": {
+        "hubspotAppToken": {
+          "id": "<hubspotAppToken-id>",
+          "name": "HubSpot App Token account"
+        },
+        "hubspotOAuth2Api": {
+          "id": "<hubspotOAuth2Api-id>",
+          "name": "HubSpot account OAuth - Arnaud"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "eb5ae93e-3b52-4a92-9506-5379bbca8e0b",
+      "name": "Slack",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1740,
+        440
+      ],
+      "parameters": {
+        "text": "=:white_check_mark: {{ `<https://arnaud-growth.app.n8n.cloud/workflow/${$workflow.id}|${$workflow.name}> sucessfull on <https://app-eu1.hubspot.com/contacts/3418361/record/0-3/${$('Retrieve deals Ids').item.json[\"deal_id_won\"]}|Deal won> and <https://app-eu1.hubspot.com/contacts/3418361/record/0-3/${$('Retrieve deals Ids').item.json[\"deal_id_created\"]}|Deal created>`}}\n",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "C051YHBJ1G8"
+        },
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "<slackApi-id>",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "d18841d0-a270-4db5-9256-17026985c13b",
+      "name": "Get batch SKUs from line items",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1100,
+        440
+      ],
+      "parameters": {
+        "url": "https://api.hubapi.com/crm/v3/objects/line_items/batch/read",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={{ \n\n{\n  \"idProperty\": \"hs_object_id\",\n  \"inputs\": $jmespath($json.results,`[].to[].{id: to_string(toObjectId)}`),\n  \"properties\": [\n    \"hs_object_id\",\n    \"name\",\n    \"hs_sku\"\n  ]\n}\n\n}}",
+        "sendBody": true,
+        "sendQuery": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "archived",
+              "value": "false"
+            }
+          ]
+        },
+        "nodeCredentialType": "hubspotAppToken"
+      },
+      "credentials": {
+        "hubspotAppToken": {
+          "id": "<hubspotAppToken-id>",
+          "name": "HubSpot App Token account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "58a9ae81-26d5-47fb-9de7-bf108cb41f8d",
+      "name": "Get Batch Product IDs by SKUs",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1320,
+        440
+      ],
+      "parameters": {
+        "url": "https://api.hubapi.com/crm/v3/objects/products/batch/read",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={{ {\n  \"idProperty\": \"hs_sku\",\n  \"inputs\":  $jmespath($json.results,\"[].properties.{id:to_string(hs_sku)}\") \n,\n  \"properties\": [\n    \"idProperty\",\n    \"name\",\n    \"hs_object_id\",\n    \"recurringbillingfrequency\",\n\"hs_price_eur\"\n  ]\n}\n\n}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken"
+      },
+      "credentials": {
+        "hubspotAppToken": {
+          "id": "<hubspotAppToken-id>",
+          "name": "HubSpot App Token account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "27b2619a-af84-475a-9bdc-c86462ea57d3",
+      "name": "Create Batch line items based on productId and associate to deals",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1540,
+        440
+      ],
+      "parameters": {
+        "url": "https://api.hubapi.com/crm/v3/objects/line_items/batch/create",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={{ {\"inputs\":$jmespath($json.results,\"[].id\")\n.map(id => ({\n    \"associations\": [\n        {\n            \"types\": [\n                {\n                    \"associationCategory\": \"HUBSPOT_DEFINED\",\n                    \"associationTypeId\": 20\n                }\n            ],\n            \"to\": {\n                \"id\": $('Retrieve deals Ids').item.json[\"deal_id_created\"]\n            }\n        }\n    ],\n    \"properties\": {\n        \"hs_product_id\": id,\n        \"quantity\": \"1\"\n    }\n})) } \n\n}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken"
+      },
+      "credentials": {
+        "hubspotAppToken": {
+          "id": "<hubspotAppToken-id>",
+          "name": "HubSpot App Token account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "8dc60064-83a1-488e-b1a5-7be57d734e88",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        420,
+        440
+      ],
+      "webhookId": "833df60e-a78f-4a59-8244-9694f27cf8ae",
+      "parameters": {
+        "path": "833df60e-a78f-4a59-8244-9694f27cf8ae",
+        "options": {}
+      },
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Retrieve deals Ids",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve deals Ids": {
+      "main": [
+        [
+          {
+            "node": "Get deal won line items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get deal won line items": {
+      "main": [
+        [
+          {
+            "node": "Get batch SKUs from line items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Batch Product IDs by SKUs": {
+      "main": [
+        [
+          {
+            "node": "Create Batch line items based on productId and associate to deals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get batch SKUs from line items": {
+      "main": [
+        [
+          {
+            "node": "Get Batch Product IDs by SKUs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Batch line items based on productId and associate to deals": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

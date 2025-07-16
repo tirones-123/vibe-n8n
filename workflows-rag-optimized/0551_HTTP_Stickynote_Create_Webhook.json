@@ -1,0 +1,240 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "89a2f8d1-a2fd-452b-8187-aec9e72efba5",
+      "name": "Systeme | Get all contacts",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        480,
+        80
+      ],
+      "parameters": {
+        "url": "https://api.systeme.io/api/contacts",
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "startingAfter",
+                    "value": "={{ $response.body.items.last().id }}"
+                  }
+                ]
+              },
+              "requestInterval": 1000,
+              "completeExpression": "={{ $response.body.hasMore == false }}",
+              "paginationCompleteWhen": "other"
+            }
+          }
+        },
+        "sendQuery": true,
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "56ad906f-0309-469a-8509-96ea6d56c0ba",
+      "name": "Split Out2",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        680,
+        80
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "items"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "b2ffb152-c3f2-4d74-a25e-9ec3162b8dbe",
+      "name": "Systeme | Get All tags",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        480,
+        340
+      ],
+      "parameters": {
+        "url": "https://api.systeme.io/api/tags",
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "startingAfter",
+                    "value": "={{ $response.body.items.last().id }}"
+                  }
+                ]
+              },
+              "requestInterval": 1000,
+              "completeExpression": "={{ $response.body.hasMore == false }}",
+              "paginationCompleteWhen": "other"
+            }
+          }
+        },
+        "sendQuery": true,
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "0e284595-ae1c-4f48-a276-d5059319226b",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        680,
+        340
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "items"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "b7b231c7-11e6-4dbd-aa0a-720ce1ba418b",
+      "name": "Split Out3",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        680,
+        580
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "items"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "bed54e99-ceaa-4a3a-a3b1-403a1573ba4d",
+      "name": "Systeme | Get contacts with tag",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        480,
+        580
+      ],
+      "parameters": {
+        "url": "https://api.systeme.io/api/contacts",
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "startingAfter",
+                    "value": "={{ $response.body.items.last().id }}"
+                  }
+                ]
+              },
+              "requestInterval": 1000,
+              "completeExpression": "={{ $response.body.hasMore == false }}",
+              "paginationCompleteWhen": "other"
+            }
+          }
+        },
+        "sendQuery": true,
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "100"
+            },
+            {
+              "name": "tags",
+              "value": "1012751"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "3b1f6f68-baf0-4357-9f05-74cda41037e3",
+      "name": "Systeme | Add contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        480,
+        1000
+      ],
+      "parameters": {
+        "url": "https://api.systeme.io/api/contacts",
+        "method": "POST",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 9
+            }
+          }
+        },
+        "jsonBody": "={\n  \"email\": \"{{ $json.emails }}\",\n  \"fields\": [\n    {\n      \"slug\": \"utm_source\",\n      \"value\": \"API\"\n    }\n  ]\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "Systeme | Get All tags": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Systeme | Get all contacts": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Systeme | Get contacts with tag": {
+      "main": [
+        [
+          {
+            "node": "Split Out3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

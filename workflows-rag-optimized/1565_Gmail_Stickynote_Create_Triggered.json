@@ -1,0 +1,149 @@
+{
+  "id": "NPGAfBzz4nv8lTpl",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Save New Sales Opportunities",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "64b02b70-e7f2-4df0-852f-b6959af8d8c5",
+      "name": "Received Emails with Sales Label",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "position": [
+        760,
+        540
+      ],
+      "parameters": {
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "Label_8035866011660570111"
+          ]
+        },
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "Gmail account"
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "6dca3c61-98ba-4d18-bc5c-9c762e12f13b",
+      "name": "Odoo - Create Opportunity",
+      "type": "n8n-nodes-base.odoo",
+      "position": [
+        1500,
+        540
+      ],
+      "parameters": {
+        "resource": "opportunity",
+        "opportunityName": "={{ $('Received Emails with Sales Label').item.json.headers.subject }}",
+        "additionalFields": {
+          "email_from": "={{ $('Received Emails with Sales Label').item.json.from.value[0].address }}",
+          "description": "={{ $json.response.text }}"
+        }
+      },
+      "credentials": {
+        "odooApi": {
+          "id": "<odooApi-id>",
+          "name": "Odoo account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "a57e0e51-50d3-49de-8dc6-6fe592604765",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmOpenAi",
+      "position": [
+        1040,
+        720
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-3.5-turbo-instruct"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "8705b4de-1334-4ff2-8d5d-60ec96cfb8cd",
+      "name": "Summarize Email Content",
+      "type": "@n8n/n8n-nodes-langchain.chainSummarization",
+      "position": [
+        1060,
+        540
+      ],
+      "parameters": {
+        "options": {
+          "summarizationMethodAndPrompts": {
+            "values": {
+              "prompt": "=Write a concise summary of the following sales inquiry:\n\" {{ $json.text }}\"\nInclude structured information such as project budget, timelines, industry and a general summary\n\nCONCISE SUMMARY: \n",
+              "combineMapPrompt": "=Write a concise summary of the following sales inquiry:\n\"{{ $json.text }}\"\nExtract information such as project budget, timelines and a general summary.\n\nCONCISE SUMMARY: \n"
+            }
+          }
+        }
+      },
+      "typeVersion": 2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize Email Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Email Content": {
+      "main": [
+        [
+          {
+            "node": "Odoo - Create Opportunity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Received Emails with Sales Label": {
+      "main": [
+        [
+          {
+            "node": "Summarize Email Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

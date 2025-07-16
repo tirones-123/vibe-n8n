@@ -1,0 +1,256 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "9971f7ab-ecc3-468b-8eb9-b58491b660bd",
+      "name": "On clicking 'execute'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        1040,
+        360
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "9726c9cc-cab1-44f8-8c62-2b80899af4aa",
+      "name": "Ingredients in stock from recipe",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1600,
+        -20
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "Name",
+              "field2": "Name"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "42367b1e-8a5d-4b0c-bfd3-8bb3f1b63df9",
+      "name": "Super Band",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1620,
+        760
+      ],
+      "parameters": {},
+      "typeVersion": 2
+    },
+    {
+      "id": "b4a756d8-a729-4add-aafa-9868738a6790",
+      "name": "A. Ingredients Needed",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1360,
+        -100
+      ],
+      "parameters": {
+        "jsCode": " return [\n  {\n    \"Name\": \"Flour\",\n  },\n  {\n    \"Name\": \"Eggs\",\n  },\n  {\n    \"Name\": \"Milk\",\n  },\n  {\n    \"Name\": \"Lemon\",\n  },\n  {\n    \"Name\": \"Sugar\",\n  },\n];\n"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "eb69abdc-cb89-43c5-bcd6-5f1f6383b391",
+      "name": "B. Ingredients in stock",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1360,
+        40
+      ],
+      "parameters": {
+        "jsCode": " return [\n  {\n    \"Name\": \"Eggs\",\n  },\n  {\n    \"Name\": \"Lemon\",\n  },\n  {\n    \"Name\": \"Sugar\",\n  },\n];\n"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "b01228b8-c860-4725-a0e1-00b4c11218cc",
+      "name": "Merge recipe",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1620,
+        380
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "joinMode": "enrichInput1",
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "Name",
+              "field2": "Name"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "fdb8a9cb-8a85-4a9a-bd2f-c9711178333f",
+      "name": "A. Ingredients",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1360,
+        300
+      ],
+      "parameters": {
+        "jsCode": " return [\n  {\n    \"Name\": \"Flour\",\n  },\n  {\n    \"Name\": \"Eggs\",\n  },\n  {\n    \"Name\": \"Milk\",\n  },\n  {\n    \"Name\": \"Lemon\",\n  },\n  {\n    \"Name\": \"Sugar\",\n  },\n];\n"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "2ca385e5-6833-49fa-b052-abc8583b4a7a",
+      "name": "B. Recipe quantities",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1360,
+        440
+      ],
+      "parameters": {
+        "jsCode": " return [\n  {\n    \"Name\": \"Flour\",\n    \"Quantity\": \"100g\",\n  },\n  {\n    \"Name\": \"Eggs\",\n    \"Quantity\": 2,\n  },\n  {\n    \"Name\": \"Salt\",\n    \"Quantity\": \"50g\"\n  },\n  {\n    \"Name\": \"Lemon\",\n    \"Quantity\": 1,\n  },\n  {\n    \"Name\": \"Sugar\",\n    \"Quantity\": \"6tbsp\",\n  },\n];\n"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "8e4c7da8-3700-4b1f-b937-739debf7aba4",
+      "name": "A. Queen",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1360,
+        680
+      ],
+      "parameters": {
+        "jsCode": " return [\n{\n\"FirstName\": \"John\",\n\"LastName\": \"Deacon\",\n\"Instrument\": \"Drums\",\n},\n{\n\"FirstName\": \"Freddy\",\n\"LastName\": \"Mercury\",\n\"Instrument\": \"Vocals and Piano\",\n\"Superpower\": \"Crowd control\"\n},\n{\n\"FirstName\": \"Brian\",\n\"LastName\": \"May\",\n\"Instrument\": \"Guitar\",\n},\n{\n\"FirstName\": \"Roger\",\n\"LastName\": \"Taylor\",\n\"Instrument\": \"Bass\",\n}\n];\n"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "260c7a0a-43ba-46aa-bfa8-cbbb66aca493",
+      "name": "B. Led Zeppelin",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1360,
+        820
+      ],
+      "parameters": {
+        "jsCode": " return [\n{\n\"FirstName\": \"Jimmy\",\n\"LastName\": \"Page\",\n\"Instrument\": \"Guitar\"\n},\n{\n\"FirstName\": \"Robert\",\n\"LastName\": \"Plant\",\n\"Instrument\": \"Vocals\",\n},\n{\n\"FirstName\": \"John\",\n\"LastName\": \"Bonham\",\n\"Instrument\": \"Drums\",\n},\n{\n\"FirstName\": \"John\",\n\"LastName\": \"Paul Jones\",\n\"Instrument\": \"Bass\",\n\"Second Instrument\": \"Keyboard\",\n}\n];\n"
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "A. Queen": {
+      "main": [
+        [
+          {
+            "node": "Super Band",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A. Ingredients": {
+      "main": [
+        [
+          {
+            "node": "Merge recipe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B. Led Zeppelin": {
+      "main": [
+        [
+          {
+            "node": "Super Band",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "B. Recipe quantities": {
+      "main": [
+        [
+          {
+            "node": "Merge recipe",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "A. Ingredients Needed": {
+      "main": [
+        [
+          {
+            "node": "Ingredients in stock from recipe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On clicking 'execute'": {
+      "main": [
+        [
+          {
+            "node": "A. Ingredients Needed",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "B. Ingredients in stock",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "A. Ingredients",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "B. Recipe quantities",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "A. Queen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "B. Led Zeppelin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B. Ingredients in stock": {
+      "main": [
+        [
+          {
+            "node": "Ingredients in stock from recipe",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  }
+}

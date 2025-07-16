@@ -1,0 +1,198 @@
+{
+  "id": "FpZJ8jaNQ3j2DO1L",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Optimise images uploaded to GDrive",
+  "nodes": [
+    {
+      "id": "a6fac2bb-4079-4872-9cc9-17b1016d2fcc",
+      "name": "Check GDrive for new images",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        500,
+        160
+      ],
+      "parameters": {
+        "event": "fileCreated",
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultUrl": "",
+          "cachedResultName": ""
+        }
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": ""
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "a0cae553-e4c1-408b-b11a-ceda4ff1aaa4",
+      "name": "Download image",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        700,
+        160
+      ],
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {},
+        "operation": "download"
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": ""
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "006ba31a-f42b-460c-87e1-66c5345fb6d7",
+      "name": "Optimise - Send image to TinyPNG",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        940,
+        320
+      ],
+      "parameters": {
+        "url": "https://api.tinify.com/shrink",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic "
+            }
+          ]
+        },
+        "inputDataFieldName": "data"
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "e380304e-1c94-4841-bc1c-73047e4c2501",
+      "name": "Get optimised image from tinyPNG",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1140,
+        320
+      ],
+      "parameters": {
+        "url": "={{ $json.headers.location }}",
+        "options": {}
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "b69a925f-9938-4672-9329-4f8895ea9c79",
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1480,
+        520
+      ],
+      "parameters": {
+        "name": "name.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {},
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultUrl": "",
+          "cachedResultName": ""
+        }
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": ""
+        }
+      },
+      "typeVersion": 3
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Download image": {
+      "main": [
+        [
+          {
+            "node": "Optimise - Send image to TinyPNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check GDrive for new images": {
+      "main": [
+        [
+          {
+            "node": "Download image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get optimised image from tinyPNG": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Optimise - Send image to TinyPNG": {
+      "main": [
+        [
+          {
+            "node": "Get optimised image from tinyPNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

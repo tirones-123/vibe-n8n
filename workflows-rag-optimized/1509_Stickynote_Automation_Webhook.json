@@ -1,0 +1,238 @@
+{
+  "id": "Nfh274NHoDy7pB4M",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Integrating AI with Open-Meteo API for Enhanced Weather Forecasting",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "80debfe0-c591-4ba1-aca1-068adac62aa9",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        100,
+        -300
+      ],
+      "webhookId": "4a44e974-db62-4727-9913-12a22bc88e01",
+      "parameters": {
+        "public": true,
+        "options": {
+          "title": "N8N 👋",
+          "subtitle": "Weather Assistant: Example of Tools Using ChatGPT",
+          "allowFileUploads": false,
+          "loadPreviousSession": "memory"
+        },
+        "initialMessages": "Type like this: Weather Forecast for the Next 7 Days in São Paulo"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "ec375027-1c0d-438b-9fca-7bc4fbef2479",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        420,
+        -60
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "55713ffc-da61-4594-99f4-ca6b448cbee2",
+      "name": "Generic AI Tool Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        440,
+        -300
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "7f608ddc-87bb-4e54-84a8-4db6b7f95011",
+      "name": "Chat Memory Buffer",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        200,
+        -60
+      ],
+      "parameters": {},
+      "typeVersion": 1.3
+    },
+    {
+      "id": "f9b0e65d-a85e-4511-bdd2-adf54b1c039d",
+      "name": "A tool to get the weather forecast based on geolocation",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "position": [
+        1100,
+        -160
+      ],
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "latitude"
+            },
+            {
+              "name": "longitude"
+            },
+            {
+              "name": "daily",
+              "value": "temperature_2m_max,precipitation_sum",
+              "valueProvider": "fieldValue"
+            },
+            {
+              "name": "timezone",
+              "value": "GMT",
+              "valueProvider": "fieldValue"
+            },
+            {
+              "name": "forecast_days"
+            }
+          ]
+        },
+        "toolDescription": "To get forecast of next [forecast_days] input the geolocation of an City",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "longitude",
+              "type": "number",
+              "description": "longitude"
+            },
+            {
+              "name": "latitude",
+              "type": "number",
+              "description": "latitude"
+            },
+            {
+              "name": "forecast_days",
+              "type": "number",
+              "description": "forecast_days number of days ahead"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "1c8087ce-6800-4ece-8234-23914e21a692",
+      "name": "A tool for inputting the city and obtaining geolocation",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "position": [
+        820,
+        -100
+      ],
+      "parameters": {
+        "url": "=https://geocoding-api.open-meteo.com/v1/search",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "name"
+            },
+            {
+              "name": "count",
+              "value": "1",
+              "valueProvider": "fieldValue"
+            },
+            {
+              "name": "format",
+              "value": "json",
+              "valueProvider": "fieldValue"
+            }
+          ]
+        },
+        "toolDescription": "Input the City and get geolocation, geocode or coordinates from Requested City",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "name",
+              "type": "string",
+              "description": "Requested City"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generic AI Tool Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Memory Buffer": {
+      "ai_memory": [
+        [
+          {
+            "node": "When chat message received",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Generic AI Tool Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Generic AI Tool Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A tool for inputting the city and obtaining geolocation": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generic AI Tool Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A tool to get the weather forecast based on geolocation": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generic AI Tool Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

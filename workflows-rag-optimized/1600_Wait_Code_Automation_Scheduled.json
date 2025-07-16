@@ -1,0 +1,542 @@
+{
+  "id": "8EmNhftXznAGV3dR",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Phishing_analysis__URLScan_io_and_Virustotal_",
+  "tags": [
+    {
+      "id": "GCHVocImoXoEVnzP",
+      "name": "🛠️ In progress",
+      "createdAt": "2023-10-31T02:17:21.618Z",
+      "updatedAt": "2023-10-31T02:17:21.618Z"
+    },
+    {
+      "id": "QPJKatvLSxxtrE8U",
+      "name": "Secops",
+      "createdAt": "2023-10-31T02:15:11.396Z",
+      "updatedAt": "2023-10-31T02:15:11.396Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "f170068a-4540-4fbd-bd17-00a6367989d1",
+      "name": "When clicking \"Execute Workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -1760,
+        560
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "5a1e0490-6971-4490-a806-46da5e226365",
+      "name": "sends slack message",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        -360,
+        1280
+      ],
+      "parameters": {
+        "text": "=*Email Analysis*\n\nSubject: {{ $('Microsoft Outlook').item.json[\"subject\"] }}\nFrom: {{ $('Microsoft Outlook').item.json[\"sender\"][\"emailAddress\"][\"address\"] }}\nDate: {{ $('Microsoft Outlook').item.json[\"sentDateTime\"] }}\n\nReport:\n\n*URLScan Report URL:* {{ $('urlscan.io').item.json.result ? $('urlscan.io').item.json.result : \"N/A\" }}\n*Virustotal report:* https://www.virustotal.com/gui/url/{{ $json[\"data\"][\"id\"].split(\"-\")[1] }}\n*Virustotal Verdict:* {{ $json.data.attributes.stats.malicious + $json.data.attributes.stats.suspicious }} / {{ Object.keys($json.data.attributes.results).length }}",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "test-giulio-public"
+        },
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "<slackApi-id>",
+          "name": "Slack Bot Token | Giulio [✅ Share ok]"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "65e70f8a-7514-455e-97bf-b11514b4eec2",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -1020,
+        480
+      ],
+      "parameters": {
+        "options": {},
+        "batchSize": 1
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "35084825-f3b2-4a01-b953-712c099a6451",
+      "name": "Mark as read",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "position": [
+        -1300,
+        560
+      ],
+      "parameters": {
+        "messageId": "={{ $json.id }}",
+        "operation": "update",
+        "updateFields": {
+          "isRead": true
+        }
+      },
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "<microsoftOutlookOAuth2Api-id>",
+          "name": "Microsoft Outlook | Giulio [✅ Share ok]"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "62098c94-5735-4eed-a712-3f9887e0400f",
+      "name": "VirusTotal: Scan URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -220,
+        700
+      ],
+      "parameters": {
+        "url": "https://www.virustotal.com/api/v3/urls",
+        "method": "POST",
+        "options": {},
+        "sendQuery": true,
+        "authentication": "predefinedCredentialType",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.domain }}"
+            }
+          ]
+        },
+        "nodeCredentialType": "virusTotalApi"
+      },
+      "credentials": {
+        "virusTotalApi": {
+          "id": "<virusTotalApi-id>",
+          "name": "Virus Total | Giulio [✅ Share ok]"
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "55b7ce97-3609-4a16-b998-8bec77cffb59",
+      "name": "VirusTotal: Get report",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        200,
+        700
+      ],
+      "parameters": {
+        "url": "=https://www.virustotal.com/api/v3/analyses/{{ $json.data.id }}",
+        "options": {},
+        "sendQuery": true,
+        "authentication": "predefinedCredentialType",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "resource",
+              "value": "https://developers.virustotal.com/v2.0/reference/url-report"
+            }
+          ]
+        },
+        "nodeCredentialType": "virusTotalApi"
+      },
+      "credentials": {
+        "virusTotalApi": {
+          "id": "<virusTotalApi-id>",
+          "name": "Virus Total | Giulio [✅ Share ok]"
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "7bf3c7a0-94f9-410b-b0fe-e0d15d0ba895",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -1760,
+        380
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "741f3221-bb73-4004-801e-e9c3030740f8",
+      "name": "Find indicators of compromise",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -780,
+        440
+      ],
+      "parameters": {
+        "language": "python",
+        "pythonCode": "try:\n  from ioc_finder import find_iocs\nexcept ImportError:\n  import micropip\n  await micropip.install(\"ioc-finder\")\n  from ioc_finder import find_iocs\n\ntext = _input.first().json['body']['content']\nprint(text)\n\niocs = find_iocs(text)\n\nreturn [{\"json\": { \"domain\": item }} for item in iocs[\"urls\"]]"
+      },
+      "typeVersion": 2,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "bf8ba285-e824-4104-82e0-fa2dba80f301",
+      "name": "URLScan: Get report",
+      "type": "n8n-nodes-base.urlScanIo",
+      "position": [
+        640,
+        60
+      ],
+      "parameters": {
+        "scanId": "={{ $json.scanId }}",
+        "operation": "get"
+      },
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "<urlScanIoApi-id>",
+          "name": "urlscan.io | Giulio [✅ Share ok]"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "eb3b06e8-ffe3-4472-a70c-08fb2555e0fb",
+      "name": "URLScan: Scan URL",
+      "type": "n8n-nodes-base.urlScanIo",
+      "position": [
+        -100,
+        120
+      ],
+      "parameters": {
+        "url": "={{ $json.domain }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "<urlScanIoApi-id>",
+          "name": "urlscan.io | Giulio [✅ Share ok]"
+        }
+      },
+      "typeVersion": 1,
+      "continueOnFail": true
+    },
+    {
+      "id": "34157694-635a-481b-b7d2-dcd4628b26fe",
+      "name": "Has URL?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -520,
+        440
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.domain }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "33cad369-0598-433e-90f8-0e7333ec5e92",
+      "name": "No error?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        240,
+        120
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.error }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "cba20d52-a56c-4ac0-99f2-d9b54adb342e",
+      "name": "Not empty?",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        -640,
+        1280
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.data }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "33299274-9f02-4ea0-af60-5dee53db2c34",
+      "name": "Wait 1 Minute",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        480,
+        60
+      ],
+      "webhookId": "469a8b5e-8b5a-4360-bc9d-3b253cc0ae24",
+      "parameters": {
+        "unit": "seconds",
+        "amount": 60
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "a2a0dc81-b1f0-4d7b-b818-71bae58512a9",
+      "name": "Get all unread messages",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "position": [
+        -1520,
+        560
+      ],
+      "parameters": {
+        "operation": "getAll",
+        "additionalFields": {
+          "filter": "isRead eq false"
+        }
+      },
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "<microsoftOutlookOAuth2Api-id>",
+          "name": "Microsoft Outlook | Giulio [✅ Share ok]"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c8d5c248-77ba-4a7f-ab21-19ff8d60ed55",
+      "name": "Merge Reports",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1040,
+        680
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combinationMode": "mergeByPosition"
+      },
+      "typeVersion": 2.1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Has URL?": {
+      "main": [
+        [
+          {
+            "node": "URLScan: Scan URL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "VirusTotal: Scan URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No error?": {
+      "main": [
+        [
+          {
+            "node": "Merge Reports",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 1 Minute",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Not empty?": {
+      "main": [
+        [
+          {
+            "node": "sends slack message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark as read": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Reports": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1 Minute": {
+      "main": [
+        [
+          {
+            "node": "URLScan: Get report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get all unread messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Find indicators of compromise",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not empty?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URLScan: Scan URL": {
+      "main": [
+        [
+          {
+            "node": "No error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URLScan: Get report": {
+      "main": [
+        [
+          {
+            "node": "Merge Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VirusTotal: Scan URL": {
+      "main": [
+        [
+          {
+            "node": "VirusTotal: Get report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VirusTotal: Get report": {
+      "main": [
+        [
+          {
+            "node": "Merge Reports",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get all unread messages": {
+      "main": [
+        [
+          {
+            "node": "Mark as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find indicators of compromise": {
+      "main": [
+        [
+          {
+            "node": "Has URL?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \"Execute Workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Get all unread messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

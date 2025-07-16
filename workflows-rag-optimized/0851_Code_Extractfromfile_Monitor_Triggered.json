@@ -1,0 +1,593 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "f5a2d1e7-f73b-4bfa-8e02-f30db275bbcc",
+      "name": "Extract Purchase Order Details",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        1500,
+        920
+      ],
+      "parameters": {
+        "text": "={{ $json.table }}",
+        "options": {
+          "systemPromptTemplate": "Capture the values as seen. Do not convert dates."
+        },
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"purchase_order_number\": { \"type\": \"string\" },\n    \"purchase_order_date\": { \"type\": \"string\" },\n    \"purchase_order_total\": { \"type\": \"number\" },\n    \"vendor_name\": { \"type\": \"string\" },\n    \"vendor_address\": { \"type\": \"string\" },\n    \"vendor_contact\": { \"type\": \"string\" },\n    \"delivery_contact\": { \"type\": \"string\" },\n    \"delivery_address\": { \"type\": \"string\" },\n    \"delivery_method\": { \"type\": \"string\" },\n    \"items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"description\": { \"type\": \"string\" },\n          \"part_number\": { \"type\": \"string\" },\n          \"quantity\": { \"type\": \"number\" },\n          \"unit\": { \"type\": \"number\" },\n          \"unit_price\": { \"type\": \"number\" }\n        }\n      }\n    }\n  }\n}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "0ce545f0-8147-4ad2-bb9e-14ef0b0c26ef",
+      "name": "Is Excel Document?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        760,
+        1020
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "f723ab0a-8f2d-4501-8273-fd6455c57cdd",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $binary.data.mimeType }}",
+              "rightValue": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "ef8b00eb-dba6-47dd-a825-1aa5c85ee215",
+      "name": "Run Checks",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2160,
+        940
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "049c7aca-7663-4eed-93b4-9eec3760c058",
+              "name": "has_po_number",
+              "type": "boolean",
+              "value": "={{ Boolean($json.output.purchase_order_number) }}"
+            },
+            {
+              "id": "94d2224a-cf81-4a42-acd0-de5276a5e493",
+              "name": "has_valid_po_date",
+              "type": "boolean",
+              "value": "={{ $json.output.purchase_order_date.toDateTime() < $now.plus({ 'day': 1 }) }}"
+            },
+            {
+              "id": "a8f69605-dad6-4ec2-a22f-d13ff99e27cd",
+              "name": "has_items",
+              "type": "boolean",
+              "value": "={{ $json.output.items.length > 0 }}"
+            },
+            {
+              "id": "c11db99e-9cc2-40b7-b3a5-f3c65f88dc13",
+              "name": "is_math_correct",
+              "type": "boolean",
+              "value": "={{\n$json.output.items.map(item => item.unit_price * item.quantity).sum().round(2) === $json.output.purchase_order_total.round(2) }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "801848cc-558c-4a30-aab5-eb403564b68f",
+      "name": "Is Valid Purchase Order?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2360,
+        940
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "11fa8087-7809-4bc9-9fbe-32bfd35821a6",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.has_po_number }}",
+              "rightValue": ""
+            },
+            {
+              "id": "c45ae85a-e060-4416-aa2c-daf58db8ba0e",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.has_valid_po_date }}",
+              "rightValue": ""
+            },
+            {
+              "id": "d0ae9518-2f4b-43fb-87b1-7108a6a75424",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.has_items }}",
+              "rightValue": ""
+            },
+            {
+              "id": "eed09f78-ce1a-4e09-8940-febcf7e41078",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.is_math_correct }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "7c7dd7a0-45fe-4549-8341-3b3fd18e1725",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        980,
+        920
+      ],
+      "parameters": {
+        "options": {
+          "rawData": true,
+          "headerRow": false,
+          "includeEmptyCells": true
+        },
+        "operation": "xlsx"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "dfb6b00f-fe50-42d6-8597-8fdcb562714b",
+      "name": "XLSX to Markdown Table",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1180,
+        920
+      ],
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(item => item.json.row);\nconst maxLength = Math.max(...rows.map(row => row.length));\n\nconst table = [\n  '|' + rows[0].join('|') + '|',\n  '|' + Array(maxLength).fill(0).map(_ => '-').join('|') + '|',\n  rows.slice(1, rows.length)\n    .filter(row => row.some(Boolean))\n    .map(row =>\n      '|' + row.join('|') + '|'\n    ).join('\\n')\n].join('\\n')\n\nreturn { table }"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "1a3de516-1d21-4664-b2e3-8c8d6ec90ef2",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1600,
+        1080
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "79a39a03-5f71-4021-bcfd-06edbc285e8a",
+      "name": "Reply Invalid Format",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "position": [
+        980,
+        1120
+      ],
+      "webhookId": "9464583e-9505-49ec-865e-58aa1ab3c2ed",
+      "parameters": {
+        "message": "PO rejected due to invalid file format. Please try again with XLSX.",
+        "options": {},
+        "messageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Outlook Trigger').first().json.id }}"
+        },
+        "operation": "reply",
+        "additionalFields": {},
+        "replyToSenderOnly": true
+      },
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "<microsoftOutlookOAuth2Api-id>",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "ec973438-4d6c-4d2e-8702-1d195f514528",
+      "name": "Outlook Trigger",
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "position": [
+        -120,
+        920
+      ],
+      "parameters": {
+        "fields": [
+          "body",
+          "categories",
+          "conversationId",
+          "from",
+          "hasAttachments",
+          "internetMessageId",
+          "sender",
+          "subject",
+          "toRecipients",
+          "receivedDateTime",
+          "webLink"
+        ],
+        "output": "fields",
+        "filters": {
+          "hasAttachments": true,
+          "foldersToInclude": []
+        },
+        "options": {
+          "downloadAttachments": true
+        },
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "<microsoftOutlookOAuth2Api-id>",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "fcb173ce-7dad-497a-9376-9650c2a24a84",
+      "name": "Reply Rejection",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "position": [
+        2580,
+        1040
+      ],
+      "webhookId": "9464583e-9505-49ec-865e-58aa1ab3c2ed",
+      "parameters": {
+        "message": "=PO Rejected due to the following errors:\n{{\n[\n  !$json.has_po_number ? '* PO number was not provided' : '',\n  !$json.has_valid_po_date ? '* PO date was missing or invalid' : '',\n  !$json.has_items ? '* No line items detected' : '',\n  !$json.is_math_correct ? '* Line items prices do not match up to PO total' : ''\n]\n  .compact()\n  .join('\\n')\n}}",
+        "options": {},
+        "messageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Outlook Trigger').first().json.id }}"
+        },
+        "operation": "reply",
+        "additionalFields": {},
+        "replyToSenderOnly": true
+      },
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "<microsoftOutlookOAuth2Api-id>",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "64ced193-6b12-4ee9-b1e2-735040648051",
+      "name": "Reply Accepted",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "position": [
+        2580,
+        820
+      ],
+      "webhookId": "9464583e-9505-49ec-865e-58aa1ab3c2ed",
+      "parameters": {
+        "message": "=Thank you for the purchase order.\nThis is an automated reply.",
+        "options": {},
+        "messageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Outlook Trigger').first().json.id }}"
+        },
+        "operation": "reply",
+        "additionalFields": {},
+        "replyToSenderOnly": true
+      },
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "<microsoftOutlookOAuth2Api-id>",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "7bfe0e44-cd5d-4290-ba2e-0064c95bc4e2",
+      "name": "Do Something with Purchase Order",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        2800,
+        940
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "6f517f2f-6072-46a2-8a9d-cca4e958d601",
+      "name": "Fix Excel Dates",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1840,
+        920
+      ],
+      "parameters": {
+        "mode": "raw",
+        "options": {},
+        "jsonOutput": "={{\n{\n  output: {\n    ...$json.output,\n    purchase_order_date: $json.output.purchase_order_date\n      ? new Date((new Date(1900, 0, 1)).getTime() + (Number($json.output.purchase_order_date) - 2) * (24 * 60 * 60 * 1000))\n      : $json.output.purchase_order_date\n  }\n}\n}}"
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "bb395dfc-2831-4e57-90c9-62f13f84302e",
+      "name": "Is Submitting a Purchase Order?",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "position": [
+        80,
+        920
+      ],
+      "parameters": {
+        "options": {
+          "fallback": "other"
+        },
+        "inputText": "=from: {{ $json.from.emailAddress.name }} <{{ $json.from.emailAddress.address }}>\nsubject: {{ $json.subject }}\nmessage:\n{{ $json.body.content }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "is_purchase_order",
+              "description": "The message's intent is to submit a purchase order"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e52ec2e2-8be5-40ab-b1f8-8d7c0b161e1a",
+      "name": "Do Nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        420,
+        1040
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "5ca6be4e-bc33-42d7-91bc-d30f7ccfdd25",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        180,
+        1080
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.2
+    }
+  ],
+  "connections": {
+    "Run Checks": {
+      "main": [
+        [
+          {
+            "node": "Is Valid Purchase Order?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Accepted": {
+      "main": [
+        [
+          {
+            "node": "Do Something with Purchase Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Excel Dates": {
+      "main": [
+        [
+          {
+            "node": "Run Checks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outlook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Submitting a Purchase Order?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "XLSX to Markdown Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Purchase Order Details",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Excel Document?": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Invalid Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Is Submitting a Purchase Order?",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XLSX to Markdown Table": {
+      "main": [
+        [
+          {
+            "node": "Extract Purchase Order Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid Purchase Order?": {
+      "main": [
+        [
+          {
+            "node": "Reply Accepted",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Purchase Order Details": {
+      "main": [
+        [
+          {
+            "node": "Fix Excel Dates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Submitting a Purchase Order?": {
+      "main": [
+        [
+          {
+            "node": "Is Excel Document?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Do Nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

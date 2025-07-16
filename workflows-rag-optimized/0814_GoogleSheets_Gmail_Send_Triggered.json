@@ -1,0 +1,271 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "40c6e16a-3b4f-4e28-b0a1-7066e0efab5d",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -460,
+        -80
+      ],
+      "parameters": {
+        "text": "=Email Subject:  {{ $json.subject }}\nEmail Body: \n{{ $json.text }}",
+        "options": {
+          "systemMessage": "=You are an assistant that processes emails related to inbound orders from Hermas.\n\nEach email has the subject line containing a purchase order reference (e.g., \"PO45231\").\nIn the email body, you will find:\n\nAn expected delivery date, typically in formats like 27/03/2025 or 2025-03-27.\n\nOne or more order lines, where each line contains:\n\nAn SKU (e.g., HERM-SHOE-001)\n\nA quantity (e.g., 120)\n\nYour goal is to extract the following fields:\n\npurchase_order: The PO number from the subject line (e.g., PO45231)\n\nexpected_delivery_date: In ISO format (e.g., 2025-03-27)\n\nlines: A list of objects with sku and quantity for each order line\n\nReturn your output strictly as a valid JSON object using the format below."
+        },
+        "promptType": "define",
+        "hasOutputParser": true
+      },
+      "typeVersion": 1.8
+    },
+    {
+      "id": "e9cb7bb1-40e7-463e-8b3f-417602338e5c",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -520,
+        120
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "468bdb39-223f-4bae-8bdb-a72272ab57c3",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        -180,
+        120
+      ],
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"purchase_order\": \"PO45231\",\n  \"expected_delivery_date\": \"2025-03-27\",\n  \"lines\": [\n    { \"sku\": \"HERM-SHOE-001\", \"quantity\": 120 },\n    { \"sku\": \"HERM-BAG-032\", \"quantity\": 45 },\n    { \"sku\": \"HERM-WATCH-105\", \"quantity\": 30 },\n    { \"sku\": \"HERM-SCARF-018\", \"quantity\": 80 }\n  ]\n}\n"
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "776cfc0e-264b-44cc-b534-dc387b0c9fce",
+      "name": "Store Purchase Order Lines",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        180,
+        -80
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "SKU_ID": "={{ $json.sku }}",
+            "QUANTITY": "={{ $json.quantity }}",
+            "PO_NUMBER": "={{ $json.purchase_order }}",
+            "EXPECTED_DELIVERY DATE": "={{ $json.expected_delivery_date }}"
+          },
+          "schema": [
+            {
+              "id": "PO_NUMBER",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "PO_NUMBER",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EXPECTED_DELIVERY DATE",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "EXPECTED_DELIVERY DATE",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SKU_ID",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "SKU_ID",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "QUANTITY",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "QUANTITY",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "=",
+          "cachedResultName": "="
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1HnaJJ-DqzqgWJo2YwQDcgB6BgWiU6eMlnGvv4kapubg",
+          "cachedResultUrl": "=",
+          "cachedResultName": "="
+        }
+      },
+      "notesInFlow": true,
+      "typeVersion": 4.5
+    },
+    {
+      "id": "d5c52625-fef2-47a9-b2a4-bf005d8b9e05",
+      "name": "Email Received",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "position": [
+        -980,
+        -80
+      ],
+      "parameters": {
+        "simple": false,
+        "filters": {},
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "6dc9e5cc-9ab3-469c-ad93-e0e7817ccbf7",
+      "name": "Is PO?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -760,
+        -80
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "f300ae2b-5de4-4efc-88ae-130a957588cb",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "Inbound Order"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "385db736-0867-46b9-9274-380e7c255fc4",
+      "name": "Format Purchase Order Lines",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -120,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const {purchase_order, expected_delivery_date, lines} = $input.first().json.output;\n\nreturn lines.map( line => ({\n  json: {\n    purchase_order,\n    expected_delivery_date,\n    sku: line.sku,\n    quantity: line.quantity\n  }\n}))\n"
+      },
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "Is PO?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Purchase Order Lines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Received": {
+      "main": [
+        [
+          {
+            "node": "Is PO?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Purchase Order Lines": {
+      "main": [
+        [
+          {
+            "node": "Store Purchase Order Lines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

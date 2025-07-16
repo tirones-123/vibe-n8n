@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "40216649-af2c-44df-83c6-75afe75dcdaf",
+      "name": "On new event",
+      "type": "n8n-nodes-base.calendlyTrigger",
+      "position": [
+        400,
+        240
+      ],
+      "webhookId": "28087fc9-e623-48fe-949e-e002cbc7a817",
+      "parameters": {
+        "events": [
+          "invitee.created"
+        ]
+      },
+      "credentials": {
+        "calendlyApi": {
+          "id": "<calendlyApi-id>",
+          "name": "[UPDATE ME]"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "46914a34-984e-4736-b2a3-6e97555b73c7",
+      "name": "Create/update contact",
+      "type": "n8n-nodes-base.mautic",
+      "position": [
+        620,
+        240
+      ],
+      "parameters": {
+        "email": "={{$node[\"On new event\"].json[\"payload\"][\"email\"]}}",
+        "options": {},
+        "firstName": "={{$json[\"payload\"][\"name\"]}}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "mauticApi": {
+          "id": "<mauticApi-id>",
+          "name": "[UPDATE ME]"
+        }
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "On new event": {
+      "main": [
+        [
+          {
+            "node": "Create/update contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

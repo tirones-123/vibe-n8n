@@ -1,115 +1,179 @@
-# n8n AI Assistant Backend
+# 🚀 n8n Workflow RAG Backend
 
-Backend API pour l'extension Chrome n8n AI Assistant. Ce backend fait le pont entre l'extension Chrome et l'API Claude d'Anthropic pour permettre la création et modification de workflows n8n en langage naturel.
+Backend API pour la génération de workflows n8n basé sur l'IA. Ce système utilise RAG (Retrieval-Augmented Generation) pour créer des workflows personnalisés en s'inspirant d'une base de 2055+ exemples réels.
 
-## 🚀 Fonctionnalités
+## 🎯 Qu'est-ce que c'est ?
 
-- **Génération de workflows n8n** : Création de workflows complets à partir de descriptions en langage naturel
-- **Modification intelligente** : Modification de workflows existants avec des commandes naturelles
-- **Node-Types dynamiques** : Synchronisation hebdomadaire avec n8n:latest pour toujours avoir les derniers nodes
-- **Compatibilité garantie** : Utilise les versions exactes des nodes de votre instance n8n
-- **Streaming en temps réel** : Réponses en streaming via Server-Sent Events
-- **Sécurisé** : Authentification par token Bearer
+Ce backend permet de :
+- **Décrire en langage naturel** le workflow n8n que vous voulez créer
+- **Rechercher automatiquement** des workflows similaires dans une base vectorielle (Pinecone)
+- **Générer un nouveau workflow** adapté à vos besoins avec Claude AI
+- **Télécharger le workflow** prêt à importer dans n8n
 
-## 📋 Prérequis
+## 🏗️ Architecture
 
-- Node.js 18+ installé
-- Un compte Anthropic avec accès à l'API Claude
-- (Optionnel mais recommandé) Un compte OpenAI pour les embeddings
-- (Optionnel mais recommandé) Un compte Pinecone pour le stockage vectoriel
-- Un compte Railway pour le déploiement
-
-
-## 🛠️ Installation
-
-### 1. Cloner le repository
-```bash
-git clone <your-repo-url>
-cd cursor-n8n-backend
+```
+cursor-n8n-backend/
+├── api/
+│   ├── claude.js               # API principale pour génération de workflows
+│   ├── index.js               # Page d'accueil
+│   └── rag/
+│       └── workflow-rag-service.js  # Service RAG principal
+├── workflows/                 # 2055 workflows d'exemple
+└── vibe-n8n-chrome-extension/ # Extension Chrome (optionnelle)
 ```
 
-### 2. Installer les dépendances
+## 🔧 Installation
+
+### Prérequis
+
+- Node.js (v16+)
+- Clés API :
+  - **Pinecone** : Pour la base de données vectorielle
+  - **OpenAI** : Pour les embeddings
+  - **Anthropic (Claude)** : Pour la génération de workflows
+
+### Configuration
+
+1. **Créer un fichier `.env`** à la racine :
+```env
+# Obligatoire pour le système RAG
+PINECONE_API_KEY=votre_clé_pinecone
+OPENAI_API_KEY=votre_clé_openai
+CLAUDE_API_KEY=votre_clé_anthropic
+PINECONE_WORKFLOW_INDEX=n8n-workflows
+
+# Authentification backend
+BACKEND_API_KEY=votre-token-securise
+```
+
+2. **Installer les dépendances** :
 ```bash
 npm install
 ```
 
-### 3. Configurer les variables d'environnement
-```bash
-cp env.example .env
-```
+3. **Vérifier que l'index Pinecone existe** avec vos workflows indexés
 
-Éditer `.env` et ajouter vos clés :
+## 🚀 Utilisation
 
-#### Configuration minimale (sans RAG)
-```env
-# OBLIGATOIRE
-CLAUDE_API_KEY=sk-ant-api03-...  # Obtenir sur https://console.anthropic.com/
-BACKEND_API_KEY=your-secure-token  # Générer avec: openssl rand -hex 32
-```
+### Démarrer le backend
 
-#### Configuration complète (avec RAG Pinecone)
-```env
-# OBLIGATOIRE
-CLAUDE_API_KEY=sk-ant-api03-...
-BACKEND_API_KEY=your-secure-token
-
-# RAG (recommandé pour de meilleures réponses)
-OPENAI_API_KEY=sk-...  # Pour générer les embeddings
-PINECONE_API_KEY=...   # Stockage vectoriel (gratuit jusqu'à 100k vecteurs)
-```
-
-### 4. Lancer en développement
 ```bash
 npm run dev
+# ou pour la production
+npm start
 ```
 
-L'API sera disponible sur `http://localhost:3000/api/claude`
+Le backend démarre sur http://localhost:3000
 
-## 🔍 Configuration du système Node-Types
+### API Endpoints
 
-Le système Node-Types synchronise automatiquement les métadonnées des nodes n8n pour garantir la compatibilité.
+#### Génération de workflow
+```
+POST /api/claude
+```
 
-### Étapes de configuration :
+**Headers requis :**
+```javascript
+{
+  'Authorization': 'Bearer YOUR_BACKEND_API_KEY',
+  'Content-Type': 'application/json'
+}
+```
 
-1. **Créer un compte Pinecone gratuit**
-   - Aller sur [pinecone.io](https://www.pinecone.io/)
-   - Le plan gratuit permet 100k vecteurs (largement suffisant)
+**Body de la requête :**
+```json
+{
+  "prompt": "Créer un workflow qui synchronise Slack avec Notion"
+}
+```
 
-2. **Obtenir une clé OpenAI**
-   - Nécessaire pour générer les embeddings des nodes
-   - Coût minimal (~$0.01 pour indexer tous les nodes)
+**Réponse :**
+```json
+{
+  "prompt": "Créer un workflow qui synchronise Slack avec Notion",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "pineconeResults": {
+    "total": 5,
+    "workflows": [...]
+  },
+  "generationResult": {
+    "success": true,
+    "workflow": {...},
+    "basedOn": ["Workflow 1", "Workflow 2"]
+  }
+}
+```
 
-3. **Première indexation**
-   ```bash
-   # Si vous avez n8n en local
-   npm run update-nodes
-   
-   # Sinon, avec Docker
-   npm run update-nodes:docker
-   ```
+Le workflow complet est directement dans `generationResult.workflow` et peut être utilisé immédiatement.
 
-4. **Mise à jour automatique**
-   - Railway exécute automatiquement `npm run cron:weekly` tous les lundis
-   - Les nodes sont toujours synchronisés avec n8n:latest
+### Exemples de prompts
 
-### Fonctionnement :
+- "Créer un workflow qui synchronise Slack avec Notion"
+- "Bot Discord qui utilise ChatGPT pour répondre aux messages"
+- "Automatiser la création d'articles de blog avec GPT-4 et Perplexity"
+- "Workflow pour analyser des tweets et créer un rapport hebdomadaire"
+- "Pipeline de traitement de fichiers CSV avec envoi par email"
 
-1. **Récupération** : Appel à `/rest/node-types` de n8n pour obtenir tous les nodes
-2. **Indexation** : Chaque node est stocké avec son ID unique `nodeName|vX`
-3. **Identification** : Claude Haiku identifie les nodes mentionnés dans le prompt
-4. **Enrichissement** : Les métadonnées exactes sont ajoutées au contexte
-5. **Génération** : Claude Opus crée le workflow avec les bonnes versions
+## 🧠 Comment ça fonctionne ?
 
-## 📦 Déploiement sur Railway
+### 1. Embedding & Recherche
+- Votre prompt est converti en vecteur avec OpenAI Embeddings (`text-embedding-3-small`)
+- Pinecone recherche les workflows les plus similaires (top 10, score minimum 0.3)
+- Les métadonnées incluent : nom, types de nœuds, description
 
-Railway est recommandé car il n'a pas de limite de timeout (contrairement à Vercel).
+### 2. Chargement des exemples
+- Les 3 workflows les plus pertinents sont chargés depuis le disque
+- Le JSON complet de chaque workflow est récupéré
+
+### 3. Génération avec Claude
+- Claude reçoit :
+  - Votre description
+  - Les 3 workflows d'exemple complets
+  - Des instructions pour générer un nouveau workflow
+- Claude génère un workflow JSON valide et fonctionnel
+
+### 4. Réponse API
+- Le workflow généré est renvoyé directement dans la réponse JSON
+- Prêt à être utilisé immédiatement par le client
+
+## 📊 Base de données
+
+- **2055 workflows** d'exemples réels
+- **Catégories variées** : automatisation, intégration, IA, données, etc.
+- **Indexés dans Pinecone** avec embeddings OpenAI
+
+## 🔍 Détails techniques
+
+### Service RAG (`api/rag/workflow-rag-service.js`)
+
+```javascript
+// Recherche de workflows similaires
+async findSimilarWorkflows(description, topK = 5)
+
+// Génération basée sur des exemples
+async generateWorkflowFromExamples(description, options)
+
+// Recherche simple
+async searchWorkflows(query, options)
+```
+
+### Modèles utilisés
+
+- **Embeddings** : `text-embedding-3-small` (OpenAI)
+- **Génération** : `claude-sonnet-4-20250514` (Anthropic)
+- **Température** : 0.3 (pour des résultats cohérents)
+
+## 📡 Déploiement sur Railway
+
+Railway est recommandé car il n'a pas de limite de timeout.
 
 ### Déploiement rapide :
 
 1. **Pusher sur GitHub**
 ```bash
 git add .
-git commit -m "Initial commit"
+git commit -m "Deploy RAG workflow system"
 git push origin main
 ```
 
@@ -124,103 +188,9 @@ Dans Railway, ajouter toutes les variables de votre `.env`
 4. **URL publique**
 Railway génère automatiquement une URL `https://your-app.railway.app/`
 
-4. **URL publique acutelle**
-actuellement c'est `https://vibe-n8n-production.up.railway.app`
-
-## 💾 Configuration du Volume Railway (IMPORTANT)
-
-Le système utilise un volume persistant pour stocker les données complètes des nodes n8n sans limite de taille. Ceci est crucial pour les nodes volumineux comme Slack qui dépassent la limite de 40KB de Pinecone.
-
-### Configuration du volume :
-
-1. **Dans Railway Dashboard** :
-   - Aller dans votre projet
-   - Cliquer sur votre service
-   - Onglet "Volumes"
-   - Cliquer "Create Volume"
-   - Nom : `node-types-storage`
-   - Mount path : `/data`
-   - Cliquer "Create"
-
-2. **Variable d'environnement** :
-   Railway configure automatiquement `RAILWAY_VOLUME_MOUNT_PATH=/data`
-
-3. **Structure du stockage** :
-   ```
-   /data/
-   └── node-types/
-       ├── n8n-nodes-base.slack_v4.json (80KB+)
-       ├── n8n-nodes-base.httpRequest_v5.json
-       └── ... (831+ fichiers JSON)
-   ```
-
-### Avantages du système hybride :
-
-- **Pinecone** : Recherche rapide par embeddings (métadonnées uniquement)
-- **Volume Railway** : Stockage illimité des données complètes
-- **Performance** : Les gros nodes comme Slack sont stockés intégralement
-- **Fiabilité** : Pas de troncature JSON, pas d'erreurs de parsing
-
-### Vérifier le bon fonctionnement :
-
-```bash
-# Tester le stockage des gros nodes
-npm run test:volume
-
-# Vérifier les logs Railway
-railway logs --filter="Node sauvegardé"
-```
-
-## 📡 Utilisation de l'API
-
-### Endpoint principal
-```
-POST https://your-app.railway.app/api/claude
-```
-
-### Headers requis
-```javascript
-{
-  'Authorization': 'Bearer YOUR_BACKEND_API_KEY',
-  'Content-Type': 'application/json'
-}
-```
-
-### Body de la requête
-```json
-{
-  "prompt": "Crée un workflow qui envoie un email tous les matins",
-  "context": {
-    "nodes": [],
-    "connections": {}
-  },
-  "tools": [],
-  "mode": "create",
-  "versions": {
-    "gmail": 2,
-    "schedule": 1,
-    "httpRequest": 5
-    // ... mapping complet des versions
-  }
-}
-```
-
-### Exemple avec cURL
-```bash
-curl -X POST https://your-app.railway.app/api/claude \
-  -H "Authorization: Bearer YOUR_BACKEND_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "Crée un workflow simple avec un webhook trigger",
-    "context": {},
-    "tools": [],
-    "mode": "create"
-  }'
-```
-
 ## 🔧 Configuration de l'extension Chrome
 
-Mettre à jour `src/config.js` dans l'extension :
+Si vous utilisez l'extension Chrome (optionnelle), mettre à jour `vibe-n8n-chrome-extension/src/config.js` :
 
 ```javascript
 const CONFIG = {
@@ -240,67 +210,88 @@ Réponse attendue :
 ```json
 {
   "status": "ok",
-  "environment": {
-    "claude_configured": true,
-    "backend_auth_configured": true,
-    "openai_configured": true,
-    "pinecone_configured": true,
-    "rag_available": true
-  }
+  "environment": "RAG Workflow Backend"
 }
 ```
 
-### Logs Railway
+### Tester la génération
 ```bash
-railway logs --follow
+curl -X POST https://your-app.railway.app/api/claude \
+  -H "Authorization: Bearer YOUR_BACKEND_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Créer un workflow simple avec un webhook trigger"
+  }'
 ```
 
 ## 🚨 Troubleshooting
 
-### Les node-types ne se chargent pas
-1. Vérifier que `OPENAI_API_KEY` et `PINECONE_API_KEY` sont configurées
-2. Exécuter `npm run update-nodes` pour indexer manuellement
-3. Vérifier que n8n est accessible sur le port configuré
+### Erreur "No similar workflows found"
+- Vérifiez que l'index Pinecone contient des données
+- Vérifiez les variables `PINECONE_API_KEY` et `PINECONE_WORKFLOW_INDEX`
 
-### Erreur "Index not found" Pinecone
-- L'index sera créé automatiquement lors de la première mise à jour
-- Attendre 1-2 minutes que l'index soit prêt
+### Erreur de génération Claude
+- Vérifiez `CLAUDE_API_KEY`
+- Vérifiez que vous avez suffisamment de crédits Claude
 
-### Versions incorrectes
-- L'extension doit envoyer le mapping `versions` dans chaque requête
-- Vérifier que l'extension récupère bien les node-types au chargement
+### Workflows introuvables
+- Vérifiez que le dossier `workflows/` contient les 2055 fichiers JSON
+- Vérifiez les permissions de lecture
 
-### Performances lentes
-- La première requête après déploiement peut être lente (cold start)
-- L'indexation initiale prend 2-3 minutes
-- Les requêtes suivantes sont rapides (~1-2s)
+### Variables d'environnement manquantes
+```bash
+# Vérifier la configuration
+echo $PINECONE_API_KEY
+echo $CLAUDE_API_KEY
+echo $OPENAI_API_KEY
+```
 
-## 🎯 Optimisations possibles
+## 🎯 Structure d'un workflow n8n
 
-1. **Cache local** : Ajouter Redis pour cacher les embeddings fréquents
-2. **Modèle d'embeddings** : Utiliser `text-embedding-3-large` pour plus de précision
-3. **Chunking** : Ajuster `CHUNK_SIZE` selon vos besoins
-4. **Filtres** : Utiliser les métadonnées Pinecone pour filtrer par type de node
+```json
+{
+  "name": "Mon Workflow",
+  "nodes": [
+    {
+      "id": "unique-id",
+      "name": "Nom du nœud",
+      "type": "n8n-nodes-base.webhook",
+      "position": [x, y],
+      "parameters": { ... }
+    }
+  ],
+  "connections": {
+    "Nom du nœud": {
+      "main": [[{ "node": "Autre nœud", "type": "main", "index": 0 }]]
+    }
+  }
+}
+```
+
+## 🚀 Évolutions possibles
+
+- Interface web intégrée
+- Support multi-langues
+- Fine-tuning sur des workflows spécifiques
+- Export direct vers n8n
+- Validation avancée des workflows
+- Indexation automatique de nouveaux workflows
 
 ## 📄 License
 
-MIT License - Voir LICENSE pour plus de détails 
+MIT License - Voir LICENSE pour plus de détails
 
-## 🔌 Option : Utiliser un MCP distant sans process local
+---
 
-Depuis mai 2025, Claude peut se connecter directement à un serveur MCP public via le paramètre `mcp_servers` de l’API Messages (bêta `mcp-client-2025-04-04`).
+## Migration depuis l'ancien système
 
-Pour activer ce mode dans le backend :
+Ce backend remplace entièrement l'ancien système MCP/node-types. Principales différences :
 
-1. Dans `.env` :
-   ```env
-   USE_REMOTE_MCP=true
-   MCP_SERVER_URL=https://gitmcp.io/czlonkowski/n8n-mcp
-   MCP_SERVER_NAME=n8n-docs       # identifiant interne coté Claude
-   # MCP_AUTH_TOKEN=...          # à remplir si votre serveur demande un Bearer
-   ```
-2. Redémarrer le backend.
+- ✅ **RAG Workflow** : Génération basée sur 2055 exemples réels
+- ✅ **Claude Sonnet 4** : Modèle le plus récent d'Anthropic  
+- ✅ **Simplicité** : Un seul endpoint `/api/claude`
+- ✅ **Performance** : Recherche vectorielle optimisée
+- ❌ **MCP obsolète** : Plus de dépendance aux outils MCP
+- ❌ **Node-types** : Plus de système de récupération des métadonnées
 
-Le backend ne lance plus `n8n-mcp` en local ; Claude découvrira et appellera les outils directement sur `gitmcp.io`. Cela réduit l’usage mémoire et simplifie le déploiement ; vous n’avez plus besoin du volume Railway pour SQLite si vous n’indexez pas de node-types personnalisés.
-
-⚠️ Les fonctions avancées (notifications, handshake) ne sont pas encore supportées par le connecteur, mais la génération/validation de workflows fonctionne parfaitement. 
+Le nouveau système est plus simple, plus performant et génère des workflows directement utilisables. 

@@ -1,0 +1,99 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "9b5b5af9-8a56-40a3-ad75-1e1186e96439",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        640,
+        360
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "7c99e8d9-ef79-4833-bb0c-5005d210418e",
+      "name": "n8n | Get all executions",
+      "type": "n8n-nodes-base.n8n",
+      "position": [
+        880,
+        360
+      ],
+      "parameters": {
+        "filters": {},
+        "options": {},
+        "resource": "execution",
+        "returnAll": true
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "<n8nApi-id>",
+          "name": "n8n account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "95ae4ed4-22d4-41dc-be75-ea1224985f80",
+      "name": "Convert to CSV",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        1140,
+        360
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "e1bc72a9-3378-4dd4-88b0-3fb4eee1fea8",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1380,
+        360
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Convert to CSV": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n | Get all executions": {
+      "main": [
+        [
+          {
+            "node": "Convert to CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "n8n | Get all executions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

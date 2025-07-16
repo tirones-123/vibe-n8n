@@ -1,0 +1,83 @@
+{
+  "id": "wDD4XugmHIvx3KMT",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Image Generation API",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "d743f947-ad45-4e59-97d4-79b98eaddedb",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        260,
+        -20
+      ],
+      "webhookId": "970dd3c6-de83-46fd-9038-33c470571390",
+      "parameters": {
+        "path": "970dd3c6-de83-46fd-9038-33c470571390",
+        "options": {},
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "832e993e-69e9-475b-8322-776d88da0440",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1400,
+        -20
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "binary"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e8874f52-ef7e-4aea-be5b-81e3276da3d2",
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1120,
+        -20
+      ],
+      "parameters": {
+        "prompt": "={{ $json.query.input }}",
+        "options": {},
+        "resource": "image"
+      },
+      "typeVersion": 1.1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

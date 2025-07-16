@@ -1,0 +1,341 @@
+{
+  "id": "2qIFnWXdHJJs4oBk",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "DSP Certificate w/ Google Forms",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "1f3a1bb2-1e5b-4696-aafc-5b3267d76cbf",
+      "name": "Google Sheets Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "position": [
+        -100,
+        -20
+      ],
+      "parameters": {
+        "event": "rowAdded",
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 1715309269,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WqhSc4sx6GMupZgFo7xKoegXVo3fJVhqrovCQPa1esM/edit#gid=1715309269",
+          "cachedResultName": "Form Responses 1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1WqhSc4sx6GMupZgFo7xKoegXVo3fJVhqrovCQPa1esM"
+        }
+      },
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "<googleSheetsTriggerOAuth2Api-id>",
+          "name": "Google Sheets (jkp@kajonkietsuksa.ac.th)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "385f6b0f-2db0-4a44-816c-c6f6c8ccb493",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        620,
+        180
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "79957ca7-ac5f-4f5b-b921-ddec3cb9f88b",
+      "name": "Extract essential data",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        120,
+        60
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7cdc9108-ab77-4904-a74b-29677b06cc81",
+              "name": "respondentName",
+              "type": "string",
+              "value": "={{ $json['ชื่อ (เป็นภาษาอังกฤษ)'] }}"
+            },
+            {
+              "id": "1800b27a-6cbc-4b82-a17a-87d7d1e7a66e",
+              "name": "respondentEmail",
+              "type": "string",
+              "value": "={{ $json['Email Address'] }}"
+            },
+            {
+              "id": "36cb99ca-7c98-41b5-a2a4-a03ac8d83189",
+              "name": "respondentScore",
+              "type": "number",
+              "value": "={{ $json.Score }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "912838e0-6b35-47a1-8935-dc90b4c59ecb",
+      "name": "Score Checker",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        360,
+        -20
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "286a95ee-1edc-4310-af22-d161e1f04a27",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ $json.respondentScore }}",
+              "rightValue": 3
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "0d4b0fad-046b-4810-9d21-2c30135df6b0",
+      "name": "Copy from your template",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        620,
+        -160
+      ],
+      "parameters": {
+        "name": "={{ $json.respondentName }}'s Certificate",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1J8PxjjspVs7075EfIX6pnNU-TmqtzVV9ymeHoKpbwP0"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "options": {},
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1xMJU-6eiXL53NDgjic2SXecTo6GeUJ-o",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1xMJU-6eiXL53NDgjic2SXecTo6GeUJ-o",
+          "cachedResultName": "KS Google Form -> Certificate System"
+        },
+        "operation": "copy",
+        "sameFolder": false
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "<googleDriveOAuth2Api-id>",
+          "name": "jkp@kajonkietsuksa.ac.th"
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "30407819-7998-4ba1-b2a0-bde7ba91747c",
+      "name": "Replace text",
+      "type": "n8n-nodes-base.googleSlides",
+      "position": [
+        880,
+        -300
+      ],
+      "parameters": {
+        "textUi": {
+          "textValues": [
+            {
+              "text": "[ NAME ]",
+              "replaceText": "={{ $('Score Checker').item.json.respondentName }}",
+              "pageObjectIds": [
+                "p"
+              ]
+            }
+          ]
+        },
+        "options": {},
+        "operation": "replaceText",
+        "presentationId": "={{ $json.id }}"
+      },
+      "credentials": {
+        "googleSlidesOAuth2Api": {
+          "id": "<googleSlidesOAuth2Api-id>",
+          "name": "Google Slides account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "62f1ab2e-0471-480b-9a90-587a9ffb18d6",
+      "name": "Convert to PDF",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        960,
+        0
+      ],
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.presentationId }}"
+        },
+        "options": {
+          "fileName": "={{ $('Score Checker').item.json.respondentName }}'s Certificate",
+          "googleFileConversion": {
+            "conversion": {
+              "slidesToFormat": "application/pdf"
+            }
+          }
+        },
+        "operation": "download"
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "<googleDriveOAuth2Api-id>",
+          "name": "jkp@kajonkietsuksa.ac.th"
+        }
+      },
+      "typeVersion": 3,
+      "alwaysOutputData": false
+    },
+    {
+      "id": "08516c84-5257-4875-8c2f-9b6a4428bfad",
+      "name": "Send to user's email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1360,
+        0
+      ],
+      "webhookId": "f204ef80-937c-4f7b-8eb5-0699eb13c16a",
+      "parameters": {
+        "sendTo": "={{ $('Score Checker').item.json.respondentEmail }}",
+        "message": "=Congratulations on passing the quiz! Attached is your certificate.",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          },
+          "appendAttribution": false
+        },
+        "subject": "Here's your certificate!!"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "Gmail account (jkp@kajonkietsuksa.ac.th)"
+        }
+      },
+      "typeVersion": 2.1
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Replace text": {
+      "main": [
+        [
+          {
+            "node": "Convert to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Checker": {
+      "main": [
+        [
+          {
+            "node": "Copy from your template",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to PDF": {
+      "main": [
+        [
+          {
+            "node": "Send to user's email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract essential data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract essential data": {
+      "main": [
+        [
+          {
+            "node": "Score Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy from your template": {
+      "main": [
+        [
+          {
+            "node": "Replace text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "id": "06v55r6E13Wfvo66",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Gumroad sale trigger",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "789f1dec-d2d2-4e09-9530-719d354d259c",
+      "name": "Assign to group",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        140,
+        -280
+      ],
+      "parameters": {
+        "url": "=https://connect.mailerlite.com/api/subscribers/{{ $json.id }}/groups/152489030254069581",
+        "method": "POST",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mailerLiteApi"
+      },
+      "credentials": {
+        "mailerLiteApi": {
+          "id": "<mailerLiteApi-id>",
+          "name": "Mailer Lite account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "53c0df02-5571-485c-91ce-6be2f62fd6d6",
+      "name": "Gumroad Sale Trigger",
+      "type": "n8n-nodes-base.gumroadTrigger",
+      "position": [
+        -520,
+        -280
+      ],
+      "webhookId": "06a01b99-cbf1-4694-8502-94ac51670ba4",
+      "parameters": {
+        "resource": "sale"
+      },
+      "credentials": {
+        "gumroadApi": {
+          "id": "<gumroadApi-id>",
+          "name": "Gumroad account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "ee782134-e2d4-4f8b-a9d9-a09a919577ab",
+      "name": "append row in CRM",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        480,
+        -280
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "date": "={{ $('Gumroad Sale Trigger').item.json.sale_timestamp }}",
+            "email": "={{ $('Gumroad Sale Trigger').item.json.email }}",
+            "country": "={{ $('Gumroad Sale Trigger').item.json.ip_country }}",
+            "product name": "={{ $('Gumroad Sale Trigger').item.json.product_name }}"
+          },
+          "schema": [
+            {
+              "id": "date",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "product name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "email",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "country",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "country",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XYMstoZ4j3O5T-UYz21ky7P5bkUtzYXQGYCQTRVWCI4/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1XYMstoZ4j3O5T-UYz21ky7P5bkUtzYXQGYCQTRVWCI4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XYMstoZ4j3O5T-UYz21ky7P5bkUtzYXQGYCQTRVWCI4/edit?usp=drivesdk",
+          "cachedResultName": "Gumroad sales CRM"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "e81b7ae0-510e-454e-82ff-6d42bde9e81a",
+      "name": "add subscriber to MailerLite",
+      "type": "n8n-nodes-base.mailerLite",
+      "position": [
+        -60,
+        -280
+      ],
+      "parameters": {
+        "email": "={{ $json.email }}",
+        "additionalFields": {
+          "customFieldsUi": {
+            "customFieldsValues": [
+              {
+                "value": "={{ $json.ip_country }}",
+                "fieldId": "country"
+              }
+            ]
+          }
+        }
+      },
+      "credentials": {
+        "mailerLiteApi": {
+          "id": "<mailerLiteApi-id>",
+          "name": "Mailer Lite account"
+        }
+      },
+      "typeVersion": 2
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Assign to group": {
+      "main": [
+        [
+          {
+            "node": "append row in CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gumroad Sale Trigger": {
+      "main": [
+        [
+          {
+            "node": "add subscriber to MailerLite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "add subscriber to MailerLite": {
+      "main": [
+        [
+          {
+            "node": "Assign to group",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

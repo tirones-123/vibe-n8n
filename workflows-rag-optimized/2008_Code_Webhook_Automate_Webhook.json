@@ -1,0 +1,295 @@
+{
+  "id": "x2kgOnBLtqAjqUVS",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Automated Work Attendance with Location Triggers",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "b2cba308-6d47-432b-9296-58f233f15565",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "801c8367-af7b-4371-8684-cc699090b97f",
+      "parameters": {
+        "path": "time-track",
+        "options": {}
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "5fc5a1a6-f18d-4ee0-a70b-30de48a45dc7",
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        220,
+        -220
+      ],
+      "parameters": {
+        "filter": {},
+        "options": {},
+        "resource": "fileFolder",
+        "returnAll": true,
+        "queryString": "WorkTimeTracking"
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "<googleDriveOAuth2Api-id>",
+          "name": "Google Drive account"
+        }
+      },
+      "executeOnce": false,
+      "typeVersion": 3,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "a0b63be4-fa46-413f-82fe-42e6edc24f29",
+      "name": "Create Worksheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        800,
+        -240
+      ],
+      "parameters": {
+        "title": "WorkTimeTracking",
+        "options": {
+          "locale": ""
+        },
+        "resource": "spreadsheet",
+        "sheetsUi": {
+          "sheetValues": [
+            {
+              "title": "Worklog"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "796e3ef6-3002-493e-8d89-10cba2d8026d",
+      "name": "Return if Null",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        400,
+        -220
+      ],
+      "parameters": {
+        "jsCode": "return [{json: {empty: items.length == 1 && Object.keys(items[0].json).length == 0}}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "7af7ce4b-93e0-4058-8a45-9fd8269ddc77",
+      "name": "Doesn't exist?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        580,
+        -220
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "215b8ced-c6f5-4cf2-8755-9bba928dbe84",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{$json[\"empty\"]}}",
+              "rightValue": ""
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "f2bc21c6-805b-49e7-b026-a4de56dce1fa",
+      "name": "Set Logging Details",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        780,
+        20
+      ],
+      "parameters": {
+        "mode": "raw",
+        "options": {},
+        "jsonOutput": "={\n  \"Date\": \"{{ $now.format('yyyy-MM-dd') }}\",\n  \"Time\": \"{{ $now.format('hh:mm') }}\",\n  \"Direction\":\"Check-In\"\n}\n"
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "64bc8b93-a925-49d6-9e52-3f30f0c9e5a8",
+      "name": "Create Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1000,
+        20
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "Date": "={{ $json.Date }}",
+            "Time": "={{ $json.Time }}",
+            "Direction": "={{ $('Webhook').item.json.headers.direction ? $('Webhook').item.json.headers.direction : \"\"}}"
+          },
+          "schema": [
+            {
+              "id": "Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Time",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Direction",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Direction",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": []
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 308318361,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P7-Uqa4SPA6keujkkOTru1wdS2qDryJVkz0Nz_sFp7A/edit#gid=308318361",
+          "cachedResultName": "Worklog"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Google Drive').item.json.id }}"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    }
+  ],
+  "active": true,
+  "settings": {
+    "timezone": "Europe/Lisbon",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1",
+    "executionTimeout": -1,
+    "saveManualExecutions": true
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Return if Null",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doesn't exist?": {
+      "main": [
+        [
+          {
+            "node": "Create Worksheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Logging Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return if Null": {
+      "main": [
+        [
+          {
+            "node": "Doesn't exist?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Worksheet": {
+      "main": [
+        [
+          {
+            "node": "Set Logging Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Logging Details": {
+      "main": [
+        [
+          {
+            "node": "Create Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

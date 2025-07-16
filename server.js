@@ -2,8 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import claudeHandler from './api/claude.js';
-import { nodeTypesRAG } from './api/rag/node-types-rag.js';
-import { startMcpHttp } from './utils/mcpServer.js';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -15,55 +13,42 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-// Route principale pour Claude
+// Route principale pour Claude (nouveau système RAG)
 app.use('/api/claude', claudeHandler);
 
-// Routes
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'n8n AI Assistant Backend',
-    status: 'running',
-    endpoints: {
-      claude: '/api/claude'
-    }
-  });
+// Page d'accueil
+app.get('/', async (req, res) => {
+  try {
+    const { default: indexHandler } = await import('./api/index.js');
+    indexHandler(req, res);
+  } catch (error) {
+    res.json({ 
+      message: 'n8n Workflow RAG Backend',
+      status: 'running',
+      version: '2.0.0',
+      endpoints: {
+        claude: '/api/claude (POST)',
+        api: '/api (GET)'
+      }
+    });
+  }
 });
 
 // Route de statut pour vérifier la configuration
 app.get('/api', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'n8n AI Assistant Backend API',
-    version: '1.0.0',
-    environment: {
+    environment: 'RAG Workflow Backend',
+    version: '2.0.0',
+    system: 'Workflow RAG (Pinecone + Claude)',
+    configuration: {
       claude_configured: !!process.env.CLAUDE_API_KEY,
       backend_auth_configured: !!process.env.BACKEND_API_KEY,
       openai_configured: !!process.env.OPENAI_API_KEY,
       pinecone_configured: !!process.env.PINECONE_API_KEY,
-      rag_available: !!process.env.OPENAI_API_KEY && !!process.env.PINECONE_API_KEY
+      rag_ready: !!process.env.OPENAI_API_KEY && !!process.env.PINECONE_API_KEY && !!process.env.CLAUDE_API_KEY
     }
   });
-});
-
-// Route pour consulter les logs du cron
-app.get('/api/cron-logs', async (req, res) => {
-  try {
-    const { readFileSync, existsSync } = await import('fs');
-    const { join } = await import('path');
-    const logFile = join(process.cwd(), 'cron-debug.log');
-    
-    if (existsSync(logFile)) {
-      const logs = readFileSync(logFile, 'utf-8');
-      res.type('text/plain').send(logs);
-    } else {
-      res.status(404).send('Aucun log de cron trouvé. Le cron n\'a pas encore été exécuté.');
-    }
-  } catch (error) {
-    res.status(500).json({ 
-      error: 'Erreur lecture logs', 
-      message: error.message 
-    });
-  }
 });
 
 // Route pour consulter les logs récents du serveur
@@ -106,48 +91,42 @@ console.log = function(...args) {
   }
 };
 
-// Initialiser les services au démarrage
-async function initializeServices() {
-  try {
-    // Initialiser le NodeTypes RAG si les clés sont disponibles
-    if (process.env.OPENAI_API_KEY && process.env.PINECONE_API_KEY) {
-      console.log('Initialisation du NodeTypes RAG...');
-      await nodeTypesRAG.initialize();
-      console.log('NodeTypes RAG prêt !');
-      
-      // Afficher les stats
-      const stats = await nodeTypesRAG.getStats();
-      if (stats) {
-        console.log(`📊 Index stats: ${stats.totalNodes} nodes indexés`);
-      }
-    } else {
-      console.log('NodeTypes RAG non configuré :');
-      if (!process.env.OPENAI_API_KEY) {
-        console.log('  - OPENAI_API_KEY manquante (nécessaire pour les embeddings)');
-      }
-      if (!process.env.PINECONE_API_KEY) {
-        console.log('  - PINECONE_API_KEY manquante (nécessaire pour le stockage vectoriel)');
-      }
-      console.log('Le backend fonctionnera sans enrichissement des node-types.');
-    }
-  } catch (error) {
-    console.error('Erreur initialisation services:', error);
-    console.log('Le serveur continue sans NodeTypes RAG.');
+// Vérifier la configuration au démarrage
+function checkConfiguration() {
+  const required = {
+    'CLAUDE_API_KEY': process.env.CLAUDE_API_KEY,
+    'OPENAI_API_KEY': process.env.OPENAI_API_KEY,
+    'PINECONE_API_KEY': process.env.PINECONE_API_KEY,
+    'BACKEND_API_KEY': process.env.BACKEND_API_KEY
+  };
+  
+  const missing = Object.entries(required)
+    .filter(([key, value]) => !value)
+    .map(([key]) => key);
+  
+  if (missing.length > 0) {
+    console.log('⚠️  Variables d\'environnement manquantes:');
+    missing.forEach(key => console.log(`   - ${key}`));
+    console.log('   Le système RAG pourrait ne pas fonctionner correctement.');
+  } else {
+    console.log('✅ Toutes les variables d\'environnement sont configurées');
   }
+  
+  // Vérifier l'index Pinecone
+  const indexName = process.env.PINECONE_WORKFLOW_INDEX || 'n8n-workflows';
+  console.log(`🗄️  Index Pinecone configuré: ${indexName}`);
 }
 
 // Démarrer le serveur 
-app.listen(PORT, async () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📡 Claude endpoint: http://localhost:${PORT}/api/claude`);
+app.listen(PORT, () => {
+  console.log(`🚀 n8n Workflow RAG Backend v2.0.0`);
+  console.log(`📡 Server running on port ${PORT}`);
+  console.log(`🔗 API endpoint: http://localhost:${PORT}/api/claude`);
+  console.log(`🏠 Homepage: http://localhost:${PORT}/`);
   
-  // Start local MCP server only if not using remote MCP
-  if (process.env.USE_REMOTE_MCP !== 'true') {
-    console.log('🔧 Starting local MCP server...');
-    startMcpHttp();
-  } else {
-    console.log('🌐 Using remote MCP server:', process.env.MCP_SERVER_URL);
-  }
+  checkConfiguration();
   
-  await initializeServices();
+  console.log('\n📋 Pour tester le système:');
+  console.log('   npm run test:streaming');
+  console.log('   ou ouvrir test-streaming-client.html');
 }); 

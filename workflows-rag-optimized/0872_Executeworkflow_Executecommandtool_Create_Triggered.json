@@ -1,0 +1,392 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "fe9f1c8e-8334-4732-be3a-5ee49036e11e",
+      "name": "FileSystem MCP Server",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "position": [
+        -180,
+        -140
+      ],
+      "webhookId": "0d93cfd5-2fbf-457e-9535-5bfc9a73ba9e",
+      "parameters": {
+        "path": "0d93cfd5-2fbf-457e-9535-5bfc9a73ba9e"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "fb49782f-d8de-480b-a470-e37adb2e3036",
+      "name": "ListDirectory",
+      "type": "n8n-nodes-base.executeCommandTool",
+      "position": [
+        -300,
+        60
+      ],
+      "parameters": {
+        "command": "=ls /home/node/{{ $fromAI('path', 'optional, leave blank for project root directory.') }}",
+        "toolDescription": "List directories under the project root folder. The project root directory is /home/node/"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "8fa93054-bcf5-4fbc-9825-df16be063eb2",
+      "name": "CreateDirectory",
+      "type": "n8n-nodes-base.executeCommandTool",
+      "position": [
+        -200,
+        160
+      ],
+      "parameters": {
+        "command": "=mkdir -p /home/node/{{ $fromAI('filename', 'name of directory. Will be scoped under the /home/node/ project root directory. Optionally use path to create within subdirectories') }}",
+        "toolDescription": "Create directories under the project root folder. The project root folder is /home/node."
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "aafe884d-0e6e-476a-92fe-b2111f624417",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        400,
+        40
+      ],
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "operation"
+            },
+            {
+              "name": "filenames",
+              "type": "array"
+            },
+            {
+              "name": "contents",
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "d85925b6-d58d-43b5-a6ca-3e43cbc81121",
+      "name": "Operation",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        580,
+        40
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "writeOneOrMultipleFiles",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "c1da2138-e2df-46d4-b1f4-97525c05e778",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.operation }}",
+                    "rightValue": "writeOneOrMultipleFiles"
+                  }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "readOneOrMultipleFiles",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "cc02a5a2-609c-4dbe-bdb6-45f145947e47",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.operation }}",
+                    "rightValue": "readOneOrMultipleFiles"
+                  }
+                ]
+              },
+              "renameOutput": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "e9ec2928-5e33-4213-a53a-92b7d840d49e",
+      "name": "readOneOrMultipleFiles",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        840,
+        140
+      ],
+      "parameters": {
+        "command": "=cat {{ $json.filenames.join(' ') }}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "77ba2a48-b4b9-4a23-818d-e028a7762514",
+      "name": "ReadFiles",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        40,
+        160
+      ],
+      "parameters": {
+        "name": "readFil",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "description": "=Call this tool to read the contents of a file. Include file extension.",
+        "workflowInputs": {
+          "value": {
+            "contents": "[]",
+            "filenames": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filenames', `An array of filenames`, 'string') }}",
+            "operation": "readOneOrMultipleFiles"
+          },
+          "schema": [
+            {
+              "id": "operation",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "operation",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "filenames",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "filenames",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contents",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "contents",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "2ddf9a9a-cade-41c0-a068-482345452d4b",
+      "name": "WriteFiles",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        140,
+        60
+      ],
+      "parameters": {
+        "name": "write_file",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "description": "Call this tool to write contents to one or more files. Filenames and Contents are matched by their respective Array Indexes. Eg. To write to a single file, use { filenames: [<filename1>,<filename2>], contents: [<content1>,<content2>] } ",
+        "workflowInputs": {
+          "value": {
+            "contents": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('contents', `An array of strings for content to be written`, 'string') }}",
+            "filenames": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('filenames', `An array of strings for filenames`, 'string') }}",
+            "operation": "writeOneOrMultipleFiles"
+          },
+          "schema": [
+            {
+              "id": "operation",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "operation",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "filenames",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "filenames",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contents",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "contents",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "a5d9e11b-0583-4c67-b30b-be1d4185b891",
+      "name": "writeOneOrMultipleFiles",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        840,
+        -60
+      ],
+      "parameters": {
+        "command": "={{\n$json.filenames.map((filename,idx) =>\n  `echo \"${$json.contents[idx] ?? ''}\" > /home/node/${filename}`\n).join('\\n')\n}}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "de2f715c-b6d1-4702-9d39-2527108b5706",
+      "name": "SearchDirectory",
+      "type": "n8n-nodes-base.executeCommandTool",
+      "position": [
+        -80,
+        240
+      ],
+      "parameters": {
+        "command": "=find /home/node/ -name \"{{ $fromAI('filename', 'A name search paramter for the linux find tool') }}\"\n",
+        "toolDescription": "Search the project folder for a file by name. The project root directory is /home/node/"
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Operation": {
+      "main": [
+        [
+          {
+            "node": "writeOneOrMultipleFiles",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "readOneOrMultipleFiles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ReadFiles": {
+      "ai_tool": [
+        [
+          {
+            "node": "FileSystem MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WriteFiles": {
+      "ai_tool": [
+        [
+          {
+            "node": "FileSystem MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ListDirectory": {
+      "ai_tool": [
+        [
+          {
+            "node": "FileSystem MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CreateDirectory": {
+      "ai_tool": [
+        [
+          {
+            "node": "FileSystem MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SearchDirectory": {
+      "ai_tool": [
+        [
+          {
+            "node": "FileSystem MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

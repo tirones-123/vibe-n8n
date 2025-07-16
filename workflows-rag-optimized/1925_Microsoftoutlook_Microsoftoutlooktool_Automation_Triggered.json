@@ -1,0 +1,164 @@
+{
+  "id": "mqindLlOy0A0e5aA",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Outlook",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "b2e6066f-a4c7-486c-aa0d-06a4c92aa745",
+      "name": "Connect Outlook & Set Filter",
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "position": [
+        -240,
+        -260
+      ],
+      "parameters": {
+        "output": "raw",
+        "filters": {
+          "sender": "sales@yourcompany.com"
+        },
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "<microsoftOutlookOAuth2Api-id>",
+          "name": "Microsoft Outlook account 2"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "98f20649-4842-44b8-86c3-a153cd7f4ce2",
+      "name": "Add OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        140,
+        100
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account 2"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "bf4cb647-91c6-4f3d-a685-ed928b431ef5",
+      "name": "Add AI Agent Instructions",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        140,
+        -120
+      ],
+      "parameters": {
+        "text": "=Write a reply to the following email, then save it as a draft to the email thread:\n<email>\nID: {{ $json.id }}\nFrom: {{ $json.from.emailAddress.address }}\nSubject: {{ $json.subject }}\nMessage: {{ $json.body.content }}\n</email>",
+        "options": {
+          "systemMessage": "#role\nYou are an AI assistant specializing in replying to incoming emails to [YOUR NAME] Outlook inbox.\n\n#capabilities and limitations\nYour reply will be limited to the current email message, not the email string. Do not hallucinate.\n\n#response\nReply in a casual, modern, professional, concise writing style. You should sound like [YOUR NAME HERE]. Here are examples of [YOUR NAME HERE] voice:\n<example>\n[COPY & PASTE REPLY SAMPLES FROM YOUR EMAIL]\n</example>\n<example>\n[COPY & PASTE REPLY SAMPLES FROM YOUR EMAIL]\n</example>\n<example>\n[ADD A VARIETY OF REPLY SAMPLES SO THE AGENT UNDERSTANDS YOUR TONE & STYLE]\n</example>"
+        },
+        "promptType": "define"
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "46f4b974-4da7-471b-ba49-3737685d123e",
+      "name": "Reply to Email",
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "position": [
+        400,
+        40
+      ],
+      "webhookId": "6d01cb74-0463-4042-8917-acd2f552d4b5",
+      "parameters": {
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {},
+        "messageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "operation": "reply",
+        "descriptionType": "manual",
+        "additionalFields": {
+          "replyTo": "={{ $json.sender.emailAddress.address }}",
+          "subject": "={{ $json.subject }}"
+        },
+        "replyToSenderOnly": true
+      },
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "<microsoftOutlookOAuth2Api-id>",
+          "name": "Microsoft Outlook"
+        }
+      },
+      "typeVersion": 2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Reply to Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "Add AI Agent Instructions",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Add AI Agent Instructions",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft a Reply [optional]": {
+      "ai_tool": [
+        [
+          {
+            "node": "Add AI Agent Instructions",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Connect Outlook & Set Filter": {
+      "main": [
+        [
+          {
+            "node": "Add AI Agent Instructions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

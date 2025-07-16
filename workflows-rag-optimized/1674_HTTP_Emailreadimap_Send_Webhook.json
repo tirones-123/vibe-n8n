@@ -1,0 +1,111 @@
+{
+  "id": "QnVdtKiTf3nbrNkh",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Summarize emails with A.I. then send to messenger",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "50e12e63-df28-45ac-9208-48cbf5116d09",
+      "name": "Read emails (IMAP)",
+      "type": "n8n-nodes-base.emailReadImap",
+      "position": [
+        340,
+        260
+      ],
+      "parameters": {
+        "options": {},
+        "postProcessAction": "nothing"
+      },
+      "credentials": {
+        "imap": {
+          "id": "<imap-id>",
+          "name": "IMAP account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "6565350b-2269-44e3-8f36-8797f32d3e09",
+      "name": "Send email to A.I. to summarize",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        700,
+        260
+      ],
+      "parameters": {
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n \"model\": \"meta-llama/llama-3.1-70b-instruct:free\",\n \"messages\": [\n {\n \"role\": \"user\",\n \"content\": \"I want you to read and summarize all the emails. If it's not rimportant, just give me a short summary with less than 10 words.\\n\\nHighlight as important if it is, add an emoji to indicate it is urgent:\\nFor the relevant content, find any action items and deadlines. Sometimes I need to sign up before a certain date or pay before a certain date, please highlight that in the summary for me.\\n\\nPut the deadline in BOLD at the top. If the email is not important, keep the summary short to 1 sentence only.\\n\\nHere's the email content for you to read:\\nSender email address: {{ encodeURIComponent($json.from) }}\\nSubject: {{ encodeURIComponent($json.subject) }}\\n{{ encodeURIComponent($json.textHtml) }}\"\n }\n ]\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Header Auth account 2"
+        }
+      },
+      "typeVersion": 4.2,
+      "alwaysOutputData": false
+    },
+    {
+      "id": "d04c422a-c000-4e48-82d0-0bf44bcd9fff",
+      "name": "Send summarized content to messenger",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1100,
+        260
+      ],
+      "parameters": {
+        "url": "https://api.line.me/v2/bot/message/push",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n \"to\": \"U3ec262c49811f30cdc2d2f2b0a0df99a\",\n \"messages\": [\n {\n \"type\": \"text\",\n \"text\": \"{{ $json.choices[0].message.content.replace(/\\n/g, \"\\\\n\") }}\"\n }\n ]\n}\n\n\n ",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Header Auth account 5"
+        }
+      },
+      "typeVersion": 4.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Read emails (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "Send email to A.I. to summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email to A.I. to summarize": {
+      "main": [
+        [
+          {
+            "node": "Send summarized content to messenger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

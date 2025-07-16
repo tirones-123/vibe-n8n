@@ -1,0 +1,231 @@
+{
+  "id": "x2VUvhqV1YTJCIN0",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "tags": [],
+  "nodes": [
+    {
+      "id": "094b9011-a53d-4a50-b44d-ad229612bb06",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        560,
+        220
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "6d9eee1f-995f-4558-8f97-25636e20022c",
+      "name": "Save campaign.liquid",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        800,
+        -100
+      ],
+      "parameters": {
+        "url": "=https://{{ $('Set values here!').params[\"fields\"][\"values\"][0][\"stringValue\"] }}.myshopify.com/admin/api/2024-01/themes/{{ $('Set values here!').params[\"fields\"][\"values\"][1][\"stringValue\"] }}/assets.json",
+        "method": "PUT",
+        "options": {},
+        "jsonBody": "={\"asset\":\n  {\n    \"key\":\"snippets/{{ $('Set values here!').params[\"fields\"][\"values\"][2][\"stringValue\"] }}\",\n    \"value\":\"{{ $('Set values here!').params[\"fields\"][\"values\"][3][\"stringValue\"].replace(\"IMAGE\",$('Check').item.json[\"body\"][\"items\"][0][\"Campaign Image\"][0][\"visible_name\"]).replace(/\\\\/g, \"\\\\\\\\\").replace(/\"/g, '\\\\\"').replace(/\\n/g, \"\\\\n\") }}\"}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Header Auth  Shopify"
+        },
+        "shopifyAccessTokenApi": {
+          "id": "<shopifyAccessTokenApi-id>",
+          "name": "Shopify Access Token account"
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "fb3e9410-59ae-4d90-8bb3-1fd95f0e9a43",
+      "name": "Upload Image",
+      "type": "n8n-nodes-base.graphql",
+      "position": [
+        560,
+        -100
+      ],
+      "parameters": {
+        "query": "mutation fileCreate($files: [FileCreateInput!]!) {\n  fileCreate(files: $files) {\n    files {\n      id\n    }\n  }\n}",
+        "endpoint": "=https://{{ $('Set values here!').params[\"fields\"][\"values\"][0][\"stringValue\"] }}.myshopify.com/admin/api/2024-01/graphql.json",
+        "variables": "={\n  \"files\": {\n    \"alt\": \"{{ $json.body.items[0].Name }}\",\n    \"contentType\": \"IMAGE\",\n\t\"filename\": \"{{ $json.body.items[0]['Campaign Image'][0].visible_name }}\",\n    \"originalSource\": \"{{ $json.body.items[0]['Campaign Image'][0].url }}\"\n  }\n}",
+        "requestFormat": "json",
+        "authentication": "headerAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Header Auth  Shopify"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "29f970fe-da65-4b6f-bf0b-1cadbd80f51c",
+      "name": "Set values here!",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        120,
+        60
+      ],
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "Shopify Subdomain",
+              "stringValue": "n8n-mautic-demo"
+            },
+            {
+              "name": "Theme ID",
+              "stringValue": "125514514534"
+            },
+            {
+              "name": "Filename",
+              "stringValue": "campaign.liquid"
+            },
+            {
+              "name": "Content",
+              "stringValue": "<img src=\"{{ 'IMAGE' | file_img_url: 'grande'}}\">"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "0bd9327d-4bbd-4884-a9a6-21b0c5b4c3d3",
+      "name": "Call from Baserow",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -100,
+        60
+      ],
+      "webhookId": "3041fdd6-4cb5-4286-9034-1337dddc3f45",
+      "parameters": {
+        "path": "3041fdd6-4cb5-4286-9034-1337dddc3f45",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "6c9d35e8-0738-4d15-a0ff-40077e73d797",
+      "name": "Check",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        320,
+        60
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "21262344-6519-4f32-876b-82722a1fab66",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{\nDateTime.fromISO($json[\"body\"][\"items\"][0][\"Last modified\"])\n    .diff(DateTime.fromISO($json[\"body\"][\"old_items\"][0][\"Last modified\"]),'minutes')\n    .toObject()\n    [\"minutes\"]\n}}",
+              "rightValue": 0.1
+            },
+            {
+              "id": "5c0a176c-5ba9-4060-a4d2-b9207cf47092",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.body.items[0].Active }}",
+              "rightValue": ""
+            },
+            {
+              "id": "f764adc6-e7a1-4df7-861f-94b90a99f2d4",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json[\"body\"][\"items\"][0][\"Campaign Image\"] }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Check": {
+      "main": [
+        [
+          {
+            "node": "Upload Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image": {
+      "main": [
+        [
+          {
+            "node": "Save campaign.liquid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set values here!": {
+      "main": [
+        [
+          {
+            "node": "Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call from Baserow": {
+      "main": [
+        [
+          {
+            "node": "Set values here!",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,366 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "6359f725-1ede-4b05-bc19-05a7e85c0865",
+      "name": "When clicking \"Test workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        680,
+        292
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "9e1e61c7-f5fd-4e8a-99a6-ccc5a24f5528",
+      "name": "Fetch Source Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1000,
+        292
+      ],
+      "parameters": {
+        "url": "={{ $json.source_image }}",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "9b1b94cf-3a7d-4c43-ab6c-8df9824b5667",
+      "name": "Split Out Results Only",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1428,
+        323
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "result"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "fcbaf6c3-2aee-4ea1-9c5e-2833dd7a9f50",
+      "name": "Filter Score >= 0.9",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1608,
+        323
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "367d83ef-8ecf-41fe-858c-9bfd78b0ae9f",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              },
+              "leftValue": "={{ $json.score }}",
+              "rightValue": 0.9
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "954ce7b0-ef82-4203-8706-17cfa5e5e3ff",
+      "name": "Crop Object From Image",
+      "type": "n8n-nodes-base.editImage",
+      "position": [
+        2080,
+        432
+      ],
+      "parameters": {
+        "width": "={{ $json.box.xmax - $json.box.xmin }}",
+        "height": "={{ $json.box.ymax - $json.box.ymin }}",
+        "options": {
+          "format": "jpeg",
+          "fileName": "={{ $binary.data.fileName.split('.')[0].urlEncode()+'-'+$json.label.urlEncode() + '-' + $itemIndex }}.jpg"
+        },
+        "operation": "crop",
+        "positionX": "={{ $json.box.xmin }}",
+        "positionY": "={{ $json.box.ymin }}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "40027456-4bf9-4eea-8d71-aa28e69b29e5",
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        840,
+        292
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9e95d951-8530-4a80-bd00-6bb55623a71f",
+              "name": "CLOUDFLARE_ACCOUNT_ID",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "66807a90-63a1-4d4e-886e-e8abf3019a34",
+              "name": "model",
+              "type": "string",
+              "value": "@cf/facebook/detr-resnet-50"
+            },
+            {
+              "id": "a13ccde6-e6e3-46f4-afa3-2134af7bc765",
+              "name": "source_image",
+              "type": "string",
+              "value": "https://images.pexels.com/photos/2293367/pexels-photo-2293367.jpeg?auto=compress&cs=tinysrgb&w=600"
+            },
+            {
+              "id": "0734fc55-b414-47f7-8b3e-5c880243f3ed",
+              "name": "elasticsearch_index",
+              "type": "string",
+              "value": "n8n-image-search"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "c3d8c5e3-546e-472c-9e6e-091cf5cee3c3",
+      "name": "Use Detr-Resnet-50 Object Classification",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1248,
+        324
+      ],
+      "parameters": {
+        "url": "=https://api.cloudflare.com/client/v4/accounts/{{ $('Set Variables').item.json.CLOUDFLARE_ACCOUNT_ID }}/ai/run/{{ $('Set Variables').item.json.model }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "binaryData",
+        "authentication": "predefinedCredentialType",
+        "inputDataFieldName": "data",
+        "nodeCredentialType": "cloudflareApi"
+      },
+      "credentials": {
+        "cloudflareApi": {
+          "id": "<cloudflareApi-id>",
+          "name": "Cloudflare account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "3c7aa2fc-9ca1-41ba-a10d-aa5930d45f18",
+      "name": "Upload to Cloudinary",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2380,
+        380
+      ],
+      "parameters": {
+        "url": "https://api.cloudinary.com/v1_1/daglih2g8/image/upload",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendQuery": true,
+        "contentType": "multipart-form-data",
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "genericAuthType": "httpQueryAuth",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "upload_preset",
+              "value": "n8n-workflows-preset"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "<httpQueryAuth-id>",
+          "name": "Cloudinary API"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "3c4e1f04-a0ba-4cce-b82a-aa3eadc4e7e1",
+      "name": "Create Docs In Elasticsearch",
+      "type": "n8n-nodes-base.elasticsearch",
+      "position": [
+        2580,
+        380
+      ],
+      "parameters": {
+        "indexId": "={{ $('Set Variables').item.json.elasticsearch_index }}",
+        "options": {},
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "image_url",
+              "fieldValue": "={{ $json.secure_url.replace('upload','upload/f_auto,q_auto') }}"
+            },
+            {
+              "fieldId": "source_image_url",
+              "fieldValue": "={{ $('Set Variables').item.json.source_image }}"
+            },
+            {
+              "fieldId": "label",
+              "fieldValue": "={{ $('Crop Object From Image').item.json.label }}"
+            },
+            {
+              "fieldId": "metadata",
+              "fieldValue": "={{ JSON.stringify(Object.assign($('Crop Object From Image').item.json, { filename: $json.original_filename })) }}"
+            }
+          ]
+        },
+        "operation": "create",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "elasticsearchApi": {
+          "id": "<elasticsearchApi-id>",
+          "name": "Elasticsearch account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "8f607951-ba41-4362-8323-e8b4b96ad122",
+      "name": "Fetch Source Image Again",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1880,
+        432
+      ],
+      "parameters": {
+        "url": "={{ $('Set Variables').item.json.source_image }}",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Fetch Source Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Source Image": {
+      "main": [
+        [
+          {
+            "node": "Use Detr-Resnet-50 Object Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Score >= 0.9": {
+      "main": [
+        [
+          {
+            "node": "Fetch Source Image Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Create Docs In Elasticsearch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crop Object From Image": {
+      "main": [
+        [
+          {
+            "node": "Upload to Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Results Only": {
+      "main": [
+        [
+          {
+            "node": "Filter Score >= 0.9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Source Image Again": {
+      "main": [
+        [
+          {
+            "node": "Crop Object From Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \"Test workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use Detr-Resnet-50 Object Classification": {
+      "main": [
+        [
+          {
+            "node": "Split Out Results Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

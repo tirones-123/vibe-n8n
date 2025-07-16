@@ -1,0 +1,297 @@
+{
+  "id": "qAzZekQuABuH8uho",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Retry on fail except for known error Template",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "fa6fb462-8c1b-4cab-a9f6-876e67688786",
+      "name": "Retry limit reached",
+      "type": "n8n-nodes-base.stopAndError",
+      "position": [
+        -940,
+        500
+      ],
+      "parameters": {
+        "errorMessage": "Retry limit reached"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "9627165d-1854-4a4f-b840-721f8d779b89",
+      "name": "Set tries",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -940,
+        260
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cd93a7f6-4c06-4e8a-8d0d-e812c5ec4bc5",
+              "name": "tries",
+              "type": "number",
+              "value": "={{ $json.tries || 0 }}"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "466efd16-4922-4e61-bc81-d8e8a1d8ea61",
+      "name": "Update tries",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -60,
+        500
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "df3c9b29-afa6-4e08-868d-5b7e8202eefa",
+              "name": "tries",
+              "type": "number",
+              "value": "={{ $('Set tries').item.json.tries + 1 }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "a787761f-0a9d-4834-9a65-ac3b9a65b23e",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -280,
+        500
+      ],
+      "webhookId": "9d3b561f-4afd-478c-8f6e-60641d4f1d0b",
+      "parameters": {},
+      "typeVersion": 1.1
+    },
+    {
+      "id": "ff46ce53-69ca-4f88-8cc9-21b8d1e5557a",
+      "name": "Catch known error",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -500,
+        380
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "6a379b06-0b04-4ae4-9bf9-394bd40744b7",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "could not be found"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "0e9c282a-b521-4549-8ad5-9783b4d614b3",
+      "name": "Replace Me",
+      "type": "n8n-nodes-base.noOp",
+      "onError": "continueErrorOutput",
+      "position": [
+        -720,
+        260
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "3b2b6839-65b9-4b0e-8e10-2010014fc8d9",
+      "name": "Success",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        -500,
+        140
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "8d972714-8dcb-4ad6-8b5f-fb30a5f3294f",
+      "name": "Known Error",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        -280,
+        260
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "a13168eb-c4d1-46dd-857b-9a5e13ed1059",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -1160,
+        260
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "cd1b1abb-dbd3-4023-8a6b-49c4ff5510a8",
+      "name": "If tries left",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1160,
+        500
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b18f784a-4386-4ced-a9e1-ce5a21ad036e",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              },
+              "leftValue": "={{ $json.tries }}",
+              "rightValue": 3
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Update tries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set tries": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Catch known error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update tries": {
+      "main": [
+        [
+          {
+            "node": "If tries left",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If tries left": {
+      "main": [
+        [
+          {
+            "node": "Set tries",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retry limit reached",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set tries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catch known error": {
+      "main": [
+        [
+          {
+            "node": "Known Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

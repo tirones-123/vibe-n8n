@@ -1,0 +1,348 @@
+{
+  "id": "H9uAqvTaO7nTFdsH",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Linkedin Chrome Extensions",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "b203fb9c-cc9a-4b29-848f-44ce7272167e",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        600,
+        400
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "4e89a46b-d6c7-48e4-a432-fbb091e61f47",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        1560,
+        400
+      ],
+      "parameters": {
+        "options": {},
+        "batchSize": 2
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "e803d8be-2748-4a74-9ef8-ccb3e0e2bf49",
+      "name": "Limit",
+      "type": "n8n-nodes-base.limit",
+      "notes": "Only process 200 items per run",
+      "position": [
+        1340,
+        400
+      ],
+      "parameters": {
+        "maxItems": 200
+      },
+      "notesInFlow": true,
+      "typeVersion": 1
+    },
+    {
+      "id": "ac196ec9-d78a-441b-8d78-4a86830865a1",
+      "name": "Set extension IDs var",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        820,
+        400
+      ],
+      "parameters": {
+        "jsCode": "let gg = [\n    {\n        \"id\": \"aaidboaeckiboobjhialkmehjganhbgk\",\n        \"file\": \"mmt-srcwl-dznlv-surdqixjeg/images/ios-arrow-down.svg\"\n    },,\n    {\n        \"id\": \"aaiicdofoildjkenjdeoenfhdmajchlm\",\n        \"file\": \"css/popup.css\"\n    },,\n    {\n        \"id\": \"aajeioaakaifilihejpjaohomikfinhj\",\n        \"file\": \"assets/icons/close.svg\"\n    },,\n    // ... (1342 more similar items with same structure)\n];\n\n// Initialize an array to hold the converted items\nconst items = [];\n\n// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of gg) {\n  items.push({ json: item });\n}\n\nreturn items;"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "fbff87ee-80fd-483e-910f-68b0a6689bc8",
+      "name": "Load already processed items",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        820,
+        600
+      ],
+      "parameters": {
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1De6KoNfeGjEDY0FOwLIVIIUG_q55OSIrviGKWzflhrw/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1De6KoNfeGjEDY0FOwLIVIIUG_q55OSIrviGKWzflhrw",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1De6KoNfeGjEDY0FOwLIVIIUG_q55OSIrviGKWzflhrw/edit?usp=drivesdk",
+          "cachedResultName": "chrome_ext"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "id": "73d4f2b2-759e-4d0d-832f-acae6ecdc29d",
+      "name": "Exclude processed items",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1100,
+        400
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input1",
+        "fieldsToMatchString": "id"
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "0e171042-181b-4ef2-b62c-f1696c82f11a",
+      "name": "SERP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "onError": "continueRegularOutput",
+      "maxTries": 2,
+      "position": [
+        1860,
+        400
+      ],
+      "parameters": {
+        "url": "=https://serp-api1.p.rapidapi.com/search?q={{ encodeURI(\"site:chromewebstore.google.com \" + $json.id) }}",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "ScrapeNinja RapidAPI"
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "908376d3-251d-42be-b756-f5382fc385ef",
+      "name": "Upsert to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2140,
+        400
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "id": "={{ $('Set extension IDs var').item.json.id }}",
+            "url": "={{ $json.results[0].link }}",
+            "name": "={{ $json.results[0].title }}",
+            "snippet": "={{ $json.results[0].snippet }}",
+            "resource": "={{ $('Set extension IDs var').item.json.file }}",
+            "processed_at": "={{  $now.toUTC() }}"
+          },
+          "schema": [
+            {
+              "id": "id",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "id",
+              "defaultMatch": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resource",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "resource",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "url",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "snippet",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "snippet",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_at",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "processed_at",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ]
+        },
+        "options": {},
+        "operation": "appendOrUpdate",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1De6KoNfeGjEDY0FOwLIVIIUG_q55OSIrviGKWzflhrw/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1De6KoNfeGjEDY0FOwLIVIIUG_q55OSIrviGKWzflhrw",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1De6KoNfeGjEDY0FOwLIVIIUG_q55OSIrviGKWzflhrw/edit?usp=drivesdk",
+          "cachedResultName": "chrome_ext"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.4
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SERP Request": {
+      "main": [
+        [
+          {
+            "node": "Upsert to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "SERP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set extension IDs var": {
+      "main": [
+        [
+          {
+            "node": "Exclude processed items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exclude processed items": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load already processed items": {
+      "main": [
+        [
+          {
+            "node": "Exclude processed items",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set extension IDs var",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Load already processed items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

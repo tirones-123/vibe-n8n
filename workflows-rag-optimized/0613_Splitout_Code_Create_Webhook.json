@@ -1,0 +1,537 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "dd9e2f9c-225a-4b6b-9904-293206a477e4",
+      "name": "Get advice articles from a Google search",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1040,
+        360
+      ],
+      "parameters": {
+        "url": "=https://www.google.com/search?q=site%3Alinkedin.com%2Fadvice+{{ $json.Topic }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 25
+            }
+          }
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "68eefc93-6c82-4687-bb4d-52345e5a5094",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        520,
+        80
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "af3fdd03-d28a-4f49-b213-8202b1d154df",
+      "name": "Merge data and keep unique google search results",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1700,
+        200
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "joinMode": "keepNonMatches",
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "URL",
+              "field2": "matches"
+            }
+          ]
+        },
+        "outputDataFrom": "input2"
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "632c54cc-b1d7-4034-93bf-82dd206761f0",
+      "name": "Extract Article links for LinkedIn advice articles",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1240,
+        360
+      ],
+      "parameters": {
+        "jsCode": "// n8n Code node script\nconst text = $json.data;\n\n// Define the regex pattern\nconst regexPattern = /https:\\/\\/www\\.linkedin\\.com\\/advice\\/[^%&\\s\"']+/g;\n\n// Execute the regex pattern on the text\nconst matches = text.match(regexPattern);\n\n// Output the matches\nreturn {\n  matches: matches || []\n};\n\n\n"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "81f0a962-fef8-4a46-a709-21cc2db02e55",
+      "name": "Split Out all links for LinkedIn advice articles",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1440,
+        360
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "matches"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "65e4efa0-c746-4e77-9ccb-01c8afc5860c",
+      "name": "Schedule Trigger Every Monday, @ 08:00am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        520,
+        280
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "86fe3695-c1fd-4154-b1ba-f0737406da4a",
+      "name": "LinkedIn Contribution Writer",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        2360,
+        200
+      ],
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "options": {
+          "temperature": 0.7
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Read the following collaborative article and provide your own helpful collaboration. The article has various topics that each need to be answered. Write me a paragraph of helpful advice for each topic and format your response as outlined in the template below.\n\n-------------\nARTICLE TITLE\n{{ $json.ArticleTitle }}\n\nTOPICS WITHIN THE LINKEDIN ARTICLE:\n{{ $json.ArticleTopics }}\n\nOTHER CONTRIBUTIONS TO THE LINKEDIN ARTICLE:\n{{ $json.ArticleContributions }}\n-------------\n\nYour advice must be unique and something that no one else has recommended before on the article, or in any of the topics. The response needs to be raw and genuine to elicit conversation and engagement.\n\nFormat your output in text and follow the template below. Only populate the template with as many topics as were provided in the original request \n\ni.e: if there were only 4 topics in the original request then only provide 4 pieces of advice:\n\nOUTPUT TEMPLATE\n\n1. [Topic #1 from Article]\n[Advice for Topic]\n\n2. [Topic #2 from Article]\n[Advice for Topic]\n\n3. [Topic #3 from Article]\n[Advice for Topic]\n\n4. [Topic #4 from Article]\n[Advice for Topic]\n\n5. [Topic #5 from Article]\n[Advice for Topic]\n\n6. [Topic #6 from Article]\n[Advice for Topic]"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 1.4
+    },
+    {
+      "id": "aaeba3e6-2d74-463a-8ba7-9f84826fee1b",
+      "name": "Post new LinkedIn contributions to NocoDB (CreateRows)",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        3020,
+        200
+      ],
+      "parameters": {
+        "table": "mpagw9n92ran52o",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "Post Title",
+              "fieldValue": "={{ $('HTML extract LinkedIn article & other users contributions').item.json.ArticleTitle }}"
+            },
+            {
+              "fieldName": "URL",
+              "fieldValue": "={{ $('Merge data and keep unique google search results').item.json.matches }}"
+            },
+            {
+              "fieldName": "Contribution",
+              "fieldValue": "={{ $('LinkedIn Contribution Writer').item.json.message.content }}"
+            },
+            {
+              "fieldName": "Topic",
+              "fieldValue": "Lead Generation"
+            },
+            {
+              "fieldName": "Person",
+              "fieldValue": "Cassie"
+            }
+          ]
+        },
+        "operation": "create",
+        "projectId": "psdqqm1bzphkodc",
+        "authentication": "nocoDbApiToken"
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "<nocoDbApiToken-id>",
+          "name": "NocoDB Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "4d6bca6e-2392-48c1-906f-ff5f439f4897",
+      "name": "Post new LinkedIn contributions to Slack channel",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        2740,
+        200
+      ],
+      "parameters": {
+        "text": "=↓ 📝 ARTICLE:\n{{ $('HTML extract LinkedIn article & other users contributions').item.json.ArticleTitle }}\n{{ $('Merge data and keep unique google search results').item.json.matches }}\n\n↓ 💡 ADVICE:\n{{ $json.message.content }}\n------------------------------------------------------",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "C07CFN279HT",
+          "cachedResultName": "cass-linkedin-advice"
+        },
+        "otherOptions": {
+          "mrkdwn": true,
+          "unfurl_links": true,
+          "includeLinkToWorkflow": false
+        },
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "<slackOAuth2Api-id>",
+          "name": "Slack Account (OAuth)  (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "ffc7984b-7199-421a-9fe1-8ffe2aa8e7b3",
+      "name": "Get all LinkedIn contributions from database NocoDB (GetRows)",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        1240,
+        80
+      ],
+      "parameters": {
+        "table": "mpagw9n92ran52o",
+        "options": {},
+        "operation": "getAll",
+        "projectId": "psdqqm1bzphkodc",
+        "returnAll": true,
+        "authentication": "nocoDbApiToken"
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "<nocoDbApiToken-id>",
+          "name": "NocoDB Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "a9cd9135-e6d8-4350-861d-87af50413297",
+      "name": "HTML extract LinkedIn article & other users contributions",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        2160,
+        200
+      ],
+      "parameters": {
+        "options": {},
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "ArticleTitle",
+              "cssSelector": ".pulse-title"
+            },
+            {
+              "key": "ArticleTopics",
+              "cssSelector": ".article-main__content"
+            },
+            {
+              "key": "ArticleContributions",
+              "cssSelector": ".contribution__text"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "5496fe68-6c77-4520-9479-141a4a20643f",
+      "name": "HTTP Request to get LinkedIn advice articles",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1960,
+        200
+      ],
+      "parameters": {
+        "url": "={{ $json.matches }}",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "653d839f-ea48-4e3c-a4a8-09dbeea59ed6",
+      "name": "Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        80,
+        627
+      ],
+      "parameters": {
+        "options": {},
+        "resource": "base",
+        "authentication": "airtableOAuth2Api"
+      },
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "<airtableOAuth2Api-id>",
+          "name": "Airtable Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "4b4ba215-5a51-45dc-81ba-80b789ffe269",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        260,
+        627
+      ],
+      "parameters": {
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 966510578,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C7R_Xb5pfWlctEtgpOrXTz2O1I59VOBNIQJb2mWDWiI/edit#gid=966510578",
+          "cachedResultName": "Appointments (Smile)"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1C7R_Xb5pfWlctEtgpOrXTz2O1I59VOBNIQJb2mWDWiI",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C7R_Xb5pfWlctEtgpOrXTz2O1I59VOBNIQJb2mWDWiI/edit?usp=drivesdk",
+          "cachedResultName": "Orthodontist - Dr. Choma"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "22849372-db4d-44ab-aea2-224d4c6bfd77",
+      "name": "Get all LinkedIn contributions from database NocoDB (GetRows)1",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        160,
+        347
+      ],
+      "parameters": {
+        "table": "mpagw9n92ran52o",
+        "options": {},
+        "operation": "getAll",
+        "projectId": "psdqqm1bzphkodc",
+        "returnAll": true,
+        "authentication": "nocoDbApiToken"
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "<nocoDbApiToken-id>",
+          "name": "NocoDB Account (darryn@optimus01.co.za)"
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "0af1eb81-9592-4d5d-a628-18f7895e5401",
+      "name": "Set Topic for Google search",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        800,
+        360
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cf3ef4d0-2688-4fe1-9801-a8519bd293f7",
+              "name": "Topic",
+              "type": "string",
+              "value": "Paid Advertising"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    }
+  ],
+  "connections": {
+    "Set Topic for Google search": {
+      "main": [
+        [
+          {
+            "node": "Get advice articles from a Google search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Contribution Writer": {
+      "main": [
+        [
+          {
+            "node": "Post new LinkedIn contributions to Slack channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get all LinkedIn contributions from database NocoDB (GetRows)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set Topic for Google search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get advice articles from a Google search": {
+      "main": [
+        [
+          {
+            "node": "Extract Article links for LinkedIn advice articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger Every Monday, @ 08:00am": {
+      "main": [
+        [
+          {
+            "node": "Get all LinkedIn contributions from database NocoDB (GetRows)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set Topic for Google search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request to get LinkedIn advice articles": {
+      "main": [
+        [
+          {
+            "node": "HTML extract LinkedIn article & other users contributions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge data and keep unique google search results": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request to get LinkedIn advice articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post new LinkedIn contributions to Slack channel": {
+      "main": [
+        [
+          {
+            "node": "Post new LinkedIn contributions to NocoDB (CreateRows)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out all links for LinkedIn advice articles": {
+      "main": [
+        [
+          {
+            "node": "Merge data and keep unique google search results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract Article links for LinkedIn advice articles": {
+      "main": [
+        [
+          {
+            "node": "Split Out all links for LinkedIn advice articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML extract LinkedIn article & other users contributions": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Contribution Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all LinkedIn contributions from database NocoDB (GetRows)": {
+      "main": [
+        [
+          {
+            "node": "Merge data and keep unique google search results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

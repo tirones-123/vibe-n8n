@@ -1,0 +1,51 @@
+{
+  "nodes": [
+    {
+      "id": "dee0969b-e780-400c-a8d2-383a392b9432",
+      "name": "On Error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        880,
+        900
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "f1a73854-5b24-407e-9584-0448ae66f7a0",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1120,
+        900
+      ],
+      "parameters": {
+        "sendTo": "SET YOUR EMAIL HERE",
+        "message": "=⚠️ Workflow `{{$json[\"workflow\"][\"name\"]}}` failed to run!\nYou can find the execution here: {{ $json.execution.url }}\n\nerror message from node {{ $json.execution.lastNodeExecuted }}: {{ $json.execution.error.message }}\n\n {{ $json.execution.error.stack }}",
+        "options": {},
+        "subject": "=🚨 Error in workflow: {{ $json.workflow.name }}",
+        "emailType": "text"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "Work Gmail account"
+        }
+      },
+      "typeVersion": 2.1
+    }
+  ],
+  "connections": {
+    "On Error": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

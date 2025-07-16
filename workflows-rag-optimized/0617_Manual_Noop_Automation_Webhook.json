@@ -1,0 +1,278 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "f4570aad-db25-4dcd-8589-b1c8335935de",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        20,
+        5220
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "16bbf5da-5ebc-4e9c-8b3c-80d0077c51b8",
+      "name": "Find Image ID in Docx",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        900,
+        5220
+      ],
+      "parameters": {
+        "url": "=https://docs.googleapis.com/v1/documents/{{$json.documentId}}",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api"
+      },
+      "notesInFlow": true,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "60325192-4730-4410-ae33-9127ff8cc5f7",
+      "name": "Make file shareable publically (optional)",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1360,
+        5220
+      ],
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.documentId }}"
+        },
+        "options": {},
+        "operation": "share",
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "writer",
+            "type": "anyone"
+          }
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "6f254810-3ab8-4ec1-b964-8b399472acf3",
+      "name": "Image URL",
+      "type": "n8n-nodes-base.set",
+      "notes": "Define Image URL",
+      "position": [
+        440,
+        5220
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cc2c6af0-68d3-49eb-85fe-3288d2ed0f6b",
+              "name": "url",
+              "type": "string",
+              "value": "https://picsum.photos/id/400/300/300"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "notesInFlow": true,
+      "typeVersion": 3.4
+    },
+    {
+      "id": "d33a913a-2d98-4922-ba8d-5d325b114572",
+      "name": "Find & Copy Docx Template",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        660,
+        5220
+      ],
+      "parameters": {
+        "name": "Chosen filename",
+        "fileId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1RQAX2CszNqw79gZxeocEZU0-KquTq3RQc2-5Uv1mgd0",
+          "cachedResultUrl": "https://docs.google.com/document/d/1RQAX2CszNqw79gZxeocEZU0-KquTq3RQc2-5Uv1mgd0/edit?usp=drivesdk",
+          "cachedResultName": "Marketing Plan (template)"
+        },
+        "options": {},
+        "operation": "copy"
+      },
+      "notesInFlow": true,
+      "typeVersion": 3
+    },
+    {
+      "id": "0e1bb319-8429-4bde-88a3-9fd69df7c986",
+      "name": "Own datasource",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        240,
+        5220
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "f8dcb709-5505-4c63-afe9-83a0dfb608e9",
+      "name": "Replace Image in Docx",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1100,
+        5220
+      ],
+      "parameters": {
+        "url": "=https://docs.googleapis.com/v1/documents/{{$json.documentId}}:batchUpdate",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"replaceImage\": {\n        \"imageObjectId\": {{ $json.body.content[1].paragraph.elements[0].inlineObjectElement.inlineObjectId }},\n        \"uri\": \"{{ $('Image URL').item.json.url }}\",\n        \"imageReplaceMethod\": \"CENTER_CROP\"\n      }\n    }\n  ]\n} ",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api"
+      },
+      "notesInFlow": true,
+      "typeVersion": 4.2
+    },
+    {
+      "id": "fa6a214e-b6c5-403a-884a-d915f5a1362f",
+      "name": "Download File - Docx",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1580,
+        5220
+      ],
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.documentId }}"
+        },
+        "options": {},
+        "operation": "download"
+      },
+      "notesInFlow": true,
+      "typeVersion": 3
+    },
+    {
+      "id": "399e08ae-864d-4ffa-bc18-d82e03e30f7c",
+      "name": "Download File - PDF",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1800,
+        5220
+      ],
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.documentId }}"
+        },
+        "options": {
+          "fileName": "=filename - PDF",
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf"
+            }
+          }
+        },
+        "operation": "download"
+      },
+      "notesInFlow": true,
+      "typeVersion": 3
+    }
+  ],
+  "connections": {
+    "Image URL": {
+      "main": [
+        [
+          {
+            "node": "Find & Copy Docx Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Own datasource": {
+      "main": [
+        [
+          {
+            "node": "Image URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File - Docx": {
+      "main": [
+        [
+          {
+            "node": "Download File - PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Image ID in Docx": {
+      "main": [
+        [
+          {
+            "node": "Replace Image in Docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Image in Docx": {
+      "main": [
+        [
+          {
+            "node": "Make file shareable publically (optional)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find & Copy Docx Template": {
+      "main": [
+        [
+          {
+            "node": "Find Image ID in Docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Own datasource",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Make file shareable publically (optional)": {
+      "main": [
+        [
+          {
+            "node": "Download File - Docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

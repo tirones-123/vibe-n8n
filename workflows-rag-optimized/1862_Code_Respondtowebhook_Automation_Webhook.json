@@ -1,0 +1,115 @@
+{
+  "id": "g3q68zSOQvTcydLs",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Calculate the Centroid of a Set of Vectors",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "32a8aa56-aa7e-4c9e-a39e-f65234224bcf",
+      "name": "Receive Vectors",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -440,
+        20
+      ],
+      "webhookId": "30091e91-fc67-4bab-b1fd-ed65c8f4f860",
+      "parameters": {
+        "path": "centroid",
+        "options": {},
+        "responseMode": "responseNode"
+      },
+      "notesInFlow": true,
+      "typeVersion": 2
+    },
+    {
+      "id": "a020a49a-cc9f-49af-aa95-829d9d16da04",
+      "name": "Extract & Parse Vectors",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        360,
+        20
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3e1d9e72-7668-427d-958c-42bff7270a37",
+              "name": "vectors",
+              "type": "array",
+              "value": "={{ $json.query.vectors }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "2f328de6-4ef1-4aac-8838-d616637f4b88",
+      "name": "Validate & Compute Centroid",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        960,
+        20
+      ],
+      "parameters": {
+        "jsCode": "const input = items[0].json;\nconst vectors = input.vectors;\n\nif (!Array.isArray(vectors) || vectors.length === 0) {\n  return [{ json: { error: \"Invalid input: Expected an array of vectors.\" } }];\n}\n\nconst dimension = vectors[0].length;\nif (!vectors.every(v => v.length === dimension)) {\n  return [{ json: { error: \"Vectors have inconsistent dimensions.\" } }];\n}\n\nconst centroid = new Array(dimension).fill(0);\nvectors.forEach(vector => {\n  vector.forEach((val, index) => {\n    centroid[index] += val;\n  });\n});\n\nfor (let i = 0; i < dimension; i++) {\n  centroid[i] /= vectors.length;\n}\n\nreturn [{ json: { centroid } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "821bc173-3578-4cf2-9fd7-8ea9cba8dc3f",
+      "name": "Return Centroid Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1640,
+        20
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.1
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Receive Vectors": {
+      "main": [
+        [
+          {
+            "node": "Extract & Parse Vectors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Parse Vectors": {
+      "main": [
+        [
+          {
+            "node": "Validate & Compute Centroid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Compute Centroid": {
+      "main": [
+        [
+          {
+            "node": "Return Centroid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

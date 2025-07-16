@@ -1,0 +1,612 @@
+{
+  "id": "xM8Z5vZVNTNjCySL",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "News Extraction",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "97711d12-20de-40aa-b994-d2b10f20a5e5",
+      "name": "Extract the HTML with the right css class",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        -500,
+        0
+      ],
+      "parameters": {
+        "options": {
+          "trimValues": true
+        },
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "data",
+              "attribute": "href",
+              "cssSelector": "=div:nth-child(9) > div:nth-child(3) > a:nth-child(2)",
+              "returnArray": true,
+              "returnValue": "attribute"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "b874b570-daae-4878-b525-07ac30756eb1",
+      "name": "Summary",
+      "type": "n8n-nodes-base.openAi",
+      "position": [
+        -880,
+        440
+      ],
+      "parameters": {
+        "model": "gpt-4-1106-preview",
+        "prompt": {
+          "messages": [
+            {
+              "content": "=Create a summary in less than 70 words {{ $json[\"content\"] }}"
+            }
+          ]
+        },
+        "options": {},
+        "resource": "chat"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "72696278-2d44-4073-936a-6fe9df1bc7d8",
+      "name": "Keywords",
+      "type": "n8n-nodes-base.openAi",
+      "position": [
+        -880,
+        620
+      ],
+      "parameters": {
+        "model": "gpt-4-1106-preview",
+        "prompt": {
+          "messages": [
+            {
+              "content": "=name the 3 most important technical keywords in {{ $json[\"content\"] }} ? just name them without any explanations or other sentences"
+            }
+          ]
+        },
+        "options": {},
+        "resource": "chat"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "0bfdb3be-76ef-4bb3-902f-f0869342b83c",
+      "name": "Rename keywords",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -700,
+        620
+      ],
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "keywords",
+              "stringValue": "={{ $json[\"message\"][\"content\"] }}"
+            }
+          ]
+        },
+        "include": "none",
+        "options": {}
+      },
+      "typeVersion": 3.1
+    },
+    {
+      "id": "0387cf34-41c9-4729-8570-1db7b17c42f4",
+      "name": "Rename Summary",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -700,
+        440
+      ],
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "=summary",
+              "stringValue": "={{ $json[\"message\"][\"content\"] }}"
+            }
+          ]
+        },
+        "include": "none",
+        "options": {}
+      },
+      "typeVersion": 3.1
+    },
+    {
+      "id": "5fa1702c-f0bf-4524-bc8f-6f550dd83f1e",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -480,
+        560
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combinationMode": "mergeByPosition"
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "25128a71-b0d5-49a4-adb8-c3fbe03c0a85",
+      "name": "Extract date",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        -500,
+        -160
+      ],
+      "parameters": {
+        "options": {},
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "data",
+              "cssSelector": "div:nth-child(9) > div:nth-child(2) > span:nth-child(1)",
+              "returnArray": true
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "138b3bd6-494a-49b9-b5b8-c9febcfef9fb",
+      "name": "Select posts of last 7 days",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        120,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const currentDate = new Date();\nconst sevenDaysAgo = new Date(currentDate.setDate(currentDate.getDate() - 70)); // Change the number of days going back to your liking (e.g. from -7 to -1) -> BUT sync with the cron job (first node)\n\nconst filteredItems = items.filter(item => {\n    const postDate = new Date(item.json[\"Date\"]); // Assuming \"Date\" is the field name in the extracted html\n    return postDate >= sevenDaysAgo;\n});\n\nreturn filteredItems;\n"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "1ace953b-e298-4fc2-8970-327f736889ec",
+      "name": "Merge date & links",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -100,
+        0
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combinationMode": "mergeByPosition"
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "bba692fc-c225-41be-a969-179d8b99c071",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        320,
+        0
+      ],
+      "parameters": {
+        "url": "={{ $json[\"Link\"] }}",
+        "options": {}
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "26671065-631f-4684-9ee1-15f26b4cf1e4",
+      "name": "Merge Content with Date & Link",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        500,
+        260
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combinationMode": "mergeByPosition"
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "79beb744-97b8-4072-824a-6736b0a080ef",
+      "name": "Extract individual posts",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        500,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": "h1.fl-heading > span:nth-child(1)"
+            },
+            {
+              "key": "content",
+              "cssSelector": ".fl-node-5c7574ae7d5c6 > div:nth-child(1)"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "8a603f2f-4208-48c7-b169-e5613f13fa7d",
+      "name": "Merge ChatGPT output with Date & Link",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -180,
+        560
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combinationMode": "mergeByPosition"
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "f7c42748-f227-42d0-a9e2-fcb16dbd0f75",
+      "name": "Retrieve the web page for further processsing",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -720,
+        0
+      ],
+      "parameters": {
+        "url": "https://www.colt.net/resources/type/news/",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "82993166-b273-4b82-a954-554c6892f825",
+      "name": "Schedule Trigger each week",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -900,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                3
+              ],
+              "triggerAtHour": 4,
+              "triggerAtMinute": 32
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "62021393-e988-4834-9fa2-75a957b42890",
+      "name": "NocoDB news database",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        60,
+        560
+      ],
+      "parameters": {
+        "table": "mhbalmu9aaqcun6",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "=News_Source",
+              "fieldValue": "=Colt"
+            },
+            {
+              "fieldName": "Title",
+              "fieldValue": "={{ $json[\"title\"] }}"
+            },
+            {
+              "fieldName": "Date",
+              "fieldValue": "={{ $json[\"Date\"] }}"
+            },
+            {
+              "fieldName": "Link",
+              "fieldValue": "={{ $json[\"Link\"] }}"
+            },
+            {
+              "fieldName": "Summary",
+              "fieldValue": "={{ $json[\"summary\"] }}"
+            },
+            {
+              "fieldName": "Keywords",
+              "fieldValue": "={{ $json[\"keywords\"] }}"
+            }
+          ]
+        },
+        "operation": "create",
+        "projectId": "prqu4e8bjj4bv1j",
+        "authentication": "nocoDbApiToken"
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "<nocoDbApiToken-id>",
+          "name": "NocoDB Token account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "438e8dde-ce0a-4e5e-8d62-d735d19ec189",
+      "name": "Create single link items",
+      "type": "n8n-nodes-base.itemLists",
+      "position": [
+        -300,
+        0
+      ],
+      "parameters": {
+        "options": {
+          "destinationFieldName": "Link"
+        },
+        "fieldToSplitOut": "data"
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "d721776b-fefc-4e72-91ef-6710f10b0393",
+      "name": "Create single date items",
+      "type": "n8n-nodes-base.itemLists",
+      "position": [
+        -300,
+        -160
+      ],
+      "parameters": {
+        "options": {
+          "destinationFieldName": "Date"
+        },
+        "fieldToSplitOut": "data"
+      },
+      "typeVersion": 3
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge ChatGPT output with Date & Link",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Summary": {
+      "main": [
+        [
+          {
+            "node": "Rename Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keywords": {
+      "main": [
+        [
+          {
+            "node": "Rename keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract date": {
+      "main": [
+        [
+          {
+            "node": "Create single date items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Extract individual posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Summary": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename keywords": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge date & links": {
+      "main": [
+        [
+          {
+            "node": "Select posts of last 7 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create single date items": {
+      "main": [
+        [
+          {
+            "node": "Merge date & links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create single link items": {
+      "main": [
+        [
+          {
+            "node": "Merge date & links",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract individual posts": {
+      "main": [
+        [
+          {
+            "node": "Merge Content with Date & Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger each week": {
+      "main": [
+        [
+          {
+            "node": "Retrieve the web page for further processsing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select posts of last 7 days": {
+      "main": [
+        [
+          {
+            "node": "Merge Content with Date & Link",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Content with Date & Link": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Keywords",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge ChatGPT output with Date & Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge ChatGPT output with Date & Link": {
+      "main": [
+        [
+          {
+            "node": "NocoDB news database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract the HTML with the right css class": {
+      "main": [
+        [
+          {
+            "node": "Create single link items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve the web page for further processsing": {
+      "main": [
+        [
+          {
+            "node": "Extract the HTML with the right css class",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

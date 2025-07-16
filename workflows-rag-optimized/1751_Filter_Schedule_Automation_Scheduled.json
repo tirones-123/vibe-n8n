@@ -1,0 +1,338 @@
+{
+  "id": "VoLT6Omw9KMQgPum",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Weekly_Shodan_Query___Report_Accidents__no_function_node_",
+  "tags": [
+    {
+      "id": "GCHVocImoXoEVnzP",
+      "name": "🛠️ In progress",
+      "createdAt": "2023-10-31T02:17:21.618Z",
+      "updatedAt": "2023-10-31T02:17:21.618Z"
+    },
+    {
+      "id": "QPJKatvLSxxtrE8U",
+      "name": "Secops",
+      "createdAt": "2023-10-31T02:15:11.396Z",
+      "updatedAt": "2023-10-31T02:15:11.396Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "54b2b2bd-9101-402c-b7cb-3d5e1070fcd2",
+      "name": "Scan each IP",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2123,
+        202
+      ],
+      "parameters": {
+        "url": "=https://api.shodan.io/shodan/host/{{ $json.ip }}",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth"
+      },
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "<httpQueryAuth-id>",
+          "name": "Shodan API Key"
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "f6b194a7-a38d-46b4-899f-a9cb71de247e",
+      "name": "Get watched IPs & Ports",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1448.635348143835,
+        200
+      ],
+      "parameters": {
+        "url": "https://internal.users.n8n.cloud/webhook/mock-shodan-ips",
+        "options": {}
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "a6754adf-610b-46f0-9019-7ea21ac22690",
+      "name": "Split out services",
+      "type": "n8n-nodes-base.itemLists",
+      "position": [
+        2323,
+        202
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "data"
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "fa9dd77c-32e9-48c5-a1bf-8b95720aad43",
+      "name": "Unexpected port?",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        2543,
+        202
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('For each IP').item.json.ports.includes($json.port) }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "addfeaf8-0c5d-4e4a-924e-53b3e28a23de",
+      "name": "Set data to post for each port",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2763,
+        202
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "ip",
+              "value": "={{ $('Get watched IPs & Ports').item.json.ip }}"
+            },
+            {
+              "name": "hostnames",
+              "value": "={{ $json.hostnames.join(', ') }}"
+            },
+            {
+              "name": "port",
+              "value": "={{ $json.port }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.description }}"
+            },
+            {
+              "name": "data",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {},
+        "keepOnlySet": true
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "aaef71c0-927c-4297-9fa1-331e7009bf7e",
+      "name": "Convert to table",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        2983,
+        202
+      ],
+      "parameters": {
+        "options": {},
+        "operation": "convertToHtmlTable"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "2f257556-cf1b-4a80-8f40-7989ea077f48",
+      "name": "Convert to Markdown",
+      "type": "n8n-nodes-base.markdown",
+      "position": [
+        3203,
+        202
+      ],
+      "parameters": {
+        "html": "={{ $json.table }}",
+        "options": {},
+        "destinationKey": "markdown"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "9fdd40ba-1ab4-43a2-9e9d-53af5fc32f9f",
+      "name": "For each IP",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        1740,
+        200
+      ],
+      "parameters": {
+        "options": {},
+        "batchSize": 1
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "f8cd7e3f-b55e-400d-ba45-486d4c736a16",
+      "name": "Every Monday",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        1228.635348143835,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 5
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "804ef38c-3ecb-41b2-ab38-ef8c231b7425",
+      "name": "Create TheHive alert",
+      "type": "n8n-nodes-base.theHive",
+      "position": [
+        3423,
+        202
+      ],
+      "parameters": {
+        "date": "={{$now}}",
+        "tags": "={{ $('For each IP').last().json.ip }}",
+        "type": "Unexpected open port",
+        "title": "=Unexpected ports for {{ $('For each IP').last().json.ip }}",
+        "source": "n8n",
+        "sourceRef": "={{ $('For each IP').last().json.ip }}:{{$now.toUnixInteger()}}",
+        "description": "=Unexpected open ports:\n\n{{ $json.markdown }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "theHiveApi": {
+          "id": "<theHiveApi-id>",
+          "name": "The Hive account (David)"
+        }
+      },
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "For each IP": {
+      "main": [
+        [
+          {
+            "node": "Scan each IP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Monday": {
+      "main": [
+        [
+          {
+            "node": "Get watched IPs & Ports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scan each IP": {
+      "main": [
+        [
+          {
+            "node": "Split out services",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to table": {
+      "main": [
+        [
+          {
+            "node": "Convert to Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unexpected port?": {
+      "main": [
+        [
+          {
+            "node": "Set data to post for each port",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split out services": {
+      "main": [
+        [
+          {
+            "node": "Unexpected port?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Markdown": {
+      "main": [
+        [
+          {
+            "node": "Create TheHive alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create TheHive alert": {
+      "main": [
+        [
+          {
+            "node": "For each IP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get watched IPs & Ports": {
+      "main": [
+        [
+          {
+            "node": "For each IP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set data to post for each port": {
+      "main": [
+        [
+          {
+            "node": "Convert to table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "id": "wDD4XugmHIvx3KMT",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Analyze Screenshots with AI",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "ae568c65-e8f6-45bb-9c96-a870da1fc7d6",
+      "name": "Setup",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        360,
+        1320
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "website_name",
+              "value": "=n8n"
+            },
+            {
+              "name": "url",
+              "value": "https://n8n.io/"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "ca9f0357-a596-4453-b351-fdd8d47c81ad",
+      "name": "URLbox API Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        780,
+        1120
+      ],
+      "parameters": {
+        "url": "https://api.urlbox.io/v1/render/sync",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.url }}"
+            },
+            {
+              "name": "full_page",
+              "value": true
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "YOUR_API_KEY"
+            }
+          ]
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.1
+    },
+    {
+      "id": "d2b81b41-1497-4733-8130-67f8de0acff4",
+      "name": "Analyze the Screenshot",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1220,
+        1120
+      ],
+      "parameters": {
+        "text": "=Your Input is a Screenshot of a Website.\nDescribe the content of the Website in one sentence.",
+        "options": {},
+        "resource": "image",
+        "imageUrls": "renderURL",
+        "operation": "analyze"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "8a22fca5-7f06-45fb-a03f-585a7eb35b40",
+      "name": "Merge Name & Description",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1620,
+        1300
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combinationMode": "mergeByPosition"
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "8b3eb3f4-b31a-48f0-94bb-35379d07a81f",
+      "name": "Manual Execution",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        20,
+        1320
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Setup": {
+      "main": [
+        [
+          {
+            "node": "URLbox API Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Name & Description",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Manual Execution": {
+      "main": [
+        [
+          {
+            "node": "Setup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URLbox API Request": {
+      "main": [
+        [
+          {
+            "node": "Analyze the Screenshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze the Screenshot": {
+      "main": [
+        [
+          {
+            "node": "Merge Name & Description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

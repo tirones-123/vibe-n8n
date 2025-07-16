@@ -49,6 +49,10 @@ coverage/
 # Optional eslint cache
 .eslintcache
 
+# Debug files
+debug/
+debug-*.json
+
 # Dependency directories
 jspm_packages/
 

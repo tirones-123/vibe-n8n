@@ -1,0 +1,249 @@
+{
+  "id": "AQJ6QnF2yVdCWMnx",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "SQL agent with memory",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "3544950e-4d8e-46ca-8f56-61c152a5cae3",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        1220,
+        500
+      ],
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "743cc4e7-5f24-4adc-b872-7241ee775bd0",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1000,
+        500
+      ],
+      "parameters": {
+        "model": "gpt-4-turbo",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "Ted's Tech Talks OpenAi"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "cc30066c-ad2c-4729-82c1-a6b0f4214dee",
+      "name": "When clicking \"Test workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        500,
+        -80
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "0deacd0d-45cb-4738-8da0-9d1251858867",
+      "name": "Get chinook.zip example",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        700,
+        -80
+      ],
+      "parameters": {
+        "url": "https://www.sqlitetutorial.net/wp-content/uploads/2018/03/chinook.zip",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "61f34708-f8ed-44a9-8522-6042d28511ae",
+      "name": "Extract zip file",
+      "type": "n8n-nodes-base.compression",
+      "position": [
+        900,
+        -80
+      ],
+      "parameters": {},
+      "typeVersion": 1.1
+    },
+    {
+      "id": "6a12d9ac-f1b7-4267-8b34-58cdb9d347bb",
+      "name": "Save chinook.db locally",
+      "type": "n8n-nodes-base.readWriteFile",
+      "position": [
+        1100,
+        -80
+      ],
+      "parameters": {
+        "options": {},
+        "fileName": "./chinook.db",
+        "operation": "write",
+        "dataPropertyName": "file_0"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "701d1325-4186-4185-886a-3738163db603",
+      "name": "Load local chinook.db",
+      "type": "n8n-nodes-base.readWriteFile",
+      "position": [
+        620,
+        360
+      ],
+      "parameters": {
+        "options": {},
+        "fileSelector": "./chinook.db"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "2be63956-236e-46f7-b8e4-0f55e2e25a5c",
+      "name": "Combine chat input with the binary",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        820,
+        360
+      ],
+      "parameters": {
+        "mode": "raw",
+        "options": {
+          "includeBinary": true
+        },
+        "jsonOutput": "={{ $('Chat Trigger').item.json }}\n"
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "ac819eb5-13b2-4280-b9d6-06ec1209700e",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1020,
+        360
+      ],
+      "parameters": {
+        "agent": "sqlAgent",
+        "options": {},
+        "dataSource": "sqlite"
+      },
+      "typeVersion": 1.6
+    },
+    {
+      "id": "5ecaa3eb-e93e-4e41-bbc0-98a8c2b2d463",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        420,
+        360
+      ],
+      "webhookId": "fb565f08-a459-4ff9-8249-1ede58599660",
+      "parameters": {},
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load local chinook.db",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract zip file": {
+      "main": [
+        [
+          {
+            "node": "Save chinook.db locally",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load local chinook.db": {
+      "main": [
+        [
+          {
+            "node": "Combine chat input with the binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get chinook.zip example": {
+      "main": [
+        [
+          {
+            "node": "Extract zip file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \"Test workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Get chinook.zip example",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine chat input with the binary": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

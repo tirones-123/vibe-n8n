@@ -1,0 +1,154 @@
+{
+  "id": "pkw1vY5q1p2nNfNC",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Forward Netflix emails to multiple email addresses with GMail and Mailjet",
+  "tags": [
+    {
+      "id": "NfcTamKf2RPwzXbo",
+      "name": "automate-everything",
+      "createdAt": "2024-02-14T20:01:44.966Z",
+      "updatedAt": "2024-02-14T20:01:44.966Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "653e1069-b231-41e4-8257-5276934ec124",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "position": [
+        600,
+        360
+      ],
+      "parameters": {
+        "simple": false,
+        "filters": {
+          "sender": "netflix.com",
+          "includeSpamTrash": true
+        },
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "Gmail account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "2edc2a63-b3ce-45a4-ad37-fde991453be5",
+      "name": "Mailjet",
+      "type": "n8n-nodes-base.mailjet",
+      "position": [
+        1540,
+        360
+      ],
+      "parameters": {
+        "html": "={{ $json.html }}",
+        "text": "={{ $json.text }}",
+        "subject": "={{ $json.subject }}",
+        "toEmail": "={{ $json.recipient }}",
+        "fromEmail": "sender@email.com",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "mailjetEmailApi": {
+          "id": "<mailjetEmailApi-id>",
+          "name": "Mailjet Email account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "255de753-a0f5-458d-ac7f-ca354076e336",
+      "name": "Set all recipients",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        940,
+        360
+      ],
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "recipients",
+              "type": "arrayValue",
+              "arrayValue": "['email1@example.com','email2@example.com','email3@example.com']"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "fe3affe4-0655-42b4-a0a6-b8b231180fbd",
+      "name": "Split Out recipients",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1240,
+        360
+      ],
+      "parameters": {
+        "include": "allOtherFields",
+        "options": {
+          "destinationFieldName": "recipient"
+        },
+        "fieldToSplitOut": "recipients"
+      },
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "timezone": "Europe/Berlin",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "JgJIAy1RwwG892Kn",
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set all recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set all recipients": {
+      "main": [
+        [
+          {
+            "node": "Split Out recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out recipients": {
+      "main": [
+        [
+          {
+            "node": "Mailjet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

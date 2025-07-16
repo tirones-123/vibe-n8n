@@ -1,0 +1,314 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "f4570aad-db25-4dcd-8589-b1c8335935de",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -180,
+        3800
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "bd481559-85f2-4865-8d85-e50e72369f26",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        940,
+        3620
+      ],
+      "webhookId": "f10708f0-38c6-4c75-b635-37222d5b183a",
+      "parameters": {
+        "amount": 45
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "71c0f975-c0f9-47ae-a245-f852387ad461",
+      "name": "Connect to your own data source",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1380,
+        3820
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "fba918e7-2c88-4de3-a789-cadbf4f2584e",
+      "name": "Get urls from own data source",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        0,
+        3800
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "221a75eb-0bc8-4747-9ec1-1879c46d9163",
+      "name": "Example fields from data source",
+      "type": "n8n-nodes-base.set",
+      "notes": "Define URLs in array",
+      "position": [
+        200,
+        3800
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cc2c6af0-68d3-49eb-85fe-3288d2ed0f6b",
+              "name": "Page",
+              "type": "array",
+              "value": "[\"https://www.automake.io/\", \"https://www.n8n.io/\"]"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "notesInFlow": true,
+      "typeVersion": 3.4
+    },
+    {
+      "id": "77311c67-f50f-427a-87fd-b29b1f542bbc",
+      "name": "40 items at a time",
+      "type": "n8n-nodes-base.limit",
+      "position": [
+        580,
+        3800
+      ],
+      "parameters": {
+        "maxItems": 40
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "43557ab1-4e52-4598-83a9-e39d5afc6de7",
+      "name": "10 at a time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        740,
+        3800
+      ],
+      "parameters": {
+        "options": {},
+        "batchSize": 10
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "555d52e7-010b-462b-9382-26804493de1c",
+      "name": "Markdown data and Links",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1160,
+        3820
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a959c64-4c3c-4072-8427-67f6f6ecba1b",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.data.metadata.title }}"
+            },
+            {
+              "id": "d2da0859-a7a0-4c39-913a-150ecb95d075",
+              "name": "description",
+              "type": "string",
+              "value": "={{ $json.data.metadata.description }}"
+            },
+            {
+              "id": "62bd2d76-b78d-4501-a59b-a25ed7b345b0",
+              "name": "content",
+              "type": "string",
+              "value": "={{ $json.data.markdown }}"
+            },
+            {
+              "id": "d4c712fa-b52a-498f-8abc-26dc72be61f7",
+              "name": "links",
+              "type": "string",
+              "value": "={{ $json.data.links }} "
+            }
+          ]
+        }
+      },
+      "notesInFlow": true,
+      "typeVersion": 3.4
+    },
+    {
+      "id": "aac948e6-ac86-4cea-be84-f27919d6d936",
+      "name": "Split out page URLs",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        380,
+        3800
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "Page"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "71c5a0d4-540e-4766-ae99-bdc427019dac",
+      "name": "Retrieve Page Markdown and Links",
+      "type": "n8n-nodes-base.httpRequest",
+      "notes": "curl -X POST https://api.firecrawl.dev/v1/scrape \\\n -H 'Content-Type: application/json' \\\n -H 'Authorization: Bearer YOUR_API_KEY' \\\n -d '{\n \"url\": \"https://docs.firecrawl.dev\",\n \"formats\" : [\"markdown\", \"html\"]\n }'\n",
+      "position": [
+        960,
+        3820
+      ],
+      "parameters": {
+        "url": "https://api.firecrawl.dev/v1/scrape",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n \"url\": \"{{ $json.Page }}\",\n \"formats\" : [\"markdown\", \"links\"]\n} ",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Firecrawl Bearer"
+        }
+      },
+      "retryOnFail": true,
+      "typeVersion": 4.2,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "10 at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10 at a time": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Retrieve Page Markdown and Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "40 items at a time": {
+      "main": [
+        [
+          {
+            "node": "10 at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split out page URLs": {
+      "main": [
+        [
+          {
+            "node": "40 items at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown data and Links": {
+      "main": [
+        [
+          {
+            "node": "Connect to your own data source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get urls from own data source": {
+      "main": [
+        [
+          {
+            "node": "Example fields from data source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Connect to your own data source": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Example fields from data source": {
+      "main": [
+        [
+          {
+            "node": "Split out page URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Page Markdown and Links": {
+      "main": [
+        [
+          {
+            "node": "Markdown data and Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get urls from own data source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

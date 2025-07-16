@@ -1,0 +1,140 @@
+{
+  "id": "f3BtfIEQ7lWiXBWQ",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Connect Airtable Contacts to telli for Automated AI Voice Call Scheduling",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "9562ed92-f04e-44b8-b2f1-3c9032788826",
+      "name": "Airtable Trigger",
+      "type": "n8n-nodes-base.airtableTrigger",
+      "position": [
+        -20,
+        0
+      ],
+      "parameters": {
+        "baseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appjsUaPrbH6ph7cB"
+        },
+        "tableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblVXEWTj7dErmNsa"
+        },
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerField": "=Created Time",
+        "authentication": "airtableTokenApi",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "<airtableTokenApi-id>",
+          "name": "Airtable account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "d40f78ab-f96f-44eb-a2ac-1b16a66f94cb",
+      "name": "Schedule Calls Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        500,
+        0
+      ],
+      "parameters": {
+        "url": "https://api.telli.com/v1/schedule-call",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=contact_id",
+              "value": "={{ $json.contact_id }}"
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "<YOUR-API-KEY>"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "b5d4b415-9363-4d2a-8689-4c789177d9c3",
+      "name": "Add contact request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "url": "https://api.telli.com/v1/add-contact",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "=json",
+        "sendHeaders": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "<YOUR-API-KEY>"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.2
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Airtable Trigger": {
+      "main": [
+        [
+          {
+            "node": "Add contact request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add contact request": {
+      "main": [
+        [
+          {
+            "node": "Schedule Calls Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

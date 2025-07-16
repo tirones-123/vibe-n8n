@@ -1,0 +1,141 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "72babb83-0530-4809-9f6f-d9afaf91fd59",
+      "name": "Send Log to BetterStack",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        80,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"message\":\"{{ $json.message }}\",\n  \"level\": \"{{ $json.level }}\"\n} ",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Header Auth BetterStack"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "863b184b-05c0-47b7-82c1-166bdf25a32a",
+      "name": "Recieve log message",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "notes": "from another workflow",
+      "position": [
+        -140,
+        140
+      ],
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "level"
+            },
+            {
+              "name": "message"
+            }
+          ]
+        }
+      },
+      "notesInFlow": true,
+      "typeVersion": 1.1
+    },
+    {
+      "id": "e696b65e-5249-43b2-9a33-4e59fc616f21",
+      "name": "Test workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -260,
+        -120
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "f7b51eae-4016-4072-9539-b66ea8646508",
+      "name": "Send test log message",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "notes": "using workflow",
+      "position": [
+        -40,
+        -120
+      ],
+      "parameters": {
+        "options": {},
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$workflow.id}}"
+        },
+        "workflowInputs": {
+          "value": {
+            "level": "error",
+            "message": "This is a test log message"
+          },
+          "schema": [
+            {
+              "id": "level",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "level",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "message",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        }
+      },
+      "notesInFlow": true,
+      "typeVersion": 1.2
+    }
+  ],
+  "connections": {
+    "Test workflow": {
+      "main": [
+        [
+          {
+            "node": "Send test log message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recieve log message": {
+      "main": [
+        [
+          {
+            "node": "Send Log to BetterStack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

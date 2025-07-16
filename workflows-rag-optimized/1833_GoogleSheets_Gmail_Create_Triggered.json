@@ -1,0 +1,129 @@
+{
+  "id": "dCLvOuZgc8tToQwu",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Add new incoming emails to a Google Sheets spreadsheet as a new row.",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "4db1f92f-6425-41c4-8f26-94e13ef5cd1f",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "notes": "Gmail Trigger\n",
+      "position": [
+        -200,
+        -20
+      ],
+      "parameters": {
+        "filters": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": ""
+        }
+      },
+      "notesInFlow": true,
+      "typeVersion": 1.2
+    },
+    {
+      "id": "77c70cbd-fca7-4925-9a47-e2c903b8a64e",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        180,
+        -20
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "body": "={{ $json.snippet }}",
+            "Subject": "={{ $json.Subject }}",
+            "Sender Email": "={{ $json.From }}"
+          },
+          "schema": [
+            {
+              "id": "Sender Email",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Sender Email",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Subject",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "body",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "body",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "",
+          "cachedResultName": ""
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1o28BFBtzzsnwN01VTcfRp2BUyAFi9e-91H_b920_gJc",
+          "cachedResultUrl": "",
+          "cachedResultName": ""
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": ""
+        }
+      },
+      "typeVersion": 4.5
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

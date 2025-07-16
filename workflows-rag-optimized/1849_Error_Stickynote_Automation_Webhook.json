@@ -1,0 +1,77 @@
+{
+  "id": "ePnGZtZ8zLcf1UZZ",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "n8n Error Report to Line",
+  "tags": [
+    {
+      "id": "0xpEHcJjNRRRMtEj",
+      "name": "lin",
+      "createdAt": "2025-03-12T05:06:24.112Z",
+      "updatedAt": "2025-03-12T05:06:24.112Z"
+    },
+    {
+      "id": "U1ozjO3iXQZWUyfG",
+      "name": "_Blueprint",
+      "createdAt": "2025-03-12T06:24:40.268Z",
+      "updatedAt": "2025-03-12T06:24:40.268Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "c45a01a5-289b-4927-8bba-4bb1029a7129",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -240,
+        -80
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "1e3f7a7e-8be4-4fec-973f-befb477e6957",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        40,
+        -80
+      ],
+      "parameters": {
+        "url": "https://api.line.me/v2/bot/message/push",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n    \"to\": \"<UID HERE>\",\n    \"messages\":[\n        {\n            \"type\":\"text\",\n            \"text\":\"🚨Your n8n flow is dead.🚨\\n\\nName: {{ $json.workflow.name }} \\nURL: {{ $json.execution.url }}\"\n        }\n    ]\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Line @271dudsw MiniBear"
+        }
+      },
+      "typeVersion": 4.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

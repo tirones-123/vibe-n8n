@@ -1,0 +1,347 @@
+{
+  "id": "RKbQHfblpcvMGZ4w",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Form with Dynamic Dropdown Field",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "aa627a35-9bea-4c07-b7e7-26f048564443",
+      "name": "n8n | get wf",
+      "type": "n8n-nodes-base.n8n",
+      "position": [
+        540,
+        -180
+      ],
+      "parameters": {
+        "operation": "get",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "requestOptions": {}
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "<n8nApi-id>",
+          "name": "n8n account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "902a8e45-f4b4-469c-96a6-80002de5f6dc",
+      "name": "n8n | update",
+      "type": "n8n-nodes-base.n8n",
+      "position": [
+        1060,
+        -180
+      ],
+      "parameters": {
+        "operation": "update",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "requestOptions": {},
+        "workflowObject": "={{ JSON.stringify($json) }}"
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "<n8nApi-id>",
+          "name": "n8n account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "3e9e5c16-0080-4cba-8a8a-8f24f7266fcb",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        40,
+        -620
+      ],
+      "webhookId": "3e975d29-df26-49fb-8dcf-abe8fe8bc4e6",
+      "parameters": {
+        "options": {},
+        "formTitle": "Example Title",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Example text field"
+            },
+            {
+              "fieldType": "dropdown",
+              "fieldLabel": "Example dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "test publieke ruimtes"
+                  },
+                  {
+                    "option": "Demonstraties"
+                  },
+                  {
+                    "option": "Demonstraties"
+                  },
+                  {
+                    "option": "Juridisch medewerker IE-recht  Streetlife"
+                  },
+                  {
+                    "option": "Bamboe"
+                  },
+                  {
+                    "option": "Klaar?"
+                  },
+                  {
+                    "option": "Dannu?"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "0b874994-c123-44f8-b0f5-0b365b57d945",
+      "name": "Google Sheets Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "position": [
+        -460,
+        -180
+      ],
+      "parameters": {
+        "options": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F73a7uuzLAq916w2JFndumv0JhnCAvOTN-Cn_OOP3uA/edit#gid=0",
+          "cachedResultName": "Blad1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1F73a7uuzLAq916w2JFndumv0JhnCAvOTN-Cn_OOP3uA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F73a7uuzLAq916w2JFndumv0JhnCAvOTN-Cn_OOP3uA/edit?usp=drivesdk",
+          "cachedResultName": "obsidian-n8n"
+        },
+        "includeInOutput": "both"
+      },
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "<googleSheetsTriggerOAuth2Api-id>",
+          "name": "Google Sheets Trigger account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "4c9bfed8-a758-40b9-9c74-53bedc1d1aa3",
+      "name": "Execute Workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        240,
+        -620
+      ],
+      "parameters": {
+        "options": {},
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "317694bd-590f-4eb4-a53f-f4d5d2d1ab16",
+      "name": "Write JSON",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        280,
+        -180
+      ],
+      "parameters": {
+        "jsCode": "const inputArray = items.map(item => item.json);\n\nconst output = [\n  {\n    nodes: [\n      {\n        parameters: {\n          formFields: {\n            values: [\n              {\n                fieldOptions: {\n                  values: inputArray.map(entry => ({ option: entry.value }))\n                }\n              }\n            ]\n          }\n        }\n      }\n    ]\n  }\n];\n\n// Return the transformed output\nreturn output.map(item => ({ json: item }));"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "08b3c0b3-3df3-40d9-80ce-bd7c763fdbdb",
+      "name": "Replace values",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        820,
+        -180
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "38ef2b43-b903-4e96-b098-9da2d8c1c153",
+              "name": "={{ \n   (() => {\n      const nodeIndex = $json.nodes.findIndex(\n         node => node.parameters?.formFields?.values.some(\n            value => value.fieldType === 'dropdown' && value.fieldOptions?.values\n         )\n      );\n\n      if (nodeIndex === -1) return 'No matching node found';\n\n      const valueIndex = $json.nodes[nodeIndex].parameters.formFields.values.findIndex(\n         value => value.fieldType === 'dropdown' && value.fieldOptions?.values\n      );\n\n      if (valueIndex === -1) return `nodes[${nodeIndex}].parameters.formFields.values - No matching dropdown value found`;\n\n      return `nodes[${nodeIndex}].parameters.formFields.values[${valueIndex}].fieldOptions.values`;\n   })()\n}}",
+              "type": "array",
+              "value": "={{ $('Write JSON').item.json.nodes[0].parameters.formFields.values[0].fieldOptions.values }}"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "07635565-f8ea-4fac-b93c-069fbe065ce8",
+      "name": "Get all values",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -240,
+        -180
+      ],
+      "parameters": {
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F73a7uuzLAq916w2JFndumv0JhnCAvOTN-Cn_OOP3uA/edit#gid=0",
+          "cachedResultName": "Blad1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1F73a7uuzLAq916w2JFndumv0JhnCAvOTN-Cn_OOP3uA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F73a7uuzLAq916w2JFndumv0JhnCAvOTN-Cn_OOP3uA/edit?usp=drivesdk",
+          "cachedResultName": "obsidian-n8n"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "9ce7bf73-211a-4f5b-b39d-81a2d513a3ef",
+      "name": "Format to 'values'",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        20,
+        -180
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e18aa12e-f277-4257-ba27-9262cc7b866a",
+              "name": "value",
+              "type": "string",
+              "value": "={{ $json.title }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Write JSON": {
+      "main": [
+        [
+          {
+            "node": "n8n | get wf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n | get wf": {
+      "main": [
+        [
+          {
+            "node": "Replace values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all values": {
+      "main": [
+        [
+          {
+            "node": "Format to 'values'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace values": {
+      "main": [
+        [
+          {
+            "node": "n8n | update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format to 'values'": {
+      "main": [
+        [
+          {
+            "node": "Write JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get all values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

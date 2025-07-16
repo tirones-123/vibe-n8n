@@ -1,0 +1,173 @@
+{
+  "id": "Sebvr1R2t4zkAg1V",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Gratitude Jar Reminder",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "ac48becc-e207-489b-a8e4-a8f69780c626",
+      "name": "Trigger 2100 Bear Gratitude Jar Notice",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -80,
+        -100
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 21
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "37f46ac1-5c0b-4cdf-aa33-67fad80dafdd",
+      "name": "WriteReminder",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        180,
+        -100
+      ],
+      "parameters": {
+        "text": "=Today is a wonderful day! 🌟 What or who brought a smile to your face today? 😊\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You'll rewrite this message to send reminder to user to record good thing today."
+            }
+          ]
+        },
+        "promptType": "define"
+      },
+      "typeVersion": 1.5
+    },
+    {
+      "id": "6562967a-fae7-400a-913a-4cf68e70b40a",
+      "name": "Reformat Output from Chat Model",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        600,
+        -100
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "90abc5a6-c9b9-4b0d-b433-c6f90816dba3",
+              "name": "posestoday",
+              "type": "string",
+              "value": "={{ $json.text.replaceAll(\"\\n\",\"\\\\n\").replaceAll(\"\\n\",\"\").removeMarkdown().removeTags().replaceAll('\"',\"\") }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "d2ab000a-6f3a-494f-807f-829cbb124685",
+      "name": "Azure OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "position": [
+        280,
+        -20
+      ],
+      "parameters": {
+        "model": "4o",
+        "options": {
+          "temperature": 0.9
+        }
+      },
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "<azureOpenAiApi-id>",
+          "name": "Azure Open AI account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c548df75-dc6c-472f-8992-77f0f57d4732",
+      "name": "Line Push Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        940,
+        -100
+      ],
+      "parameters": {
+        "url": "https://api.line.me/v2/bot/message/push",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n    \"to\": \"YOUR ID HERE\",\n    \"messages\":[\n        {\n            \"type\":\"text\",\n            \"text\":\"{{ $json.posestoday }}\"\n        }\n    ]\n} ",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Line @511dizji"
+        }
+      },
+      "typeVersion": 4.2
+    }
+  ],
+  "active": true,
+  "settings": {
+    "timezone": "Asia/Bangkok",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "WriteReminder": {
+      "main": [
+        [
+          {
+            "node": "Reformat Output from Chat Model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "WriteReminder",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reformat Output from Chat Model": {
+      "main": [
+        [
+          {
+            "node": "Line Push Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger 2100 Bear Gratitude Jar Notice": {
+      "main": [
+        [
+          {
+            "node": "WriteReminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

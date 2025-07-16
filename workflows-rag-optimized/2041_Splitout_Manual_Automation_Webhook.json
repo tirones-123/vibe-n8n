@@ -1,0 +1,521 @@
+{
+  "id": "PpFVCrTiYoa35q1m",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Vision-Based AI Agent Scraper - with Google Sheets, ScrapingBee, and Gemini",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "90ac8845-342e-4fdb-ae09-cb9d169b4119",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        160,
+        460
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "7a2bfc41-1527-448d-a52c-794ca4c9e7ee",
+      "name": "ScrapingBee- Get page HTML",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2280,
+        1360
+      ],
+      "parameters": {
+        "url": "https://app.scrapingbee.com/api/v1",
+        "options": {},
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "<your_scrapingbee_apikey>"
+            },
+            {
+              "name": "url",
+              "value": "={{$json.url}}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "a0ab6dcb-ffad-40bf-8a22-f2e152e69b00",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        2480,
+        880
+      ],
+      "parameters": {
+        "jsonSchemaExample": "[{\n \"product_title\":\"The title of the product\",\n \"product_price\":\"The price of the product\",\n \"product_brand\": \"The brand of the product\",\n \"promo\":\"true or false\",\n \"promo_percentage\":\"NUM %\"\n}]"
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "34f50603-a969-425d-8a1a-ec8031a5cdfd",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        1800,
+        900
+      ],
+      "parameters": {
+        "options": {},
+        "modelName": "models/gemini-1.5-pro-latest"
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "2054612e-f3e1-4633-9c1a-0644ae07613c",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        2880,
+        460
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "output"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "1a59a962-f483-4a27-8686-607a7d375584",
+      "name": "Google Sheets - Get list of URLs",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        620,
+        460
+      ],
+      "parameters": {
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "",
+          "cachedResultName": "List of URLs"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultUrl": "",
+          "cachedResultName": "Google Sheets - Workflow Vision-Based Scraping"
+        },
+        "authentication": "serviceAccount"
+      },
+      "credentials": {
+        "googleApi": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "82dcdc23-3d71-4281-a3d0-fdbc27327dd0",
+      "name": "Set fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1040,
+        460
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c53c5ed2-9c7b-4365-9953-790264c722ab",
+              "name": "url",
+              "type": "string",
+              "value": "={{ $json.url }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "01cbc1eb-2910-49b1-89e6-d32d340e5273",
+      "name": "ScrapingBee - Get page screenshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1440,
+        460
+      ],
+      "parameters": {
+        "url": "https://app.scrapingbee.com/api/v1",
+        "options": {},
+        "sendQuery": true,
+        "sendHeaders": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "<your_scrapingbee_apikey>"
+            },
+            {
+              "name": "url",
+              "value": "={{ $json.url }}"
+            },
+            {
+              "name": "screenshot_full_page",
+              "value": "true"
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "9fe8ee54-755a-44f2-a2bf-a695e3754b3d",
+      "name": "HTML-based Scraping Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        2160,
+        900
+      ],
+      "parameters": {
+        "name": "HTMLScrapingTool",
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "PpFVCrTiYoa35q1m",
+          "cachedResultName": "vb-scraping"
+        },
+        "description": "=Call this tool ONLY when you need to retrieve the HTML content of a webpage.",
+        "responsePropertyName": "data"
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "226520d1-2edb-4ade-9940-0bae461eb161",
+      "name": "Google Sheets - Create Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        3340,
+        460
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "promo": "={{ $json.promo }}",
+            "category": "={{ $('Set fields').item.json.url }}",
+            "product_url": "={{ $json.product_title }}",
+            "product_brand": "={{ $json.product_brand }}",
+            "product_price": "={{ $json.product_price }}",
+            "promo_percent": "={{ $json.promo_percentage }}"
+          },
+          "schema": [
+            {
+              "id": "category",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "category",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_url",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "product_url",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_price",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "product_price",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_brand",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "product_brand",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "promo",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "promo",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "promo_percent",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "promo_percent",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": []
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 648398171,
+          "cachedResultUrl": "",
+          "cachedResultName": "Results"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1g81_39MJUlwnInX30ZuBtHUb-Y80WrYyF5lccaRtcu0",
+          "cachedResultUrl": "",
+          "cachedResultName": "Google Sheets - Workflow Vision-Based Scraping"
+        },
+        "authentication": "serviceAccount"
+      },
+      "credentials": {
+        "googleApi": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "2c142537-d8fe-4fc1-9758-6a3538c43fc0",
+      "name": "Vision-based Scraping Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        2040,
+        460
+      ],
+      "parameters": {
+        "text": "=Here is the screenshot you need to use to extract data about the page:\n\n{{ $json.url }}",
+        "options": {
+          "systemMessage": "=Extract the following details from the input screenshot:\n\n- Product Titles\n- Product Prices\n- Brands\n- Promotional Information (e.g., if the product is on promo)\n\nStep 1: Image-Based Extraction\nAnalyze the provided screenshot to identify and extract all the required details: product titles, prices, brands, and promotional information.\nEnsure the extraction is thorough and validate the completeness of the information.\nCross-check all products for missing or unclear details.\nHighlight any limitations (e.g., text is unclear, partially cropped, or missing) in the extraction process.\n\nStep 2: HTML-Based Extraction (If Needed)\nIf you determine that any required information is:\n\nIncomplete or missing (e.g., not all titles, prices, or brands could be retrieved).\nAmbiguous or uncertain (e.g., unclear text or potential errors in OCR).\nUnavailable due to the limitations of image processing (e.g., product links).\n\nThen:\n\nCall the HTML-based tool with the input URL to access the page content.\nExtract the required details from the HTML to supplement or replace the image-based results.\nCombine data from both sources (if applicable) to ensure the final result is comprehensive and accurate.\n\nAdditional Notes\nAvoid redundant HTML tool usage—confirm deficiencies in image-based extraction before proceeding.\nFor products on promotion, explicitly label this status in the output.\nReport extraction errors or potential ambiguities (e.g., text illegibility).\n\nIn your output, include all these fields as shown in the example below. If there is no promotion, set \"promo\" to false and \"promo_percent\" to 0.\n\njson\nCopy code\n[{\n \"product_title\": \"The title of the product\",\n \"product_price\": \"The price of the product\",\n \"product_brand\": \"The brand of the product\",\n \"promo\": true,\n \"promo_percent\": 25\n}]",
+          "passthroughBinaryImages": true
+        },
+        "promptType": "define",
+        "hasOutputParser": true
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "79f7b4db-57f1-4004-88b3-51cfcfe9884e",
+      "name": "HTML-Scraping Tool",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        1480,
+        1360
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "f2615921-d060-410b-aef4-cd484edb2897",
+      "name": "Set fields - from AI agent query",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1880,
+        1360
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c53c5ed2-9c7b-4365-9953-790264c722ab",
+              "name": "url",
+              "type": "string",
+              "value": "={{ $json.query }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "3b9096d1-ab5a-48a8-90ee-465483881d95",
+      "name": "HTML to Markdown",
+      "type": "n8n-nodes-base.markdown",
+      "position": [
+        2740,
+        1360
+      ],
+      "parameters": {
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Create Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set fields": {
+      "main": [
+        [
+          {
+            "node": "ScrapingBee - Get page screenshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML-Scraping Tool": {
+      "main": [
+        [
+          {
+            "node": "Set fields - from AI agent query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Vision-based Scraping Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML-based Scraping Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Vision-based Scraping Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Vision-based Scraping Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ScrapingBee- Get page HTML": {
+      "main": [
+        [
+          {
+            "node": "HTML to Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vision-based Scraping Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Get list of URLs": {
+      "main": [
+        [
+          {
+            "node": "Set fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set fields - from AI agent query": {
+      "main": [
+        [
+          {
+            "node": "ScrapingBee- Get page HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ScrapingBee - Get page screenshot": {
+      "main": [
+        [
+          {
+            "node": "Vision-based Scraping Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Get list of URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

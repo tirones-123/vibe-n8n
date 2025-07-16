@@ -1,0 +1,286 @@
+{
+  "id": "QqbYH25we4JDZrZD",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "🔍🛠️ Tavily Search & Extract - Template",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "7e4d0b3c-761d-42b9-bbbe-6ceb366fdc6f",
+      "name": "Tavily Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -580,
+        -180
+      ],
+      "parameters": {
+        "url": "https://api.tavily.com/search",
+        "body": "={\n    \"api_key\": \"tvly-YOUR_API_KEY\",\n    \"query\": \"What is n8n?\",\n    \"search_depth\": \"basic\",\n    \"include_answer\": false,\n    \"include_images\": true,\n    \"include_image_descriptions\": true,\n    \"include_raw_content\": false,\n    \"max_results\": 5,\n    \"include_domains\": [],\n    \"exclude_domains\": []\n}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json"
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "47c0bfcf-a187-4b15-b208-2458c934d5f7",
+      "name": "Tavily Extract",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        40,
+        -400
+      ],
+      "parameters": {
+        "url": "https://api.tavily.com/extract",
+        "body": "={\n    \"api_key\": \"tvly-YOUR_API_KEY\",\n    \"urls\": [\n        \"https://en.wikipedia.org/wiki/Artificial_intelligence\"\n    ]\n}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json"
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "76b291bc-8c34-44f1-b366-09c9f51089e2",
+      "name": "Get Top Result",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -700,
+        140
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a73e848c-f7e7-4b3a-ae99-930c577b47be",
+              "name": "results",
+              "type": "object",
+              "value": "={{ $json.results.first() }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "4b098e57-eff2-4e70-9429-23b5c3d936c2",
+      "name": "Tavily Extract Top Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -480,
+        140
+      ],
+      "parameters": {
+        "url": "https://api.tavily.com/extract",
+        "body": "={\n    \"api_key\": \"{{ $('Tavily API Key').item.json.api_key }}\",\n    \"urls\": [\n        \"{{ $json.results.url }}\"\n    ]\n}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json"
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "f593e164-1c9d-46e6-a619-39fe621c829f",
+      "name": "Filter > 90%",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -920,
+        140
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8fd0cfc4-7adc-45f9-a278-d217e362ebfb",
+              "name": "results",
+              "type": "array",
+              "value": "={{ $json.results.filter(item => item.score > 0.80) }}"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "fadd100c-0335-42c2-9c3d-48e6d17eb2f9",
+      "name": "Tavily Search Topic",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1140,
+        140
+      ],
+      "parameters": {
+        "url": "https://api.tavily.com/search",
+        "body": "={\n    \"api_key\": \"{{ $json.api_key }}\",\n    \"query\": \"{{ $('Provide search topic via Chat window').item.json.chatInput }}\",\n    \"search_depth\": \"basic\",\n    \"include_answer\": false,\n    \"include_images\": true,\n    \"include_image_descriptions\": true,\n    \"include_raw_content\": false,\n    \"max_results\": 5,\n    \"include_domains\": [],\n    \"exclude_domains\": []\n}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json"
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "1bc5a21f-0f96-4951-9c88-0bec00b9c586",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -240,
+        300
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "994bb3ee-598b-4d3f-bcfc-16c9cca36657",
+      "name": "Summarize Web Page Content",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        -260,
+        140
+      ],
+      "parameters": {
+        "text": "=Summarize this web content and provide in Markdown format:  {{ $json.results[0].raw_content }}",
+        "promptType": "define"
+      },
+      "typeVersion": 1.5
+    },
+    {
+      "id": "9bd6c18e-aabf-4719-b9c4-ac91b36891a1",
+      "name": "Tavily API Key",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1360,
+        140
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "035660a9-bb58-4ecb-bad3-7f4d017fa69f",
+              "name": "api_key",
+              "type": "string",
+              "value": "tvly-YOUR_API_KEY"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "41f36ad7-7a2b-4732-89ec-fe6500768631",
+      "name": "Provide search topic via Chat window",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        -1580,
+        140
+      ],
+      "webhookId": "6b8f316b-776e-429a-8699-55f230c3a168",
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Filter > 90%": {
+      "main": [
+        [
+          {
+            "node": "Get Top Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Top Result": {
+      "main": [
+        [
+          {
+            "node": "Tavily Extract Top Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily API Key": {
+      "main": [
+        [
+          {
+            "node": "Tavily Search Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize Web Page Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily Search Topic": {
+      "main": [
+        [
+          {
+            "node": "Filter > 90%",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily Extract Top Search": {
+      "main": [
+        [
+          {
+            "node": "Summarize Web Page Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Provide search topic via Chat window": {
+      "main": [
+        [
+          {
+            "node": "Tavily API Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

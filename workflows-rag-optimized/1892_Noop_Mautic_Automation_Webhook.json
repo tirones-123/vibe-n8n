@@ -1,0 +1,227 @@
+{
+  "id": "jOI7FRhG1FkeqBLG",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Wordpress Form to Mautic",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "fcd19b7b-9104-45a6-b741-9497effbd68e",
+      "name": "LeadData",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1260,
+        420
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "91215336-3a47-4e86-ac6a-1a1862b31e54",
+              "name": "name",
+              "type": "string",
+              "value": "={{ $json.body.Nome.toTitleCase() }}"
+            },
+            {
+              "id": "703f1da3-3f68-4d97-94c9-c22661813d92",
+              "name": "email",
+              "type": "string",
+              "value": "={{ $json.body['E-mail'].toLowerCase() }}"
+            },
+            {
+              "id": "c9ba65f1-68e9-46ed-9620-365e000aeb6c",
+              "name": "mobile",
+              "type": "string",
+              "value": "={{ $json.body.WhatsApp }}"
+            },
+            {
+              "id": "3a7266cf-5ff8-4559-985d-2480d0271cbd",
+              "name": "form",
+              "type": "string",
+              "value": "={{ $json.body.form_id }}"
+            },
+            {
+              "id": "06825dab-fbed-4d85-b91c-5d1c2cf8e934",
+              "name": "email_valid",
+              "type": "boolean",
+              "value": "={{ $json.body['E-mail'].isEmail() }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "620d1873-3881-4086-8bd3-e26e07cab88c",
+      "name": "WordpressForm",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        660,
+        420
+      ],
+      "webhookId": "917366ee-14a8-4fef-9f0b-6638cdc35fad",
+      "parameters": {
+        "path": "917366ee-14a8-4fef-9f0b-6638cdc35fad",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "a2f241c2-6894-4c17-a1bd-88c0c9bc88cb",
+      "name": "CheckEmailValid",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2420,
+        420
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "bcbdaa12-c4ec-4fba-85f8-ddfe5eed8f42",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $('LeadData').item.json.email_valid }}",
+              "rightValue": "="
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "16a62af3-f9cb-4a12-b168-a2c6c5ff6c78",
+      "name": "CreateContactMautic",
+      "type": "n8n-nodes-base.mautic",
+      "position": [
+        1860,
+        420
+      ],
+      "parameters": {
+        "email": "={{ $json.email }}",
+        "options": {},
+        "firstName": "={{ $json.name }}",
+        "additionalFields": {
+          "mobile": "={{ $json.mobile }}"
+        }
+      },
+      "credentials": {
+        "mauticApi": {
+          "id": "<mauticApi-id>",
+          "name": "Mautic account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "340eb2d8-c2c0-4a31-822e-6fda2c00f4ea",
+      "name": "LeadMauticDNC",
+      "type": "n8n-nodes-base.mautic",
+      "position": [
+        2740,
+        380
+      ],
+      "parameters": {
+        "contactId": "={{ $json.id }}",
+        "operation": "editDoNotContactList",
+        "additionalFields": {
+          "reason": "3",
+          "comments": "Did not pass basic email validation"
+        }
+      },
+      "credentials": {
+        "mauticApi": {
+          "id": "<mauticApi-id>",
+          "name": "Mautic account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "8b773a35-2b4b-4d50-aeed-bf5fe8e6e7d1",
+      "name": "End",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        3140,
+        380
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "LeadData": {
+      "main": [
+        [
+          {
+            "node": "CreateContactMautic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LeadMauticDNC": {
+      "main": [
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WordpressForm": {
+      "main": [
+        [
+          {
+            "node": "LeadData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckEmailValid": {
+      "main": [
+        [],
+        [
+          {
+            "node": "LeadMauticDNC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CreateContactMautic": {
+      "main": [
+        [
+          {
+            "node": "CheckEmailValid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

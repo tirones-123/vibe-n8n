@@ -1,0 +1,333 @@
+{
+  "nodes": [
+    {
+      "id": "d44489b8-8cb7-4776-8c16-a8bb01e52171",
+      "name": "OpenAI1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        300,
+        -300
+      ],
+      "parameters": {
+        "text": "={{ \n JSON.parse($('Insert Transcription Part').item.json.dialog)\n .filter(item => item.date_updated && new Date(item.date_updated) >= new Date($('Insert Transcription Part').item.json.date_updated))\n .sort((a, b) => a.order - b.order)\n .map(item => `${item.words}\\n${item.speaker}`)\n .join('\\n\\n')\n}}",
+        "memory": "threadId",
+        "prompt": "define",
+        "options": {},
+        "resource": "assistant",
+        "threadId": "={{ $json.thread_id }}",
+        "assistantId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "asst_D5t6bNnNpenmfC7PmvywMqyR",
+          "cachedResultName": "5minAI - Realtime Agent"
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "Test club key"
+        }
+      },
+      "typeVersion": 1.6
+    },
+    {
+      "id": "3425f1c1-ad68-495e-bb9a-95ea92e7cf23",
+      "name": "Insert Transcription Part",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        -120,
+        -300
+      ],
+      "parameters": {
+        "query": "UPDATE public.data\nSET output = jsonb_set(\n output,\n '{dialog}', \n (\n COALESCE(\n (output->'dialog')::jsonb, \n '[]'::jsonb -- Initialize as empty array if dialog does not exist\n ) || jsonb_build_object(\n 'order', (COALESCE(jsonb_array_length(output->'dialog'), 0) + 1), -- Calculate the next order\n 'words', '{{ $('Webhook2').item.json.body.data.transcript.words.map(word => word.text.replace(/'/g, \"''\")).join(\" \") }}',\n 'speaker', '{{ $('Webhook2').item.json.body.data.transcript.speaker }}',\n 'language', '{{ $('Webhook2').item.json.body.data.transcript.language }}',\n 'speaker_id', ('{{ $('Webhook2').item.json.body.data.transcript.speaker_id }}')::int,\n 'date_updated', to_jsonb('{{ $now }}'::text)\n )\n )\n)\nWHERE input->>'recall_bot_id' = $1\nReturning input->>'openai_thread_id' as thread_id;",
+        "options": {
+          "queryReplacement": "={{ $('Scenario 2 Start - Webhook').item.json.body.data.bot_id }}"
+        },
+        "operation": "executeQuery"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "<postgres-id>",
+          "name": "Postgres 5minai"
+        }
+      },
+      "typeVersion": 2.5
+    },
+    {
+      "id": "9bcc0605-fc35-4842-a3f4-30ef902f35c1",
+      "name": "Create Note",
+      "type": "n8n-nodes-base.postgresTool",
+      "position": [
+        180,
+        -120
+      ],
+      "parameters": {
+        "query": "UPDATE public.data\nSET output = jsonb_set(\n output,\n '{notes}', \n (\n COALESCE(\n (output->'notes')::jsonb, \n '[]'::jsonb -- Initialize as empty array if dialog does not exist\n ) || jsonb_build_object(\n 'order', (COALESCE(jsonb_array_length(output->'notes'), 0) + 1), -- Calculate the next order\n 'text', '{{ $fromAI(\"note\",\"Text of note.\") }}'\n )\n )\n)\nWHERE input->>'recall_bot_id' = $1",
+        "options": {
+          "queryReplacement": "={{ $('Scenario 2 Start - Webhook').item.json.body.data.bot_id }}"
+        },
+        "operation": "executeQuery",
+        "descriptionType": "manual",
+        "toolDescription": "Create note record."
+      },
+      "credentials": {
+        "postgres": {
+          "id": "<postgres-id>",
+          "name": "Postgres 5minai"
+        }
+      },
+      "typeVersion": 2.5
+    },
+    {
+      "id": "0831c139-ca4b-4b4c-aa7f-7495c4ca0110",
+      "name": "Create Recall bot",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -60,
+        -980
+      ],
+      "parameters": {
+        "url": "https://us-west-2.recall.ai/api/v1/bot",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n \"meeting_url\":\"{{ $json.meeting_url }}\",\n \"transcription_options\": {\n \"provider\": \"assembly_ai\"\n }\n,\n\"real_time_transcription\": {\n \"destination_url\": \"https://n8n.lowcoding.dev/webhook/d074ca1e-52f9-47af-8587-8c24d431f9cd\"\n },\n\"automatic_leave\": {\n \"silence_detection\": {\n \"timeout\": 300, \n \"activate_after\": 600\n },\n \"bot_detection\": {\n \"using_participant_events\": {\n \"timeout\": 600, \n \"activate_after\": 1200\n }\n },\n \"waiting_room_timeout\": 600,\n \"noone_joined_timeout\": 600,\n \"everyone_left_timeout\": 2,\n \"in_call_not_recording_timeout\": 600,\n \"recording_permission_denied_timeout\": 600\n}\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Recall"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "e1122b5b-3af5-4836-802c-40c3a0eb3c93",
+      "name": "Create OpenAI thread",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        140,
+        -980
+      ],
+      "parameters": {
+        "url": "https://api.openai.com/v1/threads",
+        "method": "POST",
+        "options": {},
+        "sendHeaders": true,
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "OpenAI-Beta",
+              "value": "assistants=v2"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "Test club key"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "784c123d-adbb-4265-9485-2c88dd3091c2",
+      "name": "Create data record",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        320,
+        -980
+      ],
+      "parameters": {
+        "tableId": "data",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "input",
+              "fieldValue": "={{ {\"openai_thread_id\": $('Create OpenAI thread').item.json.id, \"recall_bot_id\": $('Create Recall bot').item.json.id, \"meeting_url\":$('Webhook').item.json.body.meeting_url } }}"
+            },
+            {
+              "fieldId": "output",
+              "fieldValue": "={{ {\"dialog\":[]} }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "<supabaseApi-id>",
+          "name": "Supabase 5minAI"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "9a4ff741-ccfd-42e9-883e-43297a73e2c3",
+      "name": "Scenario 1 Start - Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -260,
+        -980
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4891fa6e-2dd5-4433-925c-5497ec82e8ab",
+              "name": "meeting_url",
+              "type": "string",
+              "value": "https://meet.google.com/iix-vrav-kuc"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "a4368763-b96e-45e7-884d-aa0cbae2d276",
+      "name": "Scenario 2 Start - Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -320,
+        -300
+      ],
+      "webhookId": "7f176935-cb83-4147-ac14-48c8d747863a",
+      "parameters": {
+        "path": "d074ca1e-52f9-47af-8587-8c24d431f9cd",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "107b26af-d1d2-40c7-ad4f-7193d3ae9b70",
+      "name": "If Jimmy word",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        80,
+        -300
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "ba6c2ae5-d0f4-4242-9cf8-97cb84335a93",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $('Scenario 2 Start - Webhook').item.json.body.data.transcript.words.map(word => word.text.replace(/'/g, \"''\")).join(\" \") }}",
+              "rightValue": "=Jimmy"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    }
+  ],
+  "connections": {
+    "OpenAI1": {
+      "main": [
+        []
+      ]
+    },
+    "Create Note": {
+      "ai_tool": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Jimmy word": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Recall bot": {
+      "main": [
+        [
+          {
+            "node": "Create OpenAI thread",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Create data record": {
+      "main": [
+        []
+      ]
+    },
+    "Create OpenAI thread": {
+      "main": [
+        [
+          {
+            "node": "Create data record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Transcription Part": {
+      "main": [
+        [
+          {
+            "node": "If Jimmy word",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scenario 2 Start - Webhook": {
+      "main": [
+        [
+          {
+            "node": "Insert Transcription Part",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scenario 1 Start - Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create Recall bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

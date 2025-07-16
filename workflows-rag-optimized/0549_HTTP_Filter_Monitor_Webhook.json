@@ -1,0 +1,147 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>",
+    "templateId": "2359"
+  },
+  "nodes": [
+    {
+      "id": "654e210f-08b1-4ba4-b464-9499084092a2",
+      "name": "split custom_fields",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        980,
+        640
+      ],
+      "parameters": {
+        "include": "allOtherFields",
+        "options": {},
+        "fieldToSplitOut": "custom_fields"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "9b1a4071-7dd8-4d60-b077-d686fff40d24",
+      "name": "Stripe | Get latest checkout sessions1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        460,
+        640
+      ],
+      "parameters": {
+        "url": "=https://api.stripe.com/v1/checkout/sessions",
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "starting_after",
+                    "value": "={{ $response.body.data.last().id }}"
+                  }
+                ]
+              },
+              "completeExpression": "={{ $response.body.has_more == false }}",
+              "paginationCompleteWhen": "other"
+            }
+          }
+        },
+        "jsonQuery": "={\n  \"created\": {\n    \"gte\":{{ $today.minus(20, 'days').toSeconds() }},\n    \"lte\":{{ $today.toSeconds() }}\n  }\n}",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi"
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "e9c54905-dadb-4b5e-9ce0-cfe7d436c51e",
+      "name": "Filter by custom_field",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1280,
+        640
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "4579d72e-8d48-4146-952d-9b5b400f5bce",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.custom_fields.key }}",
+              "rightValue": "nickname"
+            },
+            {
+              "id": "34197f40-9b41-46e4-8796-be3a86e4dcca",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.custom_fields.key }}",
+              "rightValue": "job_title"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "14915079-68ba-48ab-9a9d-fe627aa2bd33",
+      "name": "split all data",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        760,
+        640
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "data"
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "split all data": {
+      "main": [
+        [
+          {
+            "node": "split custom_fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "split custom_fields": {
+      "main": [
+        [
+          {
+            "node": "Filter by custom_field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe | Get latest checkout sessions1": {
+      "main": [
+        [
+          {
+            "node": "split all data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,416 @@
+{
+  "nodes": [
+    {
+      "id": "9cc26a42-eb43-40c4-b507-cbaf187a5e15",
+      "name": "Get New Message",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        1120,
+        500
+      ],
+      "webhookId": "464f0a75-56d1-402f-8b12-b358452e9736",
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "<telegramApi-id>",
+          "name": "Telegram Club"
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "098b6fcf-7cb6-4730-8892-949fedc946b3",
+      "name": "OPENAI - Create thread",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1740,
+        640
+      ],
+      "parameters": {
+        "url": "https://api.openai.com/v1/threads",
+        "method": "POST",
+        "options": {},
+        "sendHeaders": true,
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "OpenAI-Beta",
+              "value": "assistants=v2"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi club"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "fa157f8c-b776-4b20-bfaf-c17460383505",
+      "name": "Create User",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        1900,
+        640
+      ],
+      "parameters": {
+        "tableId": "telegram_users",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "telegram_id",
+              "fieldValue": "={{ $('Get New Message').item.json.message.chat.id }}"
+            },
+            {
+              "fieldId": "openai_thread_id",
+              "fieldValue": "={{ $('OPENAI - Create thread').item.json.id }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "<supabaseApi-id>",
+          "name": "Supabase club"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "115e417f-5962-409b-8adf-ff236eb9ce2e",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        2080,
+        500
+      ],
+      "parameters": {},
+      "typeVersion": 3
+    },
+    {
+      "id": "ba5c7385-8c80-43c8-9de2-430175bda70b",
+      "name": "OPENAI - Send message",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2240,
+        500
+      ],
+      "parameters": {
+        "url": "=https://api.openai.com/v1/threads/{{ $('Merge').item.json.openai_thread_id }}/messages ",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "authentication": "predefinedCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "role",
+              "value": "user"
+            },
+            {
+              "name": "content",
+              "value": "={{ $('Get New Message').item.json.message.text }}"
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "OpenAI-Beta",
+              "value": "assistants=v2"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "024832bc-3d42-4879-a57f-b23e962b4c69",
+      "name": "OPENAI - Run assistant",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2440,
+        500
+      ],
+      "parameters": {
+        "url": "=https://api.openai.com/v1/threads/{{ $('Merge').item.json.openai_thread_id }}/runs",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "authentication": "predefinedCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "assistant_id",
+              "value": "asst_b0QhuzySG6jofHFdzPZD7WEz"
+            },
+            {
+              "name": "stream",
+              "value": "={{true}}"
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "OpenAI-Beta",
+              "value": "assistants=v2"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "bc191e2b-15f4-45b7-af2e-19ed1639b7f5",
+      "name": "OPENAI - Get messages",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2640,
+        500
+      ],
+      "parameters": {
+        "url": "=https://api.openai.com/v1/threads/{{ $('Merge').item.json.openai_thread_id }}/messages",
+        "options": {},
+        "sendHeaders": true,
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "OpenAI-Beta",
+              "value": "assistants=v2"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi club"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "c22e05e5-f0a7-4a09-a864-acfc58469b30",
+      "name": "Send Message to User",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        2840,
+        500
+      ],
+      "parameters": {
+        "text": "={{ $('OPENAI - Get messages').item.json.data[0].content[0].text.value }}",
+        "chatId": "={{ $('Get New Message').item.json.message.chat.id }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "<telegramApi-id>",
+          "name": "Telegram Club"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "0673be1f-3cae-42a0-9c62-1ed570859043",
+      "name": "If User exists",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1560,
+        500
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b6e69a1f-eb42-4ef6-b80c-3167f1b8c830",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.id }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "a4916f54-ae6b-495d-979b-92dca965e3bb",
+      "name": "Find User",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        1360,
+        500
+      ],
+      "parameters": {
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "keyValue": "={{ $json.message.chat.id }}",
+              "condition": "eq"
+            }
+          ]
+        },
+        "tableId": "telegram_users",
+        "operation": "getAll"
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "<supabaseApi-id>",
+          "name": "Supabase club"
+        }
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    }
+  ],
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "OPENAI - Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find User": {
+      "main": [
+        [
+          {
+            "node": "If User exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create User": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If User exists": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OPENAI - Create thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get New Message": {
+      "main": [
+        [
+          {
+            "node": "Find User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPENAI - Get messages": {
+      "main": [
+        [
+          {
+            "node": "Send Message to User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPENAI - Send message": {
+      "main": [
+        [
+          {
+            "node": "OPENAI - Run assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPENAI - Create thread": {
+      "main": [
+        [
+          {
+            "node": "Create User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPENAI - Run assistant": {
+      "main": [
+        [
+          {
+            "node": "OPENAI - Get messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

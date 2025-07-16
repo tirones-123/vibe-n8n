@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Versions - n8n AI Assistant</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        .success {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .log-entry.error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .log-entry.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .log-entry.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Versions - n8n AI Assistant</h1>
+        
+        <div class="section">
+            <h2>📊 Test de récupération des versions</h2>
+            <p>Cette page simule le comportement de l'extension pour récupérer les versions des nodes n8n.</p>
+            
+            <button class="button" onclick="testLocalStorage()">1️⃣ Vérifier le cache localStorage</button>
+            <button class="button" onclick="testAPICall()">2️⃣ Tester l'API /rest/node-types</button>
+            <button class="button" onclick="testInjectScript()">3️⃣ Tester via inject script</button>
+            <button class="button" onclick="clearCache()">🗑️ Vider le cache</button>
+            
+            <div id="results" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Logs en temps réel</h2>
+            <div id="logs" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Test complet de l'extension</h2>
+            <button class="button" onclick="simulateFullFlow()">▶️ Simuler le flux complet</button>
+            <div id="flow-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Utilitaires de log
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsDiv.appendChild(entry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+
+        // Test 1: Vérifier le cache localStorage
+        function testLocalStorage() {
+            log('🔍 Vérification du cache localStorage...', 'info');
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            
+            try {
+                const cached = localStorage.getItem('n8n-ai-node-versions');
+                const timestamp = localStorage.getItem('n8n-ai-node-versions-timestamp');
+                
+                if (cached && timestamp) {
+                    const versions = JSON.parse(cached);
+                    const age = Date.now() - parseInt(timestamp);
+                    const ageMinutes = Math.round(age / 1000 / 60);
+                    
+                    resultsDiv.className = 'result success';
+                    resultsDiv.textContent = `✅ Cache trouvé!\n\n`;
+                    resultsDiv.textContent += `Âge: ${ageMinutes} minutes\n`;
+                    resultsDiv.textContent += `Nombre de nodes: ${Object.keys(versions).length}\n\n`;
+                    resultsDiv.textContent += `Exemples:\n`;
+                    
+                    const examples = Object.entries(versions).slice(0, 10);
+                    examples.forEach(([node, version]) => {
+                        resultsDiv.textContent += `  ${node}: ${version}\n`;
+                    });
+                    
+                    if (Object.keys(versions).length > 10) {
+                        resultsDiv.textContent += `  ... et ${Object.keys(versions).length - 10} autres\n`;
+                    }
+                    
+                    log(`✅ Cache trouvé: ${Object.keys(versions).length} nodes, âge: ${ageMinutes} min`, 'success');
+                } else {
+                    resultsDiv.className = 'result error';
+                    resultsDiv.textContent = '❌ Aucun cache trouvé dans localStorage';
+                    log('❌ Aucun cache trouvé', 'error');
+                }
+            } catch (error) {
+                resultsDiv.className = 'result error';
+                resultsDiv.textContent = `❌ Erreur: ${error.message}`;
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 2: Appel API direct
+        async function testAPICall() {
+            log('🔍 Test de l\'API /rest/node-types...', 'info');
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.className = 'result';
+            resultsDiv.textContent = '⏳ Appel en cours...';
+            
+            try {
+                const baseUrl = window.location.origin;
+                const nodeTypesUrl = `${baseUrl}/rest/node-types`;
+                
+                log(`📡 URL: ${nodeTypesUrl}`, 'info');
+                
+                const response = await fetch(nodeTypesUrl, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                log(`📨 Status: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const nodeTypes = await response.json();
+                const nodeCount = Object.keys(nodeTypes).length;
+                
+                resultsDiv.className = 'result success';
+                resultsDiv.textContent = `✅ API fonctionnelle!\n\n`;
+                resultsDiv.textContent += `Nodes reçus: ${nodeCount}\n\n`;
+                resultsDiv.textContent += `Exemples:\n`;
+                
+                const examples = Object.entries(nodeTypes).slice(0, 5);
+                examples.forEach(([nodeType, versionData]) => {
+                    const versions = Object.keys(versionData);
+                    resultsDiv.textContent += `  ${nodeType}: versions ${versions.join(', ')}\n`;
+                });
+                
+                log(`✅ API OK: ${nodeCount} nodes reçus`, 'success');
+                
+            } catch (error) {
+                resultsDiv.className = 'result error';
+                resultsDiv.textContent = `❌ Erreur API: ${error.message}\n\n`;
+                resultsDiv.textContent += `Ceci est normal si:\n`;
+                resultsDiv.textContent += `- Vous n'êtes pas sur une instance n8n\n`;
+                resultsDiv.textContent += `- CORS bloque l'accès\n`;
+                resultsDiv.textContent += `- Authentification requise`;
+                
+                log(`❌ Erreur API: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 3: Via inject script (simulation)
+        function testInjectScript() {
+            log('🔍 Simulation du script injecté...', 'info');
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            
+            // Simuler l'envoi d'un message
+            window.postMessage({ type: 'GET_NODE_VERSIONS' }, '*');
+            
+            resultsDiv.className = 'result';
+            resultsDiv.textContent = '⏳ Attente de la réponse du script injecté...\n\n';
+            resultsDiv.textContent += 'Note: Cette méthode ne fonctionne que sur une vraie page n8n avec l\'extension chargée.';
+            
+            log('📤 Message envoyé, attente réponse...', 'info');
+            
+            // Écouter la réponse
+            const listener = (event) => {
+                if (event.source !== window) return;
+                if (event.data.type === 'NODE_VERSIONS_RESPONSE') {
+                    window.removeEventListener('message', listener);
+                    
+                    if (event.data.versions) {
+                        resultsDiv.className = 'result success';
+                        resultsDiv.textContent = `✅ Versions reçues via inject!\n\n`;
+                        resultsDiv.textContent += `Nombre: ${Object.keys(event.data.versions).length}`;
+                        
+                        log(`✅ Versions reçues: ${Object.keys(event.data.versions).length} nodes`, 'success');
+                    } else {
+                        resultsDiv.className = 'result error';
+                        resultsDiv.textContent = '❌ Pas de versions reçues';
+                        
+                        log('❌ Pas de versions reçues', 'error');
+                    }
+                }
+            };
+            
+            window.addEventListener('message', listener);
+            
+            // Timeout
+            setTimeout(() => {
+                window.removeEventListener('message', listener);
+                if (!resultsDiv.textContent.includes('✅')) {
+                    resultsDiv.className = 'result error';
+                    resultsDiv.textContent = '❌ Timeout - Pas de réponse du script injecté\n\n';
+                    resultsDiv.textContent += 'Ceci est normal si vous n\'êtes pas sur une page n8n avec l\'extension.';
+                    
+                    log('⏱️ Timeout - pas de réponse', 'error');
+                }
+            }, 3000);
+        }
+
+        // Vider le cache
+        function clearCache() {
+            log('🗑️ Suppression du cache...', 'info');
+            
+            localStorage.removeItem('n8n-ai-node-versions');
+            localStorage.removeItem('n8n-ai-node-versions-timestamp');
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.className = 'result success';
+            resultsDiv.textContent = '✅ Cache supprimé avec succès';
+            
+            log('✅ Cache supprimé', 'success');
+        }
+
+        // Simulation du flux complet
+        async function simulateFullFlow() {
+            log('🚀 Démarrage de la simulation complète...', 'info');
+            const flowResult = document.getElementById('flow-result');
+            flowResult.style.display = 'block';
+            flowResult.className = 'result';
+            flowResult.textContent = '⏳ Simulation en cours...\n\n';
+            
+            try {
+                // Étape 1: Vérifier le cache
+                log('1️⃣ Vérification du cache...', 'info');
+                const cached = localStorage.getItem('n8n-ai-node-versions');
+                
+                let versions = null;
+                
+                if (cached) {
+                    versions = JSON.parse(cached);
+                    log(`✅ Cache trouvé: ${Object.keys(versions).length} nodes`, 'success');
+                    flowResult.textContent += `1️⃣ Cache trouvé: ${Object.keys(versions).length} nodes ✅\n`;
+                } else {
+                    log('⚠️ Pas de cache, tentative API...', 'info');
+                    flowResult.textContent += `1️⃣ Pas de cache ⚠️\n`;
+                    
+                    // Étape 2: Essayer l'API
+                    try {
+                        const response = await fetch('/rest/node-types', {
+                            method: 'GET',
+                            credentials: 'include',
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        
+                        if (response.ok) {
+                            const nodeTypes = await response.json();
+                            // Transformer en versions
+                            versions = {};
+                            for (const [nodeType, versionData] of Object.entries(nodeTypes)) {
+                                const simpleName = nodeType.split('.').pop();
+                                const versionNumbers = Object.keys(versionData).map(v => parseInt(v)).filter(v => !isNaN(v));
+                                if (versionNumbers.length > 0) {
+                                    const maxVersion = Math.max(...versionNumbers);
+                                    versions[simpleName] = maxVersion;
+                                    versions[nodeType] = maxVersion;
+                                }
+                            }
+                            
+                            log(`✅ API OK: ${Object.keys(versions).length} versions extraites`, 'success');
+                            flowResult.textContent += `2️⃣ API fonctionnelle: ${Object.keys(versions).length} versions ✅\n`;
+                            
+                            // Sauvegarder dans le cache
+                            localStorage.setItem('n8n-ai-node-versions', JSON.stringify(versions));
+                            localStorage.setItem('n8n-ai-node-versions-timestamp', Date.now().toString());
+                            flowResult.textContent += `3️⃣ Cache mis à jour ✅\n`;
+                        } else {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                    } catch (apiError) {
+                        log(`❌ Erreur API: ${apiError.message}`, 'error');
+                        flowResult.textContent += `2️⃣ Erreur API: ${apiError.message} ❌\n`;
+                        flowResult.textContent += `3️⃣ Fallback vers inject script (non simulé) ⚠️\n`;
+                    }
+                }
+                
+                // Étape 3: Simuler l'envoi au backend
+                if (versions) {
+                    log('3️⃣ Simulation envoi au backend...', 'info');
+                    
+                    const payload = {
+                        prompt: "Test avec versions",
+                        context: { nodes: [], connections: {} },
+                        mode: "create",
+                        tools: [],
+                        versions: versions
+                    };
+                    
+                    const payloadSize = JSON.stringify(payload).length;
+                    log(`📦 Taille du payload: ${payloadSize} octets`, 'info');
+                    flowResult.textContent += `\n4️⃣ Payload préparé: ${payloadSize} octets ✅\n`;
+                    flowResult.textContent += `5️⃣ Versions incluses: ${Object.keys(versions).length} nodes ✅\n`;
+                    
+                    // Afficher quelques exemples
+                    flowResult.textContent += `\nExemples de versions:\n`;
+                    const examples = Object.entries(versions).slice(0, 5);
+                    examples.forEach(([node, version]) => {
+                        flowResult.textContent += `  - ${node}: ${version}\n`;
+                    });
+                    
+                    flowResult.className = 'result success';
+                    flowResult.textContent += `\n✅ Simulation réussie! Les versions seraient envoyées au backend.`;
+                } else {
+                    flowResult.className = 'result error';
+                    flowResult.textContent += `\n❌ Aucune version disponible à envoyer.`;
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur simulation: ${error.message}`, 'error');
+                flowResult.className = 'result error';
+                flowResult.textContent += `\n❌ Erreur: ${error.message}`;
+            }
+        }
+
+        // Log initial
+        log('🎯 Page de debug chargée', 'info');
+        log('💡 Utilisez les boutons pour tester différentes méthodes de récupération des versions', 'info');
+    </script>
+</body>
+</html> 

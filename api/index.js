@@ -62,10 +62,10 @@ export default function handler(req, res) {
     </head>
     <body>
         <div class="container">
-            <h1>🚀 n8n AI Assistant Backend</h1>
+            <h1>🚀 n8n Workflow RAG Backend</h1>
             
             <div class="status">
-                ✅ Backend déployé et fonctionnel
+                ✅ Backend RAG déployé et fonctionnel
             </div>
             
             <h2>📡 Endpoint API</h2>
@@ -77,7 +77,7 @@ export default function handler(req, res) {
             <ul>
                 <li><strong>Content-Type:</strong> application/json</li>
                 <li><strong>Authorization:</strong> Bearer YOUR_API_KEY</li>
-                <li><strong>Body:</strong> prompt, context, tools</li>
+                <li><strong>Body:</strong> { "prompt": "your workflow description" }</li>
             </ul>
             
             <h2>🔧 Variables d'environnement</h2>

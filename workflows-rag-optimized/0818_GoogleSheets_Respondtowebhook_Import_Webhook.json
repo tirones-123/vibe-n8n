@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "9a8d7d07-a1b3-4bca-8e77-10da3a2abc45",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -160,
+        0
+      ],
+      "webhookId": "7f35a3a8-54c3-49d7-879d-6c3429f0e5da",
+      "parameters": {
+        "path": "retell-dynamic-variables",
+        "options": {
+          "ipWhitelist": "100.20.5.228"
+        },
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "79e77d72-6e13-428c-ad10-58e6930e2d90",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "json",
+        "responseBody": "={\n  \"call_inbound\": {\n    \"dynamic_variables\": {\n        \"first_name\": \"{{ $json['First Name'] }}\",\n        \"last_name\": \"{{ $json['Last name'] }}\",\n        \"email\": \"{{ $json['E-Mail'] }}\",\n        \"variable_1\": \"{{ $json['User Variable 1'] }}\",\n        \"variable_2\": \"{{ $json['User Variable 2']}}\"\n    },\n    \"metadata\": {\n    }\n  }\n}"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "10919781-9750-417f-bba6-293bf99dbc3e",
+      "name": "Get user in DB by Phone Number",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        140,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "filtersUI": {
+          "values": [
+            {
+              "lookupValue": "={{ $json.body.call_inbound.from_number }}",
+              "lookupColumn": "Phone Number"
+            }
+          ]
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TYgk8PK5w2l8Q5NtepdyLvgtuHXBHcODy-2hXOPP6AU/edit#gid=0",
+          "cachedResultName": "Users"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1TYgk8PK5w2l8Q5NtepdyLvgtuHXBHcODy-2hXOPP6AU",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TYgk8PK5w2l8Q5NtepdyLvgtuHXBHcODy-2hXOPP6AU/edit?usp=drivesdk",
+          "cachedResultName": "Retell sample UserDB"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Baptiste AS - Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get user in DB by Phone Number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get user in DB by Phone Number": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

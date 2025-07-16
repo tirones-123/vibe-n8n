@@ -1,0 +1,171 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "f4570aad-db25-4dcd-8589-b1c8335935de",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        480,
+        1800
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "adbbe4ee-d671-4b9b-b619-47f7522e2af4",
+      "name": "Split Out by KW",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1180,
+        1800
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "results"
+      },
+      "notesInFlow": true,
+      "typeVersion": 1
+    },
+    {
+      "id": "806fd20d-4bc4-41a3-9ef7-77561e2cfc0c",
+      "name": "Set >=20 Keywords",
+      "type": "n8n-nodes-base.set",
+      "notes": "Insert up to 20 keywords to test",
+      "position": [
+        680,
+        1800
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "973e949e-1afd-4378-8482-d2168532eff6",
+              "name": "Keyword",
+              "type": "array",
+              "value": "=[\"workflow automation software\", \"enterprise workflow automation\", \"finance automation software\", \"saas automation platform\", \"automation roi calculator\", \"hr process automation\", \"data synchronization software\", \"n8n workflow automation\", \"scalable business operations\", \"n8n vs zapier\", \"lead generation automation\", \"automation consulting services\", \"n8n automation\", \"marketing automation tools\", \"custom automation solutions\", \"ecommerce automation solutions\", \"business process automation\", \"small business automation\", \"no code automation\", \"crm automation integration\"] "
+            }
+          ]
+        }
+      },
+      "notesInFlow": true,
+      "typeVersion": 3.4
+    },
+    {
+      "id": "430d4950-1e49-460e-bb9b-56e0e825e621",
+      "name": "Connect to your own database.",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1460,
+        1800
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "464cfe3f-3a3f-4ec0-882d-861e48916e0b",
+      "name": "Get Search Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "notes": "Seed KW with Vol & Comp\n\nhttps://developers.google.com/google-ads/api/docs/concepts/call-structure Google API call structure",
+      "position": [
+        960,
+        1800
+      ],
+      "parameters": {
+        "url": "https://googleads.googleapis.com/v16/customers/{customer_id}:generateKeywordHistoricalMetrics",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "authentication": "predefinedCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "keywords",
+              "value": "={{ $json.Keyword }}"
+            },
+            {
+              "name": "keywordPlanNetwork",
+              "value": "GOOGLE_SEARCH"
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            },
+            {
+              "name": "developer-token",
+              "value": "replace-with-value"
+            },
+            {
+              "name": "login-customer-id",
+              "value": "replace-with-value"
+            }
+          ]
+        },
+        "nodeCredentialType": "googleAdsOAuth2Api"
+      },
+      "credentials": {
+        "googleAdsOAuth2Api": {
+          "id": "<googleAdsOAuth2Api-id>",
+          "name": "Google Ads account"
+        }
+      },
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "Get Search Data": {
+      "main": [
+        [
+          {
+            "node": "Split Out by KW",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out by KW": {
+      "main": [
+        [
+          {
+            "node": "Connect to your own database.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set >=20 Keywords": {
+      "main": [
+        [
+          {
+            "node": "Get Search Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set >=20 Keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

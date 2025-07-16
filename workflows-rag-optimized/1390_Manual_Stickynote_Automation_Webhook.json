@@ -1,0 +1,113 @@
+{
+  "id": "6Yzmlp5xF6oHo1VW",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Text to Speech (OpenAI)",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "938fedbd-e34c-40af-af2f-b9c669e1a6e9",
+      "name": "When clicking \"Test workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        380,
+        380
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "1d59db5d-8fe6-4292-a221-a0d0194c6e0c",
+      "name": "Set input text and TTS voice",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        760,
+        380
+      ],
+      "parameters": {
+        "mode": "raw",
+        "options": {},
+        "jsonOutput": "{\n \"input_text\": \"The quick brown fox jumped over the lazy dog.\",\n \"voice\": \"alloy\"\n}\n"
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "9d54de1d-59b7-4c1f-9e88-13572da5292c",
+      "name": "Send HTTP Request to OpenAI's TTS Endpoint",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1120,
+        380
+      ],
+      "parameters": {
+        "url": "https://api.openai.com/v1/audio/speech",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "authentication": "predefinedCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "tts-1"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.input_text }}"
+            },
+            {
+              "name": "voice",
+              "value": "={{ $json.voice }}"
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer $OPENAI_API_KEY"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 4.1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Set input text and TTS voice": {
+      "main": [
+        [
+          {
+            "node": "Send HTTP Request to OpenAI's TTS Endpoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \"Test workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Set input text and TTS voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

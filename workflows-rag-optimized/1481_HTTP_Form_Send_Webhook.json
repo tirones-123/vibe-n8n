@@ -1,0 +1,155 @@
+{
+  "id": "GrGmuKzZAsCkd4bt",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Send TTS (Text-to-speech) voice calls",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "a548f92d-199e-4cd2-ae34-742617484831",
+      "name": "Send Voice",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -40,
+        -100
+      ],
+      "parameters": {
+        "url": "https://rest.clicksend.com/v3/voice/send",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"source\": \"n8n\",\n      \"body\": \"{{ $json.Body }}\",\n      \"to\": \"{{ $json.To }}\",\n      \"voice\": \"{{ $json.Voice }}\",\n      \"lang\": \"{{ $json.Lang }}\",\n      \"machine_detection\": 1\n    }\n  ]\n}",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": " application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "<httpBasicAuth-id>",
+          "name": "ClickSend API"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "ffc2cbe9-6e31-4d54-8e6a-26e94ec50ef4",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        -300,
+        -100
+      ],
+      "webhookId": "8bfdf9f3-9323-4295-ab96-f9852d5981d5",
+      "parameters": {
+        "options": {},
+        "formTitle": "Send Voice Message",
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "textarea",
+              "fieldLabel": "Body",
+              "placeholder": "Body (max. 600 chars)",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "To",
+              "placeholder": "+39xxxxxxxxxx",
+              "requiredField": true
+            },
+            {
+              "fieldType": "dropdown",
+              "fieldLabel": "Voice",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "male"
+                  },
+                  {
+                    "option": "female"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldType": "dropdown",
+              "fieldLabel": "Lang",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "en-us \t"
+                  },
+                  {
+                    "option": "it-it"
+                  },
+                  {
+                    "option": "en-au"
+                  },
+                  {
+                    "option": "en-gb"
+                  },
+                  {
+                    "option": "de-de"
+                  },
+                  {
+                    "option": "es-es"
+                  },
+                  {
+                    "option": "fr-fr"
+                  },
+                  {
+                    "option": "is-is"
+                  },
+                  {
+                    "option": "da-dk"
+                  },
+                  {
+                    "option": "nl-nl"
+                  },
+                  {
+                    "option": "pl-pl"
+                  },
+                  {
+                    "option": "pt-br"
+                  },
+                  {
+                    "option": "ru-ru"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Send Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,444 @@
+{
+  "id": "DnHvQ3KL8v8r5L5Z",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Telegram Chat with Buffering",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "ce90f954-19b6-4224-ae88-b20c4da639e6",
+      "name": "Reply",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        920,
+        -700
+      ],
+      "webhookId": "e3313c88-0d56-4d06-81cf-b48870dfe2fe",
+      "parameters": {
+        "text": "={{ $json.output }}",
+        "chatId": "={{ $('Receive Message').item.json.message.chat.id }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "<telegramApi-id>",
+          "name": "Telegram bsde.ai"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "6f46d89b-034c-47ea-a217-8d007bec1531",
+      "name": "Receive Message",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        -1580,
+        -680
+      ],
+      "webhookId": "5047a673-ca1d-4e87-b51b-893108de0a59",
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "<telegramApi-id>",
+          "name": "Telegram bsde.ai"
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "0f391daa-0e74-4058-8923-52f3c050c9ad",
+      "name": "Wait 10 Seconds",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -1000,
+        -580
+      ],
+      "webhookId": "87994c9a-fd20-48b6-8dbe-9af36dc40b2f",
+      "parameters": {
+        "amount": 10
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "d4876fd2-2e0b-4f82-9dc3-553f926310bd",
+      "name": "Add to Queued Messages",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        -1240,
+        -680
+      ],
+      "parameters": {
+        "tableId": "message_queue",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.message.chat.id }}"
+            },
+            {
+              "fieldId": "message",
+              "fieldValue": "={{ $json.message.text }}"
+            },
+            {
+              "fieldId": "message_id",
+              "fieldValue": "={{ $json.message.message_id }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "<supabaseApi-id>",
+          "name": "Supabase (bsde.ai)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "a2eeb77f-2d74-44ac-9812-c3659d2e2803",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        -340,
+        -460
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "638fc82e-aba1-4deb-b506-33dcf4746896",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        220,
+        -700
+      ],
+      "parameters": {
+        "options": {},
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "message"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "772f60e5-e52f-4779-aa03-e4d532ee4b5c",
+      "name": "Delete Queued Messages",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        -100,
+        -700
+      ],
+      "parameters": {
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.user_id }}",
+              "condition": "eq"
+            }
+          ]
+        },
+        "tableId": "message_queue",
+        "operation": "delete"
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "<supabaseApi-id>",
+          "name": "Supabase (bsde.ai)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "9162f110-465f-4cd6-9f03-17751d7e43a4",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        380,
+        -460
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "b47ef0c9-725b-4837-b9e9-96a4ff2b3636",
+      "name": "Sort by Message ID",
+      "type": "n8n-nodes-base.sort",
+      "position": [
+        -580,
+        -680
+      ],
+      "parameters": {
+        "options": {},
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "message_id"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "1aa80c99-eec8-4174-bcf3-c6873354ed0f",
+      "name": "Get Queued Messages",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        -780,
+        -680
+      ],
+      "parameters": {
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $('Receive Message').item.json.message.from.id }}",
+              "condition": "eq"
+            }
+          ]
+        },
+        "tableId": "message_queue",
+        "operation": "getAll",
+        "returnAll": true
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "<supabaseApi-id>",
+          "name": "Supabase (bsde.ai)"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "85050328-b5aa-47fe-802c-7d9f31f225cb",
+      "name": "Check Most Recent Message",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -360,
+        -680
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "8852bab7-230e-442a-a4a2-994e979c8f9f",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $input.last().json.message_id }}\n",
+              "rightValue": "={{ $('Receive Message').item.json.message.message_id }}"
+            }
+          ]
+        },
+        "looseTypeValidation": true
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "bed86d81-bb57-42ce-aaa7-4bdc21e1651c",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        420,
+        -700
+      ],
+      "parameters": {
+        "text": "={{ $json.message.join(String.fromCharCode(10)) }}",
+        "options": {},
+        "promptType": "define"
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "4f468a14-fbea-44ec-a2b8-e4b3785c0362",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "position": [
+        560,
+        -460
+      ],
+      "parameters": {
+        "sessionKey": "={{ $('Receive Message').item.json.message.chat.id }}",
+        "sessionIdType": "customKey"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "<postgres-id>",
+          "name": "bsde.ai Supabase (Session Pooler)"
+        }
+      },
+      "typeVersion": 1.3
+    }
+  ],
+  "active": true,
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Message": {
+      "main": [
+        [
+          {
+            "node": "Add to Queued Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Get Queued Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort by Message ID": {
+      "main": [
+        [
+          {
+            "node": "Check Most Recent Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Queued Messages": {
+      "main": [
+        [
+          {
+            "node": "Sort by Message ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Queued Messages": {
+      "main": [
+        [
+          {
+            "node": "Wait 10 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Queued Messages": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Most Recent Message": {
+      "main": [
+        [
+          {
+            "node": "Delete Queued Messages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

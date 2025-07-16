@@ -1,0 +1,507 @@
+ Optimisation terminée :
+   - Fichiers traités : 2055
+   - Erreurs : 0
+   - Taille originale totale : 31 745 296 caractères
+   - Taille optimisée totale : 24 533 185 caractères
+   - Réduction totale : 22.72% (7 212 111 caractères économisés)
+   - Tokens économisés (estimation) : 1 803 028
+
+📂 Fichiers optimisés sauvegardés dans : /Users/maximemarsal/cursor-n8n-backend/workflows-rag-optimized
+
+🔍 Vérification d'intégrité sur 5 fichiers aléatoires...
+   ✅ 0001_Telegram_Schedule_Automation_Scheduled.json: nodes=true, connections=true, clean=true
+   ✅ 0002_Manual_Totp_Automation_Triggered.json: nodes=true, connections=true, clean=true
+   ✅ 0003_Bitwarden_Automate.json: nodes=true, connections=true, clean=true
+   ✅ 0004_GoogleSheets_Typeform_Automate_Triggered.json: nodes=true, connections=true, clean=true
+   ✅ 0005_Manual_Twitter_Create_Triggered.json: nodes=true, connections=true, clean=true
+maximemarsal@MacBook-Pro-de-Maxime cursor-n8n-backend % node scripts/analyze-optimized-workflows.js
+📊 Analyse comparative des workflows optimisés...
+
+📁 Fichiers originaux : 2055
+📁 Fichiers optimisés : 2055
+
+📊 STATISTIQUES GLOBALES
+
+📋 Fichiers originaux :
+   - Nombre : 2 055
+   - Taille totale : 31 745 296 caractères
+   - Moyenne : 15 448 caractères
+   - Min/Max : 2 / 322 488
+
+📋 Fichiers optimisés :
+   - Nombre : 2 055
+   - Taille totale : 24 533 185 caractères
+   - Moyenne : 11 938 caractères
+   - Min/Max : 2 / 169 418
+
+🎯 OPTIMISATION GLOBALE :
+   - Réduction totale : 7 212 111 caractères (-22.72%)
+   - Réduction moyenne : 18.03% par fichier
+   - Tokens économisés (estimation) : 1 803 028
+
+🏆 TOP 20 OPTIMISATIONS (20 fichiers avec >20% de réduction) :
+   1. 0900_Respondtowebhook_Stickynote_Automate_Webhook.json
+      50 665 → 1 813 chars (-96.4%)
+   2. 0596_Wait_Code_Import_Webhook.json
+      231 179 → 8 974 chars (-96.1%)
+   3. 0632_Webhook_Manual_Create_Webhook.json
+      322 488 → 13 850 chars (-95.7%)
+   4. 1161_Code_Slack_Send_Webhook.json
+      99 269 → 7 447 chars (-92.5%)
+   5. 1751_Filter_Schedule_Automation_Scheduled.json
+      96 872 → 7 465 chars (-92.3%)
+   6. 1312_Wait_Schedule_Create_Webhook.json
+      113 119 → 12 893 chars (-88.6%)
+   7. 2017_Manual_Stickynote_Import_Webhook.json
+      20 159 → 2 434 chars (-87.9%)
+   8. 1774_Splitout_Manual_Automation_Webhook.json
+      52 498 → 7 203 chars (-86.3%)
+   9. 0845_Webhook_Filter_Export_Webhook.json
+      114 858 → 17 919 chars (-84.4%)
+   10. 0562_Splitout_Filter_Create_Webhook.json
+      45 128 → 9 761 chars (-78.4%)
+   11. 1766_Manual_GoogleSheets_Automation_Triggered.json
+      73 657 → 18 759 chars (-74.5%)
+   12. 0594_HTTP_Telegram_Create_Webhook.json
+      31 430 → 9 605 chars (-69.4%)
+   13. 1688_HTTP_Telegram_Automate_Webhook.json
+      31 401 → 9 605 chars (-69.4%)
+   14. 1565_Gmail_Stickynote_Create_Triggered.json
+      11 784 → 3 672 chars (-68.8%)
+   15. 1862_Code_Respondtowebhook_Automation_Webhook.json
+      9 484 → 3 057 chars (-67.8%)
+   16. 0368_Stickynote_Webhook_Automate_Webhook.json
+      4 327 → 1 406 chars (-67.5%)
+   17. 1852_HTTP_Stickynote_Automate_Webhook.json
+      9 258 → 3 087 chars (-66.7%)
+   18. 0420_Hunter_Form_Create_Triggered.json
+      15 057 → 5 351 chars (-64.5%)
+   19. 0566_HTTP_Stickynote_Automate_Webhook.json
+      7 061 → 2 580 chars (-63.5%)
+   20. 1530_HTTP_Stickynote_Automation_Webhook.json
+      7 061 → 2 580 chars (-63.5%)
+
+📈 RÉPARTITION DES GAINS :
+   - 0-10% : 811 fichiers (39.5%)
+   - 10-25% : 618 fichiers (30.1%)
+   - 25-50% : 563 fichiers (27.4%)
+   - 50-75% : 49 fichiers (2.4%)
+   - 75%+ : 10 fichiers (0.5%)
+
+📋 IMPACT SUR LES GROS FICHIERS :
+   - Fichiers >30k chars avant : 279
+   - Fichiers >30k chars après : 155
+   - Réduction moyenne par fichier : 3 510 caractères
+
+💾 ESTIMATION POUR LE RAG :
+   - Tokens économisés : 1 803 028
+   - Économie estimée : ~$18.03 USD en tokens d'embedding
+   - Gain en vitesse : ~22.7% plus rapide pour les embeddings
+maximemarsal@MacBook-Pro-de-Maxime cursor-n8n-backend % 
+
+ Analyse comparative des workflows optimisés...
+
+📁 Fichiers originaux : 2055
+📁 Fichiers optimisés : 2055
+
+📊 STATISTIQUES GLOBALES
+
+📋 Fichiers originaux :
+   - Nombre : 2 055
+   - Taille totale : 31 745 296 caractères
+   - Moyenne : 15 448 caractères
+   - Min/Max : 2 / 322 488
+
+📋 Fichiers optimisés :
+   - Nombre : 2 055
+   - Taille totale : 24 533 185 caractères
+   - Moyenne : 11 938 caractères
+   - Min/Max : 2 / 169 418
+
+🎯 OPTIMISATION GLOBALE :
+   - Réduction totale : 7 212 111 caractères (-22.72%)
+   - Réduction moyenne : 18.03% par fichier
+   - Tokens économisés (estimation) : 1 803 028
+
+🏆 TOP 20 OPTIMISATIONS (20 fichiers avec >20% de réduction) :
+   1. 0900_Respondtowebhook_Stickynote_Automate_Webhook.json
+      50 665 → 1 813 chars (-96.4%)
+   2. 0596_Wait_Code_Import_Webhook.json
+      231 179 → 8 974 chars (-96.1%)
+   3. 0632_Webhook_Manual_Create_Webhook.json
+      322 488 → 13 850 chars (-95.7%)
+   4. 1161_Code_Slack_Send_Webhook.json
+      99 269 → 7 447 chars (-92.5%)
+   5. 1751_Filter_Schedule_Automation_Scheduled.json
+      96 872 → 7 465 chars (-92.3%)
+   6. 1312_Wait_Schedule_Create_Webhook.json
+      113 119 → 12 893 chars (-88.6%)
+   7. 2017_Manual_Stickynote_Import_Webhook.json
+      20 159 → 2 434 chars (-87.9%)
+   8. 1774_Splitout_Manual_Automation_Webhook.json
+      52 498 → 7 203 chars (-86.3%)
+   9. 0845_Webhook_Filter_Export_Webhook.json
+      114 858 → 17 919 chars (-84.4%)
+   10. 0562_Splitout_Filter_Create_Webhook.json
+      45 128 → 9 761 chars (-78.4%)
+   11. 1766_Manual_GoogleSheets_Automation_Triggered.json
+      73 657 → 18 759 chars (-74.5%)
+   12. 0594_HTTP_Telegram_Create_Webhook.json
+      31 430 → 9 605 chars (-69.4%)
+   13. 1688_HTTP_Telegram_Automate_Webhook.json
+      31 401 → 9 605 chars (-69.4%)
+   14. 1565_Gmail_Stickynote_Create_Triggered.json
+      11 784 → 3 672 chars (-68.8%)
+   15. 1862_Code_Respondtowebhook_Automation_Webhook.json
+      9 484 → 3 057 chars (-67.8%)
+   16. 0368_Stickynote_Webhook_Automate_Webhook.json
+      4 327 → 1 406 chars (-67.5%)
+   17. 1852_HTTP_Stickynote_Automate_Webhook.json
+      9 258 → 3 087 chars (-66.7%)
+   18. 0420_Hunter_Form_Create_Triggered.json
+      15 057 → 5 351 chars (-64.5%)
+   19. 0566_HTTP_Stickynote_Automate_Webhook.json
+      7 061 → 2 580 chars (-63.5%)
+   20. 1530_HTTP_Stickynote_Automation_Webhook.json
+      7 061 → 2 580 chars (-63.5%)
+
+📈 RÉPARTITION DES GAINS :
+   - 0-10% : 811 fichiers (39.5%)
+   - 10-25% : 618 fichiers (30.1%)
+   - 25-50% : 563 fichiers (27.4%)
+   - 50-75% : 49 fichiers (2.4%)
+   - 75%+ : 10 fichiers (0.5%)
+
+📋 IMPACT SUR LES GROS FICHIERS :
+   - Fichiers >30k chars avant : 279
+   - Fichiers >30k chars après : 155
+   - Réduction moyenne par fichier : 3 510 caractères
+
+📋 FICHIERS OPTIMISÉS TOUJOURS >30k CARACTÈRES (155 fichiers) :
+   1. 1897_Webhook_Filter_Sync_Webhook.json
+      213 225 → 169 418 chars (-20.5%)
+   2. 1483_Limit_Code_Automation_Webhook.json
+      164 369 → 162 652 chars (-1.0%)
+   3. 1955_Wait_Splitout_Automation_Scheduled.json
+      174 184 → 159 226 chars (-8.6%)
+   4. 0644_Webhook_Slack_Create_Webhook.json
+      179 868 → 157 789 chars (-12.3%)
+   5. 1832_Code_Webhook_Automation_Webhook.json
+      145 665 → 141 287 chars (-3.0%)
+   6. 1146_Splitout_Code_Automation_Webhook.json
+      141 220 → 132 459 chars (-6.2%)
+   7. 0668_Wait_Splitout_Create_Webhook.json
+      109 119 → 101 734 chars (-6.8%)
+   8. 1293_Wait_Splitout_Automation_Webhook.json
+      108 771 → 101 366 chars (-6.8%)
+   9. 0856_Code_Schedule_Update_Scheduled.json
+      104 059 → 98 160 chars (-5.7%)
+   10. 0392_Stopanderror_GitHub_Automate_Webhook.json
+      105 687 → 95 678 chars (-9.5%)
+   11. 0829_Webhook_Code_Create_Webhook.json
+      124 129 → 93 283 chars (-24.8%)
+   12. 0898_Code_Schedule_Create_Scheduled.json
+      101 685 → 93 064 chars (-8.5%)
+   13. 1847_Extractfromfile_Form_Automation_Triggered.json
+      97 063 → 91 198 chars (-6.0%)
+   14. 1488_Extractfromfile_Form_Automation_Triggered.json
+      97 650 → 91 120 chars (-6.7%)
+   15. 1966_Code_Webhook_Automation_Webhook.json
+      91 210 → 87 602 chars (-4.0%)
+   16. 0926_Code_Webhook_Create_Webhook.json
+      103 679 → 84 932 chars (-18.1%)
+   17. 1500_Code_Webhook_Automation_Webhook.json
+      86 242 → 82 764 chars (-4.0%)
+   18. 1696_Wait_Code_Automate_Webhook.json
+      85 128 → 81 809 chars (-3.9%)
+   19. 0299_Code_Webhook_Create_Webhook.json
+      89 567 → 81 020 chars (-9.5%)
+   20. 0719_Stopanderror_Splitout_Create_Webhook.json
+      98 925 → 78 523 chars (-20.6%)
+   21. 1825_Code_Webhook_Automation_Webhook.json
+      81 560 → 77 986 chars (-4.4%)
+   22. 1815_Code_Webhook_Automation_Webhook.json
+      80 902 → 77 418 chars (-4.3%)
+   23. 1653_Code_Webhook_Send_Webhook.json
+      85 345 → 76 703 chars (-10.1%)
+   24. 0375_Webhook_Code_Send_Webhook.json
+      78 410 → 76 159 chars (-2.9%)
+   25. 0971_Limit_Splitout_Automation_Webhook.json
+      82 794 → 70 774 chars (-14.5%)
+   26. 1905_Telegram_Googleanalytics_Automation_Webhook.json
+      73 229 → 67 938 chars (-7.2%)
+   27. 0184_Functionitem_Itemlists_Automate.json
+      63 724 → 63 660 chars (-0.1%)
+   28. 0762_Aggregate_Stickynote_Create_Triggered.json
+      66 641 → 62 274 chars (-6.6%)
+   29. 1282_Wait_Code_Import_Webhook.json
+      72 920 → 61 911 chars (-15.1%)
+   30. 1342_Linkedin_Telegram_Automate_Webhook.json
+      99 265 → 61 418 chars (-38.1%)
+   31. 1994_Code_Manual_Automation_Webhook.json
+      79 160 → 60 902 chars (-23.1%)
+   32. 1666_Code_Manual_Automation_Webhook.json
+      78 625 → 60 332 chars (-23.3%)
+   33. 0655_Code_Postgres_Update_Scheduled.json
+      65 656 → 59 544 chars (-9.3%)
+   34. 1726_Code_Webhook_Automation_Webhook.json
+      66 295 → 57 779 chars (-12.8%)
+   35. 2046_Code_Webhook_Automation_Webhook.json
+      63 725 → 55 209 chars (-13.4%)
+   36. 1985_Converttofile_HTTP_Automation_Webhook.json
+      59 912 → 52 897 chars (-11.7%)
+   37. 1401_Code_Webhook_Automate_Webhook.json
+      58 610 → 52 849 chars (-9.8%)
+   38. 1745_Wait_Code_Automation_Webhook.json
+      55 941 → 52 325 chars (-6.5%)
+   39. 1639_Wait_Webhook_Automation_Webhook.json
+      68 932 → 51 881 chars (-24.7%)
+   40. 1498_Stopanderror_Limit_Sync_Webhook.json
+      60 701 → 51 690 chars (-14.8%)
+   41. 1178_Code_HTTP_Automation_Webhook.json
+      61 592 → 51 581 chars (-16.3%)
+   42. 0780_Splitout_Filter_Process_Webhook.json
+      59 582 → 51 090 chars (-14.3%)
+   43. 0793_Splitout_Code_Send_Triggered.json
+      57 607 → 51 053 chars (-11.4%)
+   44. 1805_Wait_Code_Automate_Webhook.json
+      60 174 → 50 386 chars (-16.3%)
+   45. 1904_Telegram_Limit_Process_Webhook.json
+      61 560 → 50 344 chars (-18.2%)
+   46. 0782_Telegram_Redis_Create_Webhook.json
+      59 803 → 50 304 chars (-15.9%)
+   47. 0902_Splitout_Code_Create_Scheduled.json
+      58 741 → 49 767 chars (-15.3%)
+   48. 1900_Limit_Code_Automate_Webhook.json
+      57 188 → 49 016 chars (-14.3%)
+   49. 0539_Schedule_Twilio_Create_Webhook.json
+      60 170 → 48 916 chars (-18.7%)
+   50. 1492_Schedule_Twilio_Automation_Webhook.json
+      60 070 → 48 796 chars (-18.8%)
+   51. 1711_Limit_Code_Automate_Webhook.json
+      56 919 → 48 723 chars (-14.4%)
+   52. 0600_Code_Extractfromfile_Create_Webhook.json
+      60 494 → 48 154 chars (-20.4%)
+   53. 1823_Stopanderror_Wait_Create_Webhook.json
+      52 498 → 47 678 chars (-9.2%)
+   54. 1395_Wait_Code_Create_Webhook.json
+      51 914 → 47 478 chars (-8.5%)
+   55. 1875_Code_Schedule_Automate_Scheduled.json
+      49 613 → 46 467 chars (-6.3%)
+   56. 1809_Code_Schedule_Automate_Webhook.json
+      52 660 → 46 134 chars (-12.4%)
+   57. 1496_Telegram_Webhook_Automation_Webhook.json
+      50 595 → 45 747 chars (-9.6%)
+   58. 1320_Code_Schedule_Automate_Webhook.json
+      52 215 → 45 670 chars (-12.5%)
+   59. 0618_Splitout_Code_Create_Scheduled.json
+      55 885 → 45 544 chars (-18.5%)
+   60. 0649_Splitout_GoogleCalendar_Create_Webhook.json
+      58 924 → 44 482 chars (-24.5%)
+   61. 1556_Splitout_Code_Monitor_Scheduled.json
+      54 159 → 44 311 chars (-18.2%)
+   62. 1333_Splitout_GoogleCalendar_Automate_Webhook.json
+      58 667 → 44 211 chars (-24.6%)
+   63. 1942_Postgres_Wordpress_Automation_Webhook.json
+      49 332 → 43 756 chars (-11.3%)
+   64. 1752_Postgres_Wordpress_Automation_Webhook.json
+      49 254 → 43 648 chars (-11.4%)
+   65. 1878_Telegram_Wait_Create_Webhook.json
+      46 895 → 42 451 chars (-9.5%)
+   66. 0877_Splitout_Code_Create_Webhook.json
+      50 295 → 42 312 chars (-15.9%)
+   67. 0894_Splitout_Redis_Create_Triggered.json
+      53 297 → 42 230 chars (-20.8%)
+   68. 0638_Splitout_Redis_Create_Webhook.json
+      51 397 → 41 456 chars (-19.3%)
+   69. 0925_Stopanderror_Wait_Automate_Triggered.json
+      48 007 → 41 235 chars (-14.1%)
+   70. 0808_Code_Form_Send_Webhook.json
+      46 244 → 40 962 chars (-11.4%)
+   71. 0625_Splitout_Code_Create_Triggered.json
+      49 662 → 40 919 chars (-17.6%)
+   72. 1388_Splitout_Redis_Automation_Webhook.json
+      50 631 → 40 650 chars (-19.7%)
+   73. 0475_Googleanalytics_Code_Automate_Scheduled.json
+      44 283 → 40 582 chars (-8.4%)
+   74. 0915_Splitout_Code_Create_Webhook.json
+      47 142 → 40 582 chars (-13.9%)
+   75. 0867_Wait_Splitout_Create_Webhook.json
+      45 544 → 40 568 chars (-10.9%)
+   76. 1540_Markdown_Stickynote_Automation_Webhook.json
+      42 090 → 40 293 chars (-4.3%)
+   77. generate-collaborative-handbooks-with-gpt4o-multi-agent-orchestration-human-review.json
+      40 351 → 40 276 chars (-0.2%)
+   78. 1642_Splitout_Code_Automation_Webhook.json
+      44 812 → 39 942 chars (-10.9%)
+   79. 0547_Wait_Splitout_Create_Webhook.json
+      47 558 → 39 915 chars (-16.1%)
+   80. 1341_Telegram_Splitout_Automate_Webhook.json
+      43 594 → 39 457 chars (-9.5%)
+   81. 0715_Wait_Schedule_Create_Scheduled.json
+      48 282 → 39 335 chars (-18.5%)
+   82. 1560_Splitout_Code_Automation_Webhook.json
+      47 208 → 39 328 chars (-16.7%)
+   83. 1244_Telegram_GoogleSheets_Automate_Triggered.json
+      43 700 → 39 258 chars (-10.2%)
+   84. 0681_Aggregate_HTTP_Create_Webhook.json
+      45 806 → 38 901 chars (-15.1%)
+   85. 1807_Linkedin_Googledocs_Automate_Webhook.json
+      63 918 → 38 820 chars (-39.3%)
+   86. 1286_Code_Manual_Automation_Triggered.json
+      42 409 → 38 518 chars (-9.2%)
+   87. 1288_Telegram_Wait_Automation_Webhook.json
+      42 969 → 38 396 chars (-10.6%)
+   88. 0322_Splitout_Code_Send_Triggered.json
+      40 465 → 38 350 chars (-5.2%)
+   89. 0584_Strapi_Splitout_Create_Webhook.json
+      43 760 → 38 205 chars (-12.7%)
+   90. 1400_Wait_Code_Automation_Webhook.json
+      42 040 → 37 997 chars (-9.6%)
+   91. 0658_Code_Schedule_Create_Scheduled.json
+      44 615 → 37 763 chars (-15.4%)
+   92. 1428_Code_Schedule_Send_Scheduled.json
+      44 598 → 37 746 chars (-15.4%)
+   93. 1429_Code_Schedule_Send_Scheduled.json
+      44 598 → 37 746 chars (-15.4%)
+   94. 1434_Strapi_Splitout_Automation_Webhook.json
+      43 324 → 37 709 chars (-13.0%)
+   95. 1469_Wait_Splitout_Automation_Webhook.json
+      61 160 → 37 691 chars (-38.4%)
+   96. 0869_Wait_Datetime_Send_Scheduled.json
+      43 518 → 37 621 chars (-13.6%)
+   97. 1813_Code_GoogleCalendar_Automation_Triggered.json
+      42 216 → 37 354 chars (-11.5%)
+   98. 1836_Code_Googledocs_Automation_Webhook.json
+      50 279 → 37 240 chars (-25.9%)
+   99. 1121_Linkedin_Wait_Create_Webhook.json
+      42 967 → 37 203 chars (-13.4%)
+   100. 2054_Deep_Research_Report_Generation_With_Open_Router_Google_Search_Webhook_Telegram_and_Notion.json
+      38 983 → 37 026 chars (-5.0%)
+   101. 2003_Datetime_Code_Automation_Webhook.json
+      40 777 → 36 602 chars (-10.2%)
+   102. 1134_Googledocs_Code_Create_Webhook.json
+      40 661 → 36 593 chars (-10.0%)
+   103. 0921_Splitout_Code_Send_Scheduled.json
+      46 583 → 36 558 chars (-21.5%)
+   104. 1834_Splitout_Code_Automation_Triggered.json
+      57 376 → 36 476 chars (-36.4%)
+   105. 1437_Splitout_Code_Automation_Triggered.json
+      57 386 → 36 465 chars (-36.5%)
+   106. 0696_Code_Webhook_Create_Webhook.json
+      50 075 → 36 210 chars (-27.7%)
+   107. 0581_Webhook_Slack_Create_Webhook.json
+      49 541 → 36 182 chars (-27.0%)
+   108. 1733_Webhook_Slack_Automate_Webhook.json
+      49 567 → 36 171 chars (-27.0%)
+   109. 0879_Filter_HTTP_Update_Webhook.json
+      42 531 → 36 129 chars (-15.1%)
+   110. 1257_Code_Webhook_Automation_Webhook.json
+      49 912 → 36 017 chars (-27.8%)
+   111. 1491_Linkedin_Wait_Create_Webhook.json
+      41 735 → 35 946 chars (-13.9%)
+   112. 1860_GoogleSheets_Gmail_Automation_Webhook.json
+      39 429 → 35 845 chars (-9.1%)
+   113. 1510_Datetime_Code_Automation_Webhook.json
+      39 898 → 35 627 chars (-10.7%)
+   114. 0659_Splitout_Schedule_Create_Scheduled.json
+      43 721 → 35 467 chars (-18.9%)
+   115. 1507_Stickynote_Executeworkflow_Automation_Webhook.json
+      41 405 → 35 364 chars (-14.6%)
+   116. 0910_Bitly_Datetime_Update_Webhook.json
+      43 460 → 34 968 chars (-19.5%)
+   117. 1407_Splitout_Schedule_Automation_Scheduled.json
+      43 247 → 34 949 chars (-19.2%)
+   118. 1103_Googletaskstool_Telegram_Automation_Webhook.json
+      46 842 → 34 818 chars (-25.7%)
+   119. 0789_Telegram_Code_Create_Triggered.json
+      40 814 → 34 616 chars (-15.2%)
+   120. 0674_Limit_Webhook_Automation_Webhook.json
+      45 095 → 34 561 chars (-23.4%)
+   121. 1935_Splitout_Extractfromfile_Automation_Triggered.json
+      37 083 → 34 214 chars (-7.7%)
+   122. 0520_Splitout_Filter_Create_Webhook.json
+      40 577 → 34 203 chars (-15.7%)
+   123. 0673_Limit_Code_Create_Webhook.json
+      47 601 → 34 170 chars (-28.2%)
+   124. 0700_Code_Respondtowebhook_Send_Webhook.json
+      38 165 → 33 946 chars (-11.1%)
+   125. 1443_Splitout_Extractfromfile_Automation_Triggered.json
+      36 773 → 33 904 chars (-7.8%)
+   126. 1355_Splitout_Webhook_Automate_Webhook.json
+      35 483 → 33 661 chars (-5.1%)
+   127. 1723_Airtabletool_Stickynote_Automation_Triggered.json
+      35 982 → 33 082 chars (-8.1%)
+   128. 1261_Airtabletool_Stickynote_Automation_Triggered.json
+      35 980 → 33 015 chars (-8.2%)
+   129. 1440_HTTP_Executeworkflow_Automation_Webhook.json
+      39 385 → 32 812 chars (-16.7%)
+   130. 0690_Telegram_Webhook_Send_Webhook.json
+      39 083 → 32 526 chars (-16.8%)
+   131. 0384_HTTP_Manual_Create_Webhook.json
+      42 596 → 32 290 chars (-24.2%)
+   132. 1606_Telegram_Webhook_Automation_Webhook.json
+      38 823 → 32 267 chars (-16.9%)
+   133. 1722_Webhook_Code_Automation_Webhook.json
+      35 271 → 32 233 chars (-8.6%)
+   134. 0595_Filter_Manual_Send_Triggered.json
+      38 164 → 32 170 chars (-15.7%)
+   135. 1907_Stickynote_Converttofile_Automation_Triggered.json
+      35 041 → 32 031 chars (-8.6%)
+   136. 1321_Filter_Manual_Send_Triggered.json
+      37 916 → 31 892 chars (-15.9%)
+   137. 0654_Splitout_Code_Create_Webhook.json
+      38 863 → 31 886 chars (-18.0%)
+   138. 0895_Splitout_Code_Create_Webhook.json
+      37 365 → 31 568 chars (-15.5%)
+   139. 1185_Telegram_Wait_Automate_Webhook.json
+      40 283 → 31 239 chars (-22.5%)
+   140. 0643_Splitout_Snowflake_Import_Scheduled.json
+      33 420 → 31 190 chars (-6.7%)
+   141. 0815_Telegram_Code_Update_Triggered.json
+      41 595 → 31 032 chars (-25.4%)
+   142. 1539_Telegram_Splitout_Automation_Triggered.json
+      41 365 → 30 995 chars (-25.1%)
+   143. 1782_Linkedin_Telegram_Automation_Scheduled.json
+      35 951 → 30 974 chars (-13.8%)
+   144. 1482_Telegram_Code_Create_Webhook.json
+      41 532 → 30 945 chars (-25.5%)
+   145. 1982_Telegram_Splitout_Automation_Scheduled.json
+      38 619 → 30 927 chars (-19.9%)
+   146. 1470_Telegram_Code_Create_Webhook.json
+      41 295 → 30 758 chars (-25.5%)
+   147. 1280_Linkedin_Telegram_Automation_Scheduled.json
+      35 757 → 30 710 chars (-14.1%)
+   148. 1895_Gitlab_Code_Automation_Webhook.json
+      35 199 → 30 654 chars (-12.9%)
+   149. 0650_Splitout_Webhook_Create_Webhook.json
+      42 473 → 30 633 chars (-27.9%)
+   150. 0832_Splitout_Limit_Create_Webhook.json
+      35 656 → 30 542 chars (-14.3%)
+   151. 1915_Splitout_Code_Automation_Webhook.json
+      44 645 → 30 322 chars (-32.1%)
+   152. 1144_Postgres_Code_Automation_Triggered.json
+      32 294 → 30 175 chars (-6.6%)
+   153. 1344_Splitout_Filter_Automation_Webhook.json
+      36 575 → 30 121 chars (-17.6%)
+   154. 1731_Splitout_Code_Automation_Webhook.json
+      44 421 → 30 079 chars (-32.3%)
+   155. 1494_Microsofttodo_Webhook_Automation_Webhook.json
+      39 557 → 30 066 chars (-24.0%)
+
+📊 MÉDIANE DU NOMBRE DE CARACTÈRES :
+   - Médiane originale : 10 092 caractères
+   - Médiane optimisée : 7 705 caractères
+   - Réduction médiane : 2 387 caractères (-23.7%)
+
+📈 PERCENTILES DE TAILLE :
+   - P25 : 3 795 → 3 063 chars
+   - P50 (médiane) : 10 092 → 7 705 chars
+   - P75 : 19 747 → 14 835 chars
+   - P90 : 34 169 → 26 948 chars
+
+💾 ESTIMATION POUR LE RAG :
+   - Tokens économisés : 1 803 028
+   - Économie estimée : ~$18.03 USD en tokens d'embedding
+   - Gain en vitesse : ~22.7% plus rapide pour les embeddings
+maximemarsal@MacBook-Pro-de-Maxime cursor-n8n-backend % 

@@ -1,0 +1,247 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "4fe1597b-ea03-439a-898b-a968cbd84511",
+      "name": "Set Address Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        840,
+        280
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8216105e-23ad-4c5c-8f4a-4f97658e0947",
+              "name": "address",
+              "type": "string",
+              "value": "={{ $json.address }}"
+            },
+            {
+              "id": "111da971-2473-4c5e-a106-22589cf47daf",
+              "name": "address2",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "ed62cf39-10f1-42f6-b18f-bfa58b4fe646",
+              "name": "city",
+              "type": "string",
+              "value": "={{ $json.city }}"
+            },
+            {
+              "id": "d9550200-04ac-4cf4-b7e6-cd40b793ce97",
+              "name": "state",
+              "type": "string",
+              "value": "={{ $json.state }}"
+            },
+            {
+              "id": "62269d11-c98c-4016-83ef-291176f2fc12",
+              "name": "zip",
+              "type": "string",
+              "value": "={{ $json.zip_code }}"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "04c286c0-8862-40f9-960d-902b3c89a6ee",
+      "name": "CRM Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        600,
+        280
+      ],
+      "webhookId": "a2df5279-0c49-49c1-83a3-cb1179930e91",
+      "parameters": {
+        "path": "727deb6f-9d10-4492-92e6-38f3292510b0",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "c091dc5f-5527-43ca-b257-c977d654c13b",
+      "name": "Update Groundhogg - Deliverable",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1800,
+        140
+      ],
+      "parameters": {
+        "url": "=webhook listener from Groundhogg funnel",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tag",
+              "value": "Mailing Address Deliverable"
+            },
+            {
+              "name": "id",
+              "value": "={{ $('CRM Webhook Trigger').item.json.id }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "1449b6e2-1c4f-4f75-8280-aab3c993f0ac",
+      "name": "Update Groundhogg - NOT Deliverable",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1800,
+        360
+      ],
+      "parameters": {
+        "url": "=webhook listener from Groundhogg funnel",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tag",
+              "value": "Mailing Address NOT Deliverable"
+            },
+            {
+              "name": "id",
+              "value": "={{ $('CRM Webhook Trigger').item.json.id }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "a79eb361-7dc8-4838-bb40-b34bf35c3102",
+      "name": "Address Verification",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1140,
+        280
+      ],
+      "parameters": {
+        "url": "https://api.lob.com/v1/us_verifications",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "primary_line",
+              "value": "={{ $json.address }}"
+            },
+            {
+              "name": "secondary_line",
+              "value": "={{ $json.address2 }}"
+            },
+            {
+              "name": "city",
+              "value": "={{ $json.city }}"
+            },
+            {
+              "name": "state",
+              "value": "={{ $json.state }}"
+            },
+            {
+              "name": "zip_code",
+              "value": "={{ $json.zip_code }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "71c9199f-823c-451b-baf5-a2b5de1697c1",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        1500,
+        280
+      ],
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "value2": "=deliverable",
+              "outputKey": "deliverable"
+            },
+            {
+              "value2": "deliverable",
+              "operation": "notEqual",
+              "outputKey": "NOT deliverable"
+            }
+          ]
+        },
+        "value1": "={{ $json.deliverability }}",
+        "dataType": "string"
+      },
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Update Groundhogg - Deliverable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Groundhogg - NOT Deliverable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Address Fields": {
+      "main": [
+        [
+          {
+            "node": "Address Verification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Address Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Address Verification": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

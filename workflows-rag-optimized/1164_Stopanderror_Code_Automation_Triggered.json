@@ -1,0 +1,193 @@
+{
+  "id": "84dT8cFL0FV8ZGPx",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Slack Webhook - Verify Signature",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "b12fe8e7-45c4-4021-826e-3ae430e34001",
+      "name": "Make Slack Verif Token",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        900,
+        400
+      ],
+      "parameters": {
+        "jsCode": "function encodeFormData(data) {\n  const encodedData = Object.keys(data)\n    .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))\n    .join('&')\n    .replaceAll(\"%20\", \"+\") // Slack does not encode \"+\" signs\n    .replaceAll(\"*\", \"%2A\") // Slack encodes \"*\" signs\n    .replaceAll(\"~\", \"%7E\"); // Slack encodes \"~\" signs\n    \n  return encodedData;\n}\n\nfunction buildSigBaseString(requestJson) {\n  const version = \"v0\"; // Slack Webhook version (Always v0 for the moment)\n  \n  const timestamp = requestJson.headers[\"x-slack-request-timestamp\"];\n  \n  const body = requestJson.body;\n  const encodedBody = encodeFormData(body);\n  \n  const sigBaseString = `${version}:${timestamp}:${encodedBody}`;\n\n  return sigBaseString;\n}\n\nconst requestJson = $input.first().json;\n\nconst sigBaseString = buildSigBaseString(requestJson);\n\nconst requestSignature = requestJson.headers[\"x-slack-signature\"];\n\nconsole.log({\n    sigBaseString,\n    requestSignature\n  });\nreturn {\n  json: {\n    sigBaseString,\n    requestSignature\n  },\n  pairedItem: 0\n}\n\n\n"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "a91e2d8f-e907-439c-9fd3-cb75e957b059",
+      "name": "Encode Secret String",
+      "type": "n8n-nodes-base.crypto",
+      "position": [
+        1120,
+        400
+      ],
+      "parameters": {
+        "type": "SHA256",
+        "value": "={{ $json.sigBaseString }}",
+        "action": "hmac",
+        "dataPropertyName": "candidateSignature"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "d79ccfe1-61cd-4da4-bfff-1e504627bb3d",
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1360,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.requestSignature }}",
+              "value2": "=v0={{ $json.candidateSignature }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "cb2b9908-c226-438b-adb2-7c1ec852e007",
+      "name": "Stop and Error",
+      "type": "n8n-nodes-base.stopAndError",
+      "position": [
+        1580,
+        580
+      ],
+      "parameters": {
+        "errorMessage": "Could not verify Slack Webhook signature"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "5ef4c06a-717b-4f90-83a7-06eda780a892",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        680,
+        400
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "f5af4f44-1ea5-419b-a58b-f8f6839b6b05",
+      "name": "Set Verified to True",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1580,
+        220
+      ],
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "signature_verified",
+              "type": "booleanValue"
+            }
+          ]
+        },
+        "include": "none",
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "8a76dec8-7a2d-4cc9-82c9-002141e205ec",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1920,
+        40
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combinationMode": "mergeByPosition"
+      },
+      "typeVersion": 2.1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "Set Verified to True",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encode Secret String": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Verified to True": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Make Slack Verif Token": {
+      "main": [
+        [
+          {
+            "node": "Encode Secret String",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Make Slack Verif Token",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

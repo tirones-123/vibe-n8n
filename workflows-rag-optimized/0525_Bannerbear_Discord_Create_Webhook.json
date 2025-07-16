@@ -1,0 +1,342 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "81ea4c6a-d603-4688-8b72-d9c79faf7adf",
+      "name": "n8n Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        1272,
+        455
+      ],
+      "webhookId": "d280e773-3bd8-44ce-a147-8b404251fce9",
+      "parameters": {
+        "path": "d280e773-3bd8-44ce-a147-8b404251fce9",
+        "options": {},
+        "formTitle": "BannerBear Clone",
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "dropdown",
+              "fieldLabel": "Template",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "n8n Meetup Template"
+                  },
+                  {
+                    "option": "AI Meetup Template"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldType": "textarea",
+              "fieldLabel": "Title of Event",
+              "requiredField": true
+            },
+            {
+              "fieldType": "textarea",
+              "fieldLabel": "Location of Event",
+              "requiredField": true
+            },
+            {
+              "fieldType": "textarea",
+              "fieldLabel": "Date of Event",
+              "requiredField": true
+            },
+            {
+              "fieldType": "textarea",
+              "fieldLabel": "Image Prompt",
+              "requiredField": true
+            }
+          ]
+        },
+        "formDescription": "Generate an image and apply text"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "dea26687-4060-488b-a09f-e21900fec2fc",
+      "name": "Upload to Cloudinary",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1920,
+        480
+      ],
+      "parameters": {
+        "url": "https://api.cloudinary.com/v1_1/daglih2g8/image/upload",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendQuery": true,
+        "contentType": "multipart-form-data",
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "genericAuthType": "httpQueryAuth",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "upload_preset",
+              "value": "n8n-workflows-preset"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "<httpQueryAuth-id>",
+          "name": "Cloudinary API"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "4b73ba35-eac9-467b-b711-49061da30fbc",
+      "name": "Send to Bannerbear Template",
+      "type": "n8n-nodes-base.bannerbear",
+      "position": [
+        2260,
+        440
+      ],
+      "parameters": {
+        "templateId": "={{ $('Set Parameters').item.json.template_id }}",
+        "modificationsUi": {
+          "modificationsValues": [
+            {
+              "name": "placeholder_image",
+              "text": "=",
+              "imageUrl": "={{ $json.secure_url.replace('upload/','upload/f_auto,q_auto/') }}"
+            },
+            {
+              "name": "placeholder_text",
+              "text": "={{ $('Set Parameters').item.json.title }}"
+            },
+            {
+              "name": "placeholder_location",
+              "text": "={{ $('Set Parameters').item.json.location }}"
+            },
+            {
+              "name": "placeholder_date",
+              "text": "={{ $('Set Parameters').item.json.date }}"
+            }
+          ]
+        },
+        "additionalFields": {
+          "waitForImage": true,
+          "waitForImageMaxTries": 10
+        }
+      },
+      "credentials": {
+        "bannerbearApi": {
+          "id": "<bannerbearApi-id>",
+          "name": "Bannerbear account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "d9b8f63b-ee0f-40d6-9b1a-8213c7043b3a",
+      "name": "Set Parameters",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1452,
+        455
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8c526649-b8a8-4b9f-a805-41de053bb642",
+              "name": "template_id",
+              "type": "string",
+              "value": "={{ {\n'AI Meetup Template': 'lzw71BD6VNLgD0eYkn',\n'n8n Meetup Template': 'n1MJGd52o696D7LaPV'\n}[$json.Template] ?? '' }}"
+            },
+            {
+              "id": "f5a3c285-719b-4a12-a669-47a63a880ac4",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json[\"Title of Event\"] }}"
+            },
+            {
+              "id": "6713a88e-815c-416a-b838-b07006a090a3",
+              "name": "location",
+              "type": "string",
+              "value": "={{ $json[\"Location of Event\"] }}"
+            },
+            {
+              "id": "3c331756-1f1f-4e27-b769-e3de860bfdf0",
+              "name": "date",
+              "type": "string",
+              "value": "={{ $json[\"Date of Event\"] }}"
+            },
+            {
+              "id": "b933df30-8067-4a0a-bff1-64441490478d",
+              "name": "image_prompt",
+              "type": "string",
+              "value": "={{ $json[\"Image Prompt\"] }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "c929d9c4-1e18-4806-9fc6-fb3bf0fa75ad",
+      "name": "Download Banner",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2600,
+        480
+      ],
+      "parameters": {
+        "url": "={{ $json.image_url_jpg }}",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "18ccd15f-65b6-46eb-8235-7fe19b13649d",
+      "name": "Discord",
+      "type": "n8n-nodes-base.discord",
+      "position": [
+        2780,
+        480
+      ],
+      "parameters": {
+        "files": {
+          "values": [
+            {}
+          ]
+        },
+        "content": "=📅 New Event Alert!  {{ $('Set Parameters').item.json.title }} being held at  {{ $('Set Parameters').item.json.location }} on the  {{ $('Set Parameters').item.json.date }}! Don't miss it!",
+        "guildId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1248678443432808509",
+          "cachedResultUrl": "https://discord.com/channels/1248678443432808509",
+          "cachedResultName": "Datamoldxyz"
+        },
+        "options": {},
+        "resource": "message",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1248678443432808512",
+          "cachedResultUrl": "https://discord.com/channels/1248678443432808509/1248678443432808512",
+          "cachedResultName": "general"
+        }
+      },
+      "credentials": {
+        "discordBotApi": {
+          "id": "<discordBotApi-id>",
+          "name": "Discord Bot account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "7122fac9-4b4d-4fcf-a188-21af025a7fa8",
+      "name": "Generate AI Banner Image",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1700,
+        480
+      ],
+      "parameters": {
+        "prompt": "={{ $json.image_prompt }}",
+        "options": {
+          "size": "1024x1024",
+          "quality": "standard"
+        },
+        "resource": "image"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.3
+    }
+  ],
+  "connections": {
+    "Set Parameters": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Banner Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Banner": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Send to Bannerbear Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Banner Image": {
+      "main": [
+        [
+          {
+            "node": "Upload to Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Bannerbear Template": {
+      "main": [
+        [
+          {
+            "node": "Download Banner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

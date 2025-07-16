@@ -1,0 +1,129 @@
+{
+  "id": "AvXlqUiuc1qJSwxf",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Forward Filtered Gmail Notifications to Telegram Chat",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "bb2a78d7-91ba-4e8c-a9f1-af270a50bd8f",
+      "name": "Incoming Email Monitor",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "position": [
+        20,
+        100
+      ],
+      "parameters": {
+        "filters": {},
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "SM MaryP (Gmail)"
+        }
+      },
+      "notesInFlow": false,
+      "typeVersion": 1.2
+    },
+    {
+      "id": "addffc7b-ef58-4fb5-9275-3db6fd84f4c0",
+      "name": "Email Validation Check",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        340,
+        100
+      ],
+      "parameters": {
+        "options": {
+          "ignoreCase": false
+        },
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "2496d01f-dbd5-4e23-84c3-f78decb87697",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.Subject }}",
+              "rightValue": "Urgent"
+            },
+            {
+              "id": "274e9e05-5c74-487e-851d-0ca62210cb99",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.Subject }}",
+              "rightValue": "Server Down"
+            }
+          ]
+        },
+        "looseTypeValidation": true
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "e87d46b6-efc6-466f-a708-bfbf34bf001b",
+      "name": "Send Telegram Message",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        700,
+        80
+      ],
+      "webhookId": "c8f1d16f-b698-4af9-a795-9aaa277c2bf6",
+      "parameters": {
+        "text": "=From : {{ $json.From }}\nSubject :{{ $json.Subject }}\nMessage : {{ $json.snippet }}\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "notesInFlow": false,
+      "typeVersion": 1.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Email Validation Check": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Incoming Email Monitor": {
+      "main": [
+        [
+          {
+            "node": "Email Validation Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

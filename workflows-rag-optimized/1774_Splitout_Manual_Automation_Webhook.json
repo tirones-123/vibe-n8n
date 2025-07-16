@@ -1,0 +1,254 @@
+{
+  "id": "YZpFvpXOTYkBpiUU",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Extract Business Leads from Google Maps with Dumpling AI to Google Sheets",
+  "tags": [
+    {
+      "id": "TlcNkmb96fUfZ2eA",
+      "name": "Tutorials",
+      "createdAt": "2025-04-15T17:02:00.249Z",
+      "updatedAt": "2025-04-15T17:02:00.249Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "0a4ee00a-19cf-4d1e-a145-b5c5619ce636",
+      "name": "Trigger: Manual Test Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        0,
+        120
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "26fdb640-93a0-4312-beaf-4c07fff87751",
+      "name": "Search Google Maps via Dumpling AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        220,
+        120
+      ],
+      "parameters": {
+        "url": "https://app.dumplingai.com/api/v1/search-maps",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"query\": \"best+restaurants+in+New+York\", \n  \"language\": \"en\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Header Auth account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "d3fafc2c-0b9d-4e83-83aa-de24d11fc0e1",
+      "name": "Split Places List for Processing",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        440,
+        120
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "places"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "83b48532-b1fb-4ab3-9596-6e96526bfd49",
+      "name": "Save Results to Google Sheet (Place Info)",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        660,
+        120
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "type": "={{ $json.type }}",
+            "Name ": "={{ $json.title }}",
+            "rating": "={{ $json.rating }}",
+            "Address": "={{ $json.address }}",
+            "Website": "={{ $json.website }}",
+            "Position": "={{ $json.position }}",
+            "priceLevel": "={{ $json.priceLevel }}",
+            "Booking Link": "={{ $json.bookingLinks[0] }}",
+            "Phone number": "={{ $json.phoneNumber }}"
+          },
+          "schema": [
+            {
+              "id": "Name ",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Name ",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Address",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rating",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "rating",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priceLevel",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "priceLevel",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "type",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "I use an HTTP request in n8n, I returned up to 10",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "I use an HTTP request in n8n, I returned up to 10",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Booking Link",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Booking Link",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Website",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone number",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Phone number",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Position",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Position",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pb4WLqv2EruLM1z9-utehcINolSj0vlUqZionyLoRUs/edit#gid=1069765279",
+          "cachedResultName": "Google Maps"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pb4WLqv2EruLM1z9-utehcINolSj0vlUqZionyLoRUs/edit?usp=drivesdk",
+          "cachedResultName": "Places"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Trigger: Manual Test Run": {
+      "main": [
+        [
+          {
+            "node": "Search Google Maps via Dumpling AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Places List for Processing": {
+      "main": [
+        [
+          {
+            "node": "Save Results to Google Sheet (Place Info)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Google Maps via Dumpling AI": {
+      "main": [
+        [
+          {
+            "node": "Split Places List for Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

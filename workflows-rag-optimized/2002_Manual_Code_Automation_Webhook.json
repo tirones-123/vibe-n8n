@@ -1,0 +1,707 @@
+{
+  "id": "wZBgoWrBZveMmzYi",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Turn YouTube Videos into Summaries, Transcripts, and Visual Insights",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "61c56de7-0d8e-44fe-baf3-3e33ddd35b21",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -1340,
+        120
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "4e43030c-16cd-4b77-8c58-c3b703646a16",
+      "name": "Set: Define Initial Variables",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -840,
+        120
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72590fa0-cf12-4249-80fc-7aaec9992390",
+              "name": "automationID",
+              "type": "string",
+              "value": "optional-enter-reference-tracking-identifier"
+            },
+            {
+              "id": "24e9b1c3-2955-4e0b-9b4b-a6b9d046fb72",
+              "name": "apiKey",
+              "type": "string",
+              "value": "enter-your-api-key-here"
+            },
+            {
+              "id": "b6600a42-1b8d-486a-a51d-0868bc45452e",
+              "name": "youtubeURL",
+              "type": "string",
+              "value": "https://www.youtube.com/watch?v=Ovg_KfKxnC8"
+            },
+            {
+              "id": "ce9a9a40-5ae4-4106-ae61-0daba2ec185f",
+              "name": "promptType",
+              "type": "string",
+              "value": "transcript"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "add611c6-c053-464c-b12b-f0f20b4c3c4f",
+      "name": "Switch: What kind of question do we want to ask?",
+      "type": "n8n-nodes-base.switch",
+      "onError": "continueRegularOutput",
+      "position": [
+        -200,
+        60
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "Transcript",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "4ba139e4-2fd7-473f-869d-f27a1a2f3823",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.promptType.toLowerCase() }}",
+                    "rightValue": "transcript"
+                  }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "Transcript with Timestamps",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "486f3c1c-7203-4bc5-a796-87939d4360c5",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.promptType.toLowerCase() }}",
+                    "rightValue": "timestamps"
+                  }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "Summary",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "814597ad-12ff-450d-a4bc-cd2eb2836d8f",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.promptType.toLowerCase() }}",
+                    "rightValue": "summary"
+                  }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "Scene Description",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "759debf2-3dfb-4bdd-b41f-7ef0a709e25e",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.promptType.toLowerCase() }}",
+                    "rightValue": "scene"
+                  }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "Clips",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "5c66a390-2566-461d-b9bc-b0e7ebdc4af8",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.promptType.toLowerCase() }}",
+                    "rightValue": "clips"
+                  }
+                ]
+              },
+              "renameOutput": true
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "typeVersion": 3.2,
+      "alwaysOutputData": false
+    },
+    {
+      "id": "96b6a6c7-3b4f-412d-b200-526971782346",
+      "name": "Set: Scene Prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        220
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8be68e95-53df-492f-a88a-14c06f51f531",
+              "name": "prompt",
+              "type": "string",
+              "value": "=Please provide a detailed description of the scene in the video, including:\n\nSetting: Where the scene takes place (e.g., indoors, outdoors, specific location). Be specific - is it a forest, a city street, a living room?\n\nObjects: Prominent objects visible in the scene (e.g., furniture, vehicles, natural elements). Include details like color, size, and material if discernible.\n\nPeople: Description of any people present, including their appearance (clothing, hair, etc.), approximate age, and any actions they are performing.\n\nLighting: The overall lighting of the scene (e.g., bright, dim, natural, artificial). Note any specific light sources (lamps, sunlight).\n\nColors: Dominant colors and color palettes used in the scene.\n\nCamera Angle/Movement: Describe the camera perspective (e.g., close-up, wide shot, aerial view) and any camera movement (panning, zooming, static).\n\nStart output directly with the response -- do not include any introductory text or explanations."
+            },
+            {
+              "id": "bfa3b421-643d-4a52-93e9-0830f794140b",
+              "name": "model",
+              "type": "string",
+              "value": "gemini-1.5-flash"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "7506b5fa-be12-4d34-8583-027bc782db0d",
+      "name": "Set: Summarize Prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        20
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8be68e95-53df-492f-a88a-14c06f51f531",
+              "name": "prompt",
+              "type": "string",
+              "value": "=Provide a concise summary of the main points in nested bullets, using quotes only when absolutely essential for clarity. Start output directly with the response."
+            },
+            {
+              "id": "ccc44699-0918-4837-89a6-c763b157fc8c",
+              "name": "model",
+              "type": "string",
+              "value": "gemini-1.5-flash"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "2aaf482d-af31-4cd8-9014-7b77efbf3021",
+      "name": "Set: Transcript Prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        -380
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8be68e95-53df-492f-a88a-14c06f51f531",
+              "name": "prompt",
+              "type": "string",
+              "value": "=Transcribe the video. Return only the spoken dialogue, verbatim. Omit any additional text or descriptions."
+            },
+            {
+              "id": "b445c2da-934f-4a78-a57b-f383d8950f8a",
+              "name": "model",
+              "type": "string",
+              "value": "gemini-1.5-flash"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "75a6ac10-00c2-45ab-88b7-dfec3cd58bf2",
+      "name": "Set: Fallback",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        620
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8be68e95-53df-492f-a88a-14c06f51f531",
+              "name": "prompt",
+              "type": "string",
+              "value": "=Summarize this YouTube video with a focus on actionable insights. Use nested bullets and include relevant quotes. Specifically, highlight any recommended tools, strategies, or resources mentioned."
+            },
+            {
+              "id": "da626eb8-a097-4a65-834d-4d1709aed260",
+              "name": "model",
+              "type": "string",
+              "value": "gemini-1.5-flash"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "29ef7f9f-34c9-46f5-96f9-17b42feea381",
+      "name": "Set: Transcript with Timestamps Prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        -180
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8be68e95-53df-492f-a88a-14c06f51f531",
+              "name": "prompt",
+              "type": "string",
+              "value": "=Generate a timestamped transcript of the video. Each line must follow this format precisely:  [hh:mm:ss] Dialogue. Return only the timestamp and spoken content; omit any other text or formatting.  "
+            },
+            {
+              "id": "98ca7af8-0fbd-4ba8-8fc8-f914e5bbe48a",
+              "name": "model",
+              "type": "string",
+              "value": "gemini-1.5-flash"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "e10524ed-09dd-4c0f-86b0-9161fa347821",
+      "name": "Set: Scene Clips",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        480,
+        420
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8be68e95-53df-492f-a88a-14c06f51f531",
+              "name": "prompt",
+              "type": "string",
+              "value": "=Extract shareable clips for social media. Each clip must include:\n\n* **Timestamp:** [hh:mm:ss]-[hh:mm:ss]\n* **Transcript:** Verbatim dialogue/text within the clip.\n* **Rationale:**  A concise explanation (under 20 words) of the clip's social media appeal (e.g., \"humorous,\" \"controversial,\" \"inspiring,\" \"informative\").  Focus on virality, engagement potential (shares, likes, comments).\n\nStart output directly with the response -- do not include any introductory text or explanations."
+            },
+            {
+              "id": "0493ffa7-4fef-4e48-b9d7-7f0891660325",
+              "name": "model",
+              "type": "string",
+              "value": "gemini-1.5-flash"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "a8f5541c-d267-4998-bb31-32f2684b0874",
+      "name": "Set Fields: Define Outcome",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2800,
+        120
+      ],
+      "parameters": {
+        "include": "except",
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "300bfbe7-8d13-41ba-8828-17bba1d0eabe",
+              "name": "answerAIGenerated",
+              "type": "string",
+              "value": "={{ $json.candidates?.[0]?.content?.parts?.[0]?.text ? $json.candidates[0].content.parts[0].text : ($json.error ? $json.error : \"No content or error found\") }}"
+            },
+            {
+              "id": "a54eeb5d-e4de-4fd9-a15c-be51cc414c46",
+              "name": "promptTokenCount",
+              "type": "string",
+              "value": "={{ $json.usageMetadata?.promptTokenCount ? $json.usageMetadata.promptTokenCount : ($json.error ? $json.error : \"No content or error found\") }}"
+            },
+            {
+              "id": "dd590788-069e-48d9-adb2-6a5d10f8af2f",
+              "name": "candidatesTokenCount",
+              "type": "string",
+              "value": "={{ $json.usageMetadata?.candidatesTokenCount ? $json.usageMetadata.candidatesTokenCount : ($json.error ? $json.error : \"No content or error found\") }}"
+            },
+            {
+              "id": "23766495-25df-4d3d-bc62-9e79a860ee19",
+              "name": "totalTokenCount",
+              "type": "string",
+              "value": "={{ $json.usageMetadata?.totalTokenCount ? $json.usageMetadata.totalTokenCount : ($json.error ? $json.error : \"No content or error found\") }}"
+            },
+            {
+              "id": "cfad5ba2-a2c5-48ff-b64b-9131a51fd23c",
+              "name": "modelVersionUsed",
+              "type": "string",
+              "value": "={{ $json.modelVersion ? $json.modelVersion : ($json.error ? $json.error : \"No content or error found\") }}"
+            }
+          ]
+        },
+        "excludeFields": "candidates, usageMetadata",
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "062b5d41-27bb-4e67-8ffa-6e3e392fb437",
+      "name": "HTTP Request to Google",
+      "type": "n8n-nodes-base.httpRequest",
+      "onError": "continueRegularOutput",
+      "position": [
+        1740,
+        120
+      ],
+      "parameters": {
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $json.model }}:generateContent?key={{ $json.apiKey }}",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [\n      { \"text\": {{ JSON.stringify($json.prompt) }} },\n      { \"file_data\": { \"file_uri\": \"{{ $json.youtubeURL }}\" } }\n    ]\n  }]\n}",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.2,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "0a204e60-674a-453d-81e1-9eb59a3214e2",
+      "name": "Set: Merged Values",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1380,
+        120
+      ],
+      "parameters": {
+        "options": {},
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "48ed5162-61e1-4077-a13a-b2cf135fc11e",
+      "name": "If: Was an error detected?",
+      "type": "n8n-nodes-base.if",
+      "disabled": true,
+      "position": [
+        2560,
+        780
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "148e9a72-f826-468c-86a3-471873717ed4",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.error }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "d15f5fa4-731d-4d63-a065-e81a5248e8d8",
+      "name": "Code: Merge data from prior nodes with HTTP Output",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2340,
+        120
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  json: {\n    ...$json, // Keep data from http request\n    ...$('Set: Merged Values').item.json, // Keep data from before http request\n  }\n};\n\n\n\n"
+      },
+      "typeVersion": 2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Set: Fallback": {
+      "main": [
+        [
+          {
+            "node": "Set: Merged Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Scene Clips": {
+      "main": [
+        [
+          {
+            "node": "Set: Merged Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Scene Prompt": {
+      "main": [
+        [
+          {
+            "node": "Set: Merged Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Merged Values": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request to Google",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Summarize Prompt": {
+      "main": [
+        [
+          {
+            "node": "Set: Merged Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request to Google": {
+      "main": [
+        [
+          {
+            "node": "Code: Merge data from prior nodes with HTTP Output",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If: Was an error detected?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Transcript Prompt": {
+      "main": [
+        [
+          {
+            "node": "Set: Merged Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Define Initial Variables": {
+      "main": [
+        [
+          {
+            "node": "Switch: What kind of question do we want to ask?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set: Define Initial Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Transcript with Timestamps Prompt": {
+      "main": [
+        [
+          {
+            "node": "Set: Merged Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: What kind of question do we want to ask?": {
+      "main": [
+        [
+          {
+            "node": "Set: Transcript Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set: Transcript with Timestamps Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set: Summarize Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set: Scene Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set: Scene Clips",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set: Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Merge data from prior nodes with HTTP Output": {
+      "main": [
+        [
+          {
+            "node": "Set Fields: Define Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

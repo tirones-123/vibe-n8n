@@ -1,0 +1,150 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "3f4a15ab-64d8-49af-ba80-3aa1d424a62a",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        620,
+        160
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "8a8681b7-2d28-403f-92a7-58c9030cb8a6",
+      "name": "Get Tweets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        820,
+        160
+      ],
+      "parameters": {
+        "options": {
+          "returnAllMatches": "returnFirstMatch"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 600232182,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QyscSsUITnoJRnvyBbRpWeNF90TGD4dF5yj8DyZYQsA/edit#gid=600232182",
+          "cachedResultName": "Tweets"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1QyscSsUITnoJRnvyBbRpWeNF90TGD4dF5yj8DyZYQsA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QyscSsUITnoJRnvyBbRpWeNF90TGD4dF5yj8DyZYQsA/edit?usp=drivesdk",
+          "cachedResultName": "Tweets"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.3
+    },
+    {
+      "id": "bcce591e-b92e-43b4-b672-b02e32f95d15",
+      "name": "Post on X",
+      "type": "n8n-nodes-base.twitter",
+      "position": [
+        1000,
+        160
+      ],
+      "parameters": {
+        "text": "={{ $json.tweet }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "<twitterOAuth2Api-id>",
+          "name": "X account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "f834409b-bba2-4e8a-9fb9-5971a49960dd",
+      "name": "Remove from list",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1180,
+        160
+      ],
+      "parameters": {
+        "operation": "delete",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 600232182,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QyscSsUITnoJRnvyBbRpWeNF90TGD4dF5yj8DyZYQsA/edit#gid=600232182",
+          "cachedResultName": "Tweets"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1QyscSsUITnoJRnvyBbRpWeNF90TGD4dF5yj8DyZYQsA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QyscSsUITnoJRnvyBbRpWeNF90TGD4dF5yj8DyZYQsA/edit?usp=drivesdk",
+          "cachedResultName": "Tweets"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.3
+    }
+  ],
+  "connections": {
+    "Post on X": {
+      "main": [
+        [
+          {
+            "node": "Remove from list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Tweets": {
+      "main": [
+        [
+          {
+            "node": "Post on X",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Tweets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

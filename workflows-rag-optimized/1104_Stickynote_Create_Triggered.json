@@ -1,0 +1,172 @@
+{
+  "id": "6MRJ2tfl8c2f3AuE",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "💥🛠️Build a Web Search Chatbot with GPT-4o and MCP Brave Search",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "b6e5eaa8-ddb3-4c13-8069-ce360bf4a945",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        240,
+        -180
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.8
+    },
+    {
+      "id": "dde0154e-f7c2-4778-abcc-f79406db5e6b",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        -260,
+        -180
+      ],
+      "webhookId": "68e54e15-548a-44df-ad06-7fb9e4e912a9",
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "877ce640-4d08-4ba7-b1d3-bcfc79600d2c",
+      "name": "MCP Get Brave Tools",
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "position": [
+        200,
+        280
+      ],
+      "parameters": {},
+      "credentials": {
+        "mcpClientApi": {
+          "id": "<mcpClientApi-id>",
+          "name": "MCP Client (STDIO) account 2"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "fb3ce3c2-a809-43e5-92d0-82db0d78a971",
+      "name": "MCP Execute Brave Search",
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "position": [
+        460,
+        280
+      ],
+      "parameters": {
+        "toolName": "={{ $fromAI('tool', 'Set this with the specific tool name') }}",
+        "operation": "executeTool",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "credentials": {
+        "mcpClientApi": {
+          "id": "<mcpClientApi-id>",
+          "name": "MCP Client (STDIO) account 2"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "357bde6a-66d0-48dc-972d-d0b35e3868ed",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -120,
+        280
+      ],
+      "parameters": {},
+      "typeVersion": 1.3
+    },
+    {
+      "id": "3eba14c5-e4ed-4c4f-8f1d-2b5671b462cc",
+      "name": "gpt-4o",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -380,
+        280
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "gpt-4o": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Get Brave Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Execute Brave Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

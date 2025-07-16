@@ -1,0 +1,576 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "971e1616-af67-4961-9ef4-4b8dd24e392c",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -660,
+        240
+      ],
+      "webhookId": "29a6482f-36ac-4c15-8792-450aa32cf5f4",
+      "parameters": {
+        "path": "29a6482f-36ac-4c15-8792-450aa32cf5f4",
+        "options": {},
+        "httpMethod": [
+          "POST",
+          "GET"
+        ],
+        "responseMode": "responseNode",
+        "multipleMethods": true
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "e9639a07-6672-46ee-a86e-025265e45069",
+      "name": "Dropbox - List watched folder",
+      "type": "n8n-nodes-base.dropbox",
+      "position": [
+        500,
+        280
+      ],
+      "parameters": {
+        "path": "={{ $json.folder_to_watch }}",
+        "filters": {
+          "include_deleted": false,
+          "include_mounted_folders": false
+        },
+        "resource": "folder",
+        "operation": "list",
+        "returnAll": true,
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "<dropboxOAuth2Api-id>",
+          "name": "Dropbox BT"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "61707418-fcbb-4b70-ab06-02b9b7060bfb",
+      "name": "Switch File vs Folder",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        700,
+        280
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "file",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "f7fda7a2-1961-41aa-a332-f9a8be9b3bfa",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "file"
+                  }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "folder",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "d8bb9414-ae11-4b8f-ad0e-6bfe0e2f1071",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "folder"
+                  }
+                ]
+              },
+              "renameOutput": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "2670d2d1-acfb-4d0b-9bde-12dbd3806976",
+      "name": "Switch File vs Folder1",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        780,
+        0
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "file",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "f7fda7a2-1961-41aa-a332-f9a8be9b3bfa",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "file"
+                  }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "folder",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "d8bb9414-ae11-4b8f-ad0e-6bfe0e2f1071",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "folder"
+                  }
+                ]
+              },
+              "renameOutput": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "8225e284-b193-4859-891e-2277b2bc004b",
+      "name": "NocoDB - Get know files to exclude",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        600,
+        480
+      ],
+      "parameters": {
+        "table": "m0tqa79y2sv4g0j",
+        "options": {
+          "where": "=(folder_to_watch,eq,{{ $json.folder_to_watch }})"
+        },
+        "operation": "getAll",
+        "projectId": "p73a23pw65qwwr4",
+        "returnAll": true,
+        "authentication": "nocoDbApiToken"
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "<nocoDbApiToken-id>",
+          "name": "NocoDB cloudron"
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "0b9cb74b-ce02-4ed2-a417-084529a79977",
+      "name": "Merge - Keep only new items",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1000,
+        280
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "advanced": true,
+        "joinMode": "keepNonMatches",
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "id",
+              "field2": "data.id"
+            }
+          ]
+        },
+        "outputDataFrom": "input1"
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "c1f52687-7b6e-4c69-bcce-cc9bf053c62f",
+      "name": "Just a quick answer to Dropbox - webhook validation",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        -400,
+        520
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "text",
+        "responseBody": "={{ $json.query.challenge }}"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "42c84256-cbce-46d6-ab5a-01b1ef0715b0",
+      "name": "Respond to Dropbox in less than 10sec",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        -400,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "text",
+        "responseBody": "={{ $json.query.challenge }}"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "bb45006e-f12e-4b9d-99fa-ec5003f1c141",
+      "name": "Dropbox get files",
+      "type": "n8n-nodes-base.dropbox",
+      "position": [
+        500,
+        0
+      ],
+      "parameters": {
+        "path": "={{ $json.folder_to_watch }}",
+        "filters": {
+          "include_deleted": false,
+          "include_mounted_folders": false
+        },
+        "resource": "folder",
+        "operation": "list",
+        "returnAll": true,
+        "authentication": "oAuth2"
+      },
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "<dropboxOAuth2Api-id>",
+          "name": "Dropbox BT"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "b4f8c38c-c674-488d-8c9a-f68e42c702cf",
+      "name": "NocoDB - Add this file in the table",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        1200,
+        280
+      ],
+      "parameters": {
+        "table": "m0tqa79y2sv4g0j",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "folder_to_watch",
+              "fieldValue": "={{ $('set_folder to watch B').item.json.folder_to_watch }}"
+            },
+            {
+              "fieldName": "data",
+              "fieldValue": "={\n\"id\":\"{{ $json.id }}\",\n\"name\":\"{{ $json.name }}\",\n\"lastModifiedClient\": \"{{ $json.lastModifiedClient }}\",\n\"lastModifiedServer\": \"{{ $json.lastModifiedServer }}\",\n\"rev\": \"{{ $json.rev }}\",\n\"contentSize\": {{ $json.contentSize }},\n\"type\": \"{{ $json.type }}\",\n\"contentHash\": \"{{ $json.contentHash }}\",\n\"pathLower\": \"{{ $json.pathLower }}\",\n\"pathDisplay\": \"{{ $json.pathDisplay }}\",\n\"isDownloadable\": {{ $json.isDownloadable }}\n}"
+            },
+            {
+              "fieldName": "file_id",
+              "fieldValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "operation": "create",
+        "projectId": "p73a23pw65qwwr4",
+        "authentication": "nocoDbApiToken"
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "<nocoDbApiToken-id>",
+          "name": "NocoDB cloudron"
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "9d6d2d96-f16f-408d-bc35-0e17da4d4e6d",
+      "name": "set_folder A",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8416f15a-a6a2-47d2-8c15-e1742b323a8f",
+              "name": "folder_to_watch",
+              "type": "string",
+              "value": "/z_Apps/a_iphone/RecUp Memos/"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "aaa1ef55-10ef-4d8f-ae71-d317930229bc",
+      "name": "set_folder to watch B",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        280,
+        280
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8416f15a-a6a2-47d2-8c15-e1742b323a8f",
+              "name": "folder_to_watch",
+              "type": "string",
+              "value": "/z_Apps/auphonic/whisper"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "770b7f54-e85e-4d62-ab2a-60c9a73411e3",
+      "name": "Execute Workflow - what i want to do for this folder/file A",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        1040,
+        -20
+      ],
+      "parameters": {
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        },
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "PRxsqnbMoqY6avr6",
+          "cachedResultName": "02 JE TRANSMETS > Dropbox RecUp Memos - transcription audio - 2025-01 v1"
+        },
+        "workflowInputs": {
+          "value": {},
+          "schema": [],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "d9230834-13b4-420f-9e9a-154176803a66",
+      "name": "Execute Workflow - Something to do for new files",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        1400,
+        280
+      ],
+      "parameters": {
+        "options": {},
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "NzETudhVA1JruLCl",
+          "cachedResultName": "210 PODCAST > Dropbox txt - Pré rédige épisode avec transcription - 2025-03 v2"
+        },
+        "workflowInputs": {
+          "value": {},
+          "schema": [],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        }
+      },
+      "typeVersion": 1.2
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Dropbox in less than 10sec",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Just a quick answer to Dropbox - webhook validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set_folder A": {
+      "main": [
+        [
+          {
+            "node": "Dropbox get files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dropbox get files": {
+      "main": [
+        [
+          {
+            "node": "Switch File vs Folder1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch File vs Folder": {
+      "main": [
+        [
+          {
+            "node": "Merge - Keep only new items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set_folder to watch B": {
+      "main": [
+        [
+          {
+            "node": "Dropbox - List watched folder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "NocoDB - Get know files to exclude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch File vs Folder1": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow - what i want to do for this folder/file A",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge - Keep only new items": {
+      "main": [
+        [
+          {
+            "node": "NocoDB - Add this file in the table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dropbox - List watched folder": {
+      "main": [
+        [
+          {
+            "node": "Switch File vs Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB - Get know files to exclude": {
+      "main": [
+        [
+          {
+            "node": "Merge - Keep only new items",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "NocoDB - Add this file in the table": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow - Something to do for new files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Dropbox in less than 10sec": {
+      "main": [
+        [
+          {
+            "node": "set_folder A",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "set_folder to watch B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

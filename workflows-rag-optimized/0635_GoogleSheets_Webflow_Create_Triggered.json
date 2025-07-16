@@ -1,0 +1,144 @@
+{
+  "nodes": [
+    {
+      "id": "096a8e0c-8f72-40fb-aa1e-118fb33a3916",
+      "name": "Prepare Fields",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1740,
+        860
+      ],
+      "parameters": {
+        "jsCode": "const formData = $input.all()[0].json.payload.data\nconst Date = $input.all()[0].json.payload.submittedAt || new Date()\n\nreturn {\n  ...formData, // creates a new field for every element inside formData\n  Date\n}\n\n  \n"
+      },
+      "notesInFlow": false,
+      "typeVersion": 2
+    },
+    {
+      "id": "33c45b7e-e696-4aed-9374-0b232bfd52f1",
+      "name": "On Form Submission",
+      "type": "n8n-nodes-base.webflowTrigger",
+      "position": [
+        1340,
+        860
+      ],
+      "webhookId": "c3ef5b9f-88f6-40e6-bc54-067e421b059a",
+      "parameters": {
+        "site": "640cfc01791fc750653436fd"
+      },
+      "credentials": {
+        "webflowOAuth2Api": {
+          "id": "<webflowOAuth2Api-id>",
+          "name": "Webflow account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "4ce0eeea-dd09-4d79-967e-210f2762d5c3",
+      "name": "Append New Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2120,
+        860
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "Name": "={{ $json.data.Name }}",
+            "Email": "={{ $json.data.Email }}",
+            "Message": "={{ $json.data.Message }}"
+          },
+          "schema": [
+            {
+              "id": "Name",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Email",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Message",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data",
+              "type": "string",
+              "display": true,
+              "removed": true,
+              "required": false,
+              "displayName": "data",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": []
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gLJ5I4ZJ9FQHJH56lunUKnHUBUsIms9PciIkJYi8SJE/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1gLJ5I4ZJ9FQHJH56lunUKnHUBUsIms9PciIkJYi8SJE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gLJ5I4ZJ9FQHJH56lunUKnHUBUsIms9PciIkJYi8SJE/edit?usp=drivesdk",
+          "cachedResultName": "Automation test"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "typeVersion": 4.5
+    }
+  ],
+  "connections": {
+    "Prepare Fields": {
+      "main": [
+        [
+          {
+            "node": "Append New Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On Form Submission": {
+      "main": [
+        [
+          {
+            "node": "Prepare Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

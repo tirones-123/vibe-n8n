@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test d'Intégration - n8n AI Assistant</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #3b82f6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .test-section {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .test-section:last-child {
+            border-bottom: none;
+        }
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #1f2937;
+        }
+        .test-button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #059669;
+        }
+        .test-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .test-result.success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .test-result.error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        .test-result.info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        .config-section {
+            background: #f9fafb;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+        }
+        .config-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-indicator.success { background: #10b981; }
+        .status-indicator.error { background: #ef4444; }
+        .status-indicator.pending { background: #f59e0b; }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .metric-card {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Test d'Intégration - n8n AI Assistant</h1>
+            <p>Vérification du système hybride Pinecone + Volume</p>
+        </div>
+
+        <div class="test-section">
+            <h3>⚙️ Configuration</h3>
+            <div class="config-section">
+                <label for="api-url">URL Backend:</label>
+                <input type="text" id="api-url" class="config-input" 
+                       value="https://vibe-n8n-production.up.railway.app/api/claude">
+            </div>
+            <div class="config-section">
+                <label for="api-key">API Key:</label>
+                <input type="password" id="api-key" class="config-input" 
+                       value="d5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2">
+            </div>
+            <button class="test-button" onclick="testConnection()">🔗 Tester la Connexion</button>
+            <div id="connection-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Métriques en Temps Réel</h3>
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="metric-value" id="response-time">--</div>
+                    <div class="metric-label">Temps de Réponse (ms)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="token-count">--</div>
+                    <div class="metric-label">Tokens Générés</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="nodes-detected">--</div>
+                    <div class="metric-label">Nodes Détectés</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="test-status">--</div>
+                    <div class="metric-label">Status</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🆕 Test Création Workflow Simple</h3>
+            <button class="test-button" onclick="testSimpleWorkflow()">
+                <span class="status-indicator pending"></span>
+                Workflow Simple
+            </button>
+            <div id="simple-workflow-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔥 Test Workflow Complexe (Gros Nodes)</h3>
+            <button class="test-button" onclick="testComplexWorkflow()">
+                <span class="status-indicator pending"></span>
+                Workflow Complexe
+            </button>
+            <div id="complex-workflow-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>✏️ Test Modification Workflow</h3>
+            <button class="test-button" onclick="testModification()">
+                <span class="status-indicator pending"></span>
+                Modification
+            </button>
+            <div id="modification-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Test Limites (16384 tokens)</h3>
+            <button class="test-button" onclick="testLimits()">
+                <span class="status-indicator pending"></span>
+                Test Limites
+            </button>
+            <div id="limits-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>❌ Test Gestion d'Erreurs</h3>
+            <button class="test-button" onclick="testErrorHandling()">
+                <span class="status-indicator pending"></span>
+                Gestion Erreurs
+            </button>
+            <div id="error-result" class="test-result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        let config = {
+            apiUrl: '',
+            apiKey: '',
+            timeout: 300000
+        };
+
+        // Versions simulées des nodes
+        const MOCK_VERSIONS = {
+            "slack": 4,
+            "notion": 2,
+            "httpRequest": 5,
+            "schedule": 1,
+            "gmail": 2,
+            "discord": 1,
+            "hubspot": 1,
+            "salesforce": 1,
+            "zoho": 1,
+            "outlook": 1,
+            "telegram": 1,
+            "whatsapp": 1,
+            "n8n-nodes-base.slack": 4,
+            "n8n-nodes-base.notion": 2,
+            "n8n-nodes-base.httpRequest": 5
+        };
+
+        // Contextes de test
+        const EMPTY_CONTEXT = { nodes: [], connections: {} };
+        const EXISTING_CONTEXT = {
+            nodes: [
+                {
+                    id: "node_1",
+                    name: "Manual Trigger",
+                    type: "n8n-nodes-base.manualTrigger",
+                    position: [240, 300],
+                    parameters: {},
+                    typeVersion: 1
+                },
+                {
+                    id: "node_2",
+                    name: "HTTP Request",
+                    type: "n8n-nodes-base.httpRequest",
+                    position: [460, 300],
+                    parameters: {
+                        url: "https://api.example.com/data",
+                        method: "GET"
+                    },
+                    typeVersion: 5
+                }
+            ],
+            connections: {
+                "Manual Trigger": {
+                    "main": [
+                        [
+                            {
+                                "node": "HTTP Request",
+                                "type": "main",
+                                "index": 0
+                            }
+                        ]
+                    ]
+                }
+            }
+        };
+
+        // Fonction utilitaire pour faire des appels API
+        async function makeAPICall(prompt, context, mode, tools = []) {
+            const startTime = Date.now();
+            
+            updateMetric('test-status', 'En cours...');
+            
+            try {
+                const response = await fetch(config.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        context: context,
+                        mode: mode,
+                        tools: tools,
+                        versions: MOCK_VERSIONS
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // Traiter le streaming
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let textContent = '';
+                let eventCount = 0;
+                let toolCalls = [];
+                let firstEventTime = null;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                eventCount++;
+                                
+                                if (!firstEventTime) {
+                                    firstEventTime = Date.now();
+                                }
+
+                                if (data.type === 'content_block_delta' && data.delta?.type === 'text_delta') {
+                                    textContent += data.delta.text;
+                                }
+
+                                if (data.type === 'content_block_start' && data.content_block?.type === 'tool_use') {
+                                    toolCalls.push({
+                                        name: data.content_block.name,
+                                        id: data.content_block.id
+                                    });
+                                }
+                            } catch (e) {
+                                // Ignorer les erreurs de parsing
+                            }
+                        }
+                    }
+                }
+
+                const endTime = Date.now();
+                const totalTime = endTime - startTime;
+                const firstResponseTime = firstEventTime ? firstEventTime - startTime : 0;
+
+                // Mettre à jour les métriques
+                updateMetric('response-time', totalTime);
+                updateMetric('token-count', Math.round(textContent.length / 4));
+                updateMetric('test-status', 'Succès');
+
+                // Analyser le contenu
+                const analysis = analyzeContent(textContent, mode);
+
+                return {
+                    success: true,
+                    metrics: {
+                        totalTime,
+                        firstResponseTime,
+                        eventCount,
+                        contentLength: textContent.length,
+                        estimatedTokens: Math.round(textContent.length / 4),
+                        toolCalls: toolCalls.length
+                    },
+                    content: textContent,
+                    analysis,
+                    toolCalls
+                };
+
+            } catch (error) {
+                updateMetric('test-status', 'Erreur');
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        // Analyser le contenu généré
+        function analyzeContent(content, mode) {
+            const analysis = {
+                hasWorkflowStructure: content.includes('nodes') && content.includes('connections'),
+                hasNotionNode: content.toLowerCase().includes('notion'),
+                hasSlackNode: content.toLowerCase().includes('slack'),
+                hasDiscordNode: content.toLowerCase().includes('discord'),
+                hasHubspotNode: content.toLowerCase().includes('hubspot'),
+                hasScheduleNode: content.toLowerCase().includes('schedule'),
+                hasJsonStructure: content.includes('{') && content.includes('}'),
+                isComplete: !content.endsWith(':') && !content.endsWith(',')
+            };
+
+            if (mode === 'create') {
+                analysis.score = [
+                    analysis.hasWorkflowStructure,
+                    analysis.hasJsonStructure,
+                    analysis.isComplete
+                ].filter(Boolean).length;
+            } else {
+                analysis.score = [
+                    analysis.hasWorkflowStructure,
+                    analysis.isComplete
+                ].filter(Boolean).length;
+            }
+
+            return analysis;
+        }
+
+        // Mettre à jour une métrique
+        function updateMetric(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+
+        // Afficher un résultat de test
+        function showResult(resultId, result) {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.style.display = 'block';
+            
+            if (result.success) {
+                resultDiv.className = 'test-result success';
+                resultDiv.textContent = `✅ SUCCÈS\n\nMétriques:\n- Temps total: ${result.metrics.totalTime}ms\n- Première réponse: ${result.metrics.firstResponseTime}ms\n- Événements: ${result.metrics.eventCount}\n- Tokens estimés: ${result.metrics.estimatedTokens}\n- Tool calls: ${result.metrics.toolCalls}\n\nAnalyse:\n- Structure workflow: ${result.analysis.hasWorkflowStructure ? '✅' : '❌'}\n- Structure JSON: ${result.analysis.hasJsonStructure ? '✅' : '❌'}\n- Complet: ${result.analysis.isComplete ? '✅' : '❌'}\n- Score: ${result.analysis.score}\n\nContenu (200 premiers caractères):\n${result.content.substring(0, 200)}...`;
+            } else {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = `❌ ÉCHEC\n\nErreur: ${result.error}`;
+            }
+        }
+
+        // Mettre à jour le statut d'un bouton
+        function updateButtonStatus(buttonText, status) {
+            const buttons = document.querySelectorAll('.test-button');
+            buttons.forEach(button => {
+                if (button.textContent.includes(buttonText)) {
+                    const indicator = button.querySelector('.status-indicator');
+                    if (indicator) {
+                        indicator.className = `status-indicator ${status}`;
+                    }
+                }
+            });
+        }
+
+        // Tests
+        async function testConnection() {
+            config.apiUrl = document.getElementById('api-url').value;
+            config.apiKey = document.getElementById('api-key').value;
+
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = '🔍 Test de connexion en cours...';
+
+            try {
+                const response = await fetch(config.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        prompt: "ping",
+                        context: EMPTY_CONTEXT,
+                        mode: "create",
+                        tools: [],
+                        versions: MOCK_VERSIONS
+                    })
+                });
+
+                if (response.ok) {
+                    resultDiv.className = 'test-result success';
+                    resultDiv.textContent = `✅ Connexion réussie!\n\nStatus: ${response.status}\nHeaders: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}`;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = `❌ Erreur de connexion: ${error.message}`;
+            }
+        }
+
+        async function testSimpleWorkflow() {
+            updateButtonStatus('Workflow Simple', 'pending');
+            
+            const result = await makeAPICall(
+                "Crée un workflow simple qui se déclenche manuellement et fait une requête HTTP",
+                EMPTY_CONTEXT,
+                "create"
+            );
+
+            showResult('simple-workflow-result', result);
+            updateButtonStatus('Workflow Simple', result.success ? 'success' : 'error');
+        }
+
+        async function testComplexWorkflow() {
+            updateButtonStatus('Workflow Complexe', 'pending');
+            
+            const result = await makeAPICall(
+                `Crée un workflow complexe qui :
+1. Se déclenche toutes les heures
+2. Récupère des données depuis une API
+3. Les sauvegarde dans Notion dans une database
+4. Envoie un message Slack avec un résumé
+5. Notifie sur Discord si erreur`,
+                EMPTY_CONTEXT,
+                "create"
+            );
+
+            showResult('complex-workflow-result', result);
+            updateButtonStatus('Workflow Complexe', result.success ? 'success' : 'error');
+            
+            if (result.success) {
+                updateMetric('nodes-detected', result.analysis.hasNotionNode + result.analysis.hasSlackNode + result.analysis.hasDiscordNode + result.analysis.hasScheduleNode);
+            }
+        }
+
+        async function testModification() {
+            updateButtonStatus('Modification', 'pending');
+            
+            const result = await makeAPICall(
+                "Ajoute un nœud Slack après le HTTP Request pour envoyer une notification",
+                EXISTING_CONTEXT,
+                "modify",
+                [
+                    {
+                        name: "createNode",
+                        description: "Create a new node in the workflow",
+                        input_schema: {
+                            type: "object",
+                            properties: {
+                                type: { type: "string" },
+                                position: { type: "array", items: { type: "number" } },
+                                parameters: { type: "object" }
+                            },
+                            required: ["type", "position"]
+                        }
+                    },
+                    {
+                        name: "connectNodes",
+                        description: "Connect two nodes together",
+                        input_schema: {
+                            type: "object",
+                            properties: {
+                                sourceNodeId: { type: "string" },
+                                targetNodeId: { type: "string" }
+                            },
+                            required: ["sourceNodeId", "targetNodeId"]
+                        }
+                    }
+                ]
+            );
+
+            showResult('modification-result', result);
+            updateButtonStatus('Modification', result.success ? 'success' : 'error');
+        }
+
+        async function testLimits() {
+            updateButtonStatus('Test Limites', 'pending');
+            
+            const result = await makeAPICall(
+                `Crée un workflow très complexe qui intègre Slack, Notion, HubSpot, Salesforce, Microsoft Outlook, Zoho CRM, Discord, Telegram et WhatsApp pour une synchronisation complète de données avec :
+- Triggers multiples (webhook, schedule, email)
+- Transformations de données complexes
+- Gestion d'erreurs avancée
+- Notifications multi-canaux
+- Logging et monitoring
+- Conditions et branches multiples
+- Intégrations API personnalisées`,
+                EMPTY_CONTEXT,
+                "create"
+            );
+
+            showResult('limits-result', result);
+            updateButtonStatus('Test Limites', result.success ? 'success' : 'error');
+        }
+
+        async function testErrorHandling() {
+            updateButtonStatus('Gestion Erreurs', 'pending');
+            
+            const resultDiv = document.getElementById('error-result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result info';
+            resultDiv.textContent = '🔍 Test de gestion d\'erreurs en cours...';
+
+            try {
+                // Test avec clé API invalide
+                const response = await fetch(config.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer invalid-key'
+                    },
+                    body: JSON.stringify({
+                        prompt: "test",
+                        context: EMPTY_CONTEXT,
+                        mode: "create",
+                        tools: [],
+                        versions: MOCK_VERSIONS
+                    })
+                });
+
+                if (response.status === 401) {
+                    resultDiv.className = 'test-result success';
+                    resultDiv.textContent = '✅ Gestion d\'erreurs correcte!\n\nAuthentification correctement rejetée (401)';
+                    updateButtonStatus('Gestion Erreurs', 'success');
+                } else {
+                    resultDiv.className = 'test-result error';
+                    resultDiv.textContent = `⚠️ Réponse inattendue: ${response.status}`;
+                    updateButtonStatus('Gestion Erreurs', 'error');
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result success';
+                resultDiv.textContent = `✅ Erreur attendue capturée: ${error.message}`;
+                updateButtonStatus('Gestion Erreurs', 'success');
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page de test chargée');
+            updateMetric('test-status', 'Prêt');
+        });
+    </script>
+</body>
+</html> 

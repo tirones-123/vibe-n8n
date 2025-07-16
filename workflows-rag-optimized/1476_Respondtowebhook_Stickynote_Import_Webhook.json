@@ -1,0 +1,168 @@
+{
+  "id": "aZSJ2BZQhNduZZ8w",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Get Airtable data in Obsidian Notes",
+  "tags": [
+    {
+      "id": "zalLN3OHeRqcq4di",
+      "name": "Obsidian",
+      "createdAt": "2024-12-01T19:07:59.925Z",
+      "updatedAt": "2024-12-01T19:07:59.925Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "584cfe61-7f1b-4deb-ab4b-45a5ffd20daf",
+      "name": "Airtable",
+      "type": "n8n-nodes-base.airtableTool",
+      "position": [
+        540,
+        340
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": "appP3ocJy1rXIo6ko",
+          "cachedResultUrl": "https://airtable.com/appP3ocJy1rXIo6ko",
+          "cachedResultName": "table"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "tblywtlpPtGQMTJRm",
+          "cachedResultUrl": "https://airtable.com/appP3ocJy1rXIo6ko/tblywtlpPtGQMTJRm",
+          "cachedResultName": "Dummy"
+        },
+        "options": {},
+        "operation": "search"
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "<airtableTokenApi-id>",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "8a100c92-7971-464b-b3c0-18272f0a0bef",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        220,
+        340
+      ],
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "98887b9b-2eae-4a2e-af2b-d40c1786c5a2",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        280,
+        200
+      ],
+      "parameters": {
+        "text": "={{ $json.body.content }}",
+        "options": {},
+        "promptType": "define"
+      },
+      "typeVersion": 1.6
+    },
+    {
+      "id": "52c40581-656d-45b5-b366-d67cf2474312",
+      "name": "Respond to Obsidian",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        700,
+        200
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "f2bf502e-5e6f-4e71-8c4f-27ec2dc5ab67",
+      "name": "Webhook Set Up in Obsidian",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -40,
+        200
+      ],
+      "webhookId": "59fc8248-d3f7-4dbc-bdf3-39d59e427160",
+      "parameters": {
+        "path": "59fc8248-d3f7-4dbc-bdf3-39d59e427160",
+        "options": {},
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 2
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Obsidian",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Set Up in Obsidian": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

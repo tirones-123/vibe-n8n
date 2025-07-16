@@ -1,0 +1,745 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>",
+    "templateId": "1971"
+  },
+  "nodes": [
+    {
+      "id": "dbb98f7d-6737-4eaa-9a66-9779c042c575",
+      "name": "VirusTotal result",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2430,
+        1648
+      ],
+      "parameters": {
+        "url": "={{ $json.data.links.self }}",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "virusTotalApi"
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "fb71337b-ebd3-4331-9f18-ff953c6b068b",
+      "name": "DNS Lookup",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1330,
+        1028
+      ],
+      "parameters": {
+        "url": "=https://dns.google/resolve",
+        "options": {},
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.url.includes('://') ? $json.url.split('://')[1].split('/')[0] : $json.url }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "290c6e9c-31d1-4476-9beb-b72a795ecfbb",
+      "name": "Set IP From Lookup",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1530,
+        1028
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the resolved IP address (last item in the Answer array)\nconst ip = $json.Answer.pop().data;\nconst item = {...$('Is IP?').item.json}\nitem.ip = ip\n\nreturn {json: item};"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "2e25aa5e-479c-4e3b-b866-89f2bdbabbba",
+      "name": "Set IP",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1390,
+        828
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "ip",
+              "value": "={{ $json.url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "69b89cd7-1456-4067-a9da-d81ef3f86097",
+      "name": "Merge VirusTotal & Greynoise results",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        3610,
+        948
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "ip",
+              "field2": "ip"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "1011bb3b-3f75-40b8-a473-e07b70079b60",
+      "name": "Is IP?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1110,
+        848
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.url }}",
+              "value2": "/^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$/",
+              "operation": "regex"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "770b4056-1497-48ed-bcd7-ad6e7106cc7d",
+      "name": "Start VirusTotal Scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1990,
+        1648
+      ],
+      "parameters": {
+        "url": "https://www.virustotal.com/api/v3/urls",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "authentication": "predefinedCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.url }}"
+            }
+          ]
+        },
+        "nodeCredentialType": "virusTotalApi"
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "d5d31e4a-2f95-4151-af35-bb8129f2e5a3",
+      "name": "VirusTotal Summary",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        3230,
+        1628
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "virusTotalStats",
+              "value": "={{ $json.data.attributes.stats }}"
+            },
+            {
+              "name": "blockList",
+              "value": "={{ $json.data.attributes.results.BlockList.result }}"
+            },
+            {
+              "name": "openPhish",
+              "value": "={{ $json.data.attributes.results.OpenPhish.result }}"
+            },
+            {
+              "name": "url",
+              "value": "={{ $('Merge').all()[$itemIndex].json.url }}"
+            },
+            {
+              "name": "ip",
+              "value": "={{ $('Merge').all()[$itemIndex].json.ip }}"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": false
+        },
+        "keepOnlySet": true
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "467c795f-6f13-4d6d-a8cf-5cf9be2e7a77",
+      "name": "VirusTotal ready?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2790,
+        1648
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.data.attributes.status }}",
+              "value2": "queued",
+              "operation": "notEqual"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "284728e4-dc74-4c37-890b-5305970960c0",
+      "name": "Wait 5s",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2230,
+        1648
+      ],
+      "webhookId": "18348e84-831d-4ea8-bb39-6ec847c72275",
+      "parameters": {
+        "unit": "seconds",
+        "amount": 5
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "76e1414a-d690-44df-a3b8-8dbb4a192720",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "notes": "Example:\n\ncurl -X POST \"https://n8n.yourdomain.com/webhook-test/d5124bd8-aada-44da-8050-3070f303ad24\" \\\n                 -H \"Content-Type: application/json\" \\\n                 -d '{\"data\": [{\"url\": \"1.1.1.1\"}, {\"url\": \"88.204.59.2\"}, {\"url\": \"54.36.148.188\"}, {\"url\": \"facebook.com\"}], \"email\": \"user@domain.com\"}'",
+      "position": [
+        450,
+        1448
+      ],
+      "webhookId": "d5124bd8-aada-44da-8050-3070f303ad24",
+      "parameters": {
+        "path": "d5124bd8-aada-44da-8050-3070f303ad24",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "notesInFlow": true,
+      "typeVersion": 1
+    },
+    {
+      "id": "b3e188f3-0a39-4451-ab70-632282243f03",
+      "name": "Get List of URLs",
+      "type": "n8n-nodes-base.itemLists",
+      "position": [
+        650,
+        1448
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "body.data"
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "360628b7-afc0-4444-a8c0-a85fae54b0e3",
+      "name": "Set Email",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        850,
+        1448
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "Email",
+              "value": "={{ $('Webhook').item.json.body.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "6df9593b-5f9f-4b50-bddb-97dcb2017d6e",
+      "name": "Merge Greynoise results",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        2370,
+        728
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combinationMode": "mergeByPosition"
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "1957a675-7a5a-4ccd-b334-f2c4f9749f58",
+      "name": "Send Report Slack",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        3850,
+        1168
+      ],
+      "parameters": {
+        "text": "=Successfully scanned {{ $json.url }} {{$json.ip !== $json.url ? `(${$json.ip})`: '' }}\n\n\nVirusTotal Report ({{ $json.virusTotalStats.harmless + $json.virusTotalStats.malicious + $json.virusTotalStats.suspicious + $json.virusTotalStats.undetected}} scans)\n\n{{$json.virusTotalStats.harmless}} Harmless\n{{$json.virusTotalStats.malicious}} Malicious\n{{$json.virusTotalStats.suspicious}} Suspicious\n{{$json.virusTotalStats.undetected}} Undetected\n{{$json.virusTotalStats.timeout}} Timed out\n\nBlockList: {{ $json.blockList }}\nOpenPhish: {{ $json.openPhish }}\n\nSummary: {{ $json.virusTotalStats.suspicious + $json.virusTotalStats.malicious === 0 ? \"✅ Harmless\": \"🚨 Malicous\" }}\n\n\n\nGreynoise Report\n\nTrust Level: {{ $json.trust_level ?? \"Not trusted\"}}\nClassification: {{ $json.classification }}\n\nLocation: {{ $json.location || 'n/a' }}\nCategory: {{ $json.category }}\nTags: {{$json.tags.join(', ') || 'None'}}",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "#notifications"
+        },
+        "otherOptions": {}
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "4d64351f-0233-4859-afd2-fc31e3fc37cd",
+      "name": "Send Report Email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        3850,
+        948
+      ],
+      "parameters": {
+        "sendTo": "={{ $('Merge').first().json.Email }}",
+        "message": "=Successfully scanned {{ $json.url }} {{$json.ip !== $json.url ? `(${$json.ip})`: '' }}<br /><br /><br />\n\n\n<h3>VirusTotal Report ({{ $json.virusTotalStats.harmless + $json.virusTotalStats.malicious + $json.virusTotalStats.suspicious + $json.virusTotalStats.undetected}} scans)</h3><br /><br />\n\n{{$json.virusTotalStats.harmless}} Harmless<br />\n{{$json.virusTotalStats.malicious}} Malicious<br />\n{{$json.virusTotalStats.suspicious}} Suspicious<br />\n{{$json.virusTotalStats.undetected}} Undetected<br />\n{{$json.virusTotalStats.timeout}} Timed out<br /><br />\n\nBlockList: {{ $json.blockList }}<br />\nOpenPhish: {{ $json.openPhish }}<br /><br />\n\n<b>Summary: {{ $json.virusTotalStats.suspicious + $json.virusTotalStats.malicious === 0 ? \"✅ Harmless\": \"🚨 Malicous\" }}</b><br /><br /><br />\n\n\n\n<h3>Greynoise Report</h3><br /><br />\n\nTrust Level: {{ $json.trust_level ?? \"Not trusted\"}}<br />\nClassification: {{ $json.classification }}<br /><br />\n\nLocation: {{ $json.location || 'n/a' }}<br />\nCategory: {{ $json.category }}<br />\nTags: {{$json.tags.join(', ') || 'None'}}<br /><br /><br /><br />",
+        "options": {},
+        "subject": "={{ $json.url }} Scan Report"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "e4305eb1-8e57-49d0-97b7-391200bd0042",
+      "name": "Greynoise Summary",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2650,
+        728
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "ip",
+              "value": "={{ $json.ip }}"
+            },
+            {
+              "name": "classification",
+              "value": "={{ $json.classification || 'safe' }}"
+            },
+            {
+              "name": "location",
+              "value": "={{ $json.metadata?.region ? `${$json.metadata?.region} ${$json.metadata?.country}` : '' }}"
+            },
+            {
+              "name": "tags",
+              "value": "={{ $json.tags ?? [] }}"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json.category || 'n/a' }}"
+            },
+            {
+              "name": "trustLevel",
+              "value": "={{ $json.trust_level }}"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": false
+        },
+        "keepOnlySet": true
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "c149b1f3-e447-4194-a94e-7d8e0bf38241",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1750,
+        848
+      ],
+      "parameters": {},
+      "typeVersion": 2.1
+    },
+    {
+      "id": "88c30a1d-c232-4da5-87c3-4d67234b6a29",
+      "name": "Combine looped items",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        3010,
+        1628
+      ],
+      "parameters": {
+        "jsCode": "let results = [],\n  i = 0;\n\ndo {\n  try {\n    results = results.concat($(\"VirusTotal result\").all(0, i)\n                     .filter(node => node.json.data.attributes.status === 'completed')\n  );\n  } catch (error) {\n    return results;\n  }\n  i++;\n} while (true);"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "839170f5-7c97-40fd-aeaa-ad57262a586e",
+      "name": "Filter",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        2610,
+        1648
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.data.attributes.status }}",
+              "value2": "completed",
+              "operation": "notEqual"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "577d4b74-9155-440f-a752-6654f8e54669",
+      "name": "GreyNoise RIOT lookup",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2070,
+        708
+      ],
+      "parameters": {
+        "url": "=https://api.greynoise.io/v2/riot/{{ $json.ip }}",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "9a41df79-3d81-4b2e-b21c-7f31985d8d1e",
+      "name": "GreyNoise IP Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2070,
+        888
+      ],
+      "parameters": {
+        "url": "=https://api.greynoise.io/v2/noise/context/{{ $json.ip }}",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "006eb997-5851-41bd-9d5c-9f44d3b7ec08",
+      "name": "Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        640,
+        800
+      ],
+      "webhookId": "087145f7-3c00-4a1a-8e04-181b536606e7",
+      "parameters": {
+        "path": "url-scan-form",
+        "options": {},
+        "formTitle": "Scan URL or IP and get a report",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "url",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "requiredField": true
+            }
+          ]
+        },
+        "formDescription": "Get a report from Virus Total and Greynoise on an IP address of URL"
+      },
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Start VirusTotal Scan",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GreyNoise IP Check",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GreyNoise RIOT lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "VirusTotal ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is IP?": {
+      "main": [
+        [
+          {
+            "node": "Set IP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DNS Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set IP": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5s": {
+      "main": [
+        [
+          {
+            "node": "VirusTotal result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get List of URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email": {
+      "main": [
+        [
+          {
+            "node": "Is IP?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DNS Lookup": {
+      "main": [
+        [
+          {
+            "node": "Set IP From Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is IP?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get List of URLs": {
+      "main": [
+        [
+          {
+            "node": "Set Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Greynoise Summary": {
+      "main": [
+        [
+          {
+            "node": "Merge VirusTotal & Greynoise results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VirusTotal ready?": {
+      "main": [
+        [
+          {
+            "node": "Combine looped items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 5s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VirusTotal result": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GreyNoise IP Check": {
+      "main": [
+        [
+          {
+            "node": "Merge Greynoise results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Set IP From Lookup": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "VirusTotal Summary": {
+      "main": [
+        [
+          {
+            "node": "Merge VirusTotal & Greynoise results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine looped items": {
+      "main": [
+        [
+          {
+            "node": "VirusTotal Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GreyNoise RIOT lookup": {
+      "main": [
+        [
+          {
+            "node": "Merge Greynoise results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start VirusTotal Scan": {
+      "main": [
+        [
+          {
+            "node": "Wait 5s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Greynoise results": {
+      "main": [
+        [
+          {
+            "node": "Greynoise Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge VirusTotal & Greynoise results": {
+      "main": [
+        [
+          {
+            "node": "Send Report Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Report Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

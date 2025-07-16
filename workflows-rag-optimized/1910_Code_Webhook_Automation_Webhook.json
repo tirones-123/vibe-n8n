@@ -1,0 +1,311 @@
+{
+  "id": "0uon02fOzPkLcG6G",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Lead Qualification with BatchData",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "376bc838-013e-4033-a508-d27a2a64d792",
+      "name": "CRM New Lead Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -2560,
+        600
+      ],
+      "webhookId": "8fb37aae-df12-40eb-81ea-0e5022e1f988",
+      "parameters": {
+        "path": "crm-new-lead",
+        "options": {}
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "961b3c4c-5b58-439e-9c8c-cc6e9774ebe7",
+      "name": "Fetch Lead Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2180,
+        600
+      ],
+      "parameters": {
+        "url": "={{ $json.crmApiUrl }}/leads/{{ $json.leadId }}",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "25445c3c-adf0-41d7-8f5f-c0fabc297658",
+      "name": "BatchData Property Lookup",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1840,
+        600
+      ],
+      "parameters": {
+        "url": "https://api.batchdata.com/api/v1/property/search",
+        "options": {},
+        "sendBody": true,
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "address",
+              "value": "={{ $json.address }}"
+            },
+            {
+              "name": "city",
+              "value": "={{ $json.city }}"
+            },
+            {
+              "name": "state",
+              "value": "={{ $json.state }}"
+            },
+            {
+              "name": "zipcode",
+              "value": "={{ $json.zipcode }}"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "389e2f49-9ed4-4017-8002-ac86e1001ed9",
+      "name": "Score And Qualify Lead",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1480,
+        620
+      ],
+      "parameters": {
+        "jsCode": "// Initialize lead score\nlet score = 0;\nlet qualificationStatus = \"not qualified\";\nlet qualificationNotes = [];\n\n// Get property data from BatchData response\nconst propertyData = $input.first().json;\nconst leadData = $input.first().json;\n\n// Check if property exists\nif (propertyData.success === true && propertyData.data) {\n  const property = propertyData.data;\n  \n  // Score based on property value\n  if (property.estimatedValue > 750000) {\n    score += 30;\n    qualificationNotes.push(\"High-value property: $\" + property.estimatedValue);\n  } else if (property.estimatedValue > 500000) {\n    score += 20;\n    qualificationNotes.push(\"Mid-high value property: $\" + property.estimatedValue);\n  } else if (property.estimatedValue > 350000) {\n    score += 10;\n    qualificationNotes.push(\"Average value property: $\" + property.estimatedValue);\n  }\n  \n  // Score based on property size\n  if (property.squareFootage > 3000) {\n    score += 15;\n    qualificationNotes.push(\"Large property: \" + property.squareFootage + \" sq ft\");\n  } else if (property.squareFootage > 2000) {\n    score += 10;\n    qualificationNotes.push(\"Mid-size property: \" + property.squareFootage + \" sq ft\");\n  }\n  \n  // Score based on property age\n  const currentYear = new Date().getFullYear();\n  const propertyAge = currentYear - property.yearBuilt;\n  \n  if (propertyAge < 5) {\n    score += 15;\n    qualificationNotes.push(\"New construction: \" + property.yearBuilt);\n  } else if (propertyAge < 20) {\n    score += 10;\n    qualificationNotes.push(\"Relatively new property: \" + property.yearBuilt);\n  }\n  \n  // Other factors to consider\n  if (property.ownerOccupied === false) {\n    score += 15;\n    qualificationNotes.push(\"Investment property (not owner-occupied)\");\n  }\n  \n  if (property.lotSize > 0.5) {\n    score += 10;\n    qualificationNotes.push(\"Large lot size: \" + property.lotSize + \" acres\");\n  }\n  \n  // Determine qualification status based on score\n  if (score >= 50) {\n    qualificationStatus = \"high-value\";\n  } else if (score >= 30) {\n    qualificationStatus = \"qualified\";\n  } else if (score >= 15) {\n    qualificationStatus = \"potential\";\n  }\n  \n  // Combine all data for CRM update\n  const enrichedData = {\n    leadId: leadData.leadId,\n    score: score,\n    qualificationStatus: qualificationStatus,\n    qualificationNotes: qualificationNotes.join(\", \"),\n    propertyData: {\n      estimatedValue: property.estimatedValue,\n      squareFootage: property.squareFootage,\n      yearBuilt: property.yearBuilt,\n      lotSize: property.lotSize,\n      bedrooms: property.bedrooms,\n      bathrooms: property.bathrooms,\n      ownerOccupied: property.ownerOccupied,\n      lastSaleDate: property.lastSaleDate,\n      lastSalePrice: property.lastSalePrice\n    }\n  };\n  \n  return enrichedData;\n} else {\n  // If property data not found\n  qualificationNotes.push(\"Property data not found or verification failed\");\n  \n  return {\n    leadId: leadData.leadId,\n    score: 0,\n    qualificationStatus: \"unverified\",\n    qualificationNotes: qualificationNotes.join(\", \"),\n    propertyData: null\n  };\n}"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "b9bcb2af-6ccc-4f9e-9926-765df4f36809",
+      "name": "Update CRM Lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1120,
+        620
+      ],
+      "parameters": {
+        "url": "={{ $json.crmApiUrl }}/leads/{{ $json.leadId }}",
+        "method": "PUT",
+        "options": {},
+        "sendBody": true,
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "score",
+              "value": "={{ $json.score }}"
+            },
+            {
+              "name": "qualificationStatus",
+              "value": "={{ $json.qualificationStatus }}"
+            },
+            {
+              "name": "qualificationNotes",
+              "value": "={{ $json.qualificationNotes }}"
+            },
+            {
+              "name": "propertyValue",
+              "value": "={{ $json.propertyData.estimatedValue }}"
+            },
+            {
+              "name": "squareFootage",
+              "value": "={{ $json.propertyData.squareFootage }}"
+            },
+            {
+              "name": "yearBuilt",
+              "value": "={{ $json.propertyData.yearBuilt }}"
+            },
+            {
+              "name": "bedrooms",
+              "value": "={{ $json.propertyData.bedrooms }}"
+            },
+            {
+              "name": "bathrooms",
+              "value": "={{ $json.propertyData.bathrooms }}"
+            },
+            {
+              "name": "batchDataVerified",
+              "value": "={{ $json.propertyData !== null }}"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "8470bcf6-a539-4f75-8494-f76bcfc95f00",
+      "name": "Is High-Value Lead?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -760,
+        620
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.qualificationStatus }}",
+              "value2": "high-value"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c7772695-cda1-4483-a961-7468fd075c55",
+      "name": "Create Immediate Follow-up Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -180,
+        320
+      ],
+      "parameters": {
+        "url": "={{ $json.crmApiUrl }}/tasks",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "immediate-followup"
+            },
+            {
+              "name": "leadId",
+              "value": "={{ $json.leadId }}"
+            },
+            {
+              "name": "priority",
+              "value": "high"
+            },
+            {
+              "name": "dueDate",
+              "value": "={{ $now.format(\"YYYY-MM-DD\") }}"
+            },
+            {
+              "name": "note",
+              "value": "High-value lead with property value of ${{ $json.propertyData.estimatedValue }}. Immediate follow-up required."
+            },
+            {
+              "name": "assignedTo",
+              "value": "senior-agent"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "0d0d4e2e-b040-45d1-8a4c-e775520a4bbc",
+      "name": "Send Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        -60,
+        860
+      ],
+      "webhookId": "dc308b09-6aea-41be-96c4-c322cfc8ed8f",
+      "parameters": {
+        "text": "=High-value lead alert: {{ $json.leadId }}\nProperty Value: ${{ $json.propertyData.estimatedValue }}\nScore: {{ $json.score }}\nQualification Notes: {{ $json.qualificationNotes }}",
+        "select": "channel",
+        "channelId": "high-value-leads",
+        "otherOptions": {}
+      },
+      "typeVersion": 2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Fetch Lead Data": {
+      "main": [
+        [
+          {
+            "node": "BatchData Property Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update CRM Lead": {
+      "main": [
+        [
+          {
+            "node": "Is High-Value Lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is High-Value Lead?": {
+      "main": [
+        [
+          {
+            "node": "Create Immediate Follow-up Task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM New Lead Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score And Qualify Lead": {
+      "main": [
+        [
+          {
+            "node": "Update CRM Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BatchData Property Lookup": {
+      "main": [
+        [
+          {
+            "node": "Score And Qualify Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

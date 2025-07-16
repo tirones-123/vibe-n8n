@@ -1,0 +1,206 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "0e78a29e-87ba-4665-84c1-a413c45e25dc",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -420,
+        -40
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "fe7b054a-e0c9-4642-a97f-6bec60a1ec55",
+      "name": "Edit Image (OpenAI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        500,
+        -40
+      ],
+      "parameters": {
+        "url": "https://api.openai.com/v1/images/edits",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "authentication": "predefinedCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "prompt",
+              "value": "add a mask with horns"
+            },
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "n",
+              "value": "1"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            },
+            {
+              "name": "quality",
+              "value": "high"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi AIFB account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "1e1df05c-d8f9-4033-87ee-70be344ab961",
+      "name": "Create image call",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -120,
+        -40
+      ],
+      "parameters": {
+        "url": "https://api.openai.com/v1/images/generations",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "authentication": "predefinedCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "prompt",
+              "value": "A cute red panda like dark super hero"
+            },
+            {
+              "name": "n",
+              "value": "={{Number(1)}}"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            },
+            {
+              "name": "moderation",
+              "value": "low"
+            },
+            {
+              "name": "background",
+              "value": "auto"
+            }
+          ]
+        },
+        "nodeCredentialType": "openAiApi"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi AIFB account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "4c44da91-0d12-4e7f-bc89-5accddd837d7",
+      "name": "Convert json binary to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        200,
+        -40
+      ],
+      "parameters": {
+        "options": {
+          "fileName": "name_example",
+          "mimeType": "image/png"
+        },
+        "operation": "toBinary",
+        "sourceProperty": "data[0].b64_json"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "3b8936b7-f0a2-4776-b10a-f06ceb9af31d",
+      "name": "Convert json binary to File final",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        820,
+        -40
+      ],
+      "parameters": {
+        "options": {
+          "fileName": "",
+          "mimeType": "image/png"
+        },
+        "operation": "toBinary",
+        "sourceProperty": "data[0].b64_json"
+      },
+      "typeVersion": 1.1
+    }
+  ],
+  "connections": {
+    "Create image call": {
+      "main": [
+        [
+          {
+            "node": "Convert json binary to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Convert json binary to File final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert json binary to File": {
+      "main": [
+        [
+          {
+            "node": "Edit Image (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Create image call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

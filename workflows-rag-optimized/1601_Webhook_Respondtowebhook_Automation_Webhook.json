@@ -1,0 +1,601 @@
+{
+  "id": "PoiRk5w0xd1ysq4U",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "AI Agent to chat with you Search Console Data, using OpenAI and Postgres",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "9ee6710b-19b7-4bfd-ac2d-0fe1e2561f1d",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "position": [
+        1796,
+        220
+      ],
+      "parameters": {
+        "tableName": "insights_chat_histories"
+      },
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres"
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "eb9f07e9-ded1-485c-9bf3-cf223458384a",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1356,
+        240
+      ],
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "maxTokens": 16000
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAi"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "1d3d6fb7-a171-4590-be42-df7eb0c208ed",
+      "name": "Set fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        940,
+        -20
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9f47b322-e42f-42d7-93eb-a57d22adb849",
+              "name": "chatInput",
+              "type": "string",
+              "value": "={{ $json.body?.chatInput || $json.chatInput  }}"
+            },
+            {
+              "id": "73ec4dd0-e986-4f60-9dca-6aad2f86bdeb",
+              "name": "sessionId",
+              "type": "string",
+              "value": "={{ $json.body?.sessionId || $json.sessionId }}"
+            },
+            {
+              "id": "4b688c46-b60f-4f0a-83d8-e283f2d7055c",
+              "name": "date_message",
+              "type": "string",
+              "value": "={{ $now.format('yyyy-MM-dd') }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "ca9f3732-9b62-4f44-b970-77d5d470ec76",
+      "name": "Webhook - ChatInput",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        500,
+        -20
+      ],
+      "webhookId": "a6820b65-76cf-402b-a934-0f836dee6ba0",
+      "parameters": {
+        "path": "a6820b65-76cf-402b-a934-0f836dee6ba0/chat",
+        "options": {},
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "authentication": "basicAuth"
+      },
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "",
+          "name": "basic-auth"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "8750215a-1e33-4ac8-a6da-95efa8ffed65",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        2600,
+        -20
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "c44c6402-9ddd-4a7b-bc5a-b6c3679a3f68",
+      "name": "Call Search Console Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [
+        2196,
+        220
+      ],
+      "parameters": {
+        "name": "SearchConsoleRequestTool",
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "PoiRk5w0xd1ysq4U",
+          "cachedResultName": "My workflow 10"
+        },
+        "description": "Call this tool when you need to get the website_list or custom_insights",
+        "jsonSchemaExample": ""
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "c54a4653-0f09-46b0-bd20-68919b96e154",
+      "name": "Tool calling",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        500,
+        1080
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "cc7303ee-1afa-4859-83e7-3af0e963a0f1",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        1300,
+        1080
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "custom_insights",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "a30fe6a6-7d0a-4f14-8492-ae021ddc8ec6",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "leftValue": "={{ $json.request_type }}",
+                    "rightValue": "custom_insights"
+                  }
+                ]
+              },
+              "renameOutput": true
+            },
+            {
+              "outputKey": "website_list",
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "1b7d6039-6474-4a73-b157-584743a9d7f0",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "leftValue": "={{$json.request_type}}",
+                    "rightValue": "website_list"
+                  }
+                ]
+              },
+              "renameOutput": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "typeVersion": 3.2
+    },
+    {
+      "id": "6860ff98-4050-4f64-b8c1-a153e3388df0",
+      "name": "Set fields - Consruct API CALL",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        920,
+        1080
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "06373437-8288-4171-9f98-e8a417220dd4",
+              "name": "request_type",
+              "type": "string",
+              "value": "={{ $json.query.parseJson().request_type }}"
+            },
+            {
+              "id": "da45c0c5-05f6-4107-81aa-8c08c972d9bf",
+              "name": "start_date",
+              "type": "string",
+              "value": "={{ $json.query.parseJson().startDate }}"
+            },
+            {
+              "id": "59d55034-c612-43d7-9700-4cacdb630ec2",
+              "name": "end_date",
+              "type": "string",
+              "value": "={{ $json.query.parseJson().endDate }}"
+            },
+            {
+              "id": "4c2478c0-7f96-4d3d-a632-089307dc989e",
+              "name": "dimensions",
+              "type": "string",
+              "value": "={{ $json.query.parseJson().dimensions }}"
+            },
+            {
+              "id": "eceefbf9-44e5-4617-96ea-58aca2a29618",
+              "name": "rowLimit",
+              "type": "number",
+              "value": "={{ $json.query.parseJson().rowLimit }}"
+            },
+            {
+              "id": "4e18386e-8548-4385-b620-43efbb11cd63",
+              "name": "startRow",
+              "type": "number",
+              "value": "={{ $json.query.parseJson().startRow}}"
+            },
+            {
+              "id": "a9323a7b-08b4-4015-b3d7-632bcdf56f4e",
+              "name": "property",
+              "type": "string",
+              "value": "={{ encodeURIComponent($json.query.parseJson().property) }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "e6ef5c28-01e4-4a0b-9081-b62ec28be635",
+      "name": "Set fields - Create searchConsoleDataArray",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2180,
+        980
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2cffd36f-72bd-4535-8427-a88028ea0c4c",
+              "name": "searchConsoleData",
+              "type": "array",
+              "value": "={{ $json.rows }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "abc80061-a794-4e1d-a055-bd88ea5c93eb",
+      "name": "Set fields - Create searchConsoleDataArray 2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2180,
+        1340
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2cffd36f-72bd-4535-8427-a88028ea0c4c",
+              "name": "searchConsoleData",
+              "type": "array",
+              "value": "={{ $json.siteEntry }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "24981eea-980e-4e07-9036-d0042c5b2fbe",
+      "name": "Search Console - Get Custom Insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1620,
+        980
+      ],
+      "parameters": {
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ $json.property }}/searchAnalytics/query",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.start_date }}\",\n  \"endDate\": \"{{ $json.end_date }}\",\n  \"dimensions\": {{ $json.dimensions }},\n  \"rowLimit\": {{ $json.rowLimit }},\n  \"startRow\": 0,\n  \"dataState\":\"all\"\n}",
+        "sendBody": true,
+        "sendQuery": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "oAuth2Api": {
+          "id": "",
+          "name": "search-console"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "cd804a52-833a-451a-8e0c-f640210ee2c4",
+      "name": "## Search Console - Get List of Properties",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1620,
+        1340
+      ],
+      "parameters": {
+        "url": "=https://www.googleapis.com/webmasters/v3/sites",
+        "options": {},
+        "sendHeaders": true,
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "oAuth2Api": {
+          "id": "",
+          "name": "search-console"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "aefbacc7-8dfc-4655-bc4d-f0498c823711",
+      "name": "Array aggregation - response to AI Agent",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        2640,
+        980
+      ],
+      "parameters": {
+        "options": {},
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "response"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e5334c72-981c-4375-ae8e-9a3a0457880b",
+      "name": "Array aggregation - response to AI Agent1",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        2660,
+        1340
+      ],
+      "parameters": {
+        "options": {},
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "response"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "fa630aa9-3c60-4b27-9477-aaeb79c7f37d",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1676,
+        -20
+      ],
+      "parameters": {
+        "text": "=user_message :  {{ $json.chatInput }}\ndate_message : {{ $json.date_message }}",
+        "options": {
+          "systemMessage": "=Assist users by asking natural, conversational questions to understand their data needs and building a custom JSON API request to retrieve Search Console data. Handle assumptions internally, confirming them with the user in a friendly way. Avoid technical jargon and never imply that the user is directly building an API request.\n\nPre-Step: Retrieve the Website List\nImportant: Initial Action: Before sending your first message to the user, retrieve the list of connected Search Console properties.\n\nTool Call for Website List:\n\nTool name: SearchConsoleRequestTool\nRequest:\n{\n  \"request_type\": \"website_list\" // Always include `request_type` in the API call.\n}\nUsage: Use this list to personalize your response in the initial interaction.\nStep-by-Step Guide\nStep 1: Initial Interaction and Introduction\nGreeting:\n\n\"Hi there! I’m here to help you gain valuable insights from your Search Console data. Whether you're interested in a specific time frame, performance breakdown by pages, queries, or other dimensions, I've got you covered.\n\nI can help you retrieve data for these websites:\n\nhttps://example1.com\nhttps://example2.com\nhttps://example3.com\nWhich of these properties would you like to analyze?\"\nStep 2: Handling User Response for Property Selection\nAction: When the user selects a property, use the property URL exactly as listed (e.g., \"https://example.com\") when constructing the API call.\n\nStep 3: Understanding the User's Needs\nAcknowledgment and Setting Defaults:\n\nIf the user expresses a general need (e.g., \"I want the last 3 months of page performance\"), acknowledge their request and set reasonable defaults.\n\nExample Response:\n\n\"Great! I'll gather the top 300 queries from the last 3 months for https://example.com. If you'd like more details or adjustments, just let me know.\"\n\nFollow-up Questions:\n\nConfirming Dimensions: If the user doesn’t specify dimensions, ask:\n\n\"For this analysis, I’ll look at page performance. Does that sound good, or would you like to include other details like queries, devices, or other dimensions?\"\n\nNumber of Results: If the user hasn’t specified the number of results, confirm:\n\n\"I can show you the top 100 results. Let me know if you'd like more or fewer!\"\n\nStep 4: Gathering Specific Inputs (If Necessary)\nAction: If the user provides specific needs, capture and confirm them naturally.\n\nExample Response:\n\n\"Perfect, I’ll pull the data for [specified date range], focusing on [specified dimensions]. Anything else you’d like me to include?\"\n\nImplicit Defaults:\n\nDate Range: Assume \"last 3 months\" if not specified.\nRow Limit: Default to 100, adjustable based on user input.\nStep 5: Confirming Input with the User\nAction: Summarize the request to ensure accuracy.\n\nExample Response:\n\n\"Here’s what I’m preparing: data for https://example.com, covering the last 3 months, focusing on the top 100 queries. Let me know if you’d like to adjust anything!\"\n\nStep 6: Constructing the JSON for Custom Insights\nAction: Build the API call based on the conversation.\n\n{\n  \"property\": \"<USER_PROVIDED_PROPERTY_URL>\", // Use the exact property URL.\n  \"request_type\": \"custom_insights\",\n  \"startDate\": \"<ASSUMED_OR_USER_SPECIFIED_START_DATE>\",\n  \"endDate\": \"<ASSUMED_OR_USER_SPECIFIED_END_DATE>\",\n  \"dimensions\": [\"<IMPLIED_OR_USER_SPECIFIED_DIMENSIONS>\"], // Array of one or more: \"page\", \"query\", \"searchAppearance\", \"device\", \"country\"\n  \"rowLimit\": 300 // Default or user-specified limit.\n}\nStep 7: Presenting the Data\nWhen Retrieving Custom Insights:\n\nImportant: Display all retrieved data in an easy-to-read markdown table format.\nStep 8: Error Handling\nAction: Provide clear, user-friendly error messages when necessary.\n\nExample Response:\n\n\"Hmm, there seems to be an issue retrieving the data. Let’s review what we have or try a different approach.\"\n\nAdditional Notes\nProactive Assistance: Offer suggestions based on user interactions, such as adding dimensions or refining details.\nTone: Maintain a friendly and helpful demeanor throughout the conversation.",
+          "returnIntermediateSteps": true
+        },
+        "promptType": "define"
+      },
+      "typeVersion": 1.6
+    }
+  ],
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Search Console - Get Custom Insights",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "## Search Console - Get List of Properties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool calling": {
+      "main": [
+        [
+          {
+            "node": "Set fields - Consruct API CALL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - ChatInput": {
+      "main": [
+        [
+          {
+            "node": "Set fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Search Console Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set fields - Consruct API CALL": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Console - Get Custom Insights": {
+      "main": [
+        [
+          {
+            "node": "Set fields - Create searchConsoleDataArray",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "## Search Console - Get List of Properties": {
+      "main": [
+        [
+          {
+            "node": "Set fields - Create searchConsoleDataArray 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set fields - Create searchConsoleDataArray": {
+      "main": [
+        [
+          {
+            "node": "Array aggregation - response to AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set fields - Create searchConsoleDataArray 2": {
+      "main": [
+        [
+          {
+            "node": "Array aggregation - response to AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,236 @@
+{
+  "id": "cGqPi5Uy2u1ShmoO",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "💻 Schedule workflow activity time",
+  "tags": [
+    {
+      "id": "0IPbflTW7vujkmxO",
+      "name": "DevOps",
+      "createdAt": "2025-03-16T13:11:38.707Z",
+      "updatedAt": "2025-03-16T13:11:38.707Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "294244fd-8c35-4b70-af84-cc466a60541f",
+      "name": "n8n Activate",
+      "type": "n8n-nodes-base.n8n",
+      "position": [
+        360,
+        -180
+      ],
+      "parameters": {
+        "operation": "activate",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.workflowID }}"
+        },
+        "requestOptions": {}
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "<n8nApi-id>",
+          "name": "n8n acc for Gitlab/hub sync of repos"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e669e5e3-288a-4d6b-af12-011340e60f64",
+      "name": "n8n Deactivate",
+      "type": "n8n-nodes-base.n8n",
+      "position": [
+        360,
+        140
+      ],
+      "parameters": {
+        "operation": "deactivate",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.workflowID }}"
+        },
+        "requestOptions": {}
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "<n8nApi-id>",
+          "name": "n8n acc for Gitlab/hub sync of repos"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "a9c7337f-d0ca-4e7e-873d-1d38813f2717",
+      "name": "Workflow ID",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -60,
+        -80
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "86a66597-b7c3-4e26-aab9-fdf6cc4e43b5",
+              "name": "workflowID",
+              "type": "string",
+              "value": "cGqPi5Uy2u1ShmoO"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "9c641940-fb33-4750-b3ef-ed3d216c339e",
+      "name": "Merge in Workflow ID for deactivation",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        180,
+        140
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combineBy": "combineByPosition"
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "1368366d-0bec-45b3-9de9-d1902ca9b30c",
+      "name": "Merge in Workflow ID for activation",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        180,
+        -180
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combineBy": "combineByPosition"
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "68f765bc-23e2-48c9-8558-a30fc4d8bbb1",
+      "name": "Activate at 08:00 daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -320,
+        -200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "2b51cc72-55c8-444a-931e-54adb0a7ada8",
+      "name": "Deactivate at 20:00 daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -320,
+        160
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 20 * * *"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Workflow ID": {
+      "main": [
+        [
+          {
+            "node": "Merge in Workflow ID for activation",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge in Workflow ID for deactivation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate at 08:00 daily": {
+      "main": [
+        [
+          {
+            "node": "Workflow ID",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge in Workflow ID for activation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deactivate at 20:00 daily": {
+      "main": [
+        [
+          {
+            "node": "Workflow ID",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge in Workflow ID for deactivation",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge in Workflow ID for activation": {
+      "main": [
+        [
+          {
+            "node": "n8n Activate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge in Workflow ID for deactivation": {
+      "main": [
+        [
+          {
+            "node": "n8n Deactivate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

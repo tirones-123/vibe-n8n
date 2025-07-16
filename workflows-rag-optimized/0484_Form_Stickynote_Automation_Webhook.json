@@ -1,0 +1,88 @@
+{
+  "name": "Dynamic credentials using expressions",
+  "nodes": [
+    {
+      "id": "cc6f2b1e-0ed0-4d22-8a44-d7223ba283b4",
+      "name": "n8n Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        560,
+        520
+      ],
+      "webhookId": "da4071f2-7550-4dae-aa48-8bced4291643",
+      "parameters": {
+        "path": "da4071f2-7550-4dae-aa48-8bced4291643",
+        "formTitle": "Test dynamic credentials",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Enter your NASA API key",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "responseNode",
+        "formDescription": "This form is for testing an n8n workflow that demonstrates setting credentials with expressions."
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "ef336bae-3d4f-419c-ab5c-b9f0de89f170",
+      "name": "NASA",
+      "type": "n8n-nodes-base.nasa",
+      "position": [
+        900,
+        520
+      ],
+      "parameters": {
+        "additionalFields": {}
+      },
+      "credentials": {
+        "nasaApi": {
+          "id": "<nasaApi-id>",
+          "name": "NASA account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "143bcdb6-aca0-4dd8-9204-9777271cd230",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1220,
+        520
+      ],
+      "parameters": {
+        "options": {},
+        "redirectURL": "={{ $json.url }}",
+        "respondWith": "redirect"
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "NASA": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "NASA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

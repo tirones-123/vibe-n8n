@@ -1,0 +1,318 @@
+{
+  "id": "yYjRbTWULZuNLXM0",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "My workflow",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "2125c56b-1c76-4219-847b-470f11865c01",
+      "name": "n8n Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        180,
+        300
+      ],
+      "webhookId": "5fb20488-aa11-4788-aa0f-73d40e7e4475",
+      "parameters": {
+        "path": "form",
+        "options": {},
+        "formTitle": "Form Title",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "requiredField": true
+            },
+            {
+              "fieldType": "textarea",
+              "fieldLabel": "Let us know your queries"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "94f6684f-925b-4ded-a79f-ff44771ee992",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1220,
+        280
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "Email": "={{ $json.Email }}",
+            "Query": "={{ $json['Let us know your queries'] }}",
+            "Submitted On": "={{ $json.submittedAt }}"
+          },
+          "schema": [
+            {
+              "id": "Name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Email",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Query",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Query",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Submitted On",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Submitted On",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "type": "string",
+              "display": true,
+              "removed": true,
+              "readOnly": true,
+              "required": false,
+              "displayName": "row_number",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Name"
+          ]
+        },
+        "options": {},
+        "operation": "update",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zvlIZNAVFZ7lg9hch_zsNEIbmAhInUuwhiK2zWq0snA/edit#gid=0",
+          "cachedResultName": "Sheet1"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1zvlIZNAVFZ7lg9hch_zsNEIbmAhInUuwhiK2zWq0snA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zvlIZNAVFZ7lg9hch_zsNEIbmAhInUuwhiK2zWq0snA/edit?usp=drivesdk",
+          "cachedResultName": "Leads Data"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "4a1d8a68-c976-4bf6-956a-6a29affdaed4",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1220,
+        -40
+      ],
+      "parameters": {
+        "sendTo": "yourmail@gmail.com",
+        "message": "=Name:   {{ $json.Name }} \n\nEmail:  {{ $json.Email }} \n\nQuery:  {{ $json['Let us know your queries'] }} \n\nSubmitted on:  {{ $json.submittedAt }}",
+        "options": {},
+        "subject": "=New lead from {{ $json.Name }}",
+        "emailType": "text"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "Gmail account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "126d0ee3-de81-41ed-88f6-ffdeefae5576",
+      "name": "Discord",
+      "type": "n8n-nodes-base.discord",
+      "position": [
+        1240,
+        620
+      ],
+      "parameters": {
+        "embeds": {
+          "values": [
+            {
+              "color": "#FF00F2",
+              "title": "=New Lead from  {{ $json.Name }}",
+              "author": "N8N Automation",
+              "description": "=Name:   {{ $json.Name }} \n\nEmail:  {{ $json.Email }} \n\nQuery:  {{ $json['Let us know your queries'] }} \n\nSubmitted on:  {{ $json.submittedAt }}"
+            }
+          ]
+        },
+        "content": "=",
+        "options": {},
+        "authentication": "webhook"
+      },
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "<discordWebhookApi-id>",
+          "name": "Discord Webhook account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "c5e320e3-6489-4957-bb4e-e9873d001a66",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        640,
+        300
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "d8c112a3-377c-4ca2-90d9-05c19f895ddb",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "="
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "778ba29f-ed75-4706-830f-d906d28d45e3",
+      "name": "Hunter",
+      "type": "n8n-nodes-base.hunter",
+      "position": [
+        420,
+        300
+      ],
+      "parameters": {
+        "email": "={{ $json.Email }}",
+        "operation": "emailVerifier"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "0021001b-0784-4983-a419-8bb491004133",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        640,
+        500
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        []
+      ]
+    },
+    "Hunter": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord": {
+      "main": [
+        []
+      ]
+    },
+    "n8n Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Hunter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

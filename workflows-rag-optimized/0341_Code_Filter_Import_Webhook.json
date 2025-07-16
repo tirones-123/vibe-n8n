@@ -1,0 +1,515 @@
+{
+  "id": "pPtCy6qPfEv1qNRn",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "[1/3 - anomaly detection] [1/2 - KNN classification] Batch upload dataset to Qdrant (crops dataset)",
+  "tags": [
+    {
+      "id": "n3zAUYFhdqtjhcLf",
+      "name": "qdrant",
+      "createdAt": "2024-12-10T11:56:59.987Z",
+      "updatedAt": "2024-12-10T11:56:59.987Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "53831410-b4f3-4374-8bdd-c2a33cd873cb",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -640,
+        0
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "e303ccea-c0e0-4fe5-bd31-48380a0e438f",
+      "name": "Google Cloud Storage",
+      "type": "n8n-nodes-base.googleCloudStorage",
+      "position": [
+        820,
+        160
+      ],
+      "parameters": {
+        "resource": "object",
+        "returnAll": true,
+        "bucketName": "n8n-qdrant-demo",
+        "listFilters": {
+          "prefix": "agricultural-crops"
+        },
+        "requestOptions": {}
+      },
+      "credentials": {
+        "googleCloudStorageOAuth2Api": {
+          "id": "<googleCloudStorageOAuth2Api-id>",
+          "name": "Google Cloud Storage account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "737bdb15-61cf-48eb-96af-569eb5986ee8",
+      "name": "Get fields for Qdrant",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1080,
+        160
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10d9147f-1c0c-4357-8413-3130829c2e24",
+              "name": "=publicLink",
+              "type": "string",
+              "value": "=https://storage.googleapis.com/{{ $json.bucket }}/{{ $json.selfLink.split('/').splice(-1) }}"
+            },
+            {
+              "id": "ff9e6a0b-e47a-4550-a13b-465507c75f8f",
+              "name": "cropName",
+              "type": "string",
+              "value": "={{ $json.id.split('/').slice(-3, -2)[0].toLowerCase()}}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "2b18ed0c-38d3-49e9-be3d-4f7b35f4d9e5",
+      "name": "Qdrant cluster variables",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -360,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "58b7384d-fd0c-44aa-9f8e-0306a99be431",
+              "name": "qdrantCloudURL",
+              "type": "string",
+              "value": "=https://152bc6e2-832a-415c-a1aa-fb529f8baf8d.eu-central-1-0.aws.cloud.qdrant.io"
+            },
+            {
+              "id": "e34c4d88-b102-43cc-a09e-e0553f2da23a",
+              "name": "collectionName",
+              "type": "string",
+              "value": "=agricultural-crops"
+            },
+            {
+              "id": "33581e0a-307f-4380-9533-615791096de7",
+              "name": "VoyageEmbeddingsDim",
+              "type": "number",
+              "value": 1024
+            },
+            {
+              "id": "6e390343-2cd2-4559-aba9-82b13acb7f52",
+              "name": "batchSize",
+              "type": "number",
+              "value": 4
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "f88d290e-3311-4322-b2a5-1350fc1f8768",
+      "name": "Embed crop image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2120,
+        160
+      ],
+      "parameters": {
+        "url": "https://api.voyageai.com/v1/multimodalembeddings",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={{\n{\n  \"inputs\": $json.batchVoyage,\n  \"model\": \"voyage-multimodal-3\",\n  \"input_type\": \"document\"\n}\n}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Voyage API"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "250c6a8d-f545-4037-8069-c834437bbe15",
+      "name": "Create Qdrant Collection",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        320,
+        160
+      ],
+      "parameters": {
+        "url": "={{ $('Qdrant cluster variables').first().json.qdrantCloudURL }}/collections/{{ $('Qdrant cluster variables').first().json.collectionName }}",
+        "method": "PUT",
+        "options": {},
+        "jsonBody": "={{\n{\n  \"vectors\": {\n    \"voyage\": { \n      \"size\": $('Qdrant cluster variables').first().json.VoyageEmbeddingsDim, \n      \"distance\": \"Cosine\" \n    } \n  }\n}\n}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi"
+      },
+      "credentials": {
+        "qdrantApi": {
+          "id": "<qdrantApi-id>",
+          "name": "QdrantApi account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "20b612ff-4794-43ef-bf45-008a16a2f30f",
+      "name": "Check Qdrant Collection Existence",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -100,
+        0
+      ],
+      "parameters": {
+        "url": "={{ $json.qdrantCloudURL }}/collections/{{ $json.collectionName }}/exists",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi"
+      },
+      "credentials": {
+        "qdrantApi": {
+          "id": "<qdrantApi-id>",
+          "name": "QdrantApi account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "c067740b-5de3-452e-a614-bf14985a73a0",
+      "name": "Batches in the API's format",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1860,
+        160
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f14db112-6f15-4405-aa47-8cb56bb8ae7a",
+              "name": "=batchVoyage",
+              "type": "array",
+              "value": "={{ $json.batch.map(item => ({ \"content\": ([{\"type\": \"image_url\", \"image_url\": item[\"publicLink\"]}])}))}}"
+            },
+            {
+              "id": "3885fd69-66f5-4435-86a4-b80eaa568ac1",
+              "name": "=batchPayloadQdrant",
+              "type": "array",
+              "value": "={{ $json.batch.map(item => ({\"crop_name\":item[\"cropName\"], \"image_path\":item[\"publicLink\"]})) }}"
+            },
+            {
+              "id": "8ea7a91e-af27-49cb-9a29-41dae15c4e33",
+              "name": "uuids",
+              "type": "array",
+              "value": "={{ $json.uuids }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "bf9a9532-db64-4c02-b91d-47e708ded4d3",
+      "name": "Batch Upload to Qdrant",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2320,
+        160
+      ],
+      "parameters": {
+        "url": "={{ $('Qdrant cluster variables').first().json.qdrantCloudURL }}/collections/{{ $('Qdrant cluster variables').first().json.collectionName }}/points",
+        "method": "PUT",
+        "options": {},
+        "jsonBody": "={{\n{\n  \"batch\": {\n      \"ids\" : $('Batches in the API\\'s format').item.json.uuids,\n      \"vectors\": {\"voyage\": $json.data.map(item => item[\"embedding\"]) },\n      \"payloads\": $('Batches in the API\\'s format').item.json.batchPayloadQdrant\n  }\n}\n}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi"
+      },
+      "credentials": {
+        "qdrantApi": {
+          "id": "<qdrantApi-id>",
+          "name": "QdrantApi account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "3c30373f-c84c-405f-bb84-ec8b4c7419f4",
+      "name": "Split in batches, generate uuids for Qdrant points",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1600,
+        160
+      ],
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import uuid\n\ncrops = [item.json for item in _input.all()]\nbatch_size = int(_('Qdrant cluster variables').first()['json']['batchSize'])\n\ndef split_into_batches_add_uuids(array, batch_size):\n    return [\n      {\n        \"batch\": array[i:i + batch_size],\n        \"uuids\": [str(uuid.uuid4()) for j in range(len(array[i:i + batch_size]))]\n      }\n       for i in range(0, len(array), batch_size)\n    ]\n\n# Split crops into batches\nbatched_crops = split_into_batches_add_uuids(crops, batch_size)\n\nreturn batched_crops"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "2b028f8c-0a4c-4a3a-9e2b-14b1c2401c6d",
+      "name": "If collection exists",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        120,
+        0
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "2104b862-667c-4a34-8888-9cb81a2e10f8",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.result.exists }}",
+              "rightValue": "true"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "0c8896f7-8c57-4add-bc4d-03c4a774bdf1",
+      "name": "Payload index on crop_name",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        500,
+        160
+      ],
+      "parameters": {
+        "url": "={{ $('Qdrant cluster variables').first().json.qdrantCloudURL }}/collections/{{ $('Qdrant cluster variables').first().json.collectionName }}/index",
+        "method": "PUT",
+        "options": {},
+        "jsonBody": "={\n  \"field_name\": \"crop_name\",\n  \"field_schema\": \"keyword\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi"
+      },
+      "credentials": {
+        "qdrantApi": {
+          "id": "<qdrantApi-id>",
+          "name": "QdrantApi account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "01b92e7e-d954-4d58-85b1-109c336546c4",
+      "name": "Filtering out tomato to test anomalies",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1340,
+        160
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "f7953ae2-5333-4805-abe5-abf6da645c5e",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "leftValue": "={{ $json.cropName }}",
+              "rightValue": "tomato"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Embed crop image": {
+      "main": [
+        [
+          {
+            "node": "Batch Upload to Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Cloud Storage": {
+      "main": [
+        [
+          {
+            "node": "Get fields for Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If collection exists": {
+      "main": [
+        [
+          {
+            "node": "Google Cloud Storage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Qdrant Collection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get fields for Qdrant": {
+      "main": [
+        [
+          {
+            "node": "Filtering out tomato to test anomalies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch Upload to Qdrant": {
+      "main": [
+        []
+      ]
+    },
+    "Create Qdrant Collection": {
+      "main": [
+        [
+          {
+            "node": "Payload index on crop_name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant cluster variables": {
+      "main": [
+        [
+          {
+            "node": "Check Qdrant Collection Existence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payload index on crop_name": {
+      "main": [
+        [
+          {
+            "node": "Google Cloud Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batches in the API's format": {
+      "main": [
+        [
+          {
+            "node": "Embed crop image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Qdrant Collection Existence": {
+      "main": [
+        [
+          {
+            "node": "If collection exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Qdrant cluster variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtering out tomato to test anomalies": {
+      "main": [
+        [
+          {
+            "node": "Split in batches, generate uuids for Qdrant points",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split in batches, generate uuids for Qdrant points": {
+      "main": [
+        [
+          {
+            "node": "Batches in the API's format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

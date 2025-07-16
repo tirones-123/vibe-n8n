@@ -1,0 +1,470 @@
+{
+  "id": "fqaNojXWrspqjfkY",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "RAG Workflow For Stock Earnings Report Analysis",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "1a621f76-9636-430d-94dd-d5e7dcd5afdc",
+      "name": "Pinecone Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        380,
+        -60
+      ],
+      "parameters": {
+        "mode": "insert",
+        "options": {},
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "company-earnings",
+          "cachedResultName": "company-earnings"
+        }
+      },
+      "credentials": {
+        "pineconeApi": {
+          "id": "<pineconeApi-id>",
+          "name": "PineconeApi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e5936e45-0f58-48e9-9ab4-cc69f2ef6578",
+      "name": "Embeddings Google Gemini",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "position": [
+        300,
+        220
+      ],
+      "parameters": {
+        "modelName": "models/text-embedding-004"
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "<googlePalmApi-id>",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e98dbc8e-6b4a-415d-a044-85e590fcb105",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        520,
+        200
+      ],
+      "parameters": {
+        "loader": "pdfLoader",
+        "options": {},
+        "dataType": "binary"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "ae77f5f4-3704-4b66-9c3f-27d6bd3f68c3",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "position": [
+        560,
+        380
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "d939c9db-0edc-4205-b8e5-fb34b0076510",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -120,
+        -60
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "4f8421b4-1a11-4ac3-a9ca-1d725a8ec98e",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -360,
+        640
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "c9e2ec39-c34d-4d8e-b772-d1c1cd823d9e",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -40,
+        640
+      ],
+      "parameters": {
+        "text": "Give me a report on Google's last 3 quarter earnings. Format it in markdown. Focus on the differences and trends. Spot any outliers.",
+        "options": {
+          "systemMessage": "You are a highly skilled financial analyst specializing in analyzing Google's (Alphabet Inc.) financial performance. You have access to two powerful tools:\n\n1.  **Vector Store Tool:** This tool allows you to retrieve relevant information from the past three quarters of Google's earnings reports (PDF documents). The documents have been processed and stored as embeddings in a vector database, enabling semantic search. Use this tool to find specific information related to revenue, expenses, profits, losses, growth, key metrics, management commentary, and any other relevant financial data.\n2.  **Google Docs Tool:** This tool allows you to create, edit, and format Google Docs. Use this tool to save your findings into a Google Doc.\n\nYour task is to answer user queries related to Google's financial performance based on the last three quarters' earnings reports. When a user asks a question:\n\n1.  **Understand the User's Intent:** Carefully analyze the user's query to determine what specific financial information they are seeking. Identify keywords, timeframes (e.g., \"previous quarter\"), and the type of analysis requested (e.g., trend analysis, comparison, explanation).\n2.  **Retrieve Relevant Information:** Use the Vector Store Tool to search for and retrieve the most relevant text passages from the earnings reports that address the user's query. Retrieve multiple, diverse chunks to ensure comprehensive coverage.\n3.  **Synthesize and Analyze:**  Analyze the information from the retrieved text chunks. Identify key trends, patterns, and insights related to the user's query.\n4.  **Generate Report in Google Docs:** Use the Google Docs Tool to create a new Google Doc (or append to an existing one, if specified by the user). Structure the report with clear headings, bullet points, and concise paragraphs. Include the following in your report as appropriate:\n    *   **Executive Summary:** A brief overview of the key findings.\n    *   **Revenue Analysis:**  Report on revenue figures, growth rates, and key revenue drivers.\n    *   **Expense Analysis:** Report on major expense categories and their impact on profitability.\n    *   **Profitability Analysis:** Discuss net income, profit margins, and earnings per share (EPS).\n    *   **Key Metrics:** Include other relevant financial metrics mentioned in the reports (e.g., operating income, cash flow, segment performance).\n    *   **Management Commentary:** Summarize any relevant insights or explanations provided by Google's management in the earnings calls or reports.\n    *   **Trend Analysis:** Compare the current quarter's performance to the previous two quarters, highlighting significant changes or trends.\n    *   **Visualizations:** If possible, use the Google Docs tool to insert basic charts or tables to visually represent the data. (You might need to guide the user on how to do this if the tool has limitations.)\n5.  **Cite Sources:**  Clearly indicate the source of your information (e.g., \"Q2 2023 Earnings Report\") for each data point or analysis.\n6.  **Maintain a Professional Tone:** Write in a clear, concise, and objective tone, as expected of a financial analyst. Avoid speculation or making unsubstantiated claims.\n\nYour ultimate goal is to provide the user with a well-structured, informative, and accurate financial report based on the data available in the last three quarters of Google's earnings reports.\nSave the report in as a Google Doc using the available tool!"
+        },
+        "promptType": "define"
+      },
+      "typeVersion": 1.7
+    },
+    {
+      "id": "40534b4d-3061-4054-8c0a-b08fe32deaf7",
+      "name": "Vector Store Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "position": [
+        360,
+        860
+      ],
+      "parameters": {
+        "name": "company_financial_earnings_data_tool",
+        "description": "Retrieve information about the last 3 quarters of Google Earnings"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c584d5f6-1fac-420f-a28d-71f51b555e67",
+      "name": "Google Gemini Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        620,
+        1060
+      ],
+      "parameters": {
+        "options": {},
+        "modelName": "models/gemini-2.0-flash-exp"
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "<googlePalmApi-id>",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "f4f993d0-c80a-4f26-bc51-fe7df1012606",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -160,
+        860
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "4aa3726e-a105-4bfe-b1df-06c3c9ece18a",
+      "name": "Pinecone Vector Store (Retrieval)",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        260,
+        1080
+      ],
+      "parameters": {
+        "options": {},
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "company-earnings",
+          "cachedResultName": "company-earnings"
+        }
+      },
+      "credentials": {
+        "pineconeApi": {
+          "id": "<pineconeApi-id>",
+          "name": "PineconeApi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e08dd92a-a7a1-4204-bef9-54611a2dee92",
+      "name": "Save Report to Google Docs",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        460,
+        640
+      ],
+      "parameters": {
+        "actionsUi": {
+          "actionFields": [
+            {
+              "text": "={{ $json.output }}",
+              "action": "insert"
+            }
+          ]
+        },
+        "operation": "update",
+        "documentURL": "1aOUl-mnCaI4__tULmBZSvWlOQhTHdD-RUPesP7_sFT4"
+      },
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "<googleDocsOAuth2Api-id>",
+          "name": "Google Docs account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "1984765a-3148-4bcf-9d20-fe29291fda6d",
+      "name": "Embeddings Google Gemini (retrieval)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "position": [
+        240,
+        1260
+      ],
+      "parameters": {
+        "modelName": "models/text-embedding-004"
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "<googlePalmApi-id>",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "9b0bff2e-06f4-4c89-b9dc-c54cfb79577c",
+      "name": "List Of Files To Load (Google Sheets)",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -380,
+        -60
+      ],
+      "parameters": {
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 1476836405,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ckP-ZgAMs2l2sFUpLAXx-gWNOQrHXoAs48Vo271X3rs/edit#gid=1476836405",
+          "cachedResultName": "GOOG"
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1ckP-ZgAMs2l2sFUpLAXx-gWNOQrHXoAs48Vo271X3rs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ckP-ZgAMs2l2sFUpLAXx-gWNOQrHXoAs48Vo271X3rs/edit?usp=drivesdk",
+          "cachedResultName": "Watchlist"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "<googleSheetsOAuth2Api-id>",
+          "name": "Google Sheets account"
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "b0d58ce5-9ac0-4f0f-ac7c-d6cb27551d82",
+      "name": "Download File From Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        160,
+        -60
+      ],
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "={{ $('List Of Files To Load (Google Sheets)').item.json['File URL'] }}"
+        },
+        "options": {
+          "fileName": "={{ $('List Of Files To Load (Google Sheets)').item.json['10Q'] }}"
+        },
+        "operation": "download"
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "<googleDriveOAuth2Api-id>",
+          "name": "Google Drive account"
+        }
+      },
+      "typeVersion": 3
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Save Report to Google Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Download File From Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File From Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store (Retrieval)": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini (retrieval)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store (Retrieval)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Of Files To Load (Google Sheets)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "bfbd4299-0c8d-4368-b156-c76602ca068c",
+      "name": "When clicking \"Execute Workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        640,
+        1700
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "c646dddb-bcd4-4ac8-b08f-e61ec16c99c5",
+      "name": "Authenticates to your Icypeas account",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1140,
+        1700
+      ],
+      "parameters": {
+        "jsCode": "const API_BASE_URL = \"https://app.icypeas.com/api\";\nconst API_PATH = \"/bulk-search\";\nconst METHOD = \"POST\";\n\n// Change here\nconst API_KEY = \"PUT_API_KEY_HERE\";\nconst API_SECRET = \"PUT_API_SECRET_HERE\";\nconst USER_ID = \"PUT_USER_ID_HERE\";\n////////////////\n\nconst genSignature = (\n    url,\n    method,\n    secret,\n    timestamp = new Date().toISOString()\n) => {\n    const Crypto = require('crypto');\n    const payload = `${method}${url}${timestamp}`.toLowerCase();\n    const sign = Crypto.createHmac(\"sha1\", secret).update(payload).digest(\"hex\");\n\n    return sign;\n};\n\nconst apiUrl = `${API_BASE_URL}${API_PATH}`;\n\nconst data = $input.all().map((x) => [ x.json.company]);\n$input.first().json.data = data;\n$input.first().json.api = {\n  timestamp: new Date().toISOString(),\n  secret: API_SECRET,\n  key: API_KEY,\n  userId: USER_ID,\n  url: apiUrl,\n};\n\n$input.first().json.api.signature = genSignature(apiUrl, METHOD, API_SECRET, $input.first().json.api.timestamp);\nreturn $input.first();"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "0f5382ae-cd84-47a7-9818-ad252c9d62c3",
+      "name": "Reads lastname,firstname and company from your sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        840,
+        1700
+      ],
+      "parameters": {
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "ce00b713-6ddc-4625-a9cc-e9badc2022d4",
+      "name": "Run bulk search (domain-search)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1480,
+        1700
+      ],
+      "parameters": {
+        "url": "={{ $json.api.url }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task",
+              "value": "=domain-search"
+            },
+            {
+              "name": "name",
+              "value": "dernierT"
+            },
+            {
+              "name": "user",
+              "value": "={{ $json.api.userId }}"
+            },
+            {
+              "name": "data",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-ROCK-TIMESTAMP",
+              "value": "={{ $json.api.timestamp }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.1
+    }
+  ],
+  "connections": {
+    "When clicking \"Execute Workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Reads lastname,firstname and company from your sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authenticates to your Icypeas account": {
+      "main": [
+        [
+          {
+            "node": "Run bulk search (domain-search)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reads lastname,firstname and company from your sheet": {
+      "main": [
+        [
+          {
+            "node": "Authenticates to your Icypeas account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

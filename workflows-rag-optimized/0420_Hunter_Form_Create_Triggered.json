@@ -1,0 +1,229 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "bcd8e7dc-cb7f-4e2b-a0c6-2d154cb58938",
+      "name": "n8n Form Trigger",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        820,
+        360
+      ],
+      "webhookId": "0bf8840f-1cc4-46a9-86af-a3fa8da80608",
+      "parameters": {
+        "path": "0bf8840f-1cc4-46a9-86af-a3fa8da80608",
+        "options": {},
+        "formTitle": "Contact us",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "What's your business email?"
+            }
+          ]
+        },
+        "formDescription": "We'll get back to you soon"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "0720ab51-5222-46fe-8a1a-31e25b81920c",
+      "name": "Hunter",
+      "type": "n8n-nodes-base.hunter",
+      "position": [
+        1040,
+        360
+      ],
+      "parameters": {
+        "email": "={{ $json['What\\'s your business email?'] }}",
+        "operation": "emailVerifier"
+      },
+      "credentials": {
+        "hunterApi": {
+          "id": "<hunterApi-id>",
+          "name": "Hunter account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c20c626f-fd58-497f-942f-5d10f198f36d",
+      "name": "Check if the email is valid",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1240,
+        360
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "54d84c8a-63ee-40ed-8fb2-301fff0194ba",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "valid"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "4e518b0c-20e6-4fb3-8be9-c0989c750fda",
+      "name": "Enrich company",
+      "type": "n8n-nodes-base.clearbit",
+      "position": [
+        1620,
+        300
+      ],
+      "parameters": {
+        "domain": "={{ $json.employment.domain }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "clearbitApi": {
+          "id": "<clearbitApi-id>",
+          "name": "Clearbit account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "47e8324b-c455-40b5-8769-4d2c4718de75",
+      "name": "Add lead to Hubspot",
+      "type": "n8n-nodes-base.hubspot",
+      "position": [
+        1940,
+        300
+      ],
+      "parameters": {
+        "email": "={{ $('Check if the email is valid').item.json.email }}",
+        "options": {},
+        "authentication": "oAuth2",
+        "additionalFields": {
+          "jobTitle": "={{ $('Enrich person').item.json.employment.title }}",
+          "lastName": "={{ $('Enrich person').item.json.name.familyName }}",
+          "firstName": "={{ $('Enrich person').item.json.name.givenName }}",
+          "companyName": "={{ $('Enrich person').item.json.employment.name }}",
+          "companySize": "={{ $json.metrics.employees }}"
+        }
+      },
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "<hubspotOAuth2Api-id>",
+          "name": "HubSpot account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "30451862-9283-44fd-a1b7-9b31bbe9cbd2",
+      "name": "Enrich person",
+      "type": "n8n-nodes-base.clearbit",
+      "position": [
+        1460,
+        300
+      ],
+      "parameters": {
+        "email": "={{ $json.email }}",
+        "resource": "person",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "clearbitApi": {
+          "id": "<clearbitApi-id>",
+          "name": "Clearbit account"
+        }
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "6416c2ee-59a0-4496-bd62-0a3af06986b7",
+      "name": "Email is not valid, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1460,
+        480
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Hunter": {
+      "main": [
+        [
+          {
+            "node": "Check if the email is valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich person": {
+      "main": [
+        [
+          {
+            "node": "Enrich company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich company": {
+      "main": [
+        [
+          {
+            "node": "Add lead to Hubspot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n Form Trigger": {
+      "main": [
+        [
+          {
+            "node": "Hunter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if the email is valid": {
+      "main": [
+        [
+          {
+            "node": "Enrich person",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email is not valid, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

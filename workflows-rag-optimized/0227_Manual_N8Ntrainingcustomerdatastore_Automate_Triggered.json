@@ -1,0 +1,133 @@
+{
+  "nodes": [
+    {
+      "name": "On clicking 'execute'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        20,
+        720
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "name": "Customer Datastore",
+      "type": "n8n-nodes-base.n8nTrainingCustomerDatastore",
+      "position": [
+        220,
+        720
+      ],
+      "parameters": {
+        "operation": "getAllPeople"
+      },
+      "typeVersion": 1
+    },
+    {
+      "name": "Country equals US",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        540,
+        420
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"country\"]}}",
+              "value2": "US"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "name": "Country is empty or Name contains 'Max'",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        540,
+        720
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"country\"]}}",
+              "operation": "isEmpty"
+            },
+            {
+              "value1": "={{$json[\"name\"]}}",
+              "value2": "Max",
+              "operation": "contains"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "typeVersion": 1
+    },
+    {
+      "name": "Country based branching",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        540,
+        1120
+      ],
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "value2": "US"
+            },
+            {
+              "output": 1,
+              "value2": "CO"
+            },
+            {
+              "output": 2,
+              "value2": "UK"
+            }
+          ]
+        },
+        "value1": "={{$json[\"country\"]}}",
+        "dataType": "string",
+        "fallbackOutput": 3
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Customer Datastore": {
+      "main": [
+        [
+          {
+            "node": "Country is empty or Name contains 'Max'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Country based branching",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Country equals US",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On clicking 'execute'": {
+      "main": [
+        [
+          {
+            "node": "Customer Datastore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,308 @@
+{
+  "id": "84KL1bsi9OvbAapn",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Receive_and_analyze_emails_with_rules_in_Sublime_Security",
+  "tags": [
+    {
+      "id": "GCHVocImoXoEVnzP",
+      "name": "🛠️ In progress",
+      "createdAt": "2023-10-31T02:17:21.618Z",
+      "updatedAt": "2023-10-31T02:17:21.618Z"
+    },
+    {
+      "id": "QPJKatvLSxxtrE8U",
+      "name": "Secops",
+      "createdAt": "2023-10-31T02:15:11.396Z",
+      "updatedAt": "2023-10-31T02:15:11.396Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "b1ad1c9a-ba5d-46d6-9ce1-b3bb9346c766",
+      "name": "Email Trigger (IMAP)",
+      "type": "n8n-nodes-base.emailReadImap",
+      "position": [
+        720,
+        1120
+      ],
+      "parameters": {
+        "format": "resolved",
+        "options": {}
+      },
+      "credentials": {
+        "imap": {
+          "id": "<imap-id>",
+          "name": "Matti Outlook email"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "e43b0257-0d83-4f7e-8824-3ca1d4cf6110",
+      "name": "Move Binary Data",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "position": [
+        1240,
+        740
+      ],
+      "parameters": {
+        "options": {
+          "encoding": "base64"
+        },
+        "sourceKey": "attachment_0",
+        "setAllData": false
+      },
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "97359abc-7ca9-4599-9112-4416618d0c36",
+      "name": "IF email has attachment",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1020,
+        900
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $binary.attachment_0 }}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{ $binary.attachment_0.mimeType }}",
+              "value2": "message/rfc822"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "046f87e0-8759-4952-85be-78bf36a70994",
+      "name": "Split to matched and unmatched",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1760,
+        740
+      ],
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field\n// called 'myNewField' to the JSON of each one\nmatched = []\nunmatched = []  \n\nfor (const item of $input.first().json.rule_results) {\n  if (item.matched) {\n    matched.push(item)\n  } else {\n    unmatched.push(item)    \n  }\n}\n\nreturn {\n  json: {\n    matched,\n    unmatched\n  }\n}"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "f88b852d-f2a4-4d78-aaef-40050c0efef8",
+      "name": "When clicking \"Execute Workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        720,
+        920
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "ce7288d4-61ec-4222-a29e-8a72ed2ee32e",
+      "name": "Slack",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        2260,
+        740
+      ],
+      "parameters": {
+        "text": "={{ $json.message }}",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "#test-matti-tomi"
+        },
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "<slackApi-id>",
+          "name": "Awesom-O"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "70c76c01-50ef-47a4-b552-bc6fea5079ed",
+      "name": "Format the message",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2040,
+        740
+      ],
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "message",
+              "value": "=No. of rules that matched {{ $json[\"matched\"].length }} / {{ $json[\"matched\"].length + $json[\"unmatched\"].length }}\n\nMatched rules:\n{{ $json[\"matched\"].pluck(\"rule\").pluck(\"name\").join('\\n') }}\n"
+            }
+          ]
+        },
+        "options": {},
+        "keepOnlySet": true
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "52af4700-0dc5-4f5f-8664-97d2aacdab76",
+      "name": "Notify about missing attachment",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        2260,
+        920
+      ],
+      "parameters": {
+        "text": "No attachment found in an email\n",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "#test-matti-tomi"
+        },
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "<slackApi-id>",
+          "name": "Awesom-O"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "19be16c9-3908-4a2d-87e4-f721c33dc124",
+      "name": "Analyze email with Sublime Security",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1500,
+        740
+      ],
+      "parameters": {
+        "url": "https://api.platform.sublimesecurity.com/v0/messages/analyze",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={\n  \"raw_message\": \"{{ $json.data }}\",\n  \"run_active_detection_rules\": true,\n  \"run_all_detection_rules\": false\n}",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "<httpHeaderAuth-id>",
+          "name": "Sublime Security bearer token"
+        }
+      },
+      "typeVersion": 3
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Move Binary Data": {
+      "main": [
+        [
+          {
+            "node": "Analyze email with Sublime Security",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format the message": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "IF email has attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF email has attachment": {
+      "main": [
+        [
+          {
+            "node": "Move Binary Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify about missing attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split to matched and unmatched": {
+      "main": [
+        [
+          {
+            "node": "Format the message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \"Execute Workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Move Binary Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze email with Sublime Security": {
+      "main": [
+        [
+          {
+            "node": "Split to matched and unmatched",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,1427 @@
+{
+  "id": "VlCgU5K9SYQbdxTa",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Content to 9:16 Aspect Image Generator v1",
+  "tags": [
+    {
+      "id": "QsH2EXuw2e7YCv0K",
+      "name": "OpenAI",
+      "createdAt": "2024-11-15T04:05:20.872Z",
+      "updatedAt": "2024-11-15T04:05:20.872Z"
+    },
+    {
+      "id": "04PL2irdWYmF2Dg3",
+      "name": "RunwayML",
+      "createdAt": "2024-11-15T05:55:30.783Z",
+      "updatedAt": "2024-11-15T05:55:30.783Z"
+    },
+    {
+      "id": "yrY6updwSCXMsT0z",
+      "name": "Video",
+      "createdAt": "2024-11-15T05:55:34.333Z",
+      "updatedAt": "2024-11-15T05:55:34.333Z"
+    },
+    {
+      "id": "lvPj9rYRsKOHCi4J",
+      "name": "Creatomate",
+      "createdAt": "2024-11-19T15:59:16.134Z",
+      "updatedAt": "2024-11-19T15:59:16.134Z"
+    },
+    {
+      "id": "9LXACqpQLNtrM6or",
+      "name": "Leonardo",
+      "createdAt": "2024-11-19T15:59:21.368Z",
+      "updatedAt": "2024-11-19T15:59:21.368Z"
+    },
+    {
+      "id": "2DYOnQD6moK2E2VF",
+      "name": "App 2",
+      "createdAt": "2024-12-19T04:43:15.771Z",
+      "updatedAt": "2024-12-19T04:43:15.771Z"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "be5c3e43-cc86-4081-aa98-e7af3d22267d",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        200,
+        -960
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "a5a2bfcf-e2b7-4a9f-a766-7d08168c3d6f",
+      "name": "Set Guidelines",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        680,
+        -960
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f803283a-f895-4794-87ad-46c63542ea4f",
+              "name": "id",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "f8e46822-cf7e-4697-bee4-99221b6063a7",
+      "name": "Get Brand Guidelines",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        480,
+        -960
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": "appRDq3E42JNtruIP",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP",
+          "cachedResultName": "Content Manager"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "tblF8Ye2g0gPdpsaI",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP/tblF8Ye2g0gPdpsaI",
+          "cachedResultName": "Brand Guidelines"
+        },
+        "options": {},
+        "operation": "search"
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "<airtableTokenApi-id>",
+          "name": "AlexK Airtable Personal Access Token account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "c6609f11-d04d-4e83-8fc0-af3c0e2cc9bd",
+      "name": "Get SEO Keywords",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        940,
+        -960
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": "appRDq3E42JNtruIP",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP",
+          "cachedResultName": "Content Manager"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "tblU1fgGH1LXwnWRb",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP/tblU1fgGH1LXwnWRb",
+          "cachedResultName": "SEO Keywords"
+        },
+        "options": {
+          "fields": [
+            "Keyword",
+            "RelatedContent"
+          ]
+        },
+        "operation": "search"
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "<airtableTokenApi-id>",
+          "name": "AlexK Airtable Personal Access Token account"
+        }
+      },
+      "executeOnce": false,
+      "typeVersion": 2.1
+    },
+    {
+      "id": "d9201fa0-05d9-492b-896d-2cdc26e84f2e",
+      "name": "Remove Duplicates",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "position": [
+        1340,
+        -960
+      ],
+      "parameters": {
+        "compare": "selectedFields",
+        "options": {},
+        "fieldsToCompare": "id"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "530dfb77-0aee-445d-8a1f-d8f2cbcd1640",
+      "name": "Keyword Filter",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1140,
+        -960
+      ],
+      "parameters": {
+        "options": {
+          "ignoreCase": true
+        },
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": false,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "1b854a48-286a-486f-8a0f-4eb3b8d302ea",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.Keyword }}",
+              "rightValue": "ai automation"
+            }
+          ]
+        }
+      },
+      "typeVersion": 2.2
+    },
+    {
+      "id": "75da86d6-22d4-42d6-8451-ea75db76ae57",
+      "name": "Get Content",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        1140,
+        -740
+      ],
+      "parameters": {
+        "id": "={{ $json.RelatedContent }}",
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": "appRDq3E42JNtruIP",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP",
+          "cachedResultName": "Content Manager"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "tblU1fgGH1LXwnWRb",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP/tblU1fgGH1LXwnWRb",
+          "cachedResultName": "SEO Keywords"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "<airtableTokenApi-id>",
+          "name": "AlexK Airtable Personal Access Token account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "7524c5d8-78bb-4a4e-9c56-af97b851b767",
+      "name": "Split Out Content",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1340,
+        -740
+      ],
+      "parameters": {
+        "include": "allOtherFields",
+        "options": {},
+        "fieldToSplitOut": "id"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "45d55ea1-ad01-4771-a2b2-67bb0cd1f983",
+      "name": "Split Out Keywords",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        940,
+        -740
+      ],
+      "parameters": {
+        "include": "allOtherFields",
+        "options": {},
+        "fieldToSplitOut": "RelatedContent"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "349c64c2-2085-4b61-b9d2-dc1f0d7f46f6",
+      "name": "Limit",
+      "type": "n8n-nodes-base.limit",
+      "position": [
+        1340,
+        -520
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    },
+    {
+      "id": "bcdf8e9e-463c-43d4-a29e-7f90076815a1",
+      "name": "Script Prep",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "onError": "continueErrorOutput",
+      "position": [
+        1640,
+        -960
+      ],
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "options": {},
+        "messages": {
+          "values": [
+            {
+              "content": "=Prepare a script with 4 scenes for a short form video based on the following blog post:\n\nTitle:\n{{ $json.Title }}\n\nContent:\n{{ $json.Content }}\n\nThe video should be less than 30 seconds in length.\n\nAlso create image prompts for each scene within the script.\n\nThen output a image prompt for the video thmbnail.\n\nThe video will use a 9:16 aspect."
+            },
+            {
+              "role": "system",
+              "content": "Output format:\nMake sure you number each script and image prompt.\n\nScene 1 - 4\n- script #\n- image prompt #\n\nThumbnail Prompt"
+            }
+          ]
+        },
+        "jsonOutput": true
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "AlexK OpenAi Key"
+        }
+      },
+      "typeVersion": 1.6
+    },
+    {
+      "id": "be07f6e3-1e2d-4d4f-a8e0-1d642ca4b789",
+      "name": "Split Out Scenes",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        2060,
+        -520
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "message.content.scenes"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "83b3213d-70db-46d4-8dcc-5f399a64467d",
+      "name": "Split Out TN Prompt",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        2060,
+        -1020
+      ],
+      "parameters": {
+        "options": {},
+        "fieldToSplitOut": "message.content.thumbnail_prompt"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "d4f30eff-220a-4682-9072-f1bbbce3655c",
+      "name": "Leo - Improve Prompt1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2600,
+        -1020
+      ],
+      "parameters": {
+        "url": "https://cloud.leonardo.ai/api/rest/v1/prompt/improve",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        },
+        "jsonBody": "={\n \"prompt\": \"{{ $json['message.content[\\'Thumbnail Prompt\\']'] }}\"\n}",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "<httpCustomAuth-id>",
+          "name": "Leo Custom Auth account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "a1d32bae-67a0-487d-9583-0b53ab25d184",
+      "name": "Leo - Get imageId1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3200,
+        -1020
+      ],
+      "parameters": {
+        "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.body.sdGenerationJob.generationId }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        },
+        "sendHeaders": true,
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "<httpCustomAuth-id>",
+          "name": "Leo Custom Auth account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "89436c9d-1898-4f32-abf4-1f4fef7473a8",
+      "name": "Prompt Settings",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2400,
+        -1020
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "56c8f20d-d9d9-4be7-ac2a-38df6ffdd722",
+              "name": "model",
+              "type": "string",
+              "value": "de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3"
+            },
+            {
+              "id": "dc66dd4a-9209-4790-b844-e19931accc39",
+              "name": "additional",
+              "type": "string",
+              "value": "Use the rule of thirds, leading lines, & balance."
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "9791db0e-c9a5-4fd8-b3fc-fd92b65c6362",
+      "name": "Leo - Generate Image1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2800,
+        -1020
+      ],
+      "parameters": {
+        "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        },
+        "jsonBody": "={\n \"alchemy\": true,\n \"width\": 768,\n \"height\": 1376,\n \"modelId\": \"{{ $('Prompt Settings').item.json.model }}\",\n \"num_images\": 1,\n \"presetStyle\": \"DYNAMIC\",\n \"prompt\": \"{{ $json.body.promptGeneration.prompt }};\",\n \"guidance_scale\": 7,\n \"highResolution\": true,\n \"promptMagic\": false,\n \"promptMagicStrength\": 0.5,\n \"promptMagicVersion\": \"v3\",\n \"public\": false,\n \"ultra\": false,\n \"photoReal\": false,\n \"negative_prompt\": \"\"\n} ",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "<httpCustomAuth-id>",
+          "name": "Leo Custom Auth account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "64c5d0f0-07ce-493d-b974-69051ed41e0d",
+      "name": "Wait 30 Seconds",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        3000,
+        -1020
+      ],
+      "webhookId": "08a6381f-bd3d-4cc1-8420-62c886406000",
+      "parameters": {
+        "amount": 30
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "d418088f-cebd-483a-b413-09f62faac1b7",
+      "name": "Leo - Improve Prompt",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2800,
+        -420
+      ],
+      "parameters": {
+        "url": "https://cloud.leonardo.ai/api/rest/v1/prompt/improve",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        },
+        "jsonBody": "={\n \"prompt\": \"{{ $json.image_prompt }}\"\n}",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "<httpCustomAuth-id>",
+          "name": "Leo Custom Auth account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "c77d1f84-8db8-4ca5-9bcf-854a4bda9cf5",
+      "name": "Leo - Get imageId",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3400,
+        -420
+      ],
+      "parameters": {
+        "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.body.sdGenerationJob.generationId }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        },
+        "sendHeaders": true,
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "<httpCustomAuth-id>",
+          "name": "Leo Custom Auth account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "3f8fef1e-c7ff-43d2-9385-4ab8a6dce553",
+      "name": "Prompt Settings1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2600,
+        -420
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "56c8f20d-d9d9-4be7-ac2a-38df6ffdd722",
+              "name": "model",
+              "type": "string",
+              "value": "de7d3faf-762f-48e0-b3b7-9d0ac3a3fcf3"
+            },
+            {
+              "id": "dc66dd4a-9209-4790-b844-e19931accc39",
+              "name": "additional",
+              "type": "string",
+              "value": "Use the rule of thirds, leading lines, & balance."
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.4
+    },
+    {
+      "id": "b6c43a16-29e8-4074-9dda-5661dfd3da5d",
+      "name": "Leo - Generate Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3000,
+        -420
+      ],
+      "parameters": {
+        "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        },
+        "jsonBody": "={\n \"alchemy\": false,\n \"width\": 768,\n \"height\": 1376,\n \"modelId\": \"{{ $('Prompt Settings1').item.json.model }}\",\n \"num_images\": 1,\n \"presetStyle\": \"DYNAMIC\",\n \"prompt\": \"{{ $json.body.promptGeneration.prompt }};\",\n \"guidance_scale\": 7,\n \"highResolution\": true,\n \"promptMagic\": false,\n \"promptMagicStrength\": 0.5,\n \"promptMagicVersion\": \"v3\",\n \"public\": false,\n \"ultra\": true,\n \"photoReal\": false,\n \"negative_prompt\": \"\"\n} ",
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "<httpCustomAuth-id>",
+          "name": "Leo Custom Auth account"
+        }
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "c3910b17-9a27-4419-ab01-409cc7090c68",
+      "name": "Wait 30 Seconds1",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        3200,
+        -420
+      ],
+      "webhookId": "08a6381f-bd3d-4cc1-8420-62c886406000",
+      "parameters": {
+        "amount": 30
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "85a320a3-7a06-41f9-a34a-de3fd1ce2950",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        2400,
+        -520
+      ],
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "3ee7e646-8690-4a7c-9820-ce2985b02e7a",
+      "name": "Add Asset Info",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        3400,
+        -1020
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": "appRDq3E42JNtruIP",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP",
+          "cachedResultName": "Content Manager"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "tblqoaJ7bRLBgENED",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP/tblqoaJ7bRLBgENED",
+          "cachedResultName": "Assets"
+        },
+        "columns": {
+          "value": {
+            "Asset URL": "={{ $json.body.generations_by_pk.generated_images[0].url }}",
+            "File Size": 0,
+            "Asset Name": "=TN - {{ $('Get Content').item.json.Title }}",
+            "Asset Type": "Image"
+          },
+          "schema": [
+            {
+              "id": "id",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": true,
+              "required": false,
+              "displayName": "id",
+              "defaultMatch": true
+            },
+            {
+              "id": "Asset Name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Asset Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Asset Type",
+              "type": "options",
+              "display": true,
+              "options": [
+                {
+                  "name": "Image",
+                  "value": "Image"
+                },
+                {
+                  "name": "Video",
+                  "value": "Video"
+                },
+                {
+                  "name": "Document",
+                  "value": "Document"
+                }
+              ],
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Asset Type",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Upload Date",
+              "type": "dateTime",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Upload Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "File Size",
+              "type": "number",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "File Size",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Asset URL",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Asset URL",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Usage Rights",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Usage Rights",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Thumbnail",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Thumbnail",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Associated Videos",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Associated Videos",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Associated Social Media Posts",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Associated Social Media Posts",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Associated Blog Posts",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Associated Blog Posts",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Related Campaigns",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Related Campaigns",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Schedules",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Schedules",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Content Calendar",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Content Calendar",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ]
+        },
+        "options": {},
+        "operation": "create"
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "<airtableTokenApi-id>",
+          "name": "AlexK Airtable Personal Access Token account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "88cd8514-9a54-47bf-b822-8c01ef05c08e",
+      "name": "Add Asset Info1",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        3600,
+        -420
+      ],
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": "appRDq3E42JNtruIP",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP",
+          "cachedResultName": "Content Manager"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "tblqoaJ7bRLBgENED",
+          "cachedResultUrl": "https://airtable.com/appRDq3E42JNtruIP/tblqoaJ7bRLBgENED",
+          "cachedResultName": "Assets"
+        },
+        "columns": {
+          "value": {
+            "Asset URL": "={{ $json.body.generations_by_pk.generated_images[0].url }}",
+            "File Size": 0,
+            "Asset Name": "=Scene - {{ $('Loop Over Items').item.json.script }}",
+            "Asset Type": "Image"
+          },
+          "schema": [
+            {
+              "id": "id",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": true,
+              "required": false,
+              "displayName": "id",
+              "defaultMatch": true
+            },
+            {
+              "id": "Asset Name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Asset Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Asset Type",
+              "type": "options",
+              "display": true,
+              "options": [
+                {
+                  "name": "Image",
+                  "value": "Image"
+                },
+                {
+                  "name": "Video",
+                  "value": "Video"
+                },
+                {
+                  "name": "Document",
+                  "value": "Document"
+                }
+              ],
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Asset Type",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Upload Date",
+              "type": "dateTime",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Upload Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "File Size",
+              "type": "number",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "File Size",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Asset URL",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Asset URL",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Usage Rights",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Usage Rights",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Thumbnail",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Thumbnail",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Associated Videos",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Associated Videos",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Associated Social Media Posts",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Associated Social Media Posts",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Associated Blog Posts",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Associated Blog Posts",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Related Campaigns",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Related Campaigns",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Schedules",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Schedules",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Content Calendar",
+              "type": "array",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "Content Calendar",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ]
+        },
+        "options": {},
+        "operation": "create"
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "<airtableTokenApi-id>",
+          "name": "AlexK Airtable Personal Access Token account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "1acc2d91-c4ba-4a26-bb74-a848875e9fac",
+      "name": "Wikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "position": [
+        1640,
+        -740
+      ],
+      "parameters": {},
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Script Prep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Script Prep",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Content": {
+      "main": [
+        [
+          {
+            "node": "Split Out Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Script Prep": {
+      "main": [
+        [
+          {
+            "node": "Split Out TN Prompt",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out Scenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keyword Filter": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Guidelines": {
+      "main": [
+        [
+          {
+            "node": "Get SEO Keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Asset Info1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Prompt Settings1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Settings": {
+      "main": [
+        [
+          {
+            "node": "Leo - Improve Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Leo - Get imageId1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get SEO Keywords": {
+      "main": [
+        [
+          {
+            "node": "Keyword Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Settings1": {
+      "main": [
+        [
+          {
+            "node": "Leo - Improve Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Scenes": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 Seconds1": {
+      "main": [
+        [
+          {
+            "node": "Leo - Get imageId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leo - Get imageId": {
+      "main": [
+        [
+          {
+            "node": "Add Asset Info1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Split Out Keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Content": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leo - Get imageId1": {
+      "main": [
+        [
+          {
+            "node": "Add Asset Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Keywords": {
+      "main": [
+        [
+          {
+            "node": "Get Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out TN Prompt": {
+      "main": [
+        [
+          {
+            "node": "Prompt Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Brand Guidelines": {
+      "main": [
+        [
+          {
+            "node": "Set Guidelines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leo - Generate Image": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 Seconds1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leo - Improve Prompt": {
+      "main": [
+        [
+          {
+            "node": "Leo - Generate Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leo - Generate Image1": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leo - Improve Prompt1": {
+      "main": [
+        [
+          {
+            "node": "Leo - Generate Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Brand Guidelines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

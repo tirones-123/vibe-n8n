@@ -1,0 +1,232 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "174f80b5-6c84-47b3-a906-eeb4fc5207b8",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -840,
+        620
+      ],
+      "webhookId": "5dc2467c-0b39-43e9-bdbd-399231f69c4e",
+      "parameters": {
+        "path": "5dc2467c-0b39-43e9-bdbd-399231f69c4e",
+        "options": {},
+        "httpMethod": "POST",
+        "responseCode": null
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "e03fc5ca-9446-44b7-9c0a-44c8696ec06a",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -540,
+        620
+      ],
+      "parameters": {
+        "jsCode": "\nconst available = items[0].json.body.available;\nconst inventory_item = items[0].json.body.inventory_item_id;\nconst lowInventory = available > 0 && available < 4;\nconst outOfStock = available === 0;\n\nreturn [\n  {\n    json: {\n      available: available,\n      inventory_tem: inventory_item,\n      low_inventory: lowInventory,\n      out_of_stock: outOfStock,\n    },\n  },\n];"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "2e8b6898-87aa-4e27-80df-647f022e7810",
+      "name": "Low Inventory",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -180,
+        500
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.low_inventory }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "02c33a4d-e806-4447-a754-5d2027ebfc2b",
+      "name": "Out of stock",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -180,
+        780
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.out_of_stock }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "ce6a4937-ce78-486e-adcb-a0d11a856cd9",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        560,
+        400
+      ],
+      "parameters": {
+        "body": "={\n  \"embeds\": [\n    {\n      \"title\":  \"{{ $json.data.inventoryItem.variant.product.title }}\",\n      \"description\": \"This product is running out of stock!\",\n      \"color\": 16776960,\n      \"fields\": [\n        {\n          \"name\": \"Remaining Inventory\",\n          \"value\": \"{{ $json.data.inventoryItem.variant.inventoryQuantity }}\",\n          \"inline\": false\n        },\n        {\n          \"name\": \"Product Variant\",\n          \"value\": \"{{ $json.data.inventoryItem.variant.title }}\",\n          \"inline\": true\n        }\n      ],\n      \"image\": {\n        \"url\": \"{{ $json.data.inventoryItem.variant.product.images.edges[0].node.originalSrc }}\"\n      },\n      \"footer\": {\n        \"text\": \"Alert from inventory management system\"\n      }\n    }\n  ]\n}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "authentication": "predefinedCredentialType",
+        "rawContentType": "application/json",
+        "nodeCredentialType": "discordBotApi"
+      },
+      "credentials": {
+        "discordBotApi": {
+          "id": "<discordBotApi-id>",
+          "name": "Discord Bot account"
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "4a571564-03a1-44de-a06d-b5142911d6f4",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        560,
+        860
+      ],
+      "parameters": {
+        "body": "={\n  \"embeds\": [\n    {\n      \"title\":  \"{{ $json.data.inventoryItem.variant.product.title }}\",\n      \"description\": \"This product is sold out!\",\n      \"color\": 16711680,\n      \"fields\": [\n        {\n          \"name\": \"Remaining Inventory\",\n          \"value\": \"{{ $json.data.inventoryItem.variant.inventoryQuantity }}\",\n          \"inline\": false\n        },\n        {\n          \"name\": \"Product Variant\",\n          \"value\": \"{{ $json.data.inventoryItem.variant.title }}\",\n          \"inline\": true\n        }\n      ],\n      \"image\": {\n        \"url\": \"{{ $json.data.inventoryItem.variant.product.images.edges[0].node.originalSrc }}\"\n      },\n      \"footer\": {\n        \"text\": \"Alert from inventory management system\"\n      }\n    }\n  ]\n}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "contentType": "raw",
+        "authentication": "predefinedCredentialType",
+        "rawContentType": "application/json",
+        "nodeCredentialType": "discordBotApi"
+      },
+      "credentials": {
+        "discordBotApi": {
+          "id": "<discordBotApi-id>",
+          "name": "Discord Bot account"
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "703b259c-e655-41e2-abb0-9ad80d2224a5",
+      "name": "GraphQL1- shopify",
+      "type": "n8n-nodes-base.graphql",
+      "position": [
+        180,
+        400
+      ],
+      "parameters": {
+        "query": "={\n  inventoryItem(id: \"gid://shopify/InventoryItem/{{ $json.inventory_tem }}\") {\n    id\n    variant {\n      id\n      title\n      inventoryQuantity  # This line adds the inventory quantity field\n      product {\n        id\n        title\n        images(first: 1) {\n          edges {\n            node {\n              originalSrc\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+        "endpoint": "https://store.myshopify.com/admin/api/2023-10/graphql.json",
+        "authentication": "headerAuth"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "eb4c0d15-85b8-42cf-9c0d-d53e3e787cf9",
+      "name": "GraphQL -  shopify",
+      "type": "n8n-nodes-base.graphql",
+      "position": [
+        200,
+        860
+      ],
+      "parameters": {
+        "query": "={\n  inventoryItem(id: \"gid://shopify/InventoryItem/{{ $json.inventory_tem }}\") {\n    id\n    variant {\n      id\n      title\n      inventoryQuantity  # This line adds the inventory quantity field\n      product {\n        id\n        title\n        images(first: 1) {\n          edges {\n            node {\n              originalSrc\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+        "endpoint": "https://store.myshopify.com/admin/api/2023-10/graphql.json",
+        "authentication": "headerAuth"
+      },
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Low Inventory",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Out of stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Out of stock": {
+      "main": [
+        [
+          {
+            "node": "GraphQL -  shopify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Low Inventory": {
+      "main": [
+        [
+          {
+            "node": "GraphQL1- shopify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GraphQL1- shopify": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GraphQL -  shopify": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

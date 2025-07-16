@@ -1,0 +1,237 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "47c9e17d-0b30-41a3-bf83-eb4558fa7b85",
+      "name": "Set Address Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        840,
+        280
+      ],
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8216105e-23ad-4c5c-8f4a-4f97658e0947",
+              "name": "address",
+              "type": "string",
+              "value": "={{ $json.address }}"
+            },
+            {
+              "id": "111da971-2473-4c5e-a106-22589cf47daf",
+              "name": "address2",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "ed62cf39-10f1-42f6-b18f-bfa58b4fe646",
+              "name": "city",
+              "type": "string",
+              "value": "={{ $json.city }}"
+            },
+            {
+              "id": "d9550200-04ac-4cf4-b7e6-cd40b793ce97",
+              "name": "state",
+              "type": "string",
+              "value": "={{ $json.state }}"
+            },
+            {
+              "id": "62269d11-c98c-4016-83ef-291176f2fc12",
+              "name": "zip",
+              "type": "string",
+              "value": "={{ $json.zip_code }}"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "6bc67404-b292-4211-a8f9-568802e12786",
+      "name": "CRM Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        620,
+        280
+      ],
+      "webhookId": "912a0210-7d6a-4517-9055-b8633c59a631",
+      "parameters": {
+        "path": "727deb6f-9d10-4492-92e6-38f3292510b0",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "typeVersion": 1.1
+    },
+    {
+      "id": "9ab388c0-8e84-45da-9475-9b83d3f2852d",
+      "name": "Address Verification",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1060,
+        280
+      ],
+      "parameters": {
+        "url": "https://api.lob.com/v1/us_verifications",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "primary_line",
+              "value": "={{ $json.address }}"
+            },
+            {
+              "name": "secondary_line",
+              "value": "={{ $json.address2 }}"
+            },
+            {
+              "name": "city",
+              "value": "={{ $json.city }}"
+            },
+            {
+              "name": "state",
+              "value": "={{ $json.state }}"
+            },
+            {
+              "name": "zip_code",
+              "value": "={{ $json.zip_code }}"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.1
+    },
+    {
+      "id": "50921e14-2fdf-4bac-8ef7-06fcb9e73176",
+      "name": "Update HighLevel - Deliverable",
+      "type": "n8n-nodes-base.highLevel",
+      "position": [
+        1580,
+        160
+      ],
+      "parameters": {
+        "email": "={{ $('CRM Webhook Trigger').item.json.email }}",
+        "phone": "={{ $('CRM Webhook Trigger').item.json.phone }}",
+        "additionalFields": {
+          "tags": "Mailing Address Deliverable"
+        }
+      },
+      "credentials": {
+        "highLevelApi": {
+          "id": "<highLevelApi-id>",
+          "name": "Test"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c81889cb-aeff-4afe-ae1c-747b30a4b6b1",
+      "name": "Update HighLevel - NOT Deliverable",
+      "type": "n8n-nodes-base.highLevel",
+      "position": [
+        1580,
+        380
+      ],
+      "parameters": {
+        "email": "={{ $('CRM Webhook Trigger').item.json.email }}",
+        "phone": "={{ $('CRM Webhook Trigger').item.json.phone }}",
+        "additionalFields": {
+          "tags": "Mailing Address NOT Deliverable"
+        }
+      },
+      "credentials": {
+        "highLevelApi": {
+          "id": "<highLevelApi-id>",
+          "name": "Test"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "9f896b41-eeb9-4cde-9fc8-e1ba000a2b61",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        1280,
+        280
+      ],
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "value2": "=deliverable",
+              "outputKey": "deliverable"
+            },
+            {
+              "value2": "deliverable",
+              "operation": "notEqual",
+              "outputKey": "NOT deliverable"
+            }
+          ]
+        },
+        "value1": "={{ $json.deliverability }}",
+        "dataType": "string"
+      },
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Update HighLevel - Deliverable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update HighLevel - NOT Deliverable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Address Fields": {
+      "main": [
+        [
+          {
+            "node": "Address Verification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Address Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Address Verification": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

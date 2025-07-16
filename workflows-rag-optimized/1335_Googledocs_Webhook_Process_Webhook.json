@@ -1,0 +1,406 @@
+{
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "nodes": [
+    {
+      "id": "51dbe3b4-42f6-43c9-85dc-42ae49be6ba9",
+      "name": "Get RFP Data",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        1003,
+        278
+      ],
+      "parameters": {
+        "options": {},
+        "operation": "pdf"
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "c42e6bfc-a426-4d12-bf95-f3fe6e944631",
+      "name": "Item List Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "position": [
+        2140,
+        540
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "1703e9c3-f49e-4272-ad11-0b9d4e9a76c6",
+      "name": "For Each Question...",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        2460,
+        340
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "fdef005f-7838-4b8c-8af4-4b7c6f947ee2",
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1143,
+        278
+      ],
+      "parameters": {
+        "mode": "raw",
+        "options": {},
+        "jsonOutput": "={\n \"doc_title\": \"{{ $('Wait for Request').item.json.body.title }}\",\n \"doc_filename\": \"{{ $('Wait for Request').item.json.body.id }} | {{ $('Wait for Request').item.json.body.title }} | {{ $now.format('yyyyMMddhhmmss') }}| RFP Response\",\n \"reply_to\": \"{{ $('Wait for Request').item.json.body.reply_to }}\"\n}\n"
+      },
+      "typeVersion": 3.3
+    },
+    {
+      "id": "2b3df6af-c1ab-44a1-8907-425944294477",
+      "name": "Create new RFP Response Document",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        1420,
+        340
+      ],
+      "parameters": {
+        "title": "={{ $json.doc_filename }}",
+        "folderId": "=1y0I8MH32maIWCJh767mRE_NMHC6A3bUu"
+      },
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "<googleDocsOAuth2Api-id>",
+          "name": "Google Docs account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "e663ba01-e9a6-4247-9d97-8f796d29d72a",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1960,
+        540
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "94243b69-43b8-4731-9a6b-2934db832cc6",
+      "name": "Send Chat Notification",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        3440,
+        280
+      ],
+      "parameters": {
+        "text": "=RFP document \"{{ $('Set Variables').item.json.title }}\" completed!",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "RFP-channel"
+        },
+        "otherOptions": {}
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "<slackApi-id>",
+          "name": "Slack account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "391d7e07-2a6d-4c4d-bf42-9cc5466cc1b5",
+      "name": "Send Email Notification",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        3240,
+        280
+      ],
+      "parameters": {
+        "sendTo": "={{ $('Set Variables').item.json.reply_to }}",
+        "message": "=Your RFP document \"{{ $('Set Variables').item.json.title }}\" is now complete!",
+        "options": {},
+        "subject": "=RFP Questionnaire \"{{ $('Set Variables').item.json.title }}\" Completed!",
+        "emailType": "text"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "<gmailOAuth2-id>",
+          "name": "Gmail account"
+        }
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "34115f45-21ff-49a0-95f4-1fed53b53583",
+      "name": "Add Metadata to Response Doc",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        1600,
+        340
+      ],
+      "parameters": {
+        "actionsUi": {
+          "actionFields": [
+            {
+              "text": "=Title: {{ $('Set Variables').item.json.doc_title }}\nDate generated: {{ $now.format(\"yyyy-MM-dd @ hh:mm\") }}\nRequested by: {{ $('Set Variables').item.json.reply_to }}\nExecution Id: http://localhost:5678/workflow/{{ $workflow.id }}/executions/{{ $execution.id }}\n\n---\n\n",
+              "action": "insert"
+            }
+          ]
+        },
+        "operation": "update",
+        "documentURL": "={{ $json.id }}"
+      },
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "<googleDocsOAuth2Api-id>",
+          "name": "Google Docs account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "b6e4e40e-b10b-48f2-bfe2-1ad38b1c6518",
+      "name": "Record Question & Answer in Response Doc",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        2940,
+        460
+      ],
+      "parameters": {
+        "actionsUi": {
+          "actionFields": [
+            {
+              "text": "={{ $runIndex+1 }}. {{ $json.content }}\n{{ $json.output }}\n\n",
+              "action": "insert"
+            }
+          ]
+        },
+        "operation": "update",
+        "documentURL": "={{ $('Create new RFP Response Document').item.json.id }}"
+      },
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "<googleDocsOAuth2Api-id>",
+          "name": "Google Docs account"
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "25a57ca0-6789-499c-873b-07aba40530ed",
+      "name": "Answer Question with Context",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        2620,
+        460
+      ],
+      "parameters": {
+        "text": "={{ $json.response.text }}",
+        "prompt": "define",
+        "options": {},
+        "resource": "assistant",
+        "assistantId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "asst_QBI5lLKOsjktr3DRB4MwrgZd",
+          "cachedResultName": "Nexus Digital Solutions Bot"
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "<openAiApi-id>",
+          "name": "OpenAi account"
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "1b4cc83b-a793-47c1-9dd6-0d7484db07b4",
+      "name": "Wait for Request",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        823,
+        278
+      ],
+      "webhookId": "35e874df-2904-494e-a9f5-5a3f20f517f8",
+      "parameters": {
+        "path": "35e874df-2904-494e-a9f5-5a3f20f517f8",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "2f97e3e6-c100-4045-bcb3-6fbd17cfb420",
+      "name": "Extract Questions From RFP",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        1960,
+        380
+      ],
+      "parameters": {
+        "text": "=You have been given a RFP document as part of a tender process of a buyer. Please extract all questions intended for the supplier. You must ensure the questions extracted are exactly has they are written in the RFP document.\n\n<RFP>{{ $('Get RFP Data').item.json.text }}<RFP>",
+        "promptType": "define",
+        "hasOutputParser": true
+      },
+      "typeVersion": 1.4
+    }
+  ],
+  "connections": {
+    "Get RFP Data": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Create new RFP Response Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Request": {
+      "main": [
+        [
+          {
+            "node": "Get RFP Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Questions From RFP",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "For Each Question...": {
+      "main": [
+        [
+          {
+            "node": "Send Email Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Answer Question with Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extract Questions From RFP",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Notification": {
+      "main": [
+        [
+          {
+            "node": "Send Chat Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Questions From RFP": {
+      "main": [
+        [
+          {
+            "node": "For Each Question...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Metadata to Response Doc": {
+      "main": [
+        [
+          {
+            "node": "Extract Questions From RFP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Question with Context": {
+      "main": [
+        [
+          {
+            "node": "Record Question & Answer in Response Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new RFP Response Document": {
+      "main": [
+        [
+          {
+            "node": "Add Metadata to Response Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Question & Answer in Response Doc": {
+      "main": [
+        [
+          {
+            "node": "For Each Question...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

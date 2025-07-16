@@ -1,0 +1,83 @@
+{
+  "id": "mbgpq1PH1SFkHi6w",
+  "meta": {
+    "instanceId": "<UUID-chain>"
+  },
+  "name": "Add new clients from Notion to Clockify",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "f58df180-644e-4e59-a32d-b6b316b8ff97",
+      "name": "Add client to Clockify",
+      "type": "n8n-nodes-base.clockify",
+      "position": [
+        240,
+        -320
+      ],
+      "parameters": {
+        "name": "={{ $json.Name }}",
+        "resource": "client",
+        "workspaceId": "5da1c2995e326c429dbe6e31"
+      },
+      "credentials": {
+        "clockifyApi": {
+          "id": "<clockifyApi-id>",
+          "name": "Clockify account"
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "1f723b4b-30c7-45c9-b3b5-b55211597a93",
+      "name": "Notion Trigger on new client",
+      "type": "n8n-nodes-base.notionTrigger",
+      "position": [
+        -140,
+        -320
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": ""
+        }
+      },
+      "credentials": {
+        "notionApi": {
+          "id": "<notionApi-id>",
+          "name": "Notion account privat"
+        }
+      },
+      "typeVersion": 1
+    }
+  ],
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "connections": {
+    "Add client to Clockify": {
+      "main": [
+        []
+      ]
+    },
+    "Notion Trigger on new client": {
+      "main": [
+        [
+          {
+            "node": "Add client to Clockify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

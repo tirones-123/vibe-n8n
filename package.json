@@ -1,30 +1,28 @@
 {
-  "name": "n8n-ai-backend",
-  "version": "1.0.0",
-  "description": "Backend API for n8n AI Assistant Chrome Extension",
+  "name": "n8n-workflow-rag-backend",
+  "version": "2.0.0",
+  "description": "Backend API for n8n Workflow RAG Generation with Claude AI",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "logs": "node scripts/watch-logs.js",
-    "test": "node scripts/test-system.js",
+    "test": "node scripts/test-rag-system.js",
     "test:quick": "node scripts/quick-test.js",
-    "test:volume": "node test-volume-storage.js",
-    "migrate:volume": "node scripts/migrate-to-volume.js",
-    "update-nodes": "node scripts/update-node-types.js",
-    "update-nodes:docker": "node scripts/update-node-types.js --docker",
-    "cron:weekly": "node cron.js --weekly",
-    "cron": "node cron.js",
-    "test:system": "node scripts/test-system.js",
-    "postinstall": "node scripts/ensure-mcp-db.js"
+    "test:logging": "node scripts/test-curl-with-logging.js",
+    "test:curl": "./test-curl-command.sh",
+    "test:streaming": "./test-streaming-curl.sh",
+    "test:client": "echo 'Ouvrez test-streaming-client.html dans votre navigateur'"
   },
   "keywords": [
     "n8n",
     "ai",
-    "assistant",
+    "rag",
+    "workflow",
     "claude",
-    "anthropic"
+    "anthropic",
+    "pinecone",
+    "openai"
   ],
   "author": "",
   "license": "MIT",
@@ -35,7 +33,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.18.2",
-    "n8n-mcp": "^2.7.13",
     "node-fetch": "^3.3.2",
     "openai": "^4.104.0"
   },
