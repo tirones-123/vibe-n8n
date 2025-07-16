@@ -409,14 +409,10 @@ ${baseWorkflow ?
         console.log('⚠️  Debug: Impossible de sauvegarder le prompt');
       }
 
-      // Appeler Claude avec timeout
-      console.log('🔄 Début appel Claude...');
-      const claudeCallStart = Date.now();
-      
-      // Wrapper avec timeout pour éviter les blocages
-      const claudePromise = this.anthropic.messages.create({
+      // Appeler Claude
+      const response = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',  // New Claude model
-        max_tokens: 18000,
+        max_tokens: 8000,
         temperature: 0.3,
         system: systemPrompt,
         messages: [
@@ -426,17 +422,6 @@ ${baseWorkflow ?
           }
         ]
       });
-      
-      // Timeout de 5 minutes
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('Timeout Claude: La génération prend trop de temps (5 min)'));
-        }, 300000);
-      });
-      
-      const response = await Promise.race([claudePromise, timeoutPromise]);
-      const claudeCallDuration = Date.now() - claudeCallStart;
-      console.log(`✅ Claude répondu en ${claudeCallDuration}ms`);
 
       if (onProgress) {
         onProgress('parsing', { message: 'Traitement de la réponse...' });
