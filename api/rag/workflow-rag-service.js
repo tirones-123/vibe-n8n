@@ -430,11 +430,25 @@ ${baseWorkflow ?
       const generatedText = response.content[0]?.type === 'text' ? response.content[0].text : '';
       console.log('✅ AI response received');
 
-      // Parser le JSON
+      // Parser le JSON avec amélioration robustesse
       try {
         // Extraire le JSON du texte
         const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-        const jsonText = jsonMatch ? jsonMatch[0] : generatedText;
+        let jsonText = jsonMatch ? jsonMatch[0] : generatedText;
+        
+        // Sauvegarder la réponse brute pour debug
+        try {
+          await fs.writeFile(path.join(process.cwd(), 'debug', 'claude-raw-response.txt'), generatedText);
+          await fs.writeFile(path.join(process.cwd(), 'debug', 'claude-extracted-json.txt'), jsonText);
+          console.log('💾 Debug: Réponse brute sauvegardée dans debug/');
+        } catch (e) {
+          console.log('⚠️  Debug: Impossible de sauvegarder la réponse');
+        }
+        
+        // Nettoyer le JSON en supprimant les éventuels caractères parasites
+        jsonText = jsonText.trim();
+        
+        // Tentative de parsing
         const parsedResponse = JSON.parse(jsonText);
 
         // Vérifier si on a la nouvelle structure avec workflow + explanation
@@ -480,16 +494,57 @@ ${baseWorkflow ?
         }
 
       } catch (parseError) {
-        console.error('Failed to parse generated JSON:', parseError);
+        console.error('❌ Failed to parse generated JSON:', parseError.message);
+        console.error('📍 Error position:', parseError.message);
         
         if (onProgress) {
-          onProgress('error', { message: 'Erreur lors du parsing de la réponse' });
+          onProgress('error', { message: 'Erreur lors du parsing de la réponse JSON' });
+        }
+        
+        // Essayer de réparer le JSON automatiquement
+        let jsonText = generatedText.match(/\{[\s\S]*\}/)?.[0] || generatedText;
+        
+        try {
+          // Tentatives de réparation courantes
+          console.log('🔧 Tentative de réparation du JSON...');
+          
+          // 1. Supprimer les virgules en trop avant }
+          jsonText = jsonText.replace(/,\s*}/g, '}');
+          jsonText = jsonText.replace(/,\s*]/g, ']');
+          
+          // 2. Ajouter des virgules manquantes (très basique)
+          // Cette partie pourrait être étendue selon les erreurs observées
+          
+          const repairedResponse = JSON.parse(jsonText);
+          console.log('✅ JSON réparé avec succès !');
+          
+          if (repairedResponse.workflow && repairedResponse.explanation) {
+            repairedResponse.workflow.name = workflowName;
+            
+            if (onProgress) {
+              onProgress('success', { 
+                message: 'Workflow généré avec succès (après réparation JSON) !',
+                nodesCount: repairedResponse.workflow.nodes?.length || 0
+              });
+            }
+            
+            return {
+              success: true,
+              workflow: repairedResponse.workflow,
+              explanation: repairedResponse.explanation,
+              similarWorkflows: similarWorkflows.map(w => w.name),
+              repaired: true
+            };
+          }
+          
+        } catch (repairError) {
+          console.error('❌ Impossible de réparer le JSON:', repairError.message);
         }
         
         return {
           success: false,
-          error: 'Failed to parse generated workflow JSON',
-          workflow: generatedText,
+          error: `Failed to parse generated workflow JSON: ${parseError.message}`,
+          rawResponse: generatedText,
           similarWorkflows: similarWorkflows.map(w => w.name)
         };
       }

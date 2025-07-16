@@ -4,11 +4,11 @@
  */
 
 const CONFIG = {
-  // URL temporaire Vercel pour test
-  API_URL: 'https://vibe-n8n.vercel.app/api/claude',
+  // URL Railway (production active)
+  API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
   
-  // URL Railway (problématique pour le moment)
-  API_URL_RAILWAY: 'https://vibe-n8n-production.up.railway.app/api/claude',
+  // URL Vercel (backup)
+  API_URL_VERCEL: 'https://vibe-n8n.vercel.app/api/claude',
   
   // URL locale (pour développement)
   API_URL_LOCAL: 'http://localhost:3000/api/claude',
