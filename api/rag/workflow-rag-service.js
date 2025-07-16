@@ -159,7 +159,7 @@ ${examplesContext}
 
 Based on these examples, create a new workflow that fulfills the user's requirement above.`;
 
-      console.log(`\n📤 Sending to Claude with ${similarWorkflows.length} examples...`);
+      console.log(`\n📤 Sending to AI with ${similarWorkflows.length} examples...`);
 
       // LOGGING TEMPORAIRE : Sauvegarder le prompt complet pour debug
       const debugData = {
@@ -282,7 +282,7 @@ Based on these examples, create a new workflow that fulfills the user's requirem
 
       if (onProgress) {
         onProgress('context_building', { 
-          message: 'Construction du contexte pour Claude...',
+          message: 'Construction du contexte pour IA...',
           workflows: similarWorkflows.map(w => w.name)
         });
       }
@@ -376,7 +376,7 @@ ${baseWorkflow ?
 
       if (onProgress) {
         onProgress('claude_call', { 
-          message: baseWorkflow ? 'Amélioration du workflow avec Claude AI...' : 'Envoi de la requête à Claude AI...',
+          message: baseWorkflow ? 'Amélioration du workflow avec AI...' : 'Envoi de la requête à AI...',
           promptLength: systemPrompt.length + userPrompt.length
         });
       }
@@ -426,7 +426,7 @@ ${baseWorkflow ?
       }
 
       const generatedText = response.content[0]?.type === 'text' ? response.content[0].text : '';
-      console.log('✅ Claude response received');
+      console.log('✅ AI response received');
 
       // Parser le JSON
       try {
