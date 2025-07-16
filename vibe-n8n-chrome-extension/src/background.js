@@ -54,43 +54,120 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   console.log('📤 Envoi requête workflow RAG');
   console.log('📦 Payload:', JSON.stringify(requestBody));
 
-  const response = await fetch(CONFIG.API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${CONFIG.API_KEY}`
-    },
-    body: JSON.stringify(requestBody)
+  // Timeout de sécurité pour éviter le chargement infini
+  const timeoutMs = 900000; // 15 minutes (générations longues possibles)
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Timeout: La génération prend trop de temps (15 min)')), timeoutMs);
   });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Erreur API workflow RAG: ${error}`);
-  }
+  try {
+    console.log('🌐 Tentative de fetch vers:', CONFIG.API_URL);
+    
+    const fetchPromise = fetch(CONFIG.API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${CONFIG.API_KEY}`
+      },
+      body: JSON.stringify(requestBody)
+    });
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
+    // Race entre fetch et timeout
+    const response = await Promise.race([fetchPromise, timeoutPromise]);
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+    console.log('📨 Réponse reçue:', response.status, response.statusText);
 
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Erreur HTTP:', response.status, errorText);
+      throw new Error(`Erreur API workflow RAG (${response.status}): ${errorText}`);
+    }
+    
+    console.log('✅ Réponse OK, démarrage streaming...');
 
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let eventCount = 0;
+    let lastEventTime = Date.now();
+
+    // Timeout pour le streaming (si pas d'événement pendant 5min)
+    const streamingTimeoutMs = 300000;
+    
+    const processStream = async () => {
+      while (true) {
+                  // Timeout si pas d'événement pendant 5min
+        const streamTimeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Timeout streaming: Pas de réponse pendant 5min')), streamingTimeoutMs);
+        });
+
+        const readPromise = reader.read();
+        
+        let result;
         try {
-          const data = JSON.parse(line.slice(6));
-          await processWorkflowRAGResponse(data, tabId);
-        } catch (e) {
-          // Ignorer les erreurs de parsing
-          console.log('⚠️ Parse error:', e.message);
+          result = await Promise.race([readPromise, streamTimeoutPromise]);
+        } catch (timeoutError) {
+          console.error('❌ Timeout streaming:', timeoutError.message);
+          chrome.tabs.sendMessage(tabId, {
+            type: 'CLAUDE_ERROR',
+            error: 'Timeout: Le serveur ne répond plus. Essayez un prompt plus simple.'
+          });
+          return;
+        }
+
+        const { done, value } = result;
+        if (done) {
+          console.log('✅ Stream terminé. Total événements:', eventCount);
+          if (eventCount === 0) {
+            chrome.tabs.sendMessage(tabId, {
+              type: 'CLAUDE_ERROR',
+              error: 'Aucune donnée reçue du serveur. Vérifiez la configuration backend.'
+            });
+          }
+          break;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              eventCount++;
+              lastEventTime = Date.now();
+              console.log('📡 Événement reçu:', data.type);
+              await processWorkflowRAGResponse(data, tabId);
+            } catch (e) {
+              // Ignorer les erreurs de parsing
+              console.log('⚠️ Parse error:', e.message, 'Line:', line);
+            }
+          }
         }
       }
+    };
+
+    await processStream();
+
+  } catch (error) {
+    console.error('❌ Erreur complète:', error);
+    console.error('❌ Error stack:', error.stack);
+    
+    let errorMessage = error.message;
+    if (error.message.includes('Timeout')) {
+      errorMessage = error.message + ' Essayez un prompt plus simple ou réessayez plus tard.';
+    } else if (error.message.includes('Failed to fetch')) {
+      errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';
     }
+    
+    // Envoyer une erreur détaillée
+    chrome.tabs.sendMessage(tabId, {
+      type: 'CLAUDE_ERROR',
+      error: errorMessage
+    });
+    
+    throw error;
   }
 }
 

@@ -15,11 +15,13 @@ export class WorkflowRAGService {
     });
 
     this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: process.env.OPENAI_API_KEY,
+      timeout: 600000, // 10 minutes pour embeddings
     });
 
     this.anthropic = new Anthropic({
-      apiKey: process.env.CLAUDE_API_KEY
+      apiKey: process.env.CLAUDE_API_KEY,
+      timeout: 900000, // 15 minutes pour génération Claude
     });
 
     const indexName = process.env.PINECONE_WORKFLOW_INDEX || 'n8n-workflows';

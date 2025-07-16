@@ -4,8 +4,11 @@
  */
 
 const CONFIG = {
-  // URL du backend workflow RAG déployé sur Railway
-  API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
+  // URL temporaire Vercel pour test
+  API_URL: 'https://vibe-n8n.vercel.app/api/claude',
+  
+  // URL Railway (problématique pour le moment)
+  API_URL_RAILWAY: 'https://vibe-n8n-production.up.railway.app/api/claude',
   
   // URL locale (pour développement)
   API_URL_LOCAL: 'http://localhost:3000/api/claude',
@@ -14,8 +17,8 @@ const CONFIG = {
   API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2', // Remplacer par votre BACKEND_API_KEY
   
   // Timeout pour les requêtes API (en millisecondes)
-  // Backend workflow RAG peut prendre plus de temps pour la génération
-  API_TIMEOUT: 60000, // 1 minute
+  // Backend workflow RAG peut prendre plus de temps pour la génération (5-10 min)
+  API_TIMEOUT: 900000, // 15 minutes
   
   // Version de l'extension
   VERSION: '1.0.0',

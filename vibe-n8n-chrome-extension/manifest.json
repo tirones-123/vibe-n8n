@@ -10,6 +10,8 @@
   ],
   "host_permissions": [
     "https://vibe-n8n.vercel.app/*",
+    "https://*.railway.app/*",
+    "https://railway.app/*",
     "https://*.n8n.io/*",
     "https://n8n.io/*",
     "https://*.n8n.cloud/*",
