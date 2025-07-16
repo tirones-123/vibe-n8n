@@ -64,7 +64,7 @@ export default async function handler(req, res) {
   }
 
   // Valider le body de la requête
-  const { prompt } = req.body;
+  const { prompt, baseWorkflow } = req.body;
   
   if (!prompt || typeof prompt !== 'string') {
     for (const [key, value] of Object.entries(corsHeaders)) {
@@ -81,6 +81,9 @@ export default async function handler(req, res) {
     const rag = await initializeRAGService();
     
     console.log(`\n📝 Processing prompt: "${prompt}"`);
+    if (baseWorkflow) {
+      console.log(`\n📋 Base workflow provided with ${baseWorkflow.nodes?.length || 0} nodes`);
+    }
     
     // Configure SSE headers for streaming with aggressive anti-buffering
     res.writeHead(200, {
@@ -122,6 +125,7 @@ export default async function handler(req, res) {
     const generationResult = await rag.generateWorkflowFromExamplesWithStreaming(prompt, {
       topK: 3,
       workflowName: 'Generated Workflow',
+      baseWorkflow: baseWorkflow, // Nouveau : passer le workflow de base
       onProgress: (stage, data) => {
         sendEvent('progress', { stage, ...data });
       }

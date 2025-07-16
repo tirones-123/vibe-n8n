@@ -190,7 +190,7 @@ Based on these examples, create a new workflow that fulfills the user's requirem
       // Appeler Claude
       const response = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',  // New Claude model
-        max_tokens: 8000,
+        max_tokens: 18000,
         temperature: 0.3,
         system: systemPrompt,
         messages: [
@@ -263,7 +263,7 @@ Based on these examples, create a new workflow that fulfills the user's requirem
    * Génère un workflow avec streaming et callbacks de progression
    */
   async generateWorkflowFromExamplesWithStreaming(description, options = {}) {
-    const { topK = 3, workflowName = 'Generated Workflow', onProgress } = options;
+    const { topK = 3, workflowName = 'Generated Workflow', baseWorkflow = null, onProgress } = options;
 
     try {
       if (onProgress) {
@@ -287,8 +287,43 @@ Based on these examples, create a new workflow that fulfills the user's requirem
         });
       }
 
-      // Construire le prompt pour Claude (même logique que la méthode originale)
-      const systemPrompt = `You are an n8n workflow expert. Based on the following similar workflow examples, create a new workflow that meets the user's requirement.
+      // Construire le prompt système adapté selon le mode
+      let systemPrompt;
+      if (baseWorkflow) {
+        // Mode amélioration d'un workflow existant
+        systemPrompt = `You are an n8n workflow expert. You need to analyze and improve an existing workflow based on user requirements and similar workflow examples.
+
+The current workflow has ${baseWorkflow.nodes?.length || 0} nodes and you should:
+- Keep the useful parts of the existing workflow
+- Change only what the user asks for
+- Add or modify nodes as needed
+- Use appropriate nodes based on the user's needs
+- Have proper connections between nodes
+- Include all necessary configurations
+- Use the exact node type formats from the examples (e.g., "nodes-base.webhook")
+- Avoid using http request node when possible
+- The references in the connections section must point to the name property of each node.
+
+Current workflow to improve:
+\`\`\`json
+${JSON.stringify(baseWorkflow, null, 2)}
+\`\`\`
+
+Use the similar workflow examples below as inspiration for improvements, but maintain the core functionality of the original workflow.
+
+Respond with a JSON object containing both the improved workflow and an explanation:
+{
+  "workflow": { /* the fullimproved n8n workflow JSON */ },
+  "explanation": {
+    "summary": "Brief description of the improvements made",
+    "changes": "List of specific changes and improvements",
+    "nodes": "Description of nodes added, modified, or removed",
+    "notes": "Any important configuration notes or requirements"
+  }
+}`;
+      } else {
+        // Mode création d'un nouveau workflow
+        systemPrompt = `You are an n8n workflow expert. Based on the following similar workflow examples, create a new workflow that meets the user's requirement.
 
 The workflow should:
 - Be fully functional and ready to import into n8n
@@ -310,6 +345,7 @@ Respond with a JSON object containing both the workflow and an explanation:
     "notes": "Any important configuration notes or requirements"
   }
 }`;
+      }
 
       // Construire le contexte avec les workflows d'exemple
       const examplesContext = similarWorkflows
@@ -334,11 +370,13 @@ Here are ${similarWorkflows.length} similar workflow examples for reference:
 
 ${examplesContext}
 
-Based on these examples, create a new workflow that fulfills the user's requirement above.`;
+${baseWorkflow ? 
+        `Based on these examples and the current workflow provided above, create an improved version that fulfills the user's requirement.` :
+        `Based on these examples, create a new workflow that fulfills the user's requirement above.`}`;
 
       if (onProgress) {
         onProgress('claude_call', { 
-          message: 'Envoi de la requête à Claude AI...',
+          message: baseWorkflow ? 'Amélioration du workflow avec Claude AI...' : 'Envoi de la requête à Claude AI...',
           promptLength: systemPrompt.length + userPrompt.length
         });
       }

@@ -1,199 +1,232 @@
-# n8n AI Assistant - Extension Chrome
+# n8n AI Assistant - Extension Chrome (Workflow RAG)
 
-Extension Chrome qui intègre Claude 4 Sonnet directement dans l'interface n8n pour créer et modifier des workflows en langage naturel.
+Extension Chrome qui intègre le système workflow RAG directement dans l'interface n8n pour générer des workflows complets en langage naturel basés sur 2055+ exemples réels.
 
 ## 🚀 Fonctionnalités
 
-- **Assistant IA intégré** : Panneau latéral discret avec Claude 4 Sonnet
-- **Création de workflows** : Décrivez votre workflow, l'IA le crée pour vous
-- **Modifications intelligentes** : "Remplace Slack par Discord", "Ajoute un filtre", etc.
-- **Animations visuelles** : Feedback visuel lors de la création/modification des nœuds
-- **Mode streaming** : Réponses en temps réel avec affichage progressif
-- **Zero configuration** : Fonctionne immédiatement, pas de clé API nécessaire
+- **Assistant IA RAG intégré** : Panneau latéral avec génération de workflows basée sur RAG
+- **Génération complète** : Décrivez votre besoin, l'IA génère le workflow complet
+- **Base de 2055+ exemples** : RAG basé sur des workflows réels pour une meilleure précision
+- **Import automatique** : Les workflows générés sont automatiquement importés dans n8n
+- **Streaming en temps réel** : Suivi en direct de la génération avec feedback de progression
+- **Explications détaillées** : Chaque workflow généré vient avec une explication complète
 
 ## 📋 Prérequis
 
 - Chrome ou navigateur basé sur Chromium (Edge, Brave, etc.)
 - Compte n8n (cloud ou self-hosted)
-- Être sur une page de workflow n8n
+- Backend workflow RAG en cours d'exécution
 
 ## 🛠️ Installation
 
-### Option 1 : Installation depuis le code source
+### 1. Configuration du Backend
 
-1. Clonez ce repository :
+Assurez-vous que le backend workflow RAG est démarré :
+
 ```bash
-git clone https://github.com/tirones-123/vibe-n8n
-cd cursor-n8n
+# Dans le dossier racine du projet
+cd /Users/maximemarsal/cursor-n8n-backend
+npm start
+
+# Le backend devrait être accessible sur http://localhost:3000
 ```
 
-2. Ouvrez Chrome et accédez à `chrome://extensions/`
+### 2. Configuration de l'Extension
 
-3. Activez le "Mode développeur" en haut à droite
+Modifiez le fichier `src/config.js` avec vos paramètres :
 
-4. Cliquez sur "Charger l'extension non empaquetée"
+```javascript
+const CONFIG = {
+  API_URL: 'http://localhost:3000/api/claude', // URL de votre backend
+  API_KEY: 'your-token-securise', // Votre BACKEND_API_KEY
+  // ...
+};
+```
 
-5. Sélectionnez le dossier du projet cloné
+### 3. Installation de l'Extension
 
-6. L'extension est maintenant installée ! Vous verrez l'icône 🤖 dans votre barre d'extensions
-
-### Option 2 : Installation depuis le Chrome Web Store
-
-*(À venir)*
+1. Ouvrez Chrome et accédez à `chrome://extensions/`
+2. Activez le "Mode développeur" en haut à droite
+3. Cliquez sur "Charger l'extension non empaquetée"
+4. Sélectionnez le dossier `vibe-n8n-chrome-extension/`
+5. L'extension est maintenant installée ! Vous verrez l'icône 🤖 dans votre barre d'extensions
 
 ## 💡 Utilisation
 
 ### Démarrage rapide
 
-1. **Ouvrez n8n** dans votre navigateur
-2. **Naviguez vers un workflow** (nouveau ou existant)
-3. **Cliquez sur le bouton bleu 🤖** en bas à droite
-4. **Décrivez votre besoin** dans le chat
+1. **Démarrez le backend** : `npm start` dans le dossier racine
+2. **Ouvrez n8n** dans votre navigateur
+3. **Naviguez vers un workflow** (nouveau ou existant)
+4. **Cliquez sur le bouton bleu 🤖** en bas à droite
+5. **Décrivez votre workflow** dans le chat
 
-### Exemples de commandes
+### Exemples de descriptions
 
-#### Création de workflows
-   - "Crée un workflow qui récupère les tweets mentionnant @moncompte et les envoie sur Slack"
-- "Fait moi une automatisation qui envoie un mail à chaque fois que j'ajoute un produit sur Shopify"
-- "Crée un workflow qui synchronise Google Sheets avec Notion"
+#### Workflows simples
+- "Crée un workflow qui envoie un email toutes les heures"
+- "Workflow simple avec un trigger manuel et une requête HTTP"
+- "Automatisation qui sauvegarde des données dans Google Sheets"
 
-#### Modifications
-- "Remplace le nœud Slack par un nœud Discord"
-- "Ajoute un filtre pour ne garder que les emails importants"
-- "Connecte le nœud HTTP Request au nœud Telegram"
-- "Supprime le nœud de filtrage"
+#### Workflows complexes
+- "Crée un workflow qui synchronise Slack avec Notion toutes les heures : récupère les nouveaux messages d'un canal Slack, les transforme en pages Notion et envoie une notification Discord en cas d'erreur"
+- "Automatisation complète e-commerce : trigger sur nouveaux produits Shopify, mise à jour HubSpot, notification équipe via Slack et email client via Gmail"
+- "Workflow de monitoring : vérification APIs externes toutes les 10 minutes, stockage résultats dans base de données, alertes Telegram si problème"
 
-#### Questions
-- "Comment configurer l'authentification OAuth2 ?"
-- "Quelle est la différence entre un webhook et un trigger ?"
+#### Intégrations spécifiques
+- "Synchronisation bidirectionnelle entre Airtable et Notion avec gestion des conflits"
+- "Pipeline de traitement de fichiers : upload Dropbox → analyse contenu → génération rapport → envoi par email"
+- "Bot Discord intelligent qui utilise OpenAI pour répondre aux questions des utilisateurs"
 
-## 🏗️ Architecture technique
+## 🔧 Architecture technique
+
+### Workflow de génération
+
+```mermaid
+graph TD
+    A[👤 Description utilisateur] --> B[🚀 Extension Chrome]
+    B --> C[📡 Backend Workflow RAG]
+    C --> D[🔍 Recherche Pinecone]
+    D --> E[📚 Sélection exemples]
+    E --> F[🤖 Génération Claude]
+    F --> G[📥 Import automatique n8n]
+```
 
 ### Structure du projet
 
 ```
-cursor-n8n/
+vibe-n8n-chrome-extension/
 ├── manifest.json          # Configuration Chrome Extension (Manifest V3)
 ├── src/
-│   ├── background.js      # Service Worker - Communication avec l'API Claude
+│   ├── background.js      # Service Worker - Communication backend RAG
 │   ├── content.js         # Content Script - Interface utilisateur
-│   ├── inject.js          # Script injecté - Accès direct à Pinia/n8n
-│   ├── config.js          # Configuration de l'API
-│   └── popup.js           # Script de la popup Chrome
+│   ├── inject.js          # Script injecté - Import workflows
+│   └── config.js          # Configuration backend RAG
 ├── styles/
 │   ├── panel.css          # Styles du panneau latéral
 │   └── popup.css          # Styles de la popup
 ├── assets/
 │   └── icon*.png          # Icônes de l'extension
-├── popup.html             # Interface de la popup
-└── API_DOCUMENTATION.md   # Documentation complète de l'API
+└── popup.html             # Interface de la popup
 ```
 
 ### Flux de données
 
 ```mermaid
 graph LR
-    A[Interface Chat] --> B[Content Script]
-    B --> C[Background Script]
-    C --> D[API vibe-n8n]
-    D --> E[Claude API]
-    E --> D
-    D --> C
-    C --> F[Inject Script]
-    F --> G[n8n Pinia Store]
-    G --> H[Workflow Canvas]
+    A[Description] --> B[Extension]
+    B --> C[Backend RAG]
+    C --> D[Pinecone + Claude]
+    D --> E[Workflow complet]
+    E --> F[Import n8n]
 ```
 
-### Technologies utilisées
+## 🎯 Système RAG
 
-- **Frontend** : Vanilla JavaScript (ES6+)
-- **Extension** : Chrome Extension Manifest V3
-- **Backend** : API REST sur Vercel
-- **IA** : Claude 4 Sonnet (Anthropic)
-- **Communication** : Server-Sent Events (SSE)
+### Base de connaissances
+- **2055+ workflows** réels indexés dans Pinecone
+- **Recherche sémantique** pour trouver les exemples les plus pertinents
+- **Génération contextuelle** avec Claude basée sur les exemples
 
-## 🔧 API Backend
+### Process de génération
+1. **Analyse** de votre description
+2. **Recherche** des workflows similaires dans la base
+3. **Sélection** des 3 meilleurs exemples
+4. **Génération** d'un nouveau workflow par Claude
+5. **Import automatique** dans votre instance n8n
 
-L'extension utilise l'API vibe-n8n hébergée sur Vercel :
+## 📊 Exemples de résultats
 
-- **Endpoint** : `https://vibe-n8n.vercel.app/api/claude`
-- **Authentification** : Token Bearer inclus
-- **Modèle IA** : Claude Sonnet 4 (dernière version)
-- **Format** : Streaming SSE pour les réponses en temps réel
+### Input
+> "Crée un workflow qui synchronise Slack avec Notion toutes les heures"
 
-### Fonctions disponibles
+### Output généré
+```json
+{
+  "workflow": {
+    "name": "Slack to Notion Sync",
+    "nodes": [
+      {
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "parameters": { "rule": { "interval": [{ "field": "hours", "value": 1 }] } }
+      },
+      {
+        "name": "Slack",
+        "type": "n8n-nodes-base.slack",
+        "parameters": { "operation": "getMany", "resource": "message" }
+      },
+      {
+        "name": "Notion",
+        "type": "n8n-nodes-base.notion", 
+        "parameters": { "operation": "create", "resource": "page" }
+      }
+    ],
+    "connections": { /* ... */ }
+  },
+  "explanation": {
+    "summary": "Workflow de synchronisation automatique Slack vers Notion",
+    "flow": "Se déclenche toutes les heures, récupère les messages Slack et les crée comme pages Notion",
+    "nodes": "Schedule Trigger (déclenchement), Slack (récupération), Notion (création)",
+    "notes": "Configurez les credentials Slack et Notion avant utilisation"
+  }
+}
+```
 
-L'assistant peut exécuter ces actions dans n8n :
+## 🔍 Dépannage
 
-- `createNode` : Créer un nouveau nœud
-- `updateNode` : Modifier les paramètres d'un nœud
-- `connectNodes` : Connecter deux nœuds
-- `deleteNode` : Supprimer un nœud
+### Le backend ne répond pas
 
-## 🔒 Sécurité et confidentialité
+1. Vérifiez que le backend est démarré : `npm start`
+2. Vérifiez l'URL dans `src/config.js`
+3. Vérifiez les logs du backend
 
-- ✅ Aucune donnée sensible stockée localement
-- ✅ Communication chiffrée HTTPS
-- ✅ Token d'API sécurisé
-- ✅ Accès limité aux domaines n8n configurés
-- ✅ Pas de tracking ou analytics
+### L'extension ne se charge pas
 
-## 🐛 Dépannage
-
-### L'assistant ne répond pas
-
-1. Vérifiez que vous êtes bien sur une page de workflow n8n
+1. Vérifiez que vous êtes sur une page de workflow n8n
 2. Rechargez la page (Ctrl+R ou Cmd+R)
-3. Vérifiez votre connexion internet
+3. Vérifiez l'extension dans `chrome://extensions/`
 
-### "Pinia non trouvé" ou "workflowStore non trouvé"
-
-1. Assurez-vous d'être sur une page de workflow (pas sur la liste des workflows)
-2. Attendez que la page soit complètement chargée
-3. Rechargez l'extension dans `chrome://extensions/`
-
-### Le bouton n'apparaît pas
-
-1. Vérifiez que l'extension est activée dans Chrome
-2. Vérifiez que vous êtes sur un domaine n8n autorisé
-3. Inspectez la console pour les erreurs (F12)
-
-### Les nœuds ne se créent pas
+### Les workflows ne s'importent pas
 
 1. Vérifiez que vous avez les permissions d'édition sur le workflow
-2. Assurez-vous que le type de nœud demandé existe
-3. Essayez avec des commandes plus simples
+2. Regardez la console Chrome (F12) pour les erreurs
+3. Essayez de recharger la page n8n
 
-## 🤝 Contribution
+### Configuration backend
 
-Les contributions sont les bienvenues ! 
+Vérifiez votre fichier `.env` dans le backend :
+```env
+PINECONE_API_KEY=votre_clé_pinecone
+OPENAI_API_KEY=votre_clé_openai  
+CLAUDE_API_KEY=votre_clé_anthropic
+BACKEND_API_KEY=your-token-securise
+```
 
-### Comment contribuer
+## 🚀 Déploiement en production
 
-1. Fork le projet
-2. Créez une branche (`git checkout -b feature/amelioration`)
-3. Committez vos changements (`git commit -am 'Ajout de fonctionnalité'`)
-4. Push la branche (`git push origin feature/amelioration`)
-5. Ouvrez une Pull Request
+### Backend sur Railway/Vercel
+1. Déployez le backend sur Railway ou Vercel
+2. Configurez les variables d'environnement
+3. Mettez à jour l'`API_URL` dans l'extension
 
-### Guidelines
+### Extension sur Chrome Web Store
+1. Packagez l'extension : `zip -r extension.zip * -x "*.md" "test-*"`
+2. Soumettez sur le Chrome Web Store
+3. Attendez l'approbation Google
 
-- Respectez le style de code existant
-- Ajoutez des commentaires pour les parties complexes
-- Testez sur différentes versions de n8n
-- Mettez à jour la documentation si nécessaire
+## 📈 Comparaison avec l'ancien système
 
-## 📊 Roadmap
+| Fonctionnalité | Ancien (Tool calls) | Nouveau (Workflow RAG) |
+|---|---|---|
+| **Type de génération** | Modifications incrémentales | Workflows complets |
+| **Base de connaissances** | Métadonnées limitées | 2055+ workflows réels |
+| **Précision** | Variable | Très élevée (RAG) |
+| **Facilité d'usage** | Complexe | Simple (description → workflow) |
+| **Performance** | 3-8 secondes | 5-15 secondes |
+| **Qualité résultats** | Basique | Professionnelle |
 
-- [ ] Support multi-langues
-- [ ] Historique des conversations
-- [ ] Templates de workflows pré-définis
-- [ ] Export/Import de workflows
-- [ ] Mode sombre
-- [ ] Raccourcis clavier
-- [ ] Support des variables d'environnement n8n
-
-## 📄 Licence
+## 📄 License
 
 MIT License - voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
@@ -201,17 +234,11 @@ MIT License - voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
 - [n8n](https://n8n.io) - Plateforme d'automatisation open source
 - [Anthropic](https://anthropic.com) - Pour Claude API
-- [Vercel](https://vercel.com) - Hébergement du backend
-- La communauté n8n pour les retours et suggestions
-
-## 📞 Support
-
-- **Issues GitHub** : [github.com/tirones-123/vibe-n8n/issues](https://github.com/tirones-123/vibe-n8n/issues)
-- **Documentation API** : Voir [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
-- **Communauté n8n** : [community.n8n.io](https://community.n8n.io)
+- [Pinecone](https://pinecone.io) - Pour la base vectorielle
+- [OpenAI](https://openai.com) - Pour les embeddings
 
 ---
 
 **Note** : Cette extension n'est pas officiellement affiliée à n8n GmbH ou Anthropic.
 
-*Développé avec ❤️ pour la communauté n8n* 
+*Développé avec ❤️ pour la communauté n8n avec le système workflow RAG* 

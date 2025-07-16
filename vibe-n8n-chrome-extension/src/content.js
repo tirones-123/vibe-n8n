@@ -1,10 +1,10 @@
 /**
  * Content Script pour l'extension n8n AI Assistant
- * Injecte le panneau latéral et gère l'interface utilisateur
+ * Injecte le panneau latéral et gère l'interface utilisateur pour le système workflow RAG
  */
 
 // PREMIER TEST : Est-ce que ce script se charge ?
-console.log('%c🚀 n8n AI Assistant: SCRIPT CHARGÉ !', 'background: green; color: white; font-size: 16px; padding: 5px;');
+console.log('%c🚀 n8n AI Assistant (Workflow RAG): SCRIPT CHARGÉ !', 'background: green; color: white; font-size: 16px; padding: 5px;');
 
 // Test immédiat d'injection dans le DOM
 (function testImmediate() {
@@ -21,7 +21,7 @@ console.log('%c🚀 n8n AI Assistant: SCRIPT CHARGÉ !', 'background: green; col
     border-radius: 5px;
     font-family: monospace;
   `;
-  testDiv.textContent = '✅ Extension chargée !';
+  testDiv.textContent = '✅ Extension Workflow RAG chargée !';
   document.body.appendChild(testDiv);
   
   setTimeout(() => {
@@ -68,8 +68,8 @@ if (!isN8n || !isWorkflowPage) {
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       `;
       helpDiv.innerHTML = `
-        <div style="margin-bottom: 8px; font-weight: 600;">🤖 n8n AI Assistant</div>
-        <div style="margin-bottom: 12px;">Pour utiliser l'assistant IA, allez sur une page d'édition de workflow.</div>
+        <div style="margin-bottom: 8px; font-weight: 600;">🤖 n8n AI Assistant (RAG)</div>
+        <div style="margin-bottom: 12px;">Pour utiliser l'assistant IA workflow RAG, allez sur une page d'édition de workflow.</div>
         <button onclick="window.open('/workflows', '_blank'); this.parentElement.remove();" 
                 style="background: white; color: #3b82f6; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
           Voir mes workflows
@@ -102,169 +102,9 @@ if (!isN8n || !isWorkflowPage) {
   // État de l'application
   let isOpen = false;
   let messages = [];
-  let currentStreamingMessage = null;
-  let nodeVersions = null; // Cache des versions des nodes
-
-  // Récupérer les versions des nodes depuis l'API n8n
-  async function fetchNodeVersions() {
-    console.log('🔍 Récupération des versions des nodes...');
-    
-    try {
-      // Construire l'URL de l'API en fonction de l'instance
-      const baseUrl = window.location.origin;
-      const nodeTypesUrl = `${baseUrl}/rest/node-types`;
-      
-      console.log('📡 Appel API:', nodeTypesUrl);
-      
-      // Pour les instances cloud, essayer d'abord avec l'API publique
-      let response;
-      
-      try {
-        response = await fetch(nodeTypesUrl, {
-          method: 'GET',
-          credentials: 'include', // Important pour les cookies de session
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-      } catch (fetchError) {
-        console.warn('⚠️ Erreur fetch directe:', fetchError.message);
-        
-        // Si c'est une instance cloud, essayer via l'API publique
-        if (window.location.hostname.includes('n8n.cloud') || window.location.hostname.includes('n8n.io')) {
-          console.log('🌐 Tentative via API publique n8n...');
-          
-          // Pour les instances cloud, on peut essayer de récupérer depuis le script injecté
-          return await fetchNodeVersionsViaInject();
-        }
-        
-        throw fetchError;
-      }
-      
-      if (!response.ok) {
-        // Si 401/403, c'est probablement un problème d'auth
-        if (response.status === 401 || response.status === 403) {
-          console.warn('⚠️ Problème d\'authentification, tentative via inject script...');
-          return await fetchNodeVersionsViaInject();
-        }
-        
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const nodeTypes = await response.json();
-      console.log('📦 Node types reçus:', Object.keys(nodeTypes).length, 'types');
-      
-      // Transformer en mapping { nodeName: maxVersion }
-      const versions = {};
-      
-      for (const [nodeType, versionData] of Object.entries(nodeTypes)) {
-        // Extraire le nom simple du node (sans le préfixe n8n-nodes-base.)
-        const simpleName = nodeType.split('.').pop();
-        
-        // Trouver la version maximale
-        const versionNumbers = Object.keys(versionData)
-          .map(v => parseInt(v))
-          .filter(v => !isNaN(v));
-        
-        if (versionNumbers.length > 0) {
-          const maxVersion = Math.max(...versionNumbers);
-          versions[simpleName] = maxVersion;
-          
-          // Aussi stocker avec le nom complet
-          versions[nodeType] = maxVersion;
-        }
-      }
-      
-      console.log('✅ Versions extraites:', Object.keys(versions).length, 'nodes');
-      console.log('📊 Exemple de versions:', Object.entries(versions).slice(0, 5));
-      
-      // Stocker dans le localStorage pour persistance
-      localStorage.setItem('n8n-ai-node-versions', JSON.stringify(versions));
-      localStorage.setItem('n8n-ai-node-versions-timestamp', Date.now().toString());
-      
-      return versions;
-      
-    } catch (error) {
-      console.error('❌ Erreur récupération node-types:', error);
-      
-      // Essayer de récupérer depuis le cache
-      const cached = localStorage.getItem('n8n-ai-node-versions');
-      if (cached) {
-        console.log('📦 Utilisation du cache des versions');
-        return JSON.parse(cached);
-      }
-      
-      // Fallback: retourner null (le backend utilisera les versions latest)
-      return null;
-    }
-  }
-
-  // Récupérer les versions via le script injecté (pour contourner CORS/auth)
-  async function fetchNodeVersionsViaInject() {
-    return new Promise((resolve) => {
-      console.log('🔄 Tentative de récupération via inject script...');
-      
-      // Envoyer un message au script injecté
-      window.postMessage({ type: 'GET_NODE_VERSIONS' }, '*');
-      
-      // Écouter la réponse
-      const listener = (event) => {
-        if (event.source !== window) return;
-        if (event.data.type === 'NODE_VERSIONS_RESPONSE') {
-          window.removeEventListener('message', listener);
-          
-          if (event.data.versions) {
-            console.log('✅ Versions reçues via inject:', Object.keys(event.data.versions).length, 'nodes');
-            
-            // Stocker dans le cache
-            localStorage.setItem('n8n-ai-node-versions', JSON.stringify(event.data.versions));
-            localStorage.setItem('n8n-ai-node-versions-timestamp', Date.now().toString());
-            
-            resolve(event.data.versions);
-          } else {
-            console.warn('⚠️ Pas de versions reçues via inject');
-            resolve(null);
-          }
-        }
-      };
-      
-      window.addEventListener('message', listener);
-      
-      // Timeout après 5 secondes
-      setTimeout(() => {
-        window.removeEventListener('message', listener);
-        console.warn('⚠️ Timeout récupération versions via inject');
-        resolve(null);
-      }, 5000);
-    });
-  }
-
-  // Vérifier et mettre à jour le cache des versions si nécessaire
-  async function ensureNodeVersions() {
-    // Vérifier si on a déjà les versions en mémoire
-    if (nodeVersions) {
-      return nodeVersions;
-    }
-    
-    // Vérifier le cache localStorage
-    const cached = localStorage.getItem('n8n-ai-node-versions');
-    const cacheTimestamp = localStorage.getItem('n8n-ai-node-versions-timestamp');
-    
-    if (cached && cacheTimestamp) {
-      const age = Date.now() - parseInt(cacheTimestamp);
-      const maxAge = 24 * 60 * 60 * 1000; // 24 heures
-      
-      if (age < maxAge) {
-        console.log('📦 Utilisation du cache des versions (âge:', Math.round(age / 1000 / 60), 'minutes)');
-        nodeVersions = JSON.parse(cached);
-        return nodeVersions;
-      }
-    }
-    
-    // Récupérer les versions fraîches
-    nodeVersions = await fetchNodeVersions();
-    return nodeVersions;
-  }
+  let currentWorkflowGeneration = null;
+  let currentWorkflowId = null; // Nouveau : tracker le workflow actuel
+  let autoImprovementEnabled = false; // Nouveau : option d'amélioration auto
 
   // Créer le panneau latéral
   function createSidePanel() {
@@ -291,12 +131,15 @@ if (!isN8n || !isWorkflowPage) {
     
     panel.innerHTML = `
       <div style="padding: 20px; background: #f5f5f5; border-bottom: 1px solid #ddd;">
-        <h3 style="margin: 0;">🤖 AI Assistant</h3>
-        <button id="ai-close" style="float: right; margin-top: -25px; background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+        <h3 style="margin: 0;">🤖 AI Assistant (RAG)</h3>
+        <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">Génération de workflows par IA</p>
+        <button id="ai-close" style="float: right; margin-top: -35px; background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
       </div>
       <div style="padding: 20px; height: calc(100vh - 180px); overflow-y: auto;">
         <div style="padding: 10px; background: #f0f8ff; border-radius: 5px; margin-bottom: 10px;">
-          👋 Bonjour ! Je suis votre assistant IA pour n8n.
+          👋 Bonjour ! Je suis votre assistant IA pour générer des workflows n8n complets.
+          <br><br>
+          💡 <strong>Décrivez simplement</strong> le workflow que vous voulez et je le créerai pour vous !
         </div>
         <div id="ai-messages"></div>
       </div>
@@ -304,16 +147,19 @@ if (!isN8n || !isWorkflowPage) {
         <div style="display: flex; gap: 10px; align-items: flex-end;">
           <textarea 
             id="ai-input" 
-            placeholder="Ex: Crée un workflow qui envoie les emails sur Slack..." 
+            placeholder="Ex: Crée un workflow qui synchronise Slack avec Notion toutes les heures..." 
             style="flex: 1; height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: none; font-family: inherit; font-size: 14px;"
           ></textarea>
           <button 
             id="ai-send" 
             style="padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
-            title="Envoyer le message"
+            title="Générer le workflow"
           >
             ➤
           </button>
+        </div>
+        <div style="margin-top: 8px; font-size: 11px; color: #666;">
+          💡 Plus vous êtes précis, meilleur sera le workflow généré !
         </div>
       </div>
     `;
@@ -375,7 +221,7 @@ if (!isN8n || !isWorkflowPage) {
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     `;
     button.innerHTML = '🤖';
-    button.title = 'Ouvrir l\'assistant IA';
+    button.title = 'Ouvrir l\'assistant IA (Workflow RAG)';
     button.onclick = togglePanel;
     
     document.body.appendChild(button);
@@ -415,7 +261,7 @@ if (!isN8n || !isWorkflowPage) {
         <strong>Vous:</strong> ${message}
       </div>
       <div id="assistant-response" style="margin: 10px 0; padding: 10px; background: #f3e5f5; border-radius: 5px;">
-        <strong>Assistant:</strong> <span class="loading-dots">Analyse du contexte...</span>
+        <strong>Assistant:</strong> <span class="loading-dots">Démarrage de la génération...</span>
       </div>
     `;
     
@@ -423,23 +269,13 @@ if (!isN8n || !isWorkflowPage) {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
     try {
-      // Récupérer les versions des nodes (avec cache)
-      const versions = await ensureNodeVersions();
-      console.log('📊 Versions disponibles:', versions ? Object.keys(versions).length + ' nodes' : 'aucune');
-
-      // Récupérer le contexte du workflow actuel
-      const context = await getWorkflowContext();
-      console.log('📋 Contexte workflow:', context);
-      
-      // Envoyer au background avec le contexte actuel et les versions
+      // Envoyer au background (seulement le prompt)
       if (typeof chrome !== 'undefined' && chrome.runtime) {
-        console.log('🚀 Envoi vers background script avec versions...');
+        console.log('🚀 Envoi vers backend workflow RAG...');
         
         chrome.runtime.sendMessage({
           type: 'SEND_TO_CLAUDE',
-          prompt: message,
-          context: context,
-          versions: versions // Ajouter les versions ici
+          prompt: message
         }).then(response => {
           console.log('✅ Réponse du background:', response);
         }).catch(err => {
@@ -451,40 +287,12 @@ if (!isN8n || !isWorkflowPage) {
         });
       }
     } catch (err) {
-      console.error('❌ Erreur récupération contexte/versions:', err);
-      // Continuer sans versions si erreur
-      chrome.runtime.sendMessage({
-        type: 'SEND_TO_CLAUDE',
-        prompt: message,
-        context: { nodes: [], connections: {} },
-        versions: null
-      });
+      console.error('❌ Erreur envoi message:', err);
+      const responseDiv = document.getElementById('assistant-response');
+      if (responseDiv) {
+        responseDiv.innerHTML = '<strong>Assistant:</strong> ❌ Erreur lors de l\'envoi: ' + err.message;
+      }
     }
-  }
-
-  // Récupérer le contexte du workflow actuel
-  function getWorkflowContext() {
-    return new Promise((resolve, reject) => {
-      // Envoyer un message au script injecté pour récupérer le contexte
-      window.postMessage({ type: 'GET_WORKFLOW_CONTEXT' }, '*');
-      
-      // Écouter la réponse
-      const listener = (event) => {
-        if (event.source !== window) return;
-        if (event.data.type === 'WORKFLOW_CONTEXT') {
-          window.removeEventListener('message', listener);
-          resolve(event.data.context);
-        }
-      };
-      
-      window.addEventListener('message', listener);
-      
-      // Timeout après 2 secondes
-      setTimeout(() => {
-        window.removeEventListener('message', listener);
-        reject(new Error('Timeout récupération contexte'));
-      }, 2000);
-    });
   }
 
   // Gérer les messages du background script
@@ -493,94 +301,102 @@ if (!isN8n || !isWorkflowPage) {
     if (!responseDiv) return;
 
     switch (message.type) {
-      case 'MODE_DETECTED':
-        // Afficher le mode détecté
-        const modeIcon = message.mode === 'create' ? '🆕' : '✏️';
-        const modeText = message.mode === 'create' ? 'Création' : 'Modification';
-        responseDiv.innerHTML = `<strong>Assistant:</strong> <span class="loading-dots">${modeIcon} ${modeText} en cours...</span>`;
+      case 'WORKFLOW_GENERATION_START':
+        responseDiv.innerHTML = `<strong>Assistant:</strong> <span class="loading-dots">${message.message}</span>`;
         break;
 
-      case 'CLAUDE_STREAM_START':
-        if (!responseDiv.innerHTML.includes('Création') && !responseDiv.innerHTML.includes('Modification')) {
-          responseDiv.innerHTML = '<strong>Assistant:</strong> <span class="loading-dots">Claude réfléchit...</span>';
+      case 'WORKFLOW_SETUP':
+        responseDiv.innerHTML = `<strong>Assistant:</strong> <span class="loading-dots">${message.message}</span>`;
+        break;
+
+      case 'WORKFLOW_SEARCH':
+        responseDiv.innerHTML = `<strong>Assistant:</strong> <span class="loading-dots">${message.message}</span>`;
+        break;
+
+      case 'WORKFLOW_BUILDING':
+        responseDiv.innerHTML = `<strong>Assistant:</strong> <span class="loading-dots">${message.message}</span>`;
+        break;
+
+      case 'WORKFLOW_PROGRESS':
+        let progressMessage = message.message;
+        if (message.workflows && message.workflows.length > 0) {
+          progressMessage += `\n📚 Workflows similaires trouvés: ${message.workflows.join(', ')}`;
+        }
+        responseDiv.innerHTML = `<strong>Assistant:</strong> <span class="loading-dots">${progressMessage}</span>`;
+        break;
+
+      case 'WORKFLOW_COMPLETE':
+        if (message.workflow) {
+          console.log('🎉 Workflow complet reçu:', message.workflow);
+          
+          let responseContent = '<strong>Assistant:</strong> ✅ Workflow généré avec succès !';
+          
+          // Afficher l'explication si disponible
+          if (message.explanation) {
+            responseContent += `
+              <div style="margin: 12px 0; padding: 12px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #3b82f6;">
+                <h4 style="margin: 0 0 8px 0; color: #1e40af;">📋 Détails du workflow :</h4>
+                <p style="margin: 4px 0;"><strong>Résumé :</strong> ${message.explanation.summary}</p>
+                <p style="margin: 4px 0;"><strong>Flux :</strong> ${message.explanation.flow}</p>
+                <p style="margin: 4px 0;"><strong>Nœuds :</strong> ${message.explanation.nodes}</p>
+                ${message.explanation.notes ? `<p style="margin: 4px 0;"><strong>Notes :</strong> ${message.explanation.notes}</p>` : ''}
+              </div>
+            `;
+          }
+          
+          // Informations sur le workflow
+          const nodeCount = message.workflow.nodes?.length || 0;
+          const connectionCount = Object.keys(message.workflow.connections || {}).length;
+          
+          responseContent += `
+            <div style="margin: 12px 0; padding: 10px; background: #fef3c7; border-radius: 4px; color: #92400e;">
+              ⏳ Import en cours...
+              <br>📊 ${nodeCount} nœuds, ${connectionCount} connexions
+            </div>
+          `;
+          
+          responseDiv.innerHTML = responseContent;
+          
+          // Importer automatiquement après un court délai
+          setTimeout(() => {
+            importWorkflow(message.workflow);
+          }, 1000);
         }
         break;
-        
-      case 'CLAUDE_STREAM_TEXT':
-        // Démarrer ou continuer la réponse
-        if (!responseDiv.dataset.started) {
-          responseDiv.innerHTML = '<strong>Assistant:</strong> ';
-          responseDiv.dataset.started = 'true';
-        }
-        responseDiv.innerHTML += message.text;
-        
-        // Scroll automatique
-        const messagesDiv = document.getElementById('ai-messages');
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        break;
 
-      case 'COMPLETE_WORKFLOW_READY':
-        // Workflow complet reçu (mode create)
-        console.log('📦 Workflow complet reçu:', message.workflow);
-        
-        // Afficher un message d'import en cours
-        const importingMsg = document.createElement('div');
-        importingMsg.style.cssText = 'margin-top: 12px; padding: 10px; background: #fef3c7; border-radius: 4px; color: #92400e; font-weight: 500;';
-        importingMsg.innerHTML = '⏳ Import du workflow en cours...';
-        responseDiv.appendChild(importingMsg);
-        
-        // Afficher un aperçu du workflow
-        const preview = document.createElement('div');
-        preview.style.cssText = 'margin-top: 8px; padding: 8px; background: #f0f9ff; border-radius: 4px; font-size: 12px;';
-        preview.innerHTML = `
-          <div style="font-weight: 600; margin-bottom: 4px;">📊 Aperçu du workflow:</div>
-          <div>• ${message.workflow.nodes?.length || 0} nœuds</div>
-          <div>• ${Object.keys(message.workflow.connections || {}).length} connexions</div>
-        `;
-        responseDiv.appendChild(preview);
-        
-        // Importer automatiquement après un court délai
-        setTimeout(() => {
-          importingMsg.remove();
-          importWorkflow(message.workflow);
-        }, 500);
-        break;
-
-      case 'WORKFLOW_PARSE_ERROR':
+      case 'WORKFLOW_ERROR':
         const errorDiv = document.createElement('div');
         errorDiv.style.cssText = 'margin-top: 8px; padding: 8px; background: #fef2f2; border-radius: 4px; color: #dc2626;';
         errorDiv.innerHTML = `❌ ${message.error}`;
         responseDiv.appendChild(errorDiv);
         break;
-        
-      case 'TOOL_CALL_SUCCESS':
-        const successInfo = document.createElement('div');
-        successInfo.style.cssText = 'margin-top: 8px; padding: 6px 10px; background: #dcfce7; border-radius: 4px; font-size: 12px; color: #166534;';
-        successInfo.innerHTML = `✅ ${message.message}`;
-        responseDiv.appendChild(successInfo);
+
+      case 'WORKFLOW_IMPORT_SUCCESS':
+        const successDiv = document.createElement('div');
+        successDiv.style.cssText = 'margin-top: 12px; padding: 10px; background: #dcfce7; border-radius: 4px; color: #166534; font-weight: 600;';
+        successDiv.innerHTML = `✅ ${message.message}`;
+        responseDiv.appendChild(successDiv);
         break;
-        
-      case 'TOOL_CALL_ERROR':
-        const errorInfo = document.createElement('div');
-        errorInfo.style.cssText = 'margin-top: 8px; padding: 6px 10px; background: #fef2f2; border-radius: 4px; font-size: 12px; color: #dc2626;';
-        errorInfo.innerHTML = `❌ ${message.error}`;
-        responseDiv.appendChild(errorInfo);
+
+      case 'WORKFLOW_IMPORT_ERROR':
+        const errorImportDiv = document.createElement('div');
+        errorImportDiv.style.cssText = 'margin-top: 12px; padding: 10px; background: #fef2f2; border-radius: 4px; color: #dc2626;';
+        errorImportDiv.innerHTML = `❌ Erreur d'import: ${message.error}`;
+        responseDiv.appendChild(errorImportDiv);
         break;
-        
-      case 'CLAUDE_STREAM_END':
-        responseDiv.removeAttribute('data-started');
-        const endInfo = document.createElement('div');
-        endInfo.style.cssText = 'margin-top: 8px; font-size: 11px; color: #666; font-style: italic;';
-        endInfo.textContent = '✅ Terminé';
-        responseDiv.appendChild(endInfo);
-        break;
-        
+
       case 'CLAUDE_ERROR':
         responseDiv.innerHTML = `<strong>Assistant:</strong> ❌ Erreur: ${message.error}`;
         break;
         
       default:
         console.log('Type de message inconnu:', message.type);
+    }
+
+    // Scroll automatique
+    const messagesDiv = document.getElementById('ai-messages');
+    if (messagesDiv) {
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
   }
 
@@ -595,24 +411,207 @@ if (!isN8n || !isWorkflowPage) {
     }, '*');
   }
 
+  // Nouveau : Détecter l'ouverture d'un workflow
+  function detectWorkflowChange() {
+    const urlMatch = window.location.pathname.match(/\/workflow\/([^\/]+)/);
+    const newWorkflowId = urlMatch ? urlMatch[1] : null;
+    
+    if (newWorkflowId && newWorkflowId !== currentWorkflowId) {
+      currentWorkflowId = newWorkflowId;
+      console.log('🔄 Nouveau workflow détecté:', newWorkflowId);
+      
+      // Attendre que le workflow soit chargé
+      setTimeout(() => {
+        checkForAutoImprovement();
+      }, 2000);
+    }
+  }
+
+  // Nouveau : Vérifier si on doit proposer une amélioration automatique
+  async function checkForAutoImprovement() {
+    // Récupérer le workflow actuel
+    const currentWorkflow = await getCurrentWorkflow();
+    
+    if (currentWorkflow && currentWorkflow.nodes && currentWorkflow.nodes.length > 0) {
+      console.log('📊 Workflow non-vide détecté:', currentWorkflow.nodes.length, 'nœuds');
+      
+      // Afficher une notification d'amélioration possible
+      showWorkflowImprovementSuggestion(currentWorkflow);
+    }
+  }
+
+  // Nouveau : Récupérer le workflow actuel via inject script
+  function getCurrentWorkflow() {
+    return new Promise((resolve) => {
+      // Envoyer un message au script injecté
+      window.postMessage({ type: 'GET_CURRENT_WORKFLOW' }, '*');
+      
+      // Écouter la réponse
+      const listener = (event) => {
+        if (event.source !== window) return;
+        if (event.data.type === 'CURRENT_WORKFLOW_RESPONSE') {
+          window.removeEventListener('message', listener);
+          resolve(event.data.workflow);
+        }
+      };
+      
+      window.addEventListener('message', listener);
+      
+      // Timeout après 3 secondes
+      setTimeout(() => {
+        window.removeEventListener('message', listener);
+        resolve(null);
+      }, 3000);
+    });
+  }
+
+  // Nouveau : Afficher une suggestion d'amélioration
+  function showWorkflowImprovementSuggestion(currentWorkflow) {
+    // Créer une notification en haut de la page
+    const suggestion = document.createElement('div');
+    suggestion.id = 'workflow-improvement-suggestion';
+    suggestion.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 320px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      animation: slideIn 0.3s ease-out;
+    `;
+    
+    suggestion.innerHTML = `
+      <div style="display: flex; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 20px; margin-right: 8px;">🎯</span>
+        <strong>Améliorer ce workflow ?</strong>
+      </div>
+      <div style="margin-bottom: 12px; font-size: 13px; opacity: 0.9;">
+        L'IA peut analyser et améliorer votre workflow existant (${currentWorkflow.nodes.length} nœuds détectés)
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button id="improve-workflow-btn" style="
+          flex: 1;
+          background: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.3);
+          color: white;
+          padding: 8px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 12px;
+        ">
+          ✨ Améliorer
+        </button>
+        <button id="dismiss-suggestion-btn" style="
+          background: rgba(0,0,0,0.2);
+          border: 1px solid rgba(255,255,255,0.2);
+          color: white;
+          padding: 8px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 12px;
+        ">
+          ✕
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(suggestion);
+    
+    // Events
+    document.getElementById('improve-workflow-btn').onclick = () => {
+      suggestion.remove();
+      startWorkflowImprovement(currentWorkflow);
+    };
+    
+    document.getElementById('dismiss-suggestion-btn').onclick = () => {
+      suggestion.remove();
+    };
+    
+    // Auto-dismiss après 10 secondes
+    setTimeout(() => {
+      if (suggestion.parentElement) {
+        suggestion.remove();
+      }
+    }, 10000);
+  }
+
+  // Nouveau : Démarrer l'amélioration du workflow
+  async function startWorkflowImprovement(currentWorkflow) {
+    // Ouvrir le panneau s'il n'est pas ouvert
+    if (!isOpen) {
+      togglePanel();
+    }
+    
+    // Ajouter un message automatique
+    const messagesDiv = document.getElementById('ai-messages');
+    messagesDiv.innerHTML += `
+      <div style="margin: 10px 0; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
+        <strong>🎯 Amélioration automatique en cours...</strong>
+        <div style="margin-top: 8px; font-size: 12px; color: #856404;">
+          Analyse du workflow actuel (${currentWorkflow.nodes.length} nœuds) et génération d'une version améliorée...
+        </div>
+      </div>
+      <div id="assistant-response" style="margin: 10px 0; padding: 10px; background: #f3e5f5; border-radius: 5px;">
+        <strong>Assistant:</strong> <span class="loading-dots">Analyse du workflow existant...</span>
+      </div>
+    `;
+    
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    try {
+      // Envoyer au backend avec le workflow actuel
+      if (typeof chrome !== 'undefined' && chrome.runtime) {
+        console.log('🚀 Envoi vers backend workflow RAG pour amélioration...');
+        
+        chrome.runtime.sendMessage({
+          type: 'IMPROVE_WORKFLOW',
+          currentWorkflow: currentWorkflow,
+          improvementRequest: "Analyse ce workflow et améliore-le : optimise les connexions, ajoute une gestion d'erreur si nécessaire, améliore la structure et suggère des améliorations de performance."
+        }).then(response => {
+          console.log('✅ Réponse du background:', response);
+        }).catch(err => {
+          console.error('❌ Erreur communication background:', err);
+          const responseDiv = document.getElementById('assistant-response');
+          if (responseDiv) {
+            responseDiv.innerHTML = '<strong>Assistant:</strong> ❌ Erreur de communication avec le service worker';
+          }
+        });
+      }
+    } catch (err) {
+      console.error('❌ Erreur amélioration workflow:', err);
+      const responseDiv = document.getElementById('assistant-response');
+      if (responseDiv) {
+        responseDiv.innerHTML = '<strong>Assistant:</strong> ❌ Erreur lors de l\'amélioration: ' + err.message;
+      }
+    }
+  }
+
   // Initialisation
   async function init() {
-    console.log('🎯 INITIALISATION');
+    console.log('🎯 INITIALISATION WORKFLOW RAG');
     
     try {
       const panel = createSidePanel();
       const button = createFloatingButton();
       
-      // Récupérer les versions des nodes en arrière-plan
-      fetchNodeVersions().then(versions => {
-        if (versions) {
-          console.log('✅ Versions des nodes chargées au démarrage:', Object.keys(versions).length, 'nodes');
-        } else {
-          console.log('⚠️ Impossible de charger les versions des nodes au démarrage');
+      // Nouveau : Surveiller les changements d'URL
+      let lastUrl = window.location.pathname;
+      const urlObserver = new MutationObserver(() => {
+        if (window.location.pathname !== lastUrl) {
+          lastUrl = window.location.pathname;
+          detectWorkflowChange();
         }
-      }).catch(err => {
-        console.error('❌ Erreur chargement versions:', err);
       });
+      urlObserver.observe(document.body, { childList: true, subtree: true });
+      
+      // Détecter immédiatement si on est sur un workflow
+      detectWorkflowChange();
       
       // Écouter les messages du background script
       if (typeof chrome !== 'undefined' && chrome.runtime) {
@@ -624,7 +623,7 @@ if (!isN8n || !isWorkflowPage) {
         console.log('✅ Listeners background configurés');
       }
       
-      console.log('🎉 SUCCÈS ! Extension prête');
+      console.log('🎉 SUCCÈS ! Extension workflow RAG prête');
       console.log('📍 Panel ID:', panel.id);
       console.log('📍 Button ID:', button.id);
       
@@ -667,6 +666,11 @@ if (!isN8n || !isWorkflowPage) {
         0%, 20% { content: '.'; }
         40% { content: '..'; }
         60%, 100% { content: '...'; }
+      }
+      
+      @keyframes slideIn {
+        0% { transform: translateX(100%); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
       }
     `;
     document.head.appendChild(style);
