@@ -268,25 +268,86 @@ if (!isN8n || !isWorkflowPage) {
     input.value = '';
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
+    // Nouveau : Timeout de sécurité frontend
+    let timeoutHandle = null;
+    let lastProgressTime = Date.now();
+    
+    // Fonction pour mettre à jour le timestamp de dernière activité
+    window.updateLastProgress = () => {
+      lastProgressTime = Date.now();
+    };
+    
+    // Timeout de 8 minutes sans progression (workflows complexes peuvent prendre du temps)
+    timeoutHandle = setTimeout(() => {
+      const responseDiv = document.getElementById('assistant-response');
+      if (responseDiv) {
+        responseDiv.innerHTML = `
+          <strong>Assistant:</strong> ⏱️ <strong>Timeout détecté</strong><br>
+          📌 Le backend ne répond plus depuis plus de 8 minutes<br>
+          🔄 <em>Solutions :</em><br>
+          • Réessayez avec un prompt plus simple<br>
+          • Vérifiez que le backend fonctionne<br>
+          • Rechargez la page si le problème persiste
+        `;
+      }
+    }, 480000); // 8 minutes
+
     try {
+      // Vérifier que le contexte d'extension est valide
+      if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.id) {
+        clearTimeout(timeoutHandle);
+        console.error('❌ Contexte d\'extension invalide - rechargez l\'extension');
+        const responseDiv = document.getElementById('assistant-response');
+        if (responseDiv) {
+          responseDiv.innerHTML = `
+            <strong>Assistant:</strong> ❌ <strong>Extension déconnectée</strong><br>
+            📌 <em>Solution :</em> Rechargez l'extension Chrome dans <code>chrome://extensions/</code><br>
+            🔄 Ou rechargez cette page (Ctrl+R / Cmd+R)
+          `;
+        }
+        return;
+      }
+
       // Envoyer au background (seulement le prompt)
-      if (typeof chrome !== 'undefined' && chrome.runtime) {
-        console.log('🚀 Envoi vers backend workflow RAG...');
+      console.log('🚀 Envoi vers backend workflow RAG...');
+      
+      chrome.runtime.sendMessage({
+        type: 'SEND_TO_CLAUDE',
+        prompt: message
+      }).then(response => {
+        console.log('✅ Réponse du background:', response);
+      }).catch(err => {
+        clearTimeout(timeoutHandle);
+        console.error('❌ Erreur communication background:', err);
         
-        chrome.runtime.sendMessage({
-          type: 'SEND_TO_CLAUDE',
-          prompt: message
-        }).then(response => {
-          console.log('✅ Réponse du background:', response);
-        }).catch(err => {
-          console.error('❌ Erreur communication background:', err);
+        // Si l'erreur contient "Extension context invalidated"
+        if (err.message && err.message.includes('Extension context invalidated')) {
+          const responseDiv = document.getElementById('assistant-response');
+          if (responseDiv) {
+            responseDiv.innerHTML = `
+              <strong>Assistant:</strong> ❌ <strong>Extension déconnectée</strong><br>
+              📌 <em>Solution :</em> Rechargez l'extension Chrome dans <code>chrome://extensions/</code><br>
+              🔄 Ou rechargez cette page (Ctrl+R / Cmd+R)
+            `;
+          }
+        } else {
           const responseDiv = document.getElementById('assistant-response');
           if (responseDiv) {
             responseDiv.innerHTML = '<strong>Assistant:</strong> ❌ Erreur de communication avec le service worker';
           }
-        });
-      }
+        }
+      });
+      
+      // Nettoyer le timeout quand on reçoit une réponse finale
+      window.clearCurrentTimeout = () => {
+        if (timeoutHandle) {
+          clearTimeout(timeoutHandle);
+          timeoutHandle = null;
+        }
+      };
+      
     } catch (err) {
+      clearTimeout(timeoutHandle);
       console.error('❌ Erreur envoi message:', err);
       const responseDiv = document.getElementById('assistant-response');
       if (responseDiv) {
@@ -299,6 +360,11 @@ if (!isN8n || !isWorkflowPage) {
   function handleBackgroundMessage(message) {
     const responseDiv = document.getElementById('assistant-response');
     if (!responseDiv) return;
+
+    // Mettre à jour le timestamp de dernière activité
+    if (window.updateLastProgress) {
+      window.updateLastProgress();
+    }
 
     switch (message.type) {
       case 'WORKFLOW_GENERATION_START':
@@ -326,6 +392,11 @@ if (!isN8n || !isWorkflowPage) {
         break;
 
       case 'WORKFLOW_COMPLETE':
+        // Nettoyer le timeout car on a reçu une réponse finale
+        if (window.clearCurrentTimeout) {
+          window.clearCurrentTimeout();
+        }
+        
         if (message.workflow) {
           console.log('🎉 Workflow complet reçu:', message.workflow);
           
@@ -365,6 +436,11 @@ if (!isN8n || !isWorkflowPage) {
         break;
 
       case 'WORKFLOW_ERROR':
+        // Nettoyer le timeout car on a reçu une réponse finale (même si c'est une erreur)
+        if (window.clearCurrentTimeout) {
+          window.clearCurrentTimeout();
+        }
+        
         const errorDiv = document.createElement('div');
         errorDiv.style.cssText = 'margin-top: 8px; padding: 8px; background: #fef2f2; border-radius: 4px; color: #dc2626;';
         errorDiv.innerHTML = `❌ ${message.error}`;
@@ -386,6 +462,11 @@ if (!isN8n || !isWorkflowPage) {
         break;
 
       case 'CLAUDE_ERROR':
+        // Nettoyer le timeout car on a reçu une réponse finale (même si c'est une erreur)
+        if (window.clearCurrentTimeout) {
+          window.clearCurrentTimeout();
+        }
+        
         responseDiv.innerHTML = `<strong>Assistant:</strong> ❌ Erreur: ${message.error}`;
         break;
         

@@ -122,14 +122,37 @@ export default async function handler(req, res) {
       message: 'Analyzing requirements and building workflow...'
     });
 
-    const generationResult = await rag.generateWorkflowFromExamplesWithStreaming(prompt, {
-      topK: 3,
-      workflowName: 'Generated Workflow',
-      baseWorkflow: baseWorkflow, // Nouveau : passer le workflow de base
-      onProgress: (stage, data) => {
-        sendEvent('progress', { stage, ...data });
-      }
-    });
+    console.log('🚀 Début génération workflow avec RAG...');
+    const generationStartTime = Date.now();
+    
+    let generationResult;
+    try {
+      generationResult = await rag.generateWorkflowFromExamplesWithStreaming(prompt, {
+        topK: 3,
+        workflowName: 'Generated Workflow',
+        baseWorkflow: baseWorkflow, // Nouveau : passer le workflow de base
+        onProgress: (stage, data) => {
+          console.log(`📊 Progrès RAG: ${stage} - ${data.message}`);
+          sendEvent('progress', { stage, ...data });
+        }
+      });
+      
+      const generationDuration = Date.now() - generationStartTime;
+      console.log(`✅ Génération terminée en ${generationDuration}ms, succès: ${generationResult.success}`);
+      
+    } catch (generationError) {
+      const generationDuration = Date.now() - generationStartTime;
+      console.error(`❌ Erreur génération après ${generationDuration}ms:`, generationError);
+      
+      sendEvent('error', {
+        message: 'Erreur lors de la génération',
+        error: generationError.message,
+        success: false
+      });
+      
+      res.end();
+      return;
+    }
 
     // Step 3: Finalization
     if (generationResult.success) {
