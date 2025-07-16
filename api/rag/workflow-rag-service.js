@@ -422,7 +422,7 @@ ${baseWorkflow ?
       });
 
       if (onProgress) {
-        onProgress('parsing', { message: 'Traitement de la réponse de Claude...' });
+        onProgress('parsing', { message: 'Traitement de la réponse...' });
       }
 
       const generatedText = response.content[0]?.type === 'text' ? response.content[0].text : '';
