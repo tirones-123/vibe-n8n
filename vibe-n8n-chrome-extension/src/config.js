@@ -4,14 +4,14 @@
  */
 
 const CONFIG = {
-  // URL du backend workflow RAG local
-  API_URL: 'http://localhost:3000/api/claude',
+  // URL du backend workflow RAG déployé sur Railway
+  API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
   
-  // URL de production (si déployé)
-  API_URL_PROD: 'https://your-workflow-rag-backend.railway.app/api/claude',
+  // URL locale (pour développement)
+  API_URL_LOCAL: 'http://localhost:3000/api/claude',
   
   // Clé d'authentification pour le backend workflow RAG
-  API_KEY: 'your-token-securise', // Remplacer par votre BACKEND_API_KEY
+  API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2', // Remplacer par votre BACKEND_API_KEY
   
   // Timeout pour les requêtes API (en millisecondes)
   // Backend workflow RAG peut prendre plus de temps pour la génération
