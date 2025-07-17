@@ -239,30 +239,17 @@ export class WorkflowRAGService {
         
         console.log(`📝 Match ${workflows.length + 1}: "${workflow.name}" (score: ${workflow.relevanceScore.toFixed(3)}) → file: "${workflow.filename}"`);
         
-        // Charger le contenu complet du workflow avec fallback
+        // Charger le contenu complet du workflow
         try {
-          // TEST: Utiliser d'abord le dossier workflows original
-          const originalFilePath = path.join(this.workflowsDir, workflow.filename);
-          console.log(`🔍 TEST: Attempting to load from original workflows: "${workflow.filename}" from "${originalFilePath}"`);
-          workflow.workflowContent = await fs.readFile(originalFilePath, 'utf-8');
-          console.log(`✅ TEST: Successfully loaded from original workflows: "${workflow.name}" (${workflow.filename}) - ${workflow.workflowContent.length} chars`);
-        } catch (originalError) {
-          console.log(`❌ TEST: Failed to load from original workflows "${workflow.filename}": ${originalError.message}`);
-          
-          // Fallback vers le dossier optimisé
-          try {
-            const optimizedFilePath = path.join(this.optimizedWorkflowsDir, workflow.filename);
-            console.log(`🔍 Fallback: Attempting to load from optimized: "${workflow.filename}" from "${optimizedFilePath}"`);
-            workflow.workflowContent = await fs.readFile(optimizedFilePath, 'utf-8');
-            console.log(`✅ Fallback: Successfully loaded from optimized: "${workflow.name}" (${workflow.filename}) - ${workflow.workflowContent.length} chars`);
-          } catch (optimizedError) {
-            console.log(`❌ Failed to load workflow "${workflow.filename}" from both directories:`);
-            console.log(`  - Original: ${originalError.message}`);
-            console.log(`  - Optimized: ${optimizedError.message}`);
-            console.log(`⏭️  Skipping workflow: "${workflow.name}" (${workflow.filename})`);
-            // Skip this workflow - will use next one from Pinecone results
-            continue;
-          }
+          const optimizedFilePath = path.join(this.optimizedWorkflowsDir, workflow.filename);
+          console.log(`🔍 Attempting to load: "${workflow.filename}" from "${optimizedFilePath}"`);
+          workflow.workflowContent = await fs.readFile(optimizedFilePath, 'utf-8');
+          console.log(`✅ Successfully loaded workflow: "${workflow.name}" (${workflow.filename}) - ${workflow.workflowContent.length} chars`);
+        } catch (error) {
+          console.log(`❌ Failed to load workflow "${workflow.filename}": ${error.message}`);
+          console.log(`⏭️  Skipping workflow: "${workflow.name}" (${workflow.filename})`);
+          // Skip this workflow - will use next one from Pinecone results
+          continue;
         }
         
         workflows.push(workflow);
