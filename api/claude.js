@@ -39,8 +39,60 @@ export default async function handler(req, res) {
   console.log('📊 Stats actuelles:', requestStats);
   console.log('⏰ Timestamp:', new Date().toISOString());
 
+  // 📊 DETAILED LOGGING - Request inspection
+  console.log('\n%c📊 BACKEND: Incoming request analysis', 'background: darkred; color: white; padding: 2px 6px;');
+  console.log('🔍 Method:', req.method);
+  console.log('🔑 Authorization header present:', !!authHeader);
+  console.log('📋 Headers:', JSON.stringify(req.headers, null, 2));
+  
+  // Analyser le body de la requête
+  console.log('\n%c📦 BACKEND: Request body analysis', 'background: darkblue; color: white; padding: 2px 6px;');
+  const rawBodySize = JSON.stringify(req.body).length;
+  console.log('📏 Raw body size:', rawBodySize, 'chars (', (rawBodySize / 1024).toFixed(1), 'KB)');
+  console.log('🔧 Body keys:', Object.keys(req.body));
+  
   try {
     const { prompt, baseWorkflow } = req.body;
+
+    // 📊 DETAILED LOGGING - Request payload inspection
+    console.log('\n%c🔍 BACKEND: Payload inspection', 'background: purple; color: white; padding: 2px 6px;');
+    console.log('📝 Prompt received:');
+    console.log('  - Type:', typeof prompt);
+    console.log('  - Length:', prompt?.length || 0, 'chars');
+    console.log('  - Content:', prompt ? `"${prompt.substring(0, 200)}${prompt.length > 200 ? '...' : ''}"` : 'null');
+    
+    console.log('🔄 Base workflow analysis:');
+    if (baseWorkflow) {
+      console.log('  - Base workflow PROVIDED: YES');
+      console.log('  - Type:', typeof baseWorkflow);
+      console.log('  - Keys:', Object.keys(baseWorkflow));
+      console.log('  - Nodes count:', baseWorkflow.nodes?.length || 0);
+      console.log('  - Connections count:', Object.keys(baseWorkflow.connections || {}).length);
+      console.log('  - Workflow name:', baseWorkflow.name);
+      console.log('  - Workflow ID:', baseWorkflow.id);
+      
+      if (baseWorkflow.nodes && baseWorkflow.nodes.length > 0) {
+        console.log('  - Node details:');
+        baseWorkflow.nodes.forEach((node, i) => {
+          console.log(`    ${i + 1}. ${node.name} (${node.type}) - ID: ${node.id}`);
+        });
+      }
+      
+      const baseWorkflowSize = JSON.stringify(baseWorkflow).length;
+      console.log('  - Base workflow size:', baseWorkflowSize, 'chars (', (baseWorkflowSize / 1024).toFixed(1), 'KB)');
+    } else {
+      console.log('  - Base workflow PROVIDED: NO');
+    }
+
+    // Mode detection logic
+    const isImprovementMode = baseWorkflow && baseWorkflow.nodes && baseWorkflow.nodes.length > 0;
+    console.log('\n%c🎯 BACKEND: Mode detection', 'background: darkgreen; color: white; padding: 2px 6px;');
+    console.log('🔧 Detected mode:', isImprovementMode ? 'IMPROVEMENT' : 'GENERATION');
+    console.log('📋 Reasoning:');
+    console.log('  - baseWorkflow exists:', !!baseWorkflow);
+    console.log('  - baseWorkflow.nodes exists:', !!(baseWorkflow?.nodes));
+    console.log('  - baseWorkflow.nodes.length:', baseWorkflow?.nodes?.length || 0);
+    console.log('  - Final decision:', isImprovementMode ? 'Will improve existing workflow' : 'Will generate new workflow');
 
     if (!prompt || typeof prompt !== 'string') {
       console.log('❌ Prompt manquant ou invalide');
@@ -64,10 +116,11 @@ export default async function handler(req, res) {
       startTime,
       stage: 'init',
       workflowSize: 0,
-      transmissionType: 'unknown'
+      transmissionType: 'unknown',
+      mode: isImprovementMode ? 'improvement' : 'generation'
     };
 
-    console.log(`🔑 Session créée: ${sessionState.id}`);
+    console.log(`🔑 Session créée: ${sessionState.id} (mode: ${sessionState.mode})`);
 
     // Fonction helper pour envoyer les événements SSE
     const sendSSE = (type, data) => {
@@ -125,6 +178,15 @@ export default async function handler(req, res) {
     const ragService = createWorkflowRAGService();
     console.log(`✅ [${sessionState.id}] Service RAG initialisé`);
 
+    // 📊 DETAILED LOGGING - RAG service call preparation
+    console.log('\n%c🤖 BACKEND: RAG service call preparation', 'background: darkviolet; color: white; padding: 2px 6px;');
+    console.log('🔧 Calling generateWorkflowFromExamplesWithStreaming with:');
+    console.log('  - prompt:', prompt.substring(0, 100) + '...');
+    console.log('  - topK: 3');
+    console.log('  - workflowName: "Generated Workflow"');
+    console.log('  - baseWorkflow:', baseWorkflow ? 'PROVIDED' : 'null');
+    console.log('  - onProgress: callback function provided');
+
     // Générer le workflow avec monitoring
     const result = await ragService.generateWorkflowFromExamplesWithStreaming(
       prompt,
@@ -153,6 +215,7 @@ export default async function handler(req, res) {
     console.log(`🔄 Type transmission: ${sessionState.transmissionType}`);
     console.log(`🎯 Succès: ${result.success}`);
     console.log(`📊 Nœuds: ${result.workflow?.nodes?.length || 0}`);
+    console.log(`🔧 Mode: ${sessionState.mode}`);
 
     if (result.success) {
       requestStats.success++;
@@ -163,6 +226,7 @@ export default async function handler(req, res) {
         duration: duration,
         workflowSize: sessionState.workflowSize,
         transmissionType: result.transmissionType || sessionState.transmissionType,
+        mode: sessionState.mode,
         stats: {
           nodes: result.workflow?.nodes?.length || 0,
           connections: Object.keys(result.workflow?.connections || {}).length

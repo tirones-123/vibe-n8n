@@ -186,7 +186,7 @@ export class WorkflowRAGService {
   }
 
   /**
-   * Recherche des workflows similaires
+   * Recherche des workflows similaires basée sur les descriptions GPT-4
    */
   async findSimilarWorkflows(description, topK = 5) {
     try {
@@ -201,7 +201,7 @@ export class WorkflowRAGService {
         console.error(`❌ Cannot access optimized workflows directory: ${dirError.message}`);
       }
       
-      // Générer l'embedding pour la description
+      // Générer l'embedding pour la description utilisateur
       const embeddingResponse = await this.openai.embeddings.create({
         model: 'text-embedding-3-small',
         input: description,
@@ -210,7 +210,7 @@ export class WorkflowRAGService {
 
       const queryEmbedding = embeddingResponse.data[0].embedding;
 
-      // Rechercher dans Pinecone
+      // Rechercher dans Pinecone (maintenant indexé avec descriptions GPT-4)
       const searchResults = await this.index.query({
         vector: queryEmbedding,
         topK,
@@ -221,10 +221,13 @@ export class WorkflowRAGService {
       const workflows = [];
       
       console.log(`🔍 Pinecone found ${searchResults.matches?.length || 0} matches for "${description.substring(0, 100)}..."`);
-      console.log(`📊 Pinecone scores summary:`);
+      console.log(`📊 Recherche basée sur descriptions GPT-4:`);
       if (searchResults.matches) {
         searchResults.matches.forEach((match, i) => {
           console.log(`  ${i + 1}. Score: ${match.score.toFixed(3)} - "${match.metadata?.name || 'Unknown'}" (${match.metadata?.filename})`);
+          if (match.metadata?.descriptionSnippet) {
+            console.log(`      📝 "${match.metadata.descriptionSnippet.substring(0, 120)}..."`);
+          }
         });
       }
       
@@ -233,20 +236,37 @@ export class WorkflowRAGService {
           id: match.id,
           filename: match.metadata?.filename || '',
           name: match.metadata?.name || '',
-          nodes: match.metadata?.nodes || [],
+          description: match.metadata?.description || '',
+          descriptionSnippet: match.metadata?.descriptionSnippet || '',
+          nodeCount: match.metadata?.nodeCount || 0,
+          nodeTypes: match.metadata?.nodeTypes || [],
           relevanceScore: match.score || 0
         };
         
         console.log(`📝 Match ${workflows.length + 1}: "${workflow.name}" (score: ${workflow.relevanceScore.toFixed(3)}) → file: "${workflow.filename}"`);
+        console.log(`    📊 ${workflow.nodeCount} nœuds: ${workflow.nodeTypes.slice(0, 3).join(', ')}${workflow.nodeTypes.length > 3 ? '...' : ''}`);
         
-        // Charger le contenu complet du workflow
+        // Charger le contenu JSON complet du workflow depuis workflows-rag-optimized
         try {
           const optimizedFilePath = path.join(this.optimizedWorkflowsDir, workflow.filename);
-          console.log(`🔍 Attempting to load: "${workflow.filename}" from "${optimizedFilePath}"`);
+          console.log(`🔍 Loading workflow JSON: "${workflow.filename}"`);
           workflow.workflowContent = await fs.readFile(optimizedFilePath, 'utf-8');
-          console.log(`✅ Successfully loaded workflow: "${workflow.name}" (${workflow.filename}) - ${workflow.workflowContent.length} chars`);
+          console.log(`✅ Successfully loaded workflow: "${workflow.name}" - ${workflow.workflowContent.length} chars`);
+          
+          // Valider que c'est du JSON valide
+          try {
+            const parsedWorkflow = JSON.parse(workflow.workflowContent);
+            if (!parsedWorkflow.nodes || !Array.isArray(parsedWorkflow.nodes)) {
+              throw new Error('Structure workflow invalide');
+            }
+            console.log(`    ✅ JSON valide avec ${parsedWorkflow.nodes.length} nœuds`);
+          } catch (jsonError) {
+            console.error(`❌ JSON invalide pour ${workflow.filename}:`, jsonError.message);
+            continue;
+          }
+          
         } catch (error) {
-          console.log(`❌ Failed to load workflow "${workflow.filename}": ${error.message}`);
+          console.log(`❌ Failed to load workflow JSON "${workflow.filename}": ${error.message}`);
           console.log(`⏭️  Skipping workflow: "${workflow.name}" (${workflow.filename})`);
           // Skip this workflow - will use next one from Pinecone results
           continue;
@@ -255,9 +275,10 @@ export class WorkflowRAGService {
         workflows.push(workflow);
       }
 
-      console.log(`\n📊 FINAL RESULT: ${workflows.length} workflows successfully loaded:`);
+      console.log(`\n📊 FINAL RESULT: ${workflows.length} workflows successfully loaded with GPT-4 descriptions:`);
       workflows.forEach((w, i) => {
         console.log(`  ${i + 1}. "${w.name}" (${w.filename}) - score: ${w.relevanceScore.toFixed(3)}`);
+        console.log(`      📝 ${w.descriptionSnippet.substring(0, 100)}...`);
       });
 
       return workflows;
@@ -324,18 +345,22 @@ Respond with a JSON object containing both the workflow and an explanation:
   }
 }`;
 
-      // Construire le contexte avec les workflows d'exemple
+      // Construire le contexte enrichi avec les workflows d'exemple
       const examplesContext = similarWorkflows
         .filter(w => w.workflowContent)
         .map((w, i) => {
           const workflowData = JSON.parse(w.workflowContent);
           const nodeTypes = workflowData.nodes?.map((n) => n.type).join(', ') || 'Unknown';
           
-          return `Example ${i + 1} (Similarity: ${w.relevanceScore.toFixed(3)}):
+          return `Example ${i + 1} (Relevance: ${w.relevanceScore.toFixed(3)}):
+Workflow Name: ${w.name}
 Filename: ${w.filename}
 Nodes: ${nodeTypes}
 
-Full JSON:
+GPT-4 Functional Description:
+${w.description || 'No description available'}
+
+Technical Implementation (JSON):
 \`\`\`json
 ${w.workflowContent}
 \`\`\``;
@@ -543,18 +568,22 @@ Respond with a JSON object containing both the workflow and an explanation:
 }`;
       }
 
-      // Construire le contexte avec les workflows d'exemple
+      // Construire le contexte enrichi avec les workflows d'exemple
       const examplesContext = similarWorkflows
         .filter(w => w.workflowContent)
         .map((w, i) => {
           const workflowData = JSON.parse(w.workflowContent);
           const nodeTypes = workflowData.nodes?.map((n) => n.type).join(', ') || 'Unknown';
           
-          return `Example ${i + 1} (Similarity: ${w.relevanceScore.toFixed(3)}):
+          return `Example ${i + 1} (Relevance: ${w.relevanceScore.toFixed(3)}):
+Workflow Name: ${w.name}
 Filename: ${w.filename}
 Nodes: ${nodeTypes}
 
-Full JSON:
+GPT-4 Functional Description:
+${w.description || 'No description available'}
+
+Technical Implementation (JSON):
 \`\`\`json
 ${w.workflowContent}
 \`\`\``;

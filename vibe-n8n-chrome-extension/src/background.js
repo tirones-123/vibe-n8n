@@ -162,8 +162,9 @@ function handleWorkflowChunk(data, tabId) {
  * Envoie une requête au backend workflow RAG
  */
 async function handleWorkflowRAGRequest(prompt, tabId) {
-  console.log(`🎯 Envoi de la requête au backend workflow RAG`);
-  console.log('📝 Prompt:', prompt);
+  console.log('%c🎯 BACKGROUND: Starting workflow RAG request', 'background: darkblue; color: white; padding: 2px 6px;');
+  console.log('📝 Prompt received:', prompt);
+  console.log('🆔 Tab ID:', tabId);
   
   // Notifier le début de traitement
   chrome.tabs.sendMessage(tabId, {
@@ -174,6 +175,20 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   const requestBody = {
     prompt: prompt // Seulement le prompt pour le backend workflow RAG
   };
+
+  // 📊 DETAILED LOGGING - Backend request preparation
+  console.log('%c📊 BACKGROUND: Backend request preparation', 'background: darkgreen; color: white; padding: 2px 6px;');
+  console.log('🔧 Request type: NEW_WORKFLOW_GENERATION');
+  console.log('📝 Request body structure:');
+  console.log('  - prompt:', requestBody.prompt);
+  console.log('  - baseWorkflow: null (new workflow)');
+  
+  const requestBodySize = JSON.stringify(requestBody).length;
+  console.log('📏 Request body size:', requestBodySize, 'chars (', (requestBodySize / 1024).toFixed(1), 'KB)');
+  console.log('📦 Full request body:', JSON.stringify(requestBody));
+  
+  console.log('🌐 Backend endpoint:', CONFIG.API_URL);
+  console.log('🔑 API key (first 20 chars):', CONFIG.API_KEY.substring(0, 20) + '...');
 
   console.log('📤 Envoi requête workflow RAG');
   console.log('📦 Payload:', JSON.stringify(requestBody));
@@ -200,6 +215,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     const response = await Promise.race([fetchPromise, timeoutPromise]);
 
     console.log('📨 Réponse reçue:', response.status, response.statusText);
+    console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -299,9 +315,9 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
  * Nouveau : Gère l'amélioration d'un workflow existant
  */
 async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequest, tabId) {
-  console.log(`🎯 Amélioration de workflow demandée`);
-  console.log('📝 Workflow actuel:', currentWorkflow);
-  console.log('📝 Demande:', improvementRequest);
+  console.log('%c🎯 BACKGROUND: Starting workflow improvement request', 'background: darkviolet; color: white; padding: 2px 6px;');
+  console.log('📝 Improvement request:', improvementRequest);
+  console.log('🆔 Tab ID:', tabId);
   
   // Notifier le début de traitement
   chrome.tabs.sendMessage(tabId, {
@@ -313,6 +329,31 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
     prompt: improvementRequest,
     baseWorkflow: currentWorkflow // Nouveau : inclure le workflow de base
   };
+
+  // 📊 DETAILED LOGGING - Backend request preparation for improvement
+  console.log('%c📊 BACKGROUND: Backend improvement request preparation', 'background: darkorange; color: white; padding: 2px 6px;');
+  console.log('🔧 Request type: WORKFLOW_IMPROVEMENT');
+  console.log('📝 Request body structure:');
+  console.log('  - prompt:', requestBody.prompt);
+  console.log('  - baseWorkflow provided: YES');
+  console.log('  - baseWorkflow.nodes count:', requestBody.baseWorkflow?.nodes?.length || 0);
+  console.log('  - baseWorkflow.connections count:', Object.keys(requestBody.baseWorkflow?.connections || {}).length);
+  console.log('  - baseWorkflow.name:', requestBody.baseWorkflow?.name);
+  
+  // Analyse détaillée du workflow existant
+  if (requestBody.baseWorkflow?.nodes) {
+    console.log('📋 Existing workflow nodes:');
+    requestBody.baseWorkflow.nodes.forEach((node, i) => {
+      console.log(`  ${i + 1}. ${node.name} (${node.type}) - ID: ${node.id}`);
+    });
+  }
+  
+  const requestBodySize = JSON.stringify(requestBody).length;
+  console.log('📏 Request body size:', requestBodySize, 'chars (', (requestBodySize / 1024).toFixed(1), 'KB)');
+  console.log('📦 Request body sample (first 1000 chars):', JSON.stringify(requestBody).substring(0, 1000) + '...');
+  
+  console.log('🌐 Backend endpoint:', CONFIG.API_URL);
+  console.log('🔑 API key (first 20 chars):', CONFIG.API_KEY.substring(0, 20) + '...');
 
   console.log('📤 Envoi requête amélioration workflow RAG');
   console.log('📦 Payload size:', JSON.stringify(requestBody).length, 'chars');
@@ -326,8 +367,12 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
     body: JSON.stringify(requestBody)
   });
 
+  console.log('📨 Improvement response received:', response.status, response.statusText);
+  console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
+
   if (!response.ok) {
     const error = await response.text();
+    console.error('❌ Improvement API error:', response.status, error);
     throw new Error(`Erreur API amélioration workflow: ${error}`);
   }
 
