@@ -307,6 +307,7 @@ The workflow should:
 - Use the settings nodes of the examples as reference
 - Have proper connections between nodes
 - Include all necessary configurations
+- Include all the parameters of the nodes of the examples as reference
 - Use the credentials of the examples as reference
 - Use n8n-nodes-base.openai node for AI agents
 - Use the exact node type formats from the examples (e.g., "nodes-base.webhook")
