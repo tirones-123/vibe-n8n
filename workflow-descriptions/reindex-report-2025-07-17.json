@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-07-17T18:50:25.442Z",
+  "originalIndex": "n8n-workflows",
+  "newIndex": "n8n-workflows-descriptions",
+  "sourceFile": "workflow-descriptions-2025-07-17.json",
+  "totalWorkflows": 2031,
+  "processed": 2031,
+  "errors": [],
+  "indexStats": {
+    "namespaces": {
+      "": {
+        "recordCount": 2027
+      }
+    },
+    "dimension": 1536,
+    "indexFullness": 0,
+    "totalRecordCount": 2027
+  }
+}

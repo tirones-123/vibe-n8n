@@ -12,6 +12,13 @@ const DESCRIPTIONS_DIR = path.join(process.cwd(), 'workflow-descriptions');
 const BATCH_SIZE = 100; // Embeddings par batch
 const UPSERT_BATCH_SIZE = 50; // Vecteurs à upserter en une fois
 
+// Configuration des index
+const ORIGINAL_INDEX = process.env.PINECONE_WORKFLOW_INDEX || 'n8n-workflows';
+const NEW_INDEX_NAME = `${ORIGINAL_INDEX}-descriptions`;
+
+console.log(`📊 Index original: ${ORIGINAL_INDEX}`);
+console.log(`🆕 Nouvel index: ${NEW_INDEX_NAME}`);
+
 // Initialiser les services
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY
@@ -20,6 +27,48 @@ const pinecone = new Pinecone({
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+/**
+ * Créer un nouvel index Pinecone
+ */
+async function createNewIndex() {
+  try {
+    console.log(`🏗️ Création du nouvel index: ${NEW_INDEX_NAME}...`);
+    
+    // Vérifier si l'index existe déjà
+    const indexList = await pinecone.listIndexes();
+    const existingIndex = indexList.indexes?.find(idx => idx.name === NEW_INDEX_NAME);
+    
+    if (existingIndex) {
+      console.log(`✅ L'index ${NEW_INDEX_NAME} existe déjà`);
+      return pinecone.index(NEW_INDEX_NAME);
+    }
+    
+    // Créer le nouvel index
+    await pinecone.createIndex({
+      name: NEW_INDEX_NAME,
+      dimension: 1536, // text-embedding-3-small
+      metric: 'cosine',
+      spec: {
+        serverless: {
+          cloud: 'aws',
+          region: 'us-east-1'
+        }
+      }
+    });
+    
+    console.log(`🎉 Index ${NEW_INDEX_NAME} créé avec succès !`);
+    console.log(`⏳ Attente de l'initialisation (30 secondes)...`);
+    
+    // Attendre que l'index soit prêt
+    await new Promise(resolve => setTimeout(resolve, 30000));
+    
+    return pinecone.index(NEW_INDEX_NAME);
+  } catch (error) {
+    console.error(`❌ Erreur création index ${NEW_INDEX_NAME}:`, error.message);
+    throw error;
+  }
+}
 
 /**
  * Générer des embeddings pour un batch de descriptions
@@ -42,235 +91,287 @@ async function generateEmbeddings(descriptions) {
 }
 
 /**
- * Préparer les vecteurs pour Pinecone
+ * Préparer les vecteurs pour Pinecone à partir des descriptions GPT-4
  */
 function prepareVectors(workflowData, embeddings) {
   return workflowData.map((workflow, index) => {
     // Utiliser le nom du fichier comme ID (sans .json)
     const id = workflow.filename.replace('.json', '');
     
+    // Créer un snippet de la description pour les métadonnées
+    const descriptionSnippet = workflow.description.length > 200 
+      ? workflow.description.substring(0, 200) + '...'
+      : workflow.description;
+    
     return {
-      id: id,
+      id,
       values: embeddings[index],
       metadata: {
         filename: workflow.filename,
         name: workflow.workflowName,
-        description: workflow.description,
+        description: workflow.description, // Description complète GPT-4
+        descriptionSnippet, // Extrait pour l'affichage
         nodeCount: workflow.metadata?.nodeCount || 0,
         nodeTypes: workflow.metadata?.nodeTypes || [],
         analysisDate: workflow.metadata?.analysisDate,
-        model: workflow.metadata?.model || 'gpt-4o',
-        // Ajouter les premiers mots de la description pour la recherche rapide
-        descriptionSnippet: workflow.description?.substring(0, 500) || '',
-        // Indexer aussi les types de nœuds pour la recherche
-        nodesString: (workflow.metadata?.nodeTypes || []).join(', ')
+        model: workflow.metadata?.model || 'gpt-4'
       }
     };
   });
 }
 
 /**
- * Upserter les vecteurs dans Pinecone
+ * Upserter des vecteurs vers Pinecone par batches
  */
 async function upsertVectors(index, vectors) {
-  try {
-    console.log(`📤 Upload de ${vectors.length} vecteurs vers Pinecone...`);
+  console.log(`📤 Upload de ${vectors.length} vecteurs vers ${NEW_INDEX_NAME}...`);
+  
+  // Traiter par batches
+  for (let i = 0; i < vectors.length; i += UPSERT_BATCH_SIZE) {
+    const batch = vectors.slice(i, i + UPSERT_BATCH_SIZE);
+    const batchNum = Math.floor(i / UPSERT_BATCH_SIZE) + 1;
+    const totalBatches = Math.ceil(vectors.length / UPSERT_BATCH_SIZE);
     
-    // Upserter par batches
-    for (let i = 0; i < vectors.length; i += UPSERT_BATCH_SIZE) {
-      const batch = vectors.slice(i, i + UPSERT_BATCH_SIZE);
-      
+    console.log(`📦 Batch ${batchNum}/${totalBatches}: ${batch.length} vecteurs`);
+    
+    try {
       await index.upsert(batch);
+      console.log(`✅ Batch ${batchNum} uploadé`);
       
-      console.log(`  ✅ Batch ${Math.floor(i / UPSERT_BATCH_SIZE) + 1}/${Math.ceil(vectors.length / UPSERT_BATCH_SIZE)} uploadé`);
-      
-      // Petite pause pour éviter le rate limiting
+      // Délai entre batches pour éviter rate limiting
       if (i + UPSERT_BATCH_SIZE < vectors.length) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
+    } catch (error) {
+      console.error(`❌ Erreur batch ${batchNum}:`, error.message);
+      throw error;
+    }
+  }
+}
+
+/**
+ * Trouver le fichier de descriptions le plus récent
+ */
+async function findLatestDescriptionsFile() {
+  try {
+    const files = await fs.readdir(DESCRIPTIONS_DIR);
+    const descriptionFiles = files
+      .filter(file => file.startsWith('workflow-descriptions-') && file.endsWith('.json'))
+      .sort()
+      .reverse(); // Plus récent en premier
+    
+    if (descriptionFiles.length === 0) {
+      throw new Error('Aucun fichier de descriptions trouvé');
     }
     
-    console.log(`🎉 ${vectors.length} vecteurs uploadés avec succès`);
+    const latestFile = descriptionFiles[0];
+    const filePath = path.join(DESCRIPTIONS_DIR, latestFile);
     
+    console.log(`📄 Fichier de descriptions le plus récent: ${latestFile}`);
+    return filePath;
   } catch (error) {
-    console.error('❌ Erreur upload Pinecone:', error.message);
+    console.error('❌ Erreur recherche fichier descriptions:', error.message);
     throw error;
   }
 }
 
 /**
- * Script principal de réindexation
+ * Tester les recherches sur le nouvel index
  */
-async function main() {
-  console.log('🚀 Réindexation Pinecone avec descriptions GPT-4');
+async function testNewIndex(index) {
+  console.log('\n🧪 Tests de recherche sur le nouvel index...');
   
-  try {
-    // Vérifier les variables d'environnement
-    if (!process.env.PINECONE_API_KEY || !process.env.OPENAI_API_KEY) {
-      throw new Error('Variables d\'environnement manquantes: PINECONE_API_KEY et/ou OPENAI_API_KEY');
-    }
-    
-    // Trouver le fichier de descriptions le plus récent
-    console.log(`📁 Lecture du dossier: ${DESCRIPTIONS_DIR}`);
-    const files = await fs.readdir(DESCRIPTIONS_DIR);
-    const descriptionFiles = files.filter(f => f.startsWith('workflow-descriptions-') && f.endsWith('.json'));
-    
-    if (descriptionFiles.length === 0) {
-      throw new Error('Aucun fichier de descriptions trouvé. Exécutez d\'abord generate-workflow-descriptions.js');
-    }
-    
-    // Prendre le plus récent
-    const latestFile = descriptionFiles.sort().reverse()[0];
-    const descriptionsPath = path.join(DESCRIPTIONS_DIR, latestFile);
-    
-    console.log(`📄 Utilisation du fichier: ${latestFile}`);
-    
-    // Charger les descriptions
-    const descriptionsData = JSON.parse(await fs.readFile(descriptionsPath, 'utf-8'));
-    const workflows = descriptionsData.workflows.filter(w => w.description); // Seuls les workflows avec descriptions
-    
-    console.log(`📊 ${workflows.length} workflows avec descriptions trouvés`);
-    
-    if (workflows.length === 0) {
-      throw new Error('Aucun workflow avec description valide trouvé');
-    }
-    
-    // Connecter à Pinecone
-    const indexName = process.env.PINECONE_WORKFLOW_INDEX || 'n8n-workflows';
-    console.log(`🔌 Connexion à l'index Pinecone: ${indexName}`);
-    
-    const index = pinecone.index(indexName);
-    
-    // Vérifier les stats de l'index actuel
+  const testQueries = [
+    'automatisation email',
+    'slack workflow', 
+    'traitement de données CSV',
+    'bot telegram',
+    'synchronisation notion'
+  ];
+  
+  for (const query of testQueries) {
     try {
-      const stats = await index.describeIndexStats();
-      console.log(`📊 Index actuel: ${stats.totalVectorCount} vecteurs`);
+      console.log(`\n🔍 Test: "${query}"`);
       
-      // Optionnel: vider l'index avant réindexation
-      console.log('🗑️  Note: Vous pouvez vider l\'index existant si nécessaire');
-    } catch (error) {
-      console.log('⚠️  Impossible de récupérer les stats de l\'index (normal si nouveau)');
-    }
-    
-    // Traiter par batches pour les embeddings
-    const allVectors = [];
-    
-    for (let i = 0; i < workflows.length; i += BATCH_SIZE) {
-      const batch = workflows.slice(i, i + BATCH_SIZE);
-      const batchIndex = Math.floor(i / BATCH_SIZE) + 1;
-      const totalBatches = Math.ceil(workflows.length / BATCH_SIZE);
-      
-      console.log(`\n📦 Batch ${batchIndex}/${totalBatches} - ${batch.length} workflows`);
-      
-      // Extraire les descriptions pour les embeddings
-      const descriptions = batch.map(w => {
-        // Combiner le nom et la description pour un embedding plus riche
-        return `${w.workflowName}\n\n${w.description}`;
+      // Générer embedding pour la requête
+      const embeddingResponse = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: query,
+        encoding_format: 'float'
       });
       
-      // Générer les embeddings
-      const embeddings = await generateEmbeddings(descriptions);
+      // Rechercher dans l'index
+      const searchResults = await index.query({
+        vector: embeddingResponse.data[0].embedding,
+        topK: 3,
+        includeMetadata: true
+      });
       
-      // Préparer les vecteurs
-      const vectors = prepareVectors(batch, embeddings);
-      allVectors.push(...vectors);
+      console.log(`  📊 ${searchResults.matches?.length || 0} résultats:`);
+      searchResults.matches?.forEach((match, i) => {
+        console.log(`    ${i + 1}. ${match.metadata?.name} (score: ${match.score?.toFixed(3)})`);
+        console.log(`       📝 ${match.metadata?.descriptionSnippet}`);
+      });
       
-      console.log(`✅ Batch ${batchIndex} traité`);
+    } catch (error) {
+      console.error(`❌ Erreur test "${query}":`, error.message);
+    }
+  }
+}
+
+/**
+ * Fonction principale
+ */
+async function main() {
+  console.log('🚀 Démarrage de la réindexation avec descriptions GPT-4...\n');
+  
+  const startTime = Date.now();
+  let totalProcessed = 0;
+  let errors = [];
+
+  try {
+    // 1. Trouver et charger le fichier de descriptions
+    console.log('📂 Chargement des descriptions...');
+    const descriptionsFile = await findLatestDescriptionsFile();
+    const descriptionsData = JSON.parse(await fs.readFile(descriptionsFile, 'utf-8'));
+    
+         console.log(`📊 Données chargées:`);
+     console.log(`  📅 Date de génération: ${descriptionsData.generationDate}`);
+     console.log(`  📈 Total workflows analysés: ${descriptionsData.totalWorkflows}`);
+     console.log(`  ✅ Succès attendus: ${descriptionsData.successful}`);
+     console.log(`  ❌ Échecs attendus: ${descriptionsData.failed}`);
+     console.log(`  🤖 Modèle: ${descriptionsData.model}`);
+     console.log(`  📄 Workflows dans le fichier: ${descriptionsData.workflows.length}`);
+    
+    // Filtrer les workflows avec descriptions valides uniquement
+    console.log(`\n🔍 Filtrage des workflows avec descriptions valides...`);
+    const workflowsWithDescriptions = descriptionsData.workflows.filter(workflow => {
+      const hasValidDescription = workflow.description && 
+                                typeof workflow.description === 'string' && 
+                                workflow.description.trim().length > 0 &&
+                                !workflow.description.includes('Connection error') &&
+                                !workflow.description.includes('Failed to analyze');
       
-      // Pause entre les batches
-      if (i + BATCH_SIZE < workflows.length) {
-        console.log('⏱️  Pause 1s...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!hasValidDescription) {
+        console.log(`⚠️  Skipping workflow "${workflow.filename}" - Invalid description:`, 
+                   workflow.description ? workflow.description.substring(0, 100) + '...' : 'null/undefined');
+      }
+      
+      return hasValidDescription;
+    });
+    
+    console.log(`\n📋 ${workflowsWithDescriptions.length} workflows avec descriptions valides (${descriptionsData.workflows.length - workflowsWithDescriptions.length} exclus)`);
+    
+    // 2. Créer le nouvel index
+    console.log('\n🏗️ Création du nouvel index...');
+    const newIndex = await createNewIndex();
+    
+    // 3. Traiter par batches
+    console.log('\n🔄 Début de la réindexation...');
+    
+    for (let i = 0; i < workflowsWithDescriptions.length; i += BATCH_SIZE) {
+      const batch = workflowsWithDescriptions.slice(i, i + BATCH_SIZE);
+      const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+      const totalBatches = Math.ceil(workflowsWithDescriptions.length / BATCH_SIZE);
+      
+      console.log(`\n📦 Traitement batch ${batchNum}/${totalBatches} (${batch.length} workflows)`);
+      
+            try {
+        // Préparer les descriptions pour embedding (batch est déjà filtré)
+        const descriptions = batch.map(workflow => {
+          // Combiner le nom et la description pour un embedding plus riche
+          return `Workflow: ${workflow.workflowName}\n\nDescription: ${workflow.description}`;
+        });
+        
+        // Générer les embeddings
+        const embeddings = await generateEmbeddings(descriptions);
+        
+        // Préparer les vecteurs
+        const vectors = prepareVectors(batch, embeddings);
+        
+        // Upserter vers Pinecone
+        await upsertVectors(newIndex, vectors);
+        
+        totalProcessed += batch.length;
+        console.log(`✅ Batch ${batchNum} terminé. Total traité: ${totalProcessed}/${workflowsWithDescriptions.length}`);
+        
+      } catch (error) {
+        console.error(`❌ Erreur batch ${batchNum}:`, error.message);
+        errors.push({
+          batch: batchNum,
+          error: error.message,
+          workflows: batch.map(w => w.filename)
+        });
       }
     }
     
-    console.log(`\n🎯 ${allVectors.length} vecteurs préparés, upload vers Pinecone...`);
+    // 4. Vérifier les statistiques de l'index
+    console.log('\n📊 Vérification de l\'index...');
+    await new Promise(resolve => setTimeout(resolve, 5000)); // Attendre propagation
     
-    // Upserter tous les vecteurs
-    await upsertVectors(index, allVectors);
+    const indexStats = await newIndex.describeIndexStats();
+    console.log(`📈 Statistiques du nouvel index ${NEW_INDEX_NAME}:`);
+    console.log(`  📊 Total vectors: ${indexStats.totalVectorCount}`);
+    console.log(`  📏 Dimension: ${indexStats.dimension}`);
     
-    // Vérifier les nouvelles stats
-    console.log('\n⏱️  Attente de la synchronisation Pinecone...');
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
-    try {
-      const newStats = await index.describeIndexStats();
-      console.log(`📊 Nouvel index: ${newStats.totalVectorCount} vecteurs`);
-    } catch (error) {
-      console.log('⚠️  Impossible de vérifier les nouvelles stats');
+    // 5. Tests de recherche
+    if (process.argv.includes('--test')) {
+      await testNewIndex(newIndex);
     }
     
-    // Sauvegarder un rapport de réindexation
-    const reportPath = path.join(DESCRIPTIONS_DIR, `reindex-report-${new Date().toISOString().split('T')[0]}.json`);
+    // 6. Sauvegarder le rapport
     const report = {
-      reindexDate: new Date().toISOString(),
-      sourceFile: latestFile,
-      totalWorkflows: workflows.length,
-      successfulVectors: allVectors.length,
-      indexName: indexName,
-      model: 'text-embedding-3-small',
-      batchSize: BATCH_SIZE,
-      upsertBatchSize: UPSERT_BATCH_SIZE
+      timestamp: new Date().toISOString(),
+      originalIndex: ORIGINAL_INDEX,
+      newIndex: NEW_INDEX_NAME,
+      sourceFile: path.basename(descriptionsFile),
+      totalWorkflows: workflowsWithDescriptions.length,
+      processed: totalProcessed,
+      errors: errors.length,
+      indexStats,
+      errors: errors
     };
     
+    const reportPath = path.join(DESCRIPTIONS_DIR, `reindex-report-${new Date().toISOString().split('T')[0]}.json`);
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
     
-    console.log('\n🎉 RÉINDEXATION TERMINÉE AVEC SUCCÈS !');
-    console.log(`📊 ${allVectors.length} workflows indexés avec leurs descriptions GPT-4`);
-    console.log(`📝 Rapport sauvegardé: ${reportPath}`);
-    console.log('\n💡 Votre système RAG va maintenant être beaucoup plus précis !');
+    // 7. Résultats finaux
+    const duration = Math.round((Date.now() - startTime) / 1000);
     
+         console.log('\n🎉 RÉINDEXATION TERMINÉE !');
+     console.log(`⏱️  Durée: ${duration} secondes`);
+     console.log(`📊 Workflows avec descriptions valides: ${workflowsWithDescriptions.length}`);
+     console.log(`✅ Workflows indexés avec succès: ${totalProcessed}`);
+     console.log(`❌ Batches avec erreurs: ${errors.length}`);
+     console.log(`🆕 Nouvel index: ${NEW_INDEX_NAME}`);
+     console.log(`📄 Rapport: ${reportPath}`);
+    
+    console.log('\n📋 PROCHAINES ÉTAPES:');
+    console.log(`1. Mettre à jour votre .env:`);
+    console.log(`   PINECONE_WORKFLOW_INDEX=${NEW_INDEX_NAME}`);
+    console.log(`2. Redémarrer votre backend pour utiliser le nouvel index`);
+    console.log(`3. Tester les recherches avec le nouvel index`);
+    
+    if (errors.length > 0) {
+      console.log(`\n⚠️  Erreurs rencontrées (voir ${reportPath}):`);
+      errors.forEach(error => {
+        console.log(`  - Batch ${error.batch}: ${error.error}`);
+      });
+    }
+
   } catch (error) {
-    console.error('❌ Erreur principale:', error);
+    console.error('\n❌ ERREUR FATALE:', error.message);
+    console.error(error.stack);
     process.exit(1);
   }
 }
 
-// Test de recherche après réindexation
-async function testSearch(query = "workflow qui envoie des emails automatiquement") {
-  try {
-    console.log(`\n🔍 Test de recherche: "${query}"`);
-    
-    // Générer embedding pour la requête
-    const queryEmbedding = await openai.embeddings.create({
-      model: 'text-embedding-3-small',
-      input: query,
-      encoding_format: 'float'
-    });
-    
-    // Rechercher dans Pinecone
-    const indexName = process.env.PINECONE_WORKFLOW_INDEX || 'n8n-workflows';
-    const index = pinecone.index(indexName);
-    
-    const searchResults = await index.query({
-      vector: queryEmbedding.data[0].embedding,
-      topK: 5,
-      includeMetadata: true
-    });
-    
-    console.log(`📋 ${searchResults.matches?.length || 0} résultats trouvés:`);
-    
-    if (searchResults.matches) {
-      searchResults.matches.forEach((match, i) => {
-        console.log(`\n${i + 1}. ${match.metadata?.name} (score: ${match.score.toFixed(3)})`);
-        console.log(`   📁 ${match.metadata?.filename}`);
-        console.log(`   📝 ${match.metadata?.descriptionSnippet?.substring(0, 150)}...`);
-      });
-    }
-    
-  } catch (error) {
-    console.error('❌ Erreur test recherche:', error.message);
-  }
-}
-
-// Exécuter si appelé directement
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().then(() => {
-    // Test optionnel après réindexation
-    if (process.argv.includes('--test')) {
-      return testSearch();
-    }
-  });
-}
-
-export { main, testSearch }; 
+// Mode test uniquement
+if (process.argv.includes('--test-only')) {
+  console.log('🧪 Mode test uniquement...');
+  const index = pinecone.index(NEW_INDEX_NAME);
+  await testNewIndex(index);
+} else {
+  // Exécution normale
+  main().catch(console.error);
+} 
