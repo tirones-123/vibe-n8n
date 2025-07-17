@@ -1,102 +1,134 @@
 export default function handler(req, res) {
-  // Headers CORS
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  // Route pour le health check
+  if (req.method === 'GET' && req.url === '/api') {
+    return res.status(200).json({
+      status: 'ok',
+      environment: 'RAG Workflow Backend',
+      timestamp: new Date().toISOString(),
+      endpoints: {
+        '/api/claude': 'POST - Génération de workflows (SSE)',
+        '/api/fallback': 'POST - Récupération fallback',
+        '/api/status': 'GET - Monitoring du système'
+      }
+    });
   }
 
-  // Page d'accueil simple
-  const html = `
-    <!DOCTYPE html>
-    <html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>n8n AI Assistant Backend</title>
-        <style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 2rem;
-                line-height: 1.6;
-                background: #f9fafb;
-            }
-            .container {
-                background: white;
-                padding: 2rem;
-                border-radius: 10px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            h1 { color: #1f2937; margin-bottom: 1rem; }
-            .status { 
-                background: #10b981;
-                color: white;
-                padding: 0.75rem 1rem;
-                border-radius: 6px;
-                margin: 1rem 0;
-                font-weight: 500;
-            }
-            .endpoint {
-                background: #f3f4f6;
-                padding: 1rem;
-                border-radius: 6px;
-                font-family: 'Monaco', 'Menlo', monospace;
-                margin: 1rem 0;
-                border-left: 4px solid #3b82f6;
-            }
-            .method { color: #059669; font-weight: bold; }
-            .url { color: #1f2937; }
-            ul { color: #4b5563; }
-            li { margin: 0.5rem 0; }
-            a { color: #3b82f6; text-decoration: none; }
-            a:hover { text-decoration: underline; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>🚀 n8n Workflow RAG Backend</h1>
-            
-            <div class="status">
-                ✅ Backend RAG déployé et fonctionnel
-            </div>
-            
-            <h2>📡 Endpoint API</h2>
-            <div class="endpoint">
-                <span class="method">POST</span> <span class="url">/api/claude</span>
-            </div>
-            
-            <h2>📋 Configuration requise</h2>
-            <ul>
-                <li><strong>Content-Type:</strong> application/json</li>
-                <li><strong>Authorization:</strong> Bearer YOUR_API_KEY</li>
-                <li><strong>Body:</strong> { "prompt": "your workflow description" }</li>
-            </ul>
-            
-            <h2>🔧 Variables d'environnement</h2>
-            <ul>
-                <li><strong>CLAUDE_API_KEY:</strong> ${process.env.CLAUDE_API_KEY ? '✅ Configurée' : '❌ Manquante'}</li>
-                <li><strong>BACKEND_API_KEY:</strong> ${process.env.BACKEND_API_KEY ? '✅ Configurée' : '❌ Manquante'}</li>
-            </ul>
-            
-            <h2>📚 Documentation</h2>
-            <p>
-                Consultez le 
-                <a href="https://github.com/tirones-123/vibe-n8n" target="_blank">README sur GitHub</a>
-                pour les instructions complètes.
-            </p>
-        </div>
-    </body>
-    </html>
-  `;
+  // Route pour le monitoring
+  if (req.method === 'GET' && req.url === '/api/status') {
+    return res.status(200).json({
+      status: 'operational',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      environment: process.env.NODE_ENV || 'development'
+    });
+  }
 
-  res.setHeader('Content-Type', 'text/html');
-  res.status(200).send(html);
-} 
+  // Route de fallback pour récupérer les workflows
+  if (req.method === 'POST' && req.url === '/api/fallback') {
+    return handleFallbackRequest(req, res);
+  }
+
+  return res.status(404).json({
+    error: 'Not Found',
+    message: 'Endpoint not found',
+    availableRoutes: ['/api', '/api/claude', '/api/fallback', '/api/status']
+  });
+}
+
+// Cache temporaire pour les workflows (en production, utiliser Redis)
+const workflowCache = new Map();
+
+async function handleFallbackRequest(req, res) {
+  // Vérification de l'authentification
+  const authHeader = req.headers.authorization;
+  const expectedAuth = `Bearer ${process.env.BACKEND_API_KEY}`;
+  
+  if (!authHeader || authHeader !== expectedAuth) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { sessionId, action } = req.body;
+
+  if (!sessionId) {
+    return res.status(400).json({ error: 'SessionId is required' });
+  }
+
+  try {
+    switch (action) {
+      case 'check_status':
+        // Vérifier le statut d'une session
+        const status = workflowCache.get(sessionId);
+        if (!status) {
+          return res.status(404).json({ 
+            error: 'Session not found',
+            sessionId 
+          });
+        }
+        
+        return res.status(200).json({
+          sessionId,
+          status: status.stage,
+          progress: status.progress || 0,
+          lastUpdate: status.lastUpdate
+        });
+
+      case 'get_workflow':
+        // Récupérer un workflow terminé
+        const workflow = workflowCache.get(`${sessionId}_result`);
+        if (!workflow) {
+          return res.status(404).json({ 
+            error: 'Workflow not ready or not found',
+            sessionId 
+          });
+        }
+        
+        // Nettoyer le cache après récupération
+        workflowCache.delete(`${sessionId}_result`);
+        workflowCache.delete(sessionId);
+        
+        return res.status(200).json({
+          sessionId,
+          success: true,
+          workflow: workflow.workflow,
+          explanation: workflow.explanation,
+          retrievedAt: new Date().toISOString()
+        });
+
+      case 'cancel_session':
+        // Annuler une session
+        workflowCache.delete(sessionId);
+        workflowCache.delete(`${sessionId}_result`);
+        
+        return res.status(200).json({
+          sessionId,
+          cancelled: true
+        });
+
+      default:
+        return res.status(400).json({ 
+          error: 'Invalid action',
+          validActions: ['check_status', 'get_workflow', 'cancel_session']
+        });
+    }
+
+  } catch (error) {
+    console.error('Fallback API Error:', error);
+    return res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+}
+
+// Export des fonctions pour utilisation dans d'autres modules
+export { workflowCache }; 

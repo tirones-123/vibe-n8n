@@ -3,6 +3,11 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import fs from 'fs/promises';
 import path from 'path';
+import zlib from 'zlib';
+import { promisify } from 'util';
+
+const gzip = promisify(zlib.gzip);
+const gunzip = promisify(zlib.gunzip);
 
 export class WorkflowRAGService {
   constructor() {
@@ -30,6 +35,152 @@ export class WorkflowRAGService {
     this.workflowsDir = path.join(process.cwd(), 'workflows');
     // Optimized workflows for RAG context (Claude prompts)
     this.optimizedWorkflowsDir = path.join(process.cwd(), 'workflows-rag-optimized');
+    
+    // Configuration pour gros workflows
+    this.MAX_CHUNK_SIZE = 32768; // 32KB par chunk SSE
+    this.COMPRESSION_THRESHOLD = 10240; // Compresser si > 10KB
+  }
+
+  /**
+   * Compresse et découpe un gros workflow pour transmission SSE
+   */
+  async prepareWorkflowForTransmission(workflow, explanation) {
+    const fullPayload = {
+      workflow,
+      explanation
+    };
+    
+    const jsonString = JSON.stringify(fullPayload);
+    const sizeKB = Buffer.byteLength(jsonString, 'utf8') / 1024;
+    
+    console.log(`📊 Workflow size: ${sizeKB.toFixed(1)}KB`);
+    
+    // Si petit workflow, envoi direct
+    if (sizeKB < this.COMPRESSION_THRESHOLD / 1024) {
+      return {
+        type: 'direct',
+        chunks: [fullPayload]
+      };
+    }
+    
+    // Compression pour workflows moyens (10KB - 100KB)
+    if (sizeKB < 100) {
+      try {
+        const compressed = await gzip(jsonString);
+        const compressedSize = compressed.length / 1024;
+        console.log(`🗜️ Compressed: ${sizeKB.toFixed(1)}KB → ${compressedSize.toFixed(1)}KB`);
+        
+        return {
+          type: 'compressed',
+          chunks: [{
+            compressed: true,
+            data: compressed.toString('base64'),
+            originalSize: jsonString.length
+          }]
+        };
+      } catch (error) {
+        console.error('❌ Compression failed:', error);
+        // Fallback au chunking
+      }
+    }
+    
+    // Chunking pour très gros workflows (>100KB)
+    console.log(`📦 Chunking large workflow (${sizeKB.toFixed(1)}KB)`);
+    const chunks = [];
+    const chunkSize = this.MAX_CHUNK_SIZE;
+    
+    for (let i = 0; i < jsonString.length; i += chunkSize) {
+      const chunk = jsonString.slice(i, i + chunkSize);
+      chunks.push({
+        index: Math.floor(i / chunkSize),
+        total: Math.ceil(jsonString.length / chunkSize),
+        data: chunk,
+        isLast: i + chunkSize >= jsonString.length
+      });
+    }
+    
+    console.log(`📦 Created ${chunks.length} chunks`);
+    
+    return {
+      type: 'chunked',
+      chunks
+    };
+  }
+
+  /**
+   * Envoie le workflow selon le type de transmission
+   */
+  async sendWorkflowTransmission(transmission, onProgress) {
+    if (!onProgress) return;
+
+    switch (transmission.type) {
+      case 'direct':
+        // Envoi direct - petit workflow
+        if (onProgress) {
+          onProgress('complete', {
+            message: 'Workflow généré avec succès !',
+            success: true,
+            workflow: transmission.chunks[0].workflow,
+            explanation: transmission.chunks[0].explanation
+          });
+        }
+        break;
+
+      case 'compressed':
+        // Envoi compressé - workflow moyen
+        if (onProgress) {
+          onProgress('compressed_complete', {
+            message: 'Workflow compressé généré avec succès !',
+            success: true,
+            compressed: true,
+            data: transmission.chunks[0].data,
+            originalSize: transmission.chunks[0].originalSize
+          });
+        }
+        break;
+
+      case 'chunked':
+        // Envoi par chunks - gros workflow
+        const chunks = transmission.chunks;
+        
+        // Envoyer l'info de début de chunking
+        if (onProgress) {
+          onProgress('chunking_start', {
+            message: `Envoi du workflow en ${chunks.length} parties...`,
+            totalChunks: chunks.length
+          });
+        }
+        
+        // Envoyer chaque chunk avec un délai
+        for (const chunk of chunks) {
+          if (onProgress) {
+            onProgress('chunk', {
+              message: `Partie ${chunk.index + 1}/${chunk.total}`,
+              index: chunk.index,
+              total: chunk.total,
+              data: chunk.data,
+              isLast: chunk.isLast
+            });
+          }
+          
+          // Délai entre chunks pour éviter l'overflow
+          if (!chunk.isLast) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        }
+        
+        // Signal de fin
+        if (onProgress) {
+          onProgress('chunking_complete', {
+            message: 'Workflow volumineux transmis avec succès !',
+            totalChunks: chunks.length
+          });
+        }
+        break;
+
+      default:
+        console.error('❌ Type de transmission inconnu:', transmission.type);
+    }
   }
 
   /**
@@ -457,39 +608,61 @@ ${baseWorkflow ?
           parsedResponse.workflow.name = workflowName;
           
           if (onProgress) {
-            onProgress('success', { 
-              message: 'Workflow généré avec succès !',
+            onProgress('compression', { 
+              message: 'Préparation du workflow pour transmission...',
               nodesCount: parsedResponse.workflow.nodes?.length || 0
             });
           }
+          
+          // Préparer la transmission (compression/chunking si nécessaire)
+          const transmission = await this.prepareWorkflowForTransmission(
+            parsedResponse.workflow, 
+            parsedResponse.explanation
+          );
+          
+          // Envoyer selon le type de transmission
+          await this.sendWorkflowTransmission(transmission, onProgress);
           
           return {
             success: true,
             workflow: parsedResponse.workflow,
             explanation: parsedResponse.explanation,
-            similarWorkflows: similarWorkflows.map(w => w.name)
+            similarWorkflows: similarWorkflows.map(w => w.name),
+            transmissionType: transmission.type
           };
         } else {
           // Ancienne structure - juste le workflow
           parsedResponse.name = workflowName;
           
+          const explanation = {
+            summary: "Workflow généré automatiquement",
+            flow: "Flux de données selon les spécifications demandées",
+            nodes: "Nodes sélectionnés en fonction des exemples similaires",
+            notes: "Configurez les credentials nécessaires avant utilisation"
+          };
+          
           if (onProgress) {
-            onProgress('success', { 
-              message: 'Workflow généré avec succès (format simple) !',
+            onProgress('compression', { 
+              message: 'Préparation du workflow pour transmission...',
               nodesCount: parsedResponse.nodes?.length || 0
             });
           }
           
+          // Préparer la transmission
+          const transmission = await this.prepareWorkflowForTransmission(
+            parsedResponse, 
+            explanation
+          );
+          
+          // Envoyer selon le type de transmission
+          await this.sendWorkflowTransmission(transmission, onProgress);
+          
           return {
             success: true,
             workflow: parsedResponse,
-            explanation: {
-              summary: "Workflow généré automatiquement",
-              flow: "Flux de données selon les spécifications demandées",
-              nodes: "Nodes sélectionnés en fonction des exemples similaires",
-              notes: "Configurez les credentials nécessaires avant utilisation"
-            },
-            similarWorkflows: similarWorkflows.map(w => w.name)
+            explanation,
+            similarWorkflows: similarWorkflows.map(w => w.name),
+            transmissionType: transmission.type
           };
         }
 

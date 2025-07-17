@@ -6,6 +6,10 @@
 // Importer la configuration
 importScripts('./config.js');
 
+// State pour les gros workflows
+let chunkBuffer = {};
+let compressionSupported = true;
+
 // Écoute des messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'SEND_TO_CLAUDE') {
@@ -35,6 +39,116 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 /**
+ * Décompresse les données base64 gzip (si supporté)
+ */
+async function decompressData(compressedBase64) {
+  try {
+    // Convertir base64 en bytes
+    const compressedBytes = Uint8Array.from(atob(compressedBase64), c => c.charCodeAt(0));
+    
+    // Utiliser CompressionStream/DecompressionStream si disponible (Chrome 103+)
+    if ('DecompressionStream' in window) {
+      const stream = new DecompressionStream('gzip');
+      const writer = stream.writable.getWriter();
+      const reader = stream.readable.getReader();
+      
+      writer.write(compressedBytes);
+      writer.close();
+      
+      const chunks = [];
+      let done = false;
+      
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) chunks.push(value);
+      }
+      
+      // Concat all chunks
+      const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const result = new Uint8Array(totalLength);
+      let offset = 0;
+      
+      for (const chunk of chunks) {
+        result.set(chunk, offset);
+        offset += chunk.length;
+      }
+      
+      return new TextDecoder().decode(result);
+    } else {
+      console.warn('⚠️ DecompressionStream not supported, using fallback');
+      compressionSupported = false;
+      throw new Error('Compression not supported in this browser version');
+    }
+  } catch (error) {
+    console.error('❌ Decompression failed:', error);
+    throw error;
+  }
+}
+
+/**
+ * Gère les chunks de gros workflows
+ */
+function handleWorkflowChunk(data, tabId) {
+  const sessionId = `${tabId}_workflow`;
+  
+  if (!chunkBuffer[sessionId]) {
+    chunkBuffer[sessionId] = {
+      chunks: [],
+      totalChunks: data.total,
+      receivedChunks: 0
+    };
+  }
+  
+  const buffer = chunkBuffer[sessionId];
+  buffer.chunks[data.index] = data.data;
+  buffer.receivedChunks++;
+  
+  console.log(`📦 Chunk reçu: ${data.index + 1}/${data.total} (${buffer.receivedChunks}/${data.total})`);
+  
+  // Vérifier si tous les chunks sont reçus
+  if (buffer.receivedChunks === data.total) {
+    console.log('✅ Tous les chunks reçus, assemblage...');
+    
+    try {
+      // Assembler les chunks dans l'ordre
+      const completeData = buffer.chunks.join('');
+      const workflowData = JSON.parse(completeData);
+      
+      console.log('✅ Workflow assemblé avec succès');
+      
+      // Nettoyer le buffer
+      delete chunkBuffer[sessionId];
+      
+      // Envoyer le workflow complet
+      chrome.tabs.sendMessage(tabId, {
+        type: 'WORKFLOW_COMPLETE',
+        workflow: workflowData.workflow,
+        explanation: workflowData.explanation,
+        message: `Workflow volumineux assemblé (${data.total} parties)`
+      });
+      
+    } catch (error) {
+      console.error('❌ Erreur assemblage chunks:', error);
+      delete chunkBuffer[sessionId];
+      
+      chrome.tabs.sendMessage(tabId, {
+        type: 'WORKFLOW_ERROR',
+        error: `Erreur assemblage workflow: ${error.message}`
+      });
+    }
+  } else {
+    // Notifier du progress
+    chrome.tabs.sendMessage(tabId, {
+      type: 'WORKFLOW_PROGRESS',
+      stage: 'chunking',
+      message: `Réception partie ${buffer.receivedChunks}/${data.total}...`,
+      progress: Math.round((buffer.receivedChunks / data.total) * 100)
+    });
+  }
+}
+
+/**
  * Envoie une requête au backend workflow RAG
  */
 async function handleWorkflowRAGRequest(prompt, tabId) {
@@ -55,9 +169,9 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   console.log('📦 Payload:', JSON.stringify(requestBody));
 
   // Timeout de sécurité pour éviter le chargement infini
-  const timeoutMs = 900000; // 15 minutes (générations longues possibles)
+  const timeoutMs = 1800000; // 30 minutes (pour gros workflows)
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Timeout: La génération prend trop de temps (15 min)')), timeoutMs);
+    setTimeout(() => reject(new Error('Timeout: La génération prend trop de temps (30 min)')), timeoutMs);
   });
 
   try {
@@ -91,8 +205,8 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     let eventCount = 0;
     let lastEventTime = Date.now();
 
-    // Timeout pour le streaming (si pas d'événement pendant 5min)
-    const streamingTimeoutMs = 300000;
+    // Timeout pour le streaming (si pas d'événement pendant 10min)
+    const streamingTimeoutMs = 600000;
     
     const processStream = async () => {
       while (true) {
@@ -266,7 +380,17 @@ async function processWorkflowRAGResponse(data, tabId) {
         type: 'WORKFLOW_PROGRESS',
         stage: data.data.stage,
         message: data.data.message,
-        workflows: data.data.workflows
+        workflows: data.data.workflows,
+        progress: data.data.progress
+      });
+      break;
+
+    case 'compression':
+      chrome.tabs.sendMessage(tabId, {
+        type: 'WORKFLOW_PROGRESS',
+        stage: 'compression',
+        message: data.data.message,
+        nodesCount: data.data.nodesCount
       });
       break;
 
@@ -288,6 +412,61 @@ async function processWorkflowRAGResponse(data, tabId) {
           error: data.data.error || 'Échec de génération de workflow'
         });
       }
+      break;
+
+    case 'compressed_complete':
+      if (data.data.success && data.data.compressed) {
+        console.log('✅ Workflow compressé reçu, décompression...');
+        
+        try {
+          // Décompresser les données
+          const decompressedData = await decompressData(data.data.data);
+          const workflowData = JSON.parse(decompressedData);
+          
+          console.log('✅ Workflow décompressé avec succès');
+          
+          // Envoyer le workflow décompressé
+          chrome.tabs.sendMessage(tabId, {
+            type: 'WORKFLOW_COMPLETE',
+            workflow: workflowData.workflow,
+            explanation: workflowData.explanation,
+            message: 'Workflow compressé décompressé avec succès !'
+          });
+          
+        } catch (error) {
+          console.error('❌ Erreur décompression:', error);
+          chrome.tabs.sendMessage(tabId, {
+            type: 'WORKFLOW_ERROR',
+            error: `Erreur décompression: ${error.message}`
+          });
+        }
+      } else {
+        console.error('❌ Échec de génération compressée');
+        chrome.tabs.sendMessage(tabId, {
+          type: 'WORKFLOW_ERROR',
+          error: 'Échec de génération de workflow compressé'
+        });
+      }
+      break;
+
+    case 'chunking_start':
+      console.log(`📦 Début réception chunks: ${data.data.totalChunks} parties`);
+      chrome.tabs.sendMessage(tabId, {
+        type: 'WORKFLOW_PROGRESS',
+        stage: 'chunking',
+        message: data.data.message,
+        totalChunks: data.data.totalChunks
+      });
+      break;
+
+    case 'chunk':
+      console.log(`📦 Chunk reçu: ${data.data.index + 1}/${data.data.total}`);
+      handleWorkflowChunk(data.data, tabId);
+      break;
+
+    case 'chunking_complete':
+      console.log('✅ Chunking terminé');
+      // Le message sera envoyé par handleWorkflowChunk
       break;
 
     case 'error':
