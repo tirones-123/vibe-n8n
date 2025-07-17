@@ -299,11 +299,17 @@ The workflow should:
 - Be fully functional and ready to import into n8n
 - Use appropriate nodes based on the user's needs
 - Use the native n8n node types maximum as possible, take the examples as reference.
+ - Always use the native node when it exists. ex:
+• OpenAI ⇒n8n-nodes-base.openai
+• Slack ⇒n8n-nodes-base.slack
+• Google Docs / Drive ⇒n8n-nodes-base.googleDocs / googleDrive
+- Fall back to HTTP Request only if no dedicated node is available.
 - Use the settings nodes of the examples as reference
 - Have proper connections between nodes
 - Include all necessary configurations
+- Use the credentials of the examples as reference
+- Use n8n-nodes-base.openai node for AI agents
 - Use the exact node type formats from the examples (e.g., "nodes-base.webhook")
-- DO NOT use http request node when possible, always prefer the node of the tool or agent + node
 - The references in the connections section must point to the name property of each node.
 
 Respond with a JSON object containing both the workflow and an explanation:
