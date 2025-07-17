@@ -220,7 +220,13 @@ export class WorkflowRAGService {
       // Transformer les résultats
       const workflows = [];
       
-      console.log(`🔍 Pinecone found ${searchResults.matches?.length || 0} matches for "${description}"`);
+      console.log(`🔍 Pinecone found ${searchResults.matches?.length || 0} matches for "${description.substring(0, 100)}..."`);
+      console.log(`📊 Pinecone scores summary:`);
+      if (searchResults.matches) {
+        searchResults.matches.forEach((match, i) => {
+          console.log(`  ${i + 1}. Score: ${match.score.toFixed(3)} - "${match.metadata?.name || 'Unknown'}" (${match.metadata?.filename})`);
+        });
+      }
       
       for (const match of searchResults.matches || []) {
         const workflow = {
@@ -357,10 +363,16 @@ Based on these examples, create a new workflow that fulfills the user's requirem
       };
       
       try {
-        await fs.writeFile(path.join(process.cwd(), 'debug', 'claude-prompt.json'), JSON.stringify(debugData, null, 2));
-        console.log('💾 Debug: Prompt sauvegardé dans debug/claude-prompt.json');
+        // Créer le dossier debug s'il n'existe pas
+        const debugDir = path.join(process.cwd(), 'debug');
+        await fs.mkdir(debugDir, { recursive: true });
+        
+        await fs.writeFile(path.join(debugDir, 'claude-prompt.json'), JSON.stringify(debugData, null, 2));
+        await fs.writeFile(path.join(debugDir, 'system-prompt.txt'), systemPrompt);
+        await fs.writeFile(path.join(debugDir, 'user-prompt.txt'), userPrompt);
+        console.log('💾 Debug: Prompts sauvegardés dans debug/');
       } catch (e) {
-        console.log('⚠️  Debug: Impossible de sauvegarder le prompt');
+        console.log('⚠️  Debug: Impossible de sauvegarder les prompts:', e.message);
       }
 
       // Appeler Claude
@@ -557,6 +569,19 @@ ${baseWorkflow ?
         });
       }
 
+      // LOGS DÉTAILLÉS DES PROMPTS
+      console.log(`\n🤖 === CLAUDE PROMPTS ===`);
+      console.log(`📝 System Prompt (${systemPrompt.length} chars):`);
+      console.log(systemPrompt);
+      console.log(`\n📋 User Prompt (${userPrompt.length} chars):`);
+      console.log(userPrompt);
+      console.log(`\n🔢 Total prompt length: ${systemPrompt.length + userPrompt.length} chars`);
+      console.log(`📊 Similar workflows loaded: ${similarWorkflows.length}`);
+      similarWorkflows.forEach((w, i) => {
+        console.log(`  ${i + 1}. "${w.name}" (${w.filename}) - score: ${w.relevanceScore.toFixed(3)} - content: ${w.workflowContent.length} chars`);
+      });
+      console.log(`🤖 === END PROMPTS ===\n`);
+
       // LOGGING TEMPORAIRE : Sauvegarder le prompt complet pour debug
       const debugData = {
         timestamp: new Date().toISOString(),
@@ -577,10 +602,16 @@ ${baseWorkflow ?
       };
       
       try {
-        await fs.writeFile(path.join(process.cwd(), 'debug', 'claude-prompt.json'), JSON.stringify(debugData, null, 2));
-        console.log('💾 Debug: Prompt sauvegardé dans debug/claude-prompt.json');
+        // Créer le dossier debug s'il n'existe pas
+        const debugDir = path.join(process.cwd(), 'debug');
+        await fs.mkdir(debugDir, { recursive: true });
+        
+        await fs.writeFile(path.join(debugDir, 'claude-prompt-streaming.json'), JSON.stringify(debugData, null, 2));
+        await fs.writeFile(path.join(debugDir, 'system-prompt-streaming.txt'), systemPrompt);
+        await fs.writeFile(path.join(debugDir, 'user-prompt-streaming.txt'), userPrompt);
+        console.log('💾 Debug: Prompts streaming sauvegardés dans debug/');
       } catch (e) {
-        console.log('⚠️  Debug: Impossible de sauvegarder le prompt');
+        console.log('⚠️  Debug: Impossible de sauvegarder les prompts streaming:', e.message);
       }
 
       // Appeler Claude
@@ -603,6 +634,12 @@ ${baseWorkflow ?
 
       const generatedText = response.content[0]?.type === 'text' ? response.content[0].text : '';
       console.log('✅ AI response received');
+      
+      // LOGS DÉTAILLÉS DE LA RÉPONSE
+      console.log(`\n🤖 === CLAUDE RESPONSE ===`);
+      console.log(`📜 Raw response (${generatedText.length} chars):`);
+      console.log(generatedText);
+      console.log(`🤖 === END RESPONSE ===\n`);
 
       // Parser le JSON avec amélioration robustesse
       try {
@@ -612,11 +649,15 @@ ${baseWorkflow ?
         
         // Sauvegarder la réponse brute pour debug
         try {
-          await fs.writeFile(path.join(process.cwd(), 'debug', 'claude-raw-response.txt'), generatedText);
-          await fs.writeFile(path.join(process.cwd(), 'debug', 'claude-extracted-json.txt'), jsonText);
+          // Créer le dossier debug s'il n'existe pas
+          const debugDir = path.join(process.cwd(), 'debug');
+          await fs.mkdir(debugDir, { recursive: true });
+          
+          await fs.writeFile(path.join(debugDir, 'claude-raw-response.txt'), generatedText);
+          await fs.writeFile(path.join(debugDir, 'claude-extracted-json.txt'), jsonText);
           console.log('💾 Debug: Réponse brute sauvegardée dans debug/');
         } catch (e) {
-          console.log('⚠️  Debug: Impossible de sauvegarder la réponse');
+          console.log('⚠️  Debug: Impossible de sauvegarder la réponse:', e.message);
         }
         
         // Nettoyer le JSON en supprimant les éventuels caractères parasites
