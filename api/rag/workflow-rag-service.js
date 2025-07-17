@@ -360,14 +360,11 @@ The workflow should:
 - Follow n8n workflow structure conventions
 - Use appropriate nodes based on the user's needs
 - Use the native n8n node types maximum as possible, take the examples as reference.
-- Use the parameters of the nodes and their writing order in the examples as reference
+- Use all the parameters of the nodes need and follow it writing order.
 - Have proper connections between nodes
 - Include all necessary configurations
 - Use the exact node type formats from the examples (e.g., "nodes-base.webhook")
-- When you can use http request node prefer to use the native node when it exists. ex: 
-• OpenAI ⇒n8n-nodes-base.openai
-• Slack ⇒n8n-nodes-base.slack
-• Google Docs ⇒n8n-nodes-base.googleDocs
+- When you can use http request node prefer to use the native node when it exists.
 - The references in the connections section must point to the name property of each node.
 
 Respond with a JSON object containing both the workflow and an explanation:
