@@ -153,7 +153,7 @@ Based on these examples, create a new workflow that fulfills the user's requirem
     console.log('📤 Envoi à Claude maintenant...');
 
     // Générer le workflow avec le même service
-    const generationResult = await ragService.generateWorkflowFromExamples(testPrompt, {
+    const generationResult = await ragService.generateWorkflowFromExamplesWithStreaming(testPrompt, {
       topK: 3,
       workflowName: 'Blog Article Generation Workflow'
     });

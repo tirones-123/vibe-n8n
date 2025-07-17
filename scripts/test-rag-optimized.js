@@ -70,7 +70,7 @@ async function testRAGOptimized() {
         // Étape 3: Construction du contexte pour Claude
         console.log('\n🤖 3. Préparation du contexte Claude...');
         
-        // Simuler la construction du prompt (comme dans generateWorkflowFromExamples)
+        // Simuler la construction du prompt (comme dans generateWorkflowFromExamplesWithStreaming)
         const systemPrompt = `You are an n8n workflow expert. Based on the following similar workflow examples, create a new workflow that meets the user's requirement.
 
 The workflow should:

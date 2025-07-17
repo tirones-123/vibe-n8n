@@ -52,7 +52,7 @@ async function testRAGSystem() {
     // Test de génération (optionnel si des workflows ont été trouvés)
     if (searchResults.results.length > 0) {
       console.log('\n🤖 Test de génération de workflow...');
-      const generationResult = await ragService.generateWorkflowFromExamples(
+      const generationResult = await ragService.generateWorkflowFromExamplesWithStreaming(
         'Create a simple workflow that sends a Slack message',
         {
           topK: 2,
