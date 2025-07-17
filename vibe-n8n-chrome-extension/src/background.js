@@ -42,12 +42,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * Décompresse les données base64 gzip (si supporté)
  */
 async function decompressData(compressedBase64) {
+  console.log('🗜️ Tentative de décompression, taille:', compressedBase64.length, 'chars');
+  
   try {
     // Convertir base64 en bytes
     const compressedBytes = Uint8Array.from(atob(compressedBase64), c => c.charCodeAt(0));
+    console.log('📦 Données décodées base64, taille:', compressedBytes.length, 'bytes');
     
-    // Utiliser CompressionStream/DecompressionStream si disponible (Chrome 103+)
-    if ('DecompressionStream' in window) {
+    // Dans le service worker, utiliser l'API DecompressionStream si disponible
+    if (typeof DecompressionStream !== 'undefined') {
+      console.log('✅ DecompressionStream disponible, décompression...');
+      
       const stream = new DecompressionStream('gzip');
       const writer = stream.writable.getWriter();
       const reader = stream.readable.getReader();
@@ -74,11 +79,16 @@ async function decompressData(compressedBase64) {
         offset += chunk.length;
       }
       
-      return new TextDecoder().decode(result);
+      const decompressed = new TextDecoder().decode(result);
+      console.log('✅ Décompression réussie, taille finale:', decompressed.length, 'chars');
+      return decompressed;
     } else {
-      console.warn('⚠️ DecompressionStream not supported, using fallback');
+      console.warn('⚠️ DecompressionStream not available in service worker context');
+      console.log('🔄 Fallback: Demander au content script de décompresser');
+      
+      // Fallback: demander au content script de décompresser (qui a accès à window)
       compressionSupported = false;
-      throw new Error('Compression not supported in this browser version');
+      throw new Error('Compression not supported in service worker - using fallback');
     }
   } catch (error) {
     console.error('❌ Decompression failed:', error);
@@ -251,7 +261,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
               const data = JSON.parse(line.slice(6));
               eventCount++;
               lastEventTime = Date.now();
-              console.log('📡 Événement reçu:', data.type);
+              console.log('📡 Événement reçu:', data.type, '| Data:', JSON.stringify(data).substring(0, 200) + '...');
               await processWorkflowRAGResponse(data, tabId);
             } catch (e) {
               // Ignorer les erreurs de parsing
@@ -385,6 +395,30 @@ async function processWorkflowRAGResponse(data, tabId) {
       });
       break;
 
+    case 'context_building':
+      chrome.tabs.sendMessage(tabId, {
+        type: 'WORKFLOW_PROGRESS',
+        stage: 'context_building',
+        message: data.data.message,
+        workflows: data.data.workflows
+      });
+      break;
+
+    case 'claude_call':
+      chrome.tabs.sendMessage(tabId, {
+        type: 'WORKFLOW_BUILDING',
+        message: data.data.message
+      });
+      break;
+
+    case 'parsing':
+      chrome.tabs.sendMessage(tabId, {
+        type: 'WORKFLOW_PROGRESS',
+        stage: 'parsing',
+        message: data.data.message
+      });
+      break;
+
     case 'compression':
       chrome.tabs.sendMessage(tabId, {
         type: 'WORKFLOW_PROGRESS',
@@ -415,15 +449,17 @@ async function processWorkflowRAGResponse(data, tabId) {
       break;
 
     case 'compressed_complete':
+      console.log('🗜️ Événement compressed_complete reçu:', data.data);
+      
       if (data.data.success && data.data.compressed) {
         console.log('✅ Workflow compressé reçu, décompression...');
         
         try {
-          // Décompresser les données
+          // Essayer la décompression directe
           const decompressedData = await decompressData(data.data.data);
           const workflowData = JSON.parse(decompressedData);
           
-          console.log('✅ Workflow décompressé avec succès');
+          console.log('✅ Workflow décompressé avec succès via service worker');
           
           // Envoyer le workflow décompressé
           chrome.tabs.sendMessage(tabId, {
@@ -434,10 +470,14 @@ async function processWorkflowRAGResponse(data, tabId) {
           });
           
         } catch (error) {
-          console.error('❌ Erreur décompression:', error);
+          console.error('❌ Erreur décompression service worker:', error);
+          console.log('🔄 Fallback: Envoi au content script pour décompression');
+          
+          // Fallback: Envoyer les données compressées au content script
           chrome.tabs.sendMessage(tabId, {
-            type: 'WORKFLOW_ERROR',
-            error: `Erreur décompression: ${error.message}`
+            type: 'DECOMPRESS_WORKFLOW',
+            compressedData: data.data.data,
+            originalSize: data.data.originalSize
           });
         }
       } else {
@@ -469,6 +509,11 @@ async function processWorkflowRAGResponse(data, tabId) {
       // Le message sera envoyé par handleWorkflowChunk
       break;
 
+    case 'session_complete':
+      console.log('📈 Session terminée avec succès:', data.data);
+      // Pas besoin d'action spécifique, juste log
+      break;
+
     case 'error':
       chrome.tabs.sendMessage(tabId, {
         type: 'WORKFLOW_ERROR',
@@ -477,7 +522,7 @@ async function processWorkflowRAGResponse(data, tabId) {
       break;
 
     default:
-      console.log('⚠️ Type de message inconnu:', data.type);
+      console.log('⚠️ Type de message inconnu:', data.type, '| Data:', data.data);
   }
 }
 

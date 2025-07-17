@@ -385,6 +385,11 @@ if (!isN8n || !isWorkflowPage) {
         responseDiv.appendChild(errorImportDiv);
         break;
 
+      case 'DECOMPRESS_WORKFLOW':
+        console.log('🗜️ Décompression fallback demandée par le service worker');
+        handleDecompressionFallback(message.compressedData, message.originalSize);
+        break;
+
       case 'CLAUDE_ERROR':
         responseDiv.innerHTML = `<strong>Assistant:</strong> ❌ Erreur: ${message.error}`;
         break;
@@ -409,6 +414,102 @@ if (!isN8n || !isWorkflowPage) {
       type: 'IMPORT_WORKFLOW',
       workflow: workflowData
     }, '*');
+  }
+
+  // Nouveau : Gestion de la décompression fallback
+  async function handleDecompressionFallback(compressedBase64, originalSize) {
+    const responseDiv = document.getElementById('assistant-response');
+    if (!responseDiv) return;
+
+    try {
+      console.log('🗜️ Début décompression fallback, taille:', compressedBase64.length, 'chars');
+      
+      // Mettre à jour l'UI
+      responseDiv.innerHTML = '<strong>Assistant:</strong> <span class="loading-dots">Décompression du workflow...</span>';
+
+      // Convertir base64 en bytes
+      const compressedBytes = Uint8Array.from(atob(compressedBase64), c => c.charCodeAt(0));
+      console.log('📦 Données décodées base64, taille:', compressedBytes.length, 'bytes');
+      
+      // Utiliser DecompressionStream (disponible dans window context)
+      if (typeof window.DecompressionStream !== 'undefined') {
+        console.log('✅ window.DecompressionStream disponible');
+        
+        const stream = new window.DecompressionStream('gzip');
+        const writer = stream.writable.getWriter();
+        const reader = stream.readable.getReader();
+        
+        writer.write(compressedBytes);
+        writer.close();
+        
+        const chunks = [];
+        let done = false;
+        
+        while (!done) {
+          const { value, done: readerDone } = await reader.read();
+          done = readerDone;
+          if (value) chunks.push(value);
+        }
+        
+        // Concat all chunks
+        const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+        const result = new Uint8Array(totalLength);
+        let offset = 0;
+        
+        for (const chunk of chunks) {
+          result.set(chunk, offset);
+          offset += chunk.length;
+        }
+        
+        const decompressed = new TextDecoder().decode(result);
+        console.log('✅ Décompression fallback réussie, taille finale:', decompressed.length, 'chars');
+        
+        // Parser les données décompressées
+        const workflowData = JSON.parse(decompressed);
+        
+        // Traiter comme un workflow complete normal
+        let responseContent = '<strong>Assistant:</strong> ✅ Workflow décompressé avec succès !';
+        
+        // Afficher l'explication si disponible
+        if (workflowData.explanation) {
+          responseContent += `
+            <div style="margin: 12px 0; padding: 12px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #3b82f6;">
+              <h4 style="margin: 0 0 8px 0; color: #1e40af;">📋 Détails du workflow :</h4>
+              <p style="margin: 4px 0;"><strong>Résumé :</strong> ${workflowData.explanation.summary}</p>
+              <p style="margin: 4px 0;"><strong>Flux :</strong> ${workflowData.explanation.flow}</p>
+              <p style="margin: 4px 0;"><strong>Nœuds :</strong> ${workflowData.explanation.nodes}</p>
+              ${workflowData.explanation.notes ? `<p style="margin: 4px 0;"><strong>Notes :</strong> ${workflowData.explanation.notes}</p>` : ''}
+            </div>
+          `;
+        }
+        
+        // Informations sur le workflow
+        const nodeCount = workflowData.workflow?.nodes?.length || 0;
+        const connectionCount = Object.keys(workflowData.workflow?.connections || {}).length;
+        
+        responseContent += `
+          <div style="margin: 12px 0; padding: 10px; background: #fef3c7; border-radius: 4px; color: #92400e;">
+            ⏳ Import en cours...
+            <br>📊 ${nodeCount} nœuds, ${connectionCount} connexions
+            <br>🗜️ Décompressé depuis ${Math.round(compressedBytes.length / 1024)}KB
+          </div>
+        `;
+        
+        responseDiv.innerHTML = responseContent;
+        
+        // Importer automatiquement après un court délai
+        setTimeout(() => {
+          importWorkflow(workflowData.workflow);
+        }, 1000);
+        
+      } else {
+        throw new Error('DecompressionStream non disponible dans ce navigateur');
+      }
+      
+    } catch (error) {
+      console.error('❌ Erreur décompression fallback:', error);
+      responseDiv.innerHTML = `<strong>Assistant:</strong> ❌ Erreur de décompression: ${error.message}`;
+    }
   }
 
   // Nouveau : Détecter l'ouverture d'un workflow
