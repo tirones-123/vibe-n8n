@@ -336,7 +336,7 @@ ${w.workflowContent}
 
       const userPrompt = `"${description}"
 
-Here are ${similarWorkflows.length} workflow examples for reference:
+Here are ${similarWorkflows.length} similar workflow examples for reference:
 
 ${examplesContext}
 
@@ -493,15 +493,6 @@ The current workflow has ${baseWorkflow.nodes?.length || 0} nodes and you should
 - Avoid using http request node when possible
 - The references in the connections section must point to the name property of each node.
 
-CRITICAL JSON FORMATTING RULES:
-- Output ONLY valid JSON, no extra text before or after
-- Never use semicolons (;) in JSON property values
-- Always use double quotes for strings
-- No trailing commas before closing braces or brackets
-- Ensure all brackets and braces are properly closed
-- URLs and values must be properly escaped
-- Test your JSON mentally before outputting
-
 Current workflow to improve:
 \`\`\`json
 ${JSON.stringify(baseWorkflow, null, 2)}
@@ -532,15 +523,6 @@ The workflow should:
 - Use the exact node type formats from the examples (e.g., "nodes-base.webhook")
 - Avoid using http request node when possible
 - The references in the connections section must point to the name property of each node.
-
-CRITICAL JSON FORMATTING RULES:
-- Output ONLY valid JSON, no extra text before or after
-- Never use semicolons (;) in JSON property values
-- Always use double quotes for strings
-- No trailing commas before closing braces or brackets
-- Ensure all brackets and braces are properly closed
-- URLs and values must be properly escaped
-- Test your JSON mentally before outputting
 
 Respond with a JSON object containing both the workflow and an explanation:
 {
@@ -679,37 +661,11 @@ ${baseWorkflow ?
           console.log('⚠️  Debug: Impossible de sauvegarder la réponse:', e.message);
         }
         
-        // NOUVEAU : Nettoyage avancé du JSON avant parsing
+        // Nettoyer le JSON en supprimant les éventuels caractères parasites
         jsonText = jsonText.trim();
-        
-        // Corriger les erreurs courantes de Claude
-        console.log('🔧 Nettoyage du JSON généré par Claude...');
-        
-        // 1. Supprimer les points-virgules avant les virgules (erreur courante)
-        jsonText = jsonText.replace(/;,/g, ',');
-        
-        // 2. Supprimer les virgules en trop avant } et ]
-        jsonText = jsonText.replace(/,(\s*[}\]])/g, '$1');
-        
-        // 3. Supprimer les double virgules
-        jsonText = jsonText.replace(/,,+/g, ',');
-        
-        // 4. Corriger les trailing commas dans les objets vides
-        jsonText = jsonText.replace(/,(\s*})/g, '$1');
-        jsonText = jsonText.replace(/,(\s*])/g, '$1');
-        
-        // 5. Sauvegarder le JSON nettoyé pour debug
-        try {
-          await fs.writeFile(path.join(process.cwd(), 'debug', 'claude-cleaned-json.txt'), jsonText);
-          console.log('💾 Debug: JSON nettoyé sauvegardé');
-        } catch (e) {
-          console.log('⚠️  Debug: Impossible de sauvegarder le JSON nettoyé');
-        }
         
         // Tentative de parsing
         const parsedResponse = JSON.parse(jsonText);
-        
-        console.log('✅ JSON parsing réussi après nettoyage');
 
         // Vérifier si on a la nouvelle structure avec workflow + explanation
         if (parsedResponse.workflow && parsedResponse.explanation) {
@@ -787,79 +743,32 @@ ${baseWorkflow ?
         let jsonText = generatedText.match(/\{[\s\S]*\}/)?.[0] || generatedText;
         
         try {
-          // Tentatives de réparation avancées
-          console.log('🔧 Tentative de réparation avancée du JSON...');
+          // Tentatives de réparation courantes
+          console.log('🔧 Tentative de réparation du JSON...');
           
-          // 1. Supprimer les points-virgules avant les virgules (erreur vue dans les logs)
-          jsonText = jsonText.replace(/;,/g, ',');
-          
-          // 2. Supprimer les virgules en trop avant }
+          // 1. Supprimer les virgules en trop avant }
           jsonText = jsonText.replace(/,\s*}/g, '}');
           jsonText = jsonText.replace(/,\s*]/g, ']');
           
-          // 3. Corriger les double virgules
-          jsonText = jsonText.replace(/,,+/g, ',');
+          // 2. Ajouter des virgules manquantes (très basique)
+          // Cette partie pourrait être étendue selon les erreurs observées
           
-          // 4. Corriger les quotes malformées dans les URLs
-          jsonText = jsonText.replace(/"([^"]*);([^"]*)":/g, '"$1$2":');
-          
-          // 5. Supprimer les caractères de contrôle invisibles
-          jsonText = jsonText.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
-          
-          // 6. Corriger les nested quotes malformées
-          jsonText = jsonText.replace(/\\"([^"]*);([^"]*)"\\"/g, '\\"$1$2\\"');
-          
-          // 7. Vérifier et corriger la structure de base n8n
-          if (!jsonText.includes('"workflow"') && jsonText.includes('"nodes"')) {
-            console.log('🔧 Ajout de la structure workflow wrapper...');
-            const workflowContent = jsonText;
-            jsonText = `{
-              "workflow": ${workflowContent},
-              "explanation": {
-                "summary": "Workflow généré automatiquement",
-                "flow": "Flux de données selon les spécifications",
-                "nodes": "Nœuds configurés automatiquement",
-                "notes": "Vérifiez la configuration avant utilisation"
-              }
-            }`;
-          }
-          
-          console.log('🔍 JSON réparé, tentative de parsing...');
           const repairedResponse = JSON.parse(jsonText);
           console.log('✅ JSON réparé avec succès !');
           
-          // Validation supplémentaire du workflow n8n
-          if (repairedResponse.workflow) {
-            const workflow = repairedResponse.workflow;
-            
-            // Vérifier que le workflow a la structure minimale requise
-            if (!workflow.nodes || !Array.isArray(workflow.nodes)) {
-              throw new Error('Structure workflow invalide: nodes manquants');
-            }
-            
-            // Vérifier que chaque node a les propriétés requises
-            for (const node of workflow.nodes) {
-              if (!node.id || !node.name || !node.type) {
-                console.warn('⚠️ Node invalide détecté:', node);
-                // Ajouter des valeurs par défaut
-                node.id = node.id || `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                node.name = node.name || 'Unnamed Node';
-                node.type = node.type || 'n8n-nodes-base.set';
-              }
-            }
-            
-            workflow.name = workflowName;
+          if (repairedResponse.workflow && repairedResponse.explanation) {
+            repairedResponse.workflow.name = workflowName;
             
             if (onProgress) {
               onProgress('success', { 
-                message: 'Workflow généré avec succès (après réparation JSON avancée) !',
-                nodesCount: workflow.nodes?.length || 0
+                message: 'Workflow généré avec succès (après réparation JSON) !',
+                nodesCount: repairedResponse.workflow.nodes?.length || 0
               });
             }
             
             return {
               success: true,
-              workflow: workflow,
+              workflow: repairedResponse.workflow,
               explanation: repairedResponse.explanation,
               similarWorkflows: similarWorkflows.map(w => w.name),
               repaired: true
@@ -868,7 +777,6 @@ ${baseWorkflow ?
           
         } catch (repairError) {
           console.error('❌ Impossible de réparer le JSON:', repairError.message);
-          console.error('❌ JSON problématique (premiers 500 chars):', jsonText.substring(0, 500));
         }
         
         return {
