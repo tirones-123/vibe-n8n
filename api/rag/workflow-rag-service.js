@@ -36,6 +36,8 @@ export class WorkflowRAGService {
     // Optimized workflows for RAG context (Claude prompts)
     this.optimizedWorkflowsDir = path.join(process.cwd(), 'workflows-rag-optimized');
     
+    console.log(`📂 Optimized workflows directory: ${this.optimizedWorkflowsDir}`);
+    
     // Configuration pour gros workflows
     this.MAX_CHUNK_SIZE = 32768; // 32KB par chunk SSE
     this.COMPRESSION_THRESHOLD = 10240; // Compresser si > 10KB
@@ -188,6 +190,17 @@ export class WorkflowRAGService {
    */
   async findSimilarWorkflows(description, topK = 5) {
     try {
+      // Vérifier d'abord que le répertoire existe
+      try {
+        const files = await fs.readdir(this.optimizedWorkflowsDir);
+        console.log(`📁 Optimized workflows directory contains ${files.length} files`);
+        if (files.length < 10) {
+          console.log(`📄 Sample files: ${files.slice(0, 5).join(', ')}...`);
+        }
+      } catch (dirError) {
+        console.error(`❌ Cannot access optimized workflows directory: ${dirError.message}`);
+      }
+      
       // Générer l'embedding pour la description
       const embeddingResponse = await this.openai.embeddings.create({
         model: 'text-embedding-3-small',
@@ -207,6 +220,8 @@ export class WorkflowRAGService {
       // Transformer les résultats
       const workflows = [];
       
+      console.log(`🔍 Pinecone found ${searchResults.matches?.length || 0} matches for "${description}"`);
+      
       for (const match of searchResults.matches || []) {
         const workflow = {
           id: match.id,
@@ -216,20 +231,28 @@ export class WorkflowRAGService {
           relevanceScore: match.score || 0
         };
         
+        console.log(`📝 Match ${workflows.length + 1}: "${workflow.name}" (score: ${workflow.relevanceScore.toFixed(3)}) → file: "${workflow.filename}"`);
+        
         // Charger le contenu complet du workflow
         try {
-          // Load from optimized workflows only
           const optimizedFilePath = path.join(this.optimizedWorkflowsDir, workflow.filename);
+          console.log(`🔍 Attempting to load: "${workflow.filename}" from "${optimizedFilePath}"`);
           workflow.workflowContent = await fs.readFile(optimizedFilePath, 'utf-8');
-          console.log(`✅ Loaded optimized workflow: ${workflow.filename}`);
+          console.log(`✅ Successfully loaded workflow: "${workflow.name}" (${workflow.filename}) - ${workflow.workflowContent.length} chars`);
         } catch (error) {
-          console.log(`⏭️  Skipping workflow (not in optimized set): ${workflow.filename}`);
+          console.log(`❌ Failed to load workflow "${workflow.filename}": ${error.message}`);
+          console.log(`⏭️  Skipping workflow: "${workflow.name}" (${workflow.filename})`);
           // Skip this workflow - will use next one from Pinecone results
           continue;
         }
         
         workflows.push(workflow);
       }
+
+      console.log(`\n📊 FINAL RESULT: ${workflows.length} workflows successfully loaded:`);
+      workflows.forEach((w, i) => {
+        console.log(`  ${i + 1}. "${w.name}" (${w.filename}) - score: ${w.relevanceScore.toFixed(3)}`);
+      });
 
       return workflows;
 
