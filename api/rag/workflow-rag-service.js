@@ -298,11 +298,12 @@ export class WorkflowRAGService {
 The workflow should:
 - Be fully functional and ready to import into n8n
 - Use appropriate nodes based on the user's needs
-- Follow n8n workflow structure conventions
+- Use the native n8n node types maximum as possible, take the examples as reference.
+- Use the settings nodes of the examples as reference
 - Have proper connections between nodes
 - Include all necessary configurations
 - Use the exact node type formats from the examples (e.g., "nodes-base.webhook")
-- Avoid using http request node when possible
+- DO NOT use http request node when possible, always prefer the node of the tool or agent + node
 - The references in the connections section must point to the name property of each node.
 
 Respond with a JSON object containing both the workflow and an explanation:
@@ -335,7 +336,7 @@ ${w.workflowContent}
 
       const userPrompt = `"${description}"
 
-Here are ${similarWorkflows.length} similar workflow examples for reference:
+Here are ${similarWorkflows.length} workflow examples for reference:
 
 ${examplesContext}
 
