@@ -1110,9 +1110,6 @@ if (!isN8n || !isWorkflowPage) {
             if (flow) {
               finalMessage += `\n\n🔄 Flow:\n${flow}`;
             }
-            if (nodeDesc) {
-              finalMessage += `\n\n🧩 Nodes:\n${nodeDesc}`;
-            }
             if (notes) {
               finalMessage += `\n\n📝 Notes:\n${notes}`;
             }

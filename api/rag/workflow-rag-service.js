@@ -347,10 +347,16 @@ Respond with a JSON object containing both the improved workflow and an explanat
   "explanation": {
     "summary": "Brief description of the improvements made",
     "changes": "List of specific changes and improvements",
-    "nodes": "Description of nodes added, modified, or removed",
     "notes": "Any important configuration notes or requirements"
   }
-}`;
+}
+
+When you output JSON it must ALWAYS be strictly valid:
+  • Use double quotes ("") for all keys and string values.
+  • Do NOT include trailing commas.
+  • Do NOT include comments inside the JSON.
+  • Escape special characters properly (e.g. newlines \n).
+  • The final answer MUST be a single JSON object, nothing before or after.`;
       } else {
         // Mode création d'un nouveau workflow
         systemPrompt = `You are an n8n workflow expert. Based on the following similar workflow examples, create a new workflow that meets the user's requirement.
@@ -372,10 +378,15 @@ Respond with a JSON object containing both the workflow and an explanation:
   "explanation": {
     "summary": "Brief description of what this workflow does",
     "flow": "Step-by-step explanation of the workflow flow",
-    "nodes": "Description of key nodes and their roles",
     "notes": "Any important configuration notes or requirements"
   }
-}`;
+}
+When you output JSON it must ALWAYS be strictly valid:
+  • Use double quotes ("") for all keys and string values.
+  • Do NOT include trailing commas.
+  • Do NOT include comments inside the JSON.
+  • Escape special characters properly (e.g. newlines \n).
+  • The final answer MUST be a single JSON object, nothing before or after.`;
       }
 
       // Construire le contexte enrichi avec les workflows d'exemple
