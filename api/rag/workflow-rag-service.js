@@ -628,6 +628,44 @@ ${baseWorkflow ?
           
         } catch (repairError) {
           console.error('❌ Impossible de réparer le JSON:', repairError.message);
+
+          // --- Nouveau fallback : parsing « unsafe » via Function ---
+          try {
+            console.log('⚠️ Tentative de parsing unsafe via Function()');
+            const unsafeParsed = Function('"use strict"; return (' + jsonText + ')')();
+
+            console.log('✅ Parsing unsafe réussi');
+
+            // Déterminer la structure obtenue
+            const finalWorkflow = unsafeParsed.workflow ? unsafeParsed.workflow : unsafeParsed;
+            const finalExplanation = unsafeParsed.explanation || {
+              summary: 'Workflow généré (parsing unsafe)',
+              notes: 'Ce workflow a été parsé avec une méthode tolérante ; vérifiez-le avant usage.'
+            };
+
+            finalWorkflow.name = workflowName;
+
+            if (onProgress) {
+              onProgress('warning', { message: 'Workflow parsé via fallback unsafe – peut contenir des erreurs.' });
+            }
+
+            // Préparer la transmission
+            const transmission = await this.prepareWorkflowForTransmission(finalWorkflow, finalExplanation);
+            await this.sendWorkflowTransmission(transmission, onProgress);
+
+            return {
+              success: true,
+              workflow: finalWorkflow,
+              explanation: finalExplanation,
+              similarWorkflows: similarWorkflows.map(w => w.name),
+              repaired: true,
+              unsafe: true,
+              transmissionType: transmission.type
+            };
+
+          } catch (unsafeError) {
+            console.error('❌ Parsing unsafe échoué:', unsafeError.message);
+          }
         }
         
         return {

@@ -1103,7 +1103,19 @@ if (!isN8n || !isWorkflowPage) {
           // Update chat message
           let finalMessage = '✅ Workflow generated successfully!';
           if (message.explanation) {
-            finalMessage += `\n\n📋 ${message.explanation.summary}`;
+            const { summary, flow, nodes: nodeDesc, notes } = message.explanation;
+            if (summary) {
+              finalMessage += `\n\n📋 ${summary}`;
+            }
+            if (flow) {
+              finalMessage += `\n\n🔄 Flow:\n${flow}`;
+            }
+            if (nodeDesc) {
+              finalMessage += `\n\n🧩 Nodes:\n${nodeDesc}`;
+            }
+            if (notes) {
+              finalMessage += `\n\n📝 Notes:\n${notes}`;
+            }
           }
           finalMessage += '\n\n🔄 Importing to n8n editor...';
           
