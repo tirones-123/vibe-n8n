@@ -243,15 +243,15 @@ export class WorkflowRAGService {
           relevanceScore: match.score || 0
         };
         
-        console.log(`📝 Match ${workflows.length + 1}: "${workflow.name}" (score: ${workflow.relevanceScore.toFixed(3)}) → file: "${workflow.filename}"`);
-        console.log(`    📊 ${workflow.nodeCount} nœuds: ${workflow.nodeTypes.slice(0, 3).join(', ')}${workflow.nodeTypes.length > 3 ? '...' : ''}`);
-        
-        // Charger le contenu JSON complet du workflow depuis workflows-rag-optimized
-        try {
-          const optimizedFilePath = path.join(this.optimizedWorkflowsDir, workflow.filename);
-          console.log(`🔍 Loading workflow JSON: "${workflow.filename}"`);
-          workflow.workflowContent = await fs.readFile(optimizedFilePath, 'utf-8');
-          console.log(`✅ Successfully loaded workflow: "${workflow.name}" - ${workflow.workflowContent.length} chars`);
+              console.log(`📝 Match ${workflows.length + 1}: "${workflow.name}" (score: ${workflow.relevanceScore.toFixed(3)}) → file: "${workflow.filename}"`);
+      console.log(`    📊 ${workflow.nodeCount} nœuds: ${workflow.nodeTypes.slice(0, 3).join(', ')}${workflow.nodeTypes.length > 3 ? '...' : ''}`);
+      
+      // Charger le contenu JSON complet du workflow depuis workflows-rag-optimized
+      try {
+        const optimizedFilePath = path.join(this.optimizedWorkflowsDir, workflow.filename);
+        console.log(`🔍 Loading RAG workflow file: "${workflow.filename}"`);
+        workflow.workflowContent = await fs.readFile(optimizedFilePath, 'utf-8');
+        console.log(`✅ Successfully loaded RAG file: "${workflow.filename}" → "${workflow.name}" - ${workflow.workflowContent.length} chars`);
           
           // Valider que c'est du JSON valide
           try {
@@ -358,13 +358,12 @@ Respond with a JSON object containing both the improved workflow and an explanat
 The workflow should:
 - Be fully functional and ready to import into n8n
 - Follow n8n workflow structure conventions
-- Use appropriate nodes based on the user's needs
-- Use the native n8n node types maximum as possible, take the examples as reference.
-- Use all the parameters of the nodes need and follow it writing order.
+- DO not use http request node, Use it only if it's absolutely necessary.
+- Use appropriate nodes based on the user's needs, take the examples as reference. 
+- Use all the parameters of the nodes need and follow it writing order of the exemples.
 - Have proper connections between nodes
 - Include all necessary configurations
 - Use the exact node type formats from the examples (e.g., "nodes-base.webhook")
-- When you can use http request node prefer to use the native node when it exists.
 - The references in the connections section must point to the name property of each node.
 
 Respond with a JSON object containing both the workflow and an explanation:
@@ -424,9 +423,14 @@ ${baseWorkflow ?
       console.log(`\n📋 User Prompt (${userPrompt.length} chars):`);
       console.log(userPrompt);
       console.log(`\n🔢 Total prompt length: ${systemPrompt.length + userPrompt.length} chars`);
-      console.log(`📊 Similar workflows loaded: ${similarWorkflows.length}`);
+      console.log(`📊 RAG workflows used in prompt: ${similarWorkflows.length}`);
+      console.log(`📂 RAG filenames: ${similarWorkflows.map(w => w.filename).join(', ')}`);
+      console.log(`📁 === RAG FILES INCLUDED IN PROMPT ===`);
       similarWorkflows.forEach((w, i) => {
-        console.log(`  ${i + 1}. "${w.name}" (${w.filename}) - score: ${w.relevanceScore.toFixed(3)} - content: ${w.workflowContent.length} chars`);
+        console.log(`  📄 ${i + 1}. FILE: "${w.filename}" → WORKFLOW: "${w.name}"`);
+        console.log(`       ├─ Score: ${w.relevanceScore.toFixed(3)}`);
+        console.log(`       ├─ Content: ${w.workflowContent.length} chars`);
+        console.log(`       └─ Nodes: ${w.nodeCount} (${w.nodeTypes.slice(0, 3).join(', ')}${w.nodeTypes.length > 3 ? '...' : ''})`);
       });
       console.log(`🤖 === END PROMPTS ===\n`);
 
