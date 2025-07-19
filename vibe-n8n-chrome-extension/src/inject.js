@@ -527,123 +527,27 @@
           
           console.log(`📝 Nœud ajouté: ${node.name} (${nodeId})`);
           
-          workflowStore.addNode({
-            id: nodeId,
-            name: node.name || 'Unnamed Node',
-            type: node.type,
-            position: node.position || [100, 100],
-            parameters: node.parameters || {},
-            typeVersion: node.typeVersion || 1,
-            disabled: node.disabled || false,
-            credentials: node.credentials || {}
+          // Conserver toutes les propriétés du nœud généré afin de ne rien perdre (notes, couleur, etc.)
+          const sanitizedNode = cleanForSerialization({
+            ...node,
+            id: nodeId // garantir un ID défini
           });
+
+          workflowStore.addNode(sanitizedNode);
         }
       }
 
       console.log('🗺️ Mapping nom->ID:', nameToIdMap);
 
-      // Importer les connexions
+      // Appliquer directement l'objet "connections" complet fourni par l'IA
       if (workflowData.connections && typeof workflowData.connections === 'object') {
-        Object.entries(workflowData.connections).forEach(([sourceKey, outputs]) => {
-          // Déterminer l'ID source (peut être un nom ou un ID)
-          const sourceId = nameToIdMap[sourceKey] || sourceKey;
-          
-          console.log(`🔗 Traitement connexions de: ${sourceKey} -> ${sourceId}`);
-          
-          if (outputs.main && Array.isArray(outputs.main)) {
-            outputs.main.forEach((outputConnections, outputIndex) => {
-              if (Array.isArray(outputConnections)) {
-                outputConnections.forEach(conn => {
-                  try {
-                    // Déterminer l'ID cible
-                    const targetId = nameToIdMap[conn.node] || conn.node;
-                    
-                    // Vérifier que les nœuds source et cible existent
-                    const sourceNode = workflowStore.getNodeById(sourceId);
-                    const targetNode = workflowStore.getNodeById(targetId);
-                    
-                    if (!sourceNode) {
-                      console.warn(`⚠️ Nœud source non trouvé: ${sourceKey} (${sourceId})`);
-                      return;
-                    }
-                    
-                    if (!targetNode) {
-                      console.warn(`⚠️ Nœud cible non trouvé: ${conn.node} (${targetId})`);
-                      return;
-                    }
-                    
-                    // Essayer différentes méthodes de connexion
-                    let connectionSuccess = false;
-                    
-                    // Méthode 1: Manipulation directe de l'état des connexions
-                    try {
-                      const currentConnections = { ...workflowStore.workflow.connections || {} };
-                      
-                      if (!currentConnections[sourceNode.name]) {
-                        currentConnections[sourceNode.name] = { main: [] };
-                      }
-                      if (!currentConnections[sourceNode.name].main[outputIndex]) {
-                        currentConnections[sourceNode.name].main[outputIndex] = [];
-                      }
-                      
-                      currentConnections[sourceNode.name].main[outputIndex].push({
-                        node: targetNode.name,
-                        type: conn.type || 'main',
-                        index: conn.index || 0
-                      });
-                      
-                      workflowStore.$patch({
-                        workflow: {
-                          ...workflowStore.workflow,
-                          connections: currentConnections
-                        }
-                      });
-                      
-                      console.log(`✅ Connexion créée: ${sourceNode.name} → ${targetNode.name}`);
-                      connectionSuccess = true;
-                      
-                    } catch (directError) {
-                      console.log(`⚠️ Méthode directe échouée:`, directError.message);
-                    }
-                    
-                    // Méthode 2: Via setWorkflowConnections si disponible
-                    if (!connectionSuccess && workflowStore.setWorkflowConnections) {
-                      try {
-                        const allConnections = { ...workflowStore.workflow.connections || {} };
-                        
-                        if (!allConnections[sourceNode.name]) {
-                          allConnections[sourceNode.name] = { main: [] };
-                        }
-                        if (!allConnections[sourceNode.name].main[outputIndex]) {
-                          allConnections[sourceNode.name].main[outputIndex] = [];
-                        }
-                        
-                        allConnections[sourceNode.name].main[outputIndex].push({
-                          node: targetNode.name,
-                          type: conn.type || 'main',
-                          index: conn.index || 0
-                        });
-                        
-                        workflowStore.setWorkflowConnections(allConnections);
-                        console.log(`✅ Connexion setWorkflowConnections: ${sourceNode.name} → ${targetNode.name}`);
-                        connectionSuccess = true;
-                      } catch (setError) {
-                        console.log(`⚠️ setWorkflowConnections échoué:`, setError.message);
-                      }
-                    }
-                    
-                    if (!connectionSuccess) {
-                      console.error(`❌ Connexion échouée pour ${sourceKey} → ${conn.node}`);
-                    }
-                    
-                  } catch (connError) {
-                    console.error(`❌ Erreur connexion ${sourceKey} → ${conn.node}:`, connError);
-                  }
-                });
-              }
-            });
+        workflowStore.$patch({
+          workflow: {
+            ...workflowStore.workflow,
+            connections: cleanForSerialization(workflowData.connections)
           }
         });
+        console.log('✅ Connexions importées via patch global');
       }
 
       // Définir le nom du workflow si fourni
