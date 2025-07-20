@@ -996,7 +996,7 @@
           fixes.push(`Added default name for credential: ${credKey}`);
         }
         validated[credKey] = validCred;
-      } else {
+        } else {
         fixes.push(`Removed invalid credential: ${credKey}`);
       }
     });
@@ -1044,7 +1044,7 @@
                     type: connection.type || 'main',
                     index: Number(connection.index) || 0
                   });
-                } else {
+      } else {
                   warnings.push(`Target node "${connection.node}" not found for connection from "${sourceNodeName}"`);
                 }
               }
@@ -1222,6 +1222,21 @@
 
   // 🎯 REPRODUCTION EXACTE DU COPIER-COLLER N8N NATIF
   
+  // ✨ Génération d'UUID exactement comme n8n
+  function generateUniqueId() {
+    // Utiliser crypto.randomUUID() si disponible (navigateurs modernes)
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    
+    // Fallback : UUID v4 manuel exactement comme n8n
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+  
   // ✨ Fonction qui reproduit EXACTEMENT ce que fait n8n lors du copier-coller
   function processWorkflowLikeN8nCopyPaste(workflowData) {
     const changes = [];
@@ -1330,26 +1345,14 @@
     };
   }
 
-  // ✨ Import EXACTEMENT comme le copier-coller natif de n8n
+      // ✨ Import using NATIVE n8n COPY-PASTE mechanism (no auth needed!)
   async function importCompleteWorkflow(workflowData, isImprovement = false) {
-    if (!workflowStore) {
-      window.postMessage({
-        type: 'IMPORT_ERROR',
-        error: 'Store Pinia non disponible'
-      }, '*');
-      return;
-    }
-
     try {
-      console.log('🎯 Import EXACTLY like n8n native copy-paste:', workflowData);
+      console.log('🎯 Using NATIVE n8n COPY-PASTE mechanism (Ctrl+V simulation):', workflowData);
       console.log('🎯 Mode:', isImprovement ? 'amélioration (suppression ancien)' : 'nouveau workflow');
 
-      // ✨ TRAITEMENT EXACTEMENT COMME N8N COPY-PASTE
-      const result = processWorkflowLikeN8nCopyPaste(workflowData);
-      const processedWorkflow = result.workflow;
-
       // Effacer le workflow actuel SI mode amélioration
-      if (isImprovement) {
+      if (isImprovement && workflowStore) {
         const currentNodes = [...workflowStore.allNodes];
         if (currentNodes.length > 0) {
           console.log(`🗑️ Clearing ${currentNodes.length} existing nodes (improvement mode)...`);
@@ -1363,9 +1366,9 @@
           }
           
           try {
-            workflowStore.$patch({
-              workflow: {
-                ...workflowStore.workflow,
+        workflowStore.$patch({
+          workflow: {
+            ...workflowStore.workflow,
                 nodes: [],
                 connections: {}
               }
@@ -1377,115 +1380,128 @@
         }
       }
 
-      // ✨ AJOUTER LES NŒUDS EXACTEMENT COMME N8N
-      let successfulNodes = 0;
-      const nodeErrors = [];
+      // ✨ SIMULER LE COPIER-COLLER NATIF N8N (comme Ctrl+V)
+      console.log('📋 Simulating native n8n copy-paste (Ctrl+V)...');
       
-      for (const node of processedWorkflow.nodes) {
-        try {
-          // Utiliser la méthode native n8n SANS MODIFICATION
-          if (workflowStore.addNode) {
-            workflowStore.addNode(node);
-          } else {
-            // Fallback direct au state
-            workflowStore.$patch(state => {
-              if (!state.workflow.nodes) state.workflow.nodes = [];
-              state.workflow.nodes.push(node);
-            });
-          }
-          
-          successfulNodes++;
-          console.log(`✅ Node added exactly like n8n: ${node.name} (${node.type})`);
-          
-        } catch (addError) {
-          console.error(`❌ Error adding node ${node.name}:`, addError);
-          nodeErrors.push(`${node.name}: ${addError.message}`);
-        }
-      }
-
-      // ✨ AJOUTER LES CONNEXIONS EXACTEMENT COMME N8N
-      if (Object.keys(processedWorkflow.connections).length > 0) {
-        try {
-          workflowStore.$patch({
-            workflow: {
-              ...workflowStore.workflow,
-              connections: processedWorkflow.connections
-            }
-          });
-          console.log('✅ Connections added exactly like n8n');
-        } catch (connectionsError) {
-          console.error('❌ Error adding connections:', connectionsError);
-        }
-      }
-
-      // ✨ APPLIQUER LES MÉTADONNÉES SEULEMENT SI ELLES EXISTENT
-      const workflowUpdates = {};
-      if (processedWorkflow.name) workflowUpdates.name = processedWorkflow.name;
-      if (processedWorkflow.settings) workflowUpdates.settings = processedWorkflow.settings;
-      if (processedWorkflow.meta) workflowUpdates.meta = processedWorkflow.meta;
-      if (processedWorkflow.active !== undefined) workflowUpdates.active = processedWorkflow.active;
+      // Nettoyer le workflow : supprimer id, createdAt, updatedAt, etc.
+      const cleanWorkflow = { ...workflowData };
+      delete cleanWorkflow.id;
+      delete cleanWorkflow.createdAt;
+      delete cleanWorkflow.updatedAt;
+      delete cleanWorkflow.versionId;
       
-      if (Object.keys(workflowUpdates).length > 0) {
-        workflowStore.$patch({
-          workflow: {
-            ...workflowStore.workflow,
-            ...workflowUpdates
-          }
+      // Nettoyer les nœuds  
+      if (cleanWorkflow.nodes) {
+        cleanWorkflow.nodes = cleanWorkflow.nodes.map(node => {
+          const cleanNode = { ...node };
+          return {
+            name: cleanNode.name,
+            type: cleanNode.type,
+            position: cleanNode.position,
+            parameters: cleanNode.parameters || {},
+            credentials: cleanNode.credentials || {},
+            typeVersion: cleanNode.typeVersion || 1,
+            disabled: Boolean(cleanNode.disabled)
+          };
         });
-        console.log('✅ Workflow metadata applied like n8n');
+      }
+      
+      const workflowJSON = JSON.stringify(cleanWorkflow);
+      console.log('🧹 Cleaned workflow JSON for clipboard:', workflowJSON.substring(0, 200) + '...');
+
+      // ✨ ÉTAPE 1: Mettre le JSON dans le clipboard
+      try {
+        await navigator.clipboard.writeText(workflowJSON);
+        console.log('📋 Workflow JSON written to clipboard successfully');
+      } catch (clipboardError) {
+        console.log('⚠️ Direct clipboard access failed, using fallback:', clipboardError.message);
+        
+        // Fallback: créer un élément textarea temporaire
+        const textArea = document.createElement('textarea');
+        textArea.value = workflowJSON;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        console.log('📋 Workflow JSON copied using fallback method');
       }
 
-      // ✨ VALIDATION POST-IMPORT (minimal comme n8n)
-      setTimeout(() => {
-        const finalNodes = workflowStore.allNodes;
-        const finalConnections = workflowStore.workflow?.connections || {};
+      // ✨ ÉTAPE 2: Focus sur l'éditeur n8n et simuler Ctrl+V
+      const editorCanvas = document.querySelector('#n8n-editor-canvas, .el-canvas, .nodeview, [data-test-id="canvas"], .ndv-canvas');
+      if (editorCanvas) {
+        console.log('🎯 Found n8n editor canvas, focusing...');
+        editorCanvas.focus();
+        editorCanvas.click();
         
-        console.log('🎯 Post-import validation (like n8n):');
-        console.log(`  📊 Nodes imported: ${finalNodes.length}/${processedWorkflow.nodes.length}`);
-        console.log(`  🔗 Connections: ${Object.keys(finalConnections).length}`);
-        console.log(`  🔧 Changes made: ${result.changes.length}`);
+        // Attendre un moment pour que le focus soit pris
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // Animation de succès (comme n8n)
-        const nodeElements = document.querySelectorAll('[data-node-name], .node');
-        nodeElements.forEach(el => {
-          el.style.animation = 'fadeIn 0.5s ease-out';
+        // ✨ ÉTAPE 3: Simuler Ctrl+V (événement de collage)
+        console.log('⌨️ Simulating Ctrl+V paste event...');
+        
+        // Créer l'événement de paste avec les données du clipboard
+        const pasteEvent = new ClipboardEvent('paste', {
+          bubbles: true,
+          cancelable: true,
+          clipboardData: new DataTransfer()
         });
         
-        // PAS de revalidation forcée (n8n ne le fait pas)
-        console.log('✅ Import completed exactly like n8n native copy-paste');
-      }, 100);
-
-      const connectionCount = Object.values(processedWorkflow.connections)
-        .reduce((total, outputs) => {
-          if (outputs.main && Array.isArray(outputs.main)) {
-            return total + outputs.main.reduce((sum, conns) => sum + (conns?.length || 0), 0);
-          }
-          return total;
-        }, 0);
+        // Ajouter le JSON au clipboard de l'événement
+        pasteEvent.clipboardData.setData('text/plain', workflowJSON);
+        
+        // Déclencher l'événement sur l'éditeur
+        editorCanvas.dispatchEvent(pasteEvent);
+        console.log('✅ Paste event dispatched to n8n editor');
+        
+        // ✨ ÉTAPE 4: Vérification et validation post-import
+        setTimeout(() => {
+          const finalNodes = workflowStore ? workflowStore.allNodes : [];
+          const nodeCount = finalNodes.length;
+          
+          console.log('🎯 Post-paste validation:');
+          console.log(`  📊 Nodes after paste: ${nodeCount}`);
 
       const importMessage = isImprovement ? 
-        `✅ Workflow improved exactly like n8n copy-paste: ${successfulNodes} nodes, ${connectionCount} connections, ${result.changes.length} changes` :
-        `✅ Workflow imported exactly like n8n copy-paste: ${successfulNodes} nodes, ${connectionCount} connections, ${result.changes.length} changes`;
+            `✅ Workflow improved using NATIVE copy-paste: ${nodeCount} nodes` :
+            `✅ Workflow imported using NATIVE copy-paste: ${nodeCount} nodes`;
       
       console.log(importMessage);
       
       window.postMessage({
         type: 'IMPORT_SUCCESS',
-        message: importMessage,
-        summary: {
-          nodes: successfulNodes,
-          connections: connectionCount,
-          changes: result.changes.length,
-          errors: nodeErrors.length,
-          exactCopy: true // Indique que c'est une copie exacte
-        }
+            message: importMessage,
+            summary: {
+              nodes: nodeCount,
+              method: 'native-copy-paste',
+              clipboardUsed: true
+            }
       }, '*');
+          
+        }, 1000);
+        
+      } else {
+        console.log('❌ Could not find n8n editor canvas');
+        throw new Error('Editor canvas not found - make sure you are on an n8n workflow page');
+      }
 
     } catch (error) {
-      console.error('❌ Error in exact n8n copy-paste import:', error);
+      console.error('❌ Error in native copy-paste import:', error);
+      
+      let errorMessage = error.message;
+      
+      // Messages d'erreur spécifiques
+      if (error.message.includes('clipboard')) {
+        errorMessage = 'Impossible d\'accéder au clipboard - vérifiez les permissions du navigateur';
+      } else if (error.message.includes('canvas')) {
+        errorMessage = 'Éditeur n8n non trouvé - assurez-vous d\'être sur une page de workflow n8n';
+      }
+      
       window.postMessage({
         type: 'IMPORT_ERROR',
-        error: `Import failed (exact copy-paste mode): ${error.message}`
+        error: `Import failed (copy-paste): ${errorMessage}`
       }, '*');
     }
   }

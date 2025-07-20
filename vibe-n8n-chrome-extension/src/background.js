@@ -10,32 +10,127 @@ importScripts('./config.js');
 let chunkBuffer = {};
 let compressionSupported = true;
 
+// 🚀 SERVICE WORKER LIFECYCLE MANAGEMENT
+let isServiceWorkerActive = true;
+let lastActivityTime = Date.now();
+let keepAliveInterval = null;
+
+// Log du démarrage du service worker
+console.log('🚀 Service Worker started at:', new Date().toISOString());
+
+// 🔧 Keep-alive mechanism pour éviter que le service worker s'endorme
+function startKeepAlive() {
+  if (keepAliveInterval) return;
+  
+  console.log('⏰ Starting keep-alive mechanism');
+  keepAliveInterval = setInterval(() => {
+    const now = Date.now();
+    const timeSinceLastActivity = now - lastActivityTime;
+    
+    if (timeSinceLastActivity < 25000) { // Si activité récente (< 25s)
+      console.log('💓 Service worker keep-alive ping');
+      // Ping rapide pour maintenir le service worker actif
+      chrome.runtime.getPlatformInfo().then(() => {
+        // Simple call pour maintenir le SW actif
+      }).catch(() => {
+        // Ignore errors
+      });
+    }
+  }, 20000); // Ping toutes les 20 secondes
+}
+
+function stopKeepAlive() {
+  if (keepAliveInterval) {
+    console.log('⏹️ Stopping keep-alive mechanism');
+    clearInterval(keepAliveInterval);
+    keepAliveInterval = null;
+  }
+}
+
+function updateActivity() {
+  lastActivityTime = Date.now();
+  if (!keepAliveInterval) {
+    startKeepAlive();
+  }
+}
+
+// Event listeners pour le lifecycle du service worker
+self.addEventListener('activate', () => {
+  console.log('🔄 Service Worker activated');
+  isServiceWorkerActive = true;
+  updateActivity();
+});
+
+self.addEventListener('install', () => {
+  console.log('📦 Service Worker installed');
+  self.skipWaiting();
+});
+
+// Auto-stop keep-alive après inactivité prolongée
+setInterval(() => {
+  const now = Date.now();
+  const timeSinceLastActivity = now - lastActivityTime;
+  
+  if (timeSinceLastActivity > 60000) { // 1 minute sans activité
+    stopKeepAlive();
+  }
+}, 30000);
+
 // Écoute des messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // 🚀 Diagnostics du service worker
+  console.log('📨 Service Worker received message:', request.type, 'at', new Date().toISOString());
+  console.log('🔍 Service Worker active:', isServiceWorkerActive);
+  console.log('📍 Sender tab ID:', sender.tab?.id);
+  console.log('⏰ Last activity time:', new Date(lastActivityTime).toISOString());
+  
+  // Mettre à jour l'activité pour maintenir le service worker actif
+  updateActivity();
+  
   if (request.type === 'SEND_TO_CLAUDE') {
+    console.log('🆕 Processing new workflow generation request');
     handleWorkflowRAGRequest(request.prompt, sender.tab.id)
       .catch(error => {
+        console.error('❌ Error in SEND_TO_CLAUDE:', error);
         chrome.tabs.sendMessage(sender.tab.id, {
           type: 'CLAUDE_ERROR',
           error: error.message
         });
       });
-    sendResponse({ received: true });
-    return true;
+    sendResponse({ received: true, serviceWorkerActive: true });
+    return true; // Async response
   }
   
   // Nouveau : Support pour l'amélioration de workflow
   if (request.type === 'IMPROVE_WORKFLOW') {
+    console.log('🔄 Processing workflow improvement request');
     handleWorkflowImprovementRequest(request.currentWorkflow, request.improvementRequest, sender.tab.id)
       .catch(error => {
+        console.error('❌ Error in IMPROVE_WORKFLOW:', error);
         chrome.tabs.sendMessage(sender.tab.id, {
           type: 'CLAUDE_ERROR',
           error: error.message
         });
       });
-    sendResponse({ received: true });
-    return true;
+    sendResponse({ received: true, serviceWorkerActive: true });
+    return true; // Async response
   }
+  
+  // Nouveau : Health check pour diagnostics
+  if (request.type === 'PING_SERVICE_WORKER') {
+    console.log('🏓 Service Worker health check received');
+    sendResponse({ 
+      pong: true, 
+      serviceWorkerActive: true,
+      uptime: Date.now() - lastActivityTime,
+      timestamp: new Date().toISOString()
+    });
+    return false; // Sync response
+  }
+  
+  console.log('⚠️ Unknown message type:', request.type);
+  sendResponse({ error: 'Unknown message type', serviceWorkerActive: true });
+  return false;
 });
 
 /**
