@@ -15,8 +15,114 @@ let isServiceWorkerActive = true;
 let lastActivityTime = Date.now();
 let keepAliveInterval = null;
 
+// === NEW: persistent Port map to keep the service-worker alive during long RAG streams ===
+const activePorts = new Map();
+
+function openKeepAlivePort(tabId) {
+  if (activePorts.has(tabId)) return activePorts.get(tabId);
+  try {
+    const port = chrome.tabs.connect(tabId, { name: 'rag-stream' });
+    activePorts.set(tabId, port);
+    console.log('🔌 Keep-alive port opened for tab', tabId);
+    port.onDisconnect.addListener(() => {
+      activePorts.delete(tabId);
+      console.log('🔌 Keep-alive port closed for tab', tabId);
+    });
+    return port;
+  } catch (err) {
+    console.warn('⚠️ Unable to open keep-alive port:', err.message);
+    return null;
+  }
+}
+
+function closeKeepAlivePort(tabId) {
+  const port = activePorts.get(tabId);
+  if (port) {
+    try { port.disconnect(); } catch (_) {}
+    activePorts.delete(tabId);
+    console.log('🔌 Keep-alive port manually closed for tab', tabId);
+  }
+}
+
+// Helper: send a message to the tab and log if the view is no longer available
+function safeSendMessage(tabId, payload) {
+  try {
+    chrome.tabs.sendMessage(tabId, payload, () => {
+      if (chrome.runtime.lastError) {
+        console.warn('⚠️ sendMessage failed:', chrome.runtime.lastError.message);
+      }
+    });
+  } catch (err) {
+    console.warn('⚠️ sendMessage threw:', err.message);
+  }
+}
+
 // Log du démarrage du service worker
 console.log('🚀 Service Worker started at:', new Date().toISOString());
+
+// 🎯 INJECTION AUTOMATIQUE DES DOMAINES PERSONNALISÉS
+// Écoute la navigation pour injecter automatiquement sur les domaines sauvegardés
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  // Seulement sur les changements de statut 'complete' avec une URL
+  if (changeInfo.status === 'complete' && tab.url) {
+    try {
+      const url = new URL(tab.url);
+      const hostname = url.hostname;
+      
+      // Ignorer les domaines déjà supportés nativement (via manifest.json)
+      const nativeDomains = ['n8n.io', 'n8n.cloud'];
+      const isNativelySupported = nativeDomains.some(domain => hostname.includes(domain));
+      
+      if (!isNativelySupported) {
+        // Vérifier si ce domaine est dans la liste des domaines sauvegardés
+        const { customDomains = [] } = await chrome.storage.sync.get(['customDomains']);
+        
+        if (customDomains.includes(hostname)) {
+          console.log('🎯 Auto-injection for saved domain:', hostname);
+          const originPattern = `${url.origin}/*`;
+          chrome.permissions.contains({ origins: [originPattern] }, (hasPerm) => {
+            if (hasPerm) {
+              performAutoInjection(tabId, hostname);
+            } else {
+              chrome.permissions.request({ origins: [originPattern] }, (granted) => {
+                if (granted) {
+                  console.log('✅ Permission granted for', originPattern);
+                  performAutoInjection(tabId, hostname);
+                } else {
+                  console.warn('⚠️ Permission denied for', originPattern);
+                }
+              });
+            }
+          });
+          // move return inside closures
+          return;
+        }
+      }
+    } catch (urlError) {
+      // Ignorer les erreurs d'URL (pages chrome://, file://, etc.)
+    }
+  }
+});
+
+function performAutoInjection(tabId, hostname) {
+  (async () => {
+    try {
+      // Marquer comme activation automatique
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => { window.n8nAIAutoActivation = true; }
+      });
+
+      // Injecter le content script et les styles
+      await chrome.scripting.executeScript({ target: { tabId }, files: ['src/content.js'] });
+      await chrome.scripting.insertCSS({ target: { tabId }, files: ['styles/panel.css'] });
+
+      console.log('✅ Auto-injection successful for:', hostname);
+    } catch (injectionError) {
+      console.log('⚠️ Auto-injection failed for', hostname, ':', injectionError.message);
+    }
+  })();
+}
 
 // 🔧 Keep-alive mechanism pour éviter que le service worker s'endorme
 function startKeepAlive() {
@@ -92,10 +198,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     handleWorkflowRAGRequest(request.prompt, sender.tab.id)
       .catch(error => {
         console.error('❌ Error in SEND_TO_CLAUDE:', error);
-        chrome.tabs.sendMessage(sender.tab.id, {
+        safeSendMessage(sender.tab.id, {
           type: 'CLAUDE_ERROR',
           error: error.message
         });
+        // Close any dangling keep-alive port on error
+        closeKeepAlivePort(sender.tab.id);
       });
     sendResponse({ received: true, serviceWorkerActive: true });
     return true; // Async response
@@ -107,10 +215,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     handleWorkflowImprovementRequest(request.currentWorkflow, request.improvementRequest, sender.tab.id)
       .catch(error => {
         console.error('❌ Error in IMPROVE_WORKFLOW:', error);
-        chrome.tabs.sendMessage(sender.tab.id, {
+        safeSendMessage(sender.tab.id, {
           type: 'CLAUDE_ERROR',
           error: error.message
         });
+        // Close keep-alive port on error as well
+        closeKeepAlivePort(sender.tab.id);
       });
     sendResponse({ received: true, serviceWorkerActive: true });
     return true; // Async response
@@ -226,7 +336,7 @@ function handleWorkflowChunk(data, tabId) {
       delete chunkBuffer[sessionId];
       
       // Envoyer le workflow complet
-      chrome.tabs.sendMessage(tabId, {
+      safeSendMessage(tabId, {
         type: 'WORKFLOW_COMPLETE',
         workflow: workflowData.workflow,
         explanation: workflowData.explanation,
@@ -237,14 +347,14 @@ function handleWorkflowChunk(data, tabId) {
       console.error('❌ Erreur assemblage chunks:', error);
       delete chunkBuffer[sessionId];
       
-      chrome.tabs.sendMessage(tabId, {
+      safeSendMessage(tabId, {
         type: 'WORKFLOW_ERROR',
         error: `Erreur assemblage workflow: ${error.message}`
       });
     }
   } else {
     // Notifier du progress
-    chrome.tabs.sendMessage(tabId, {
+    safeSendMessage(tabId, {
       type: 'WORKFLOW_PROGRESS',
       stage: 'chunking',
       message: `Réception partie ${buffer.receivedChunks}/${data.total}...`,
@@ -257,12 +367,14 @@ function handleWorkflowChunk(data, tabId) {
  * Envoie une requête au backend workflow RAG
  */
 async function handleWorkflowRAGRequest(prompt, tabId) {
+  // ⚡ Start keep-alive for the whole duration of the request
+  openKeepAlivePort(tabId);
   console.log('%c🎯 BACKGROUND: Starting workflow RAG request', 'background: darkblue; color: white; padding: 2px 6px;');
   console.log('📝 Prompt received:', prompt);
   console.log('🆔 Tab ID:', tabId);
   
   // Notifier le début de traitement
-  chrome.tabs.sendMessage(tabId, {
+  safeSendMessage(tabId, {
     type: 'WORKFLOW_GENERATION_START',
     message: 'Démarrage de la génération de workflow...'
   });
@@ -343,7 +455,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
           result = await Promise.race([readPromise, streamTimeoutPromise]);
         } catch (timeoutError) {
           console.error('❌ Timeout streaming:', timeoutError.message);
-          chrome.tabs.sendMessage(tabId, {
+          safeSendMessage(tabId, {
             type: 'CLAUDE_ERROR',
             error: 'Timeout: Le serveur ne répond plus. Essayez un prompt plus simple.'
           });
@@ -354,7 +466,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
         if (done) {
           console.log('✅ Stream terminé. Total événements:', eventCount);
           if (eventCount === 0) {
-            chrome.tabs.sendMessage(tabId, {
+            safeSendMessage(tabId, {
               type: 'CLAUDE_ERROR',
               error: 'Aucune donnée reçue du serveur. Vérifiez la configuration backend.'
             });
@@ -385,6 +497,9 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
 
     await processStream();
 
+    // ✅ Stream finished successfully – we can release the keep-alive port
+    closeKeepAlivePort(tabId);
+
   } catch (error) {
     console.error('❌ Erreur complète:', error);
     console.error('❌ Error stack:', error.stack);
@@ -397,10 +512,13 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     }
     
     // Envoyer une erreur détaillée
-    chrome.tabs.sendMessage(tabId, {
+    safeSendMessage(tabId, {
       type: 'CLAUDE_ERROR',
       error: errorMessage
     });
+
+    // 🛑 Ensure we release the port on error as well
+    closeKeepAlivePort(tabId);
     
     throw error;
   }
@@ -410,12 +528,14 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
  * Nouveau : Gère l'amélioration d'un workflow existant
  */
 async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequest, tabId) {
+  // ⚡ Start keep-alive for the improvement request as well
+  openKeepAlivePort(tabId);
   console.log('%c🎯 BACKGROUND: Starting workflow improvement request', 'background: darkviolet; color: white; padding: 2px 6px;');
   console.log('📝 Improvement request:', improvementRequest);
   console.log('🆔 Tab ID:', tabId);
   
   // Notifier le début de traitement
-  chrome.tabs.sendMessage(tabId, {
+  safeSendMessage(tabId, {
     type: 'WORKFLOW_GENERATION_START',
     message: 'Analyse du workflow existant...'
   });
@@ -425,7 +545,7 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
     baseWorkflow: currentWorkflow // Nouveau : inclure le workflow de base
   };
 
-  // 📊 DETAILED LOGGING - Backend request preparation for improvement
+  // 📊 DETAILED LOGGING - Backend improvement request preparation
   console.log('%c📊 BACKGROUND: Backend improvement request preparation', 'background: darkorange; color: white; padding: 2px 6px;');
   console.log('🔧 Request type: WORKFLOW_IMPROVEMENT');
   console.log('📝 Request body structure:');
@@ -495,6 +615,9 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
       }
     }
   }
+
+  // ✅ Finished processing improvement stream – release port
+  closeKeepAlivePort(tabId);
 }
 
 /**
@@ -502,31 +625,32 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
  */
 async function processWorkflowRAGResponse(data, tabId) {
   console.log('📨 Réponse workflow RAG:', data.type);
+  const send = (payload) => safeSendMessage(tabId, payload);
 
   switch (data.type) {
     case 'setup':
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_SETUP',
         message: data.data.message
       });
       break;
 
     case 'search':
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_SEARCH',
         message: data.data.message
       });
       break;
 
     case 'building':
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_BUILDING',
         message: data.data.message
       });
       break;
 
     case 'progress':
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_PROGRESS',
         stage: data.data.stage,
         message: data.data.message,
@@ -536,7 +660,7 @@ async function processWorkflowRAGResponse(data, tabId) {
       break;
 
     case 'context_building':
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_PROGRESS',
         stage: 'context_building',
         message: data.data.message,
@@ -545,14 +669,14 @@ async function processWorkflowRAGResponse(data, tabId) {
       break;
 
     case 'claude_call':
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_BUILDING',
         message: data.data.message
       });
       break;
 
     case 'parsing':
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_PROGRESS',
         stage: 'parsing',
         message: data.data.message
@@ -560,7 +684,7 @@ async function processWorkflowRAGResponse(data, tabId) {
       break;
 
     case 'compression':
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_PROGRESS',
         stage: 'compression',
         message: data.data.message,
@@ -573,7 +697,7 @@ async function processWorkflowRAGResponse(data, tabId) {
         console.log('✅ Workflow généré avec succès');
         
         // Envoyer le workflow complet et l'explication
-        chrome.tabs.sendMessage(tabId, {
+        send({
           type: 'WORKFLOW_COMPLETE',
           workflow: data.data.workflow,
           explanation: data.data.explanation,
@@ -581,7 +705,7 @@ async function processWorkflowRAGResponse(data, tabId) {
         });
       } else {
         console.error('❌ Échec de génération');
-        chrome.tabs.sendMessage(tabId, {
+        send({
           type: 'WORKFLOW_ERROR',
           error: data.data.error || 'Échec de génération de workflow'
         });
@@ -602,7 +726,7 @@ async function processWorkflowRAGResponse(data, tabId) {
           console.log('✅ Workflow décompressé avec succès via service worker');
           
           // Envoyer le workflow décompressé
-          chrome.tabs.sendMessage(tabId, {
+          send({
             type: 'WORKFLOW_COMPLETE',
             workflow: workflowData.workflow,
             explanation: workflowData.explanation,
@@ -614,7 +738,7 @@ async function processWorkflowRAGResponse(data, tabId) {
           console.log('🔄 Fallback: Envoi au content script pour décompression');
           
           // Fallback: Envoyer les données compressées au content script
-          chrome.tabs.sendMessage(tabId, {
+          send({
             type: 'DECOMPRESS_WORKFLOW',
             compressedData: data.data.data,
             originalSize: data.data.originalSize
@@ -622,7 +746,7 @@ async function processWorkflowRAGResponse(data, tabId) {
         }
       } else {
         console.error('❌ Échec de génération compressée');
-        chrome.tabs.sendMessage(tabId, {
+        send({
           type: 'WORKFLOW_ERROR',
           error: 'Échec de génération de workflow compressé'
         });
@@ -631,7 +755,7 @@ async function processWorkflowRAGResponse(data, tabId) {
 
     case 'chunking_start':
       console.log(`📦 Début réception chunks: ${data.data.totalChunks} parties`);
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_PROGRESS',
         stage: 'chunking',
         message: data.data.message,
@@ -655,7 +779,7 @@ async function processWorkflowRAGResponse(data, tabId) {
       break;
 
     case 'error':
-      chrome.tabs.sendMessage(tabId, {
+      send({
         type: 'WORKFLOW_ERROR',
         error: data.data.error || data.data.message
       });
@@ -767,19 +891,19 @@ async function executeWorkflowImport(workflow, tabId) {
     
     if (successfulResults.length > 0) {
       // Au moins une frame a réussi
-      chrome.tabs.sendMessage(tabId, {
+      safeSendMessage(tabId, {
         type: 'WORKFLOW_IMPORT_SUCCESS',
         message: successfulResults[0].result.message
       });
     } else if (failedResults.length > 0) {
       // Toutes les frames ont échoué
-      chrome.tabs.sendMessage(tabId, {
+      safeSendMessage(tabId, {
         type: 'WORKFLOW_IMPORT_ERROR',
         error: failedResults[0].result.error
       });
     } else {
       // Aucun résultat (bizarre)
-      chrome.tabs.sendMessage(tabId, {
+      safeSendMessage(tabId, {
         type: 'WORKFLOW_IMPORT_ERROR',
         error: 'Aucune frame n8n trouvée pour importer le workflow'
       });
@@ -787,7 +911,7 @@ async function executeWorkflowImport(workflow, tabId) {
     
   } catch (error) {
     console.error('❌ Erreur injection script:', error);
-    chrome.tabs.sendMessage(tabId, {
+    safeSendMessage(tabId, {
       type: 'WORKFLOW_IMPORT_ERROR',
       error: `Erreur d'injection: ${error.message}`
     });

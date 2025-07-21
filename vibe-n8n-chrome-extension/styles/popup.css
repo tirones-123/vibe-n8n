@@ -318,4 +318,39 @@ body {
   left: 0;
   color: #10b981;
   font-weight: bold;
+}
+
+/* Section domaine custom */
+#custom-domain-section {
+  background: #fef7e6;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+#custom-domain-section h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #92400e;
+}
+
+#custom-domain-section p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #451a03;
+}
+
+#current-domain {
+  font-family: monospace;
+  background: #fbbf24;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.small-text {
+  font-size: 12px !important;
+  color: #78716c !important;
+  margin-top: 8px !important;
 } 

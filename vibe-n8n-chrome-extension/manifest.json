@@ -6,7 +6,8 @@
   "permissions": [
     "scripting",
     "activeTab",
-    "tabs"
+    "tabs",
+    "storage"
   ],
   "host_permissions": [
     "https://vibe-n8n.vercel.app/*",
@@ -15,9 +16,10 @@
     "https://*.n8n.io/*",
     "https://n8n.io/*",
     "https://*.n8n.cloud/*",
-    "https://n8n.cloud/*",
-    "http://localhost:*/*",
-    "https://localhost:*/*"
+    "https://n8n.cloud/*"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "src/background.js"
@@ -28,9 +30,7 @@
         "https://*.n8n.io/*",
         "https://n8n.io/*",
         "https://*.n8n.cloud/*",
-        "https://n8n.cloud/*",
-        "http://localhost:*/*",
-        "https://localhost:*/*"
+        "https://n8n.cloud/*"
       ],
       "js": ["src/content.js"],
       "css": ["styles/panel.css"],

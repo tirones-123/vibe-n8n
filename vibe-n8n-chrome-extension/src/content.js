@@ -31,59 +31,127 @@ console.log('%c🚀 n8n AI Assistant (Workflow RAG): SCRIPT LOADED !', 'backgrou
 
 console.log('📍 Current URL:', window.location.href);
 
-// Check if we're on n8n and a workflow page
-const isN8n = window.location.hostname.includes('n8n.io') || 
-              window.location.hostname.includes('n8n.cloud') || 
-              window.location.hostname.includes('localhost');
+// Prevent double execution
+if (window.n8nAIAssistantLoaded) {
+  console.log('🔄 n8n AI Assistant already loaded, skipping...');
+  throw new Error('Already loaded');
+}
+window.n8nAIAssistantLoaded = true;
 
-const isWorkflowPage = window.location.pathname.includes('/workflow/') || 
-                       window.location.pathname.includes('/execution/') ||
-                       window.location.pathname.includes('/editor/') ||
-                       (window.location.hostname.includes('localhost') && window.location.pathname === '/');
-
-if (!isN8n || !isWorkflowPage) {
-  console.log('❌ Not on n8n workflow page, stopping');
+// Check if we're on potential n8n page
+function detectN8nPage() {
+  const hostname = window.location.hostname;
+  const pathname = window.location.pathname;
   
-  if (isN8n && !isWorkflowPage) {
-    setTimeout(() => {
-      const helpDiv = document.createElement('div');
-      helpDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #1e1e1e;
-        color: #d4d4d4;
-        padding: 16px 20px;
-        border-radius: 6px;
-        font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
-        font-size: 13px;
-        z-index: 9999;
-        max-width: 320px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.32);
-        border: 1px solid #3e3e3e;
-      `;
-      helpDiv.innerHTML = `
-        <div style="margin-bottom: 8px; font-weight: 600; color: #569cd6;">🤖 n8n AI Assistant</div>
-        <div style="margin-bottom: 12px; color: #9cdcfe;">Navigate to a workflow editor to use the AI assistant.</div>
-        <button onclick="window.open('/workflows', '_blank'); this.parentElement.remove();" 
-                style="background: #0078d4; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; font-family: inherit;">
-          View Workflows
-        </button>
-        <button onclick="this.parentElement.remove();" 
-                style="background: transparent; color: #d4d4d4; border: 1px solid #3e3e3e; padding: 6px 12px; border-radius: 3px; cursor: pointer; margin-left: 8px; font-size: 12px; font-family: inherit;">
-          Dismiss
-        </button>
-      `;
-      document.body.appendChild(helpDiv);
-      
-      setTimeout(() => {
-        if (helpDiv.parentElement) helpDiv.remove();
-      }, 10000);
-    }, 1000);
+  // Method 1: Domain contains 'n8n'
+  if (hostname.includes('n8n')) {
+    console.log('✅ n8n detected via domain:', hostname);
+    return true;
   }
-} else if (window.__n8nAiAssistantLoaded) {
-  console.log('⚠️ Extension already loaded in this context');
-} else {
+  
+  // Method 2: URL patterns suggest n8n
+  const n8nPatterns = ['/workflow/', '/execution/', '/editor/', '/credentials/', '/settings/'];
+  if (n8nPatterns.some(pattern => pathname.includes(pattern))) {
+    console.log('✅ n8n detected via URL pattern:', pathname);
+    return true;
+  }
+  
+  // Method 3: Manual injection (when user clicked "Activate on this page")
+  if (window.n8nAIManualActivation) {
+    console.log('✅ n8n detected via manual activation');
+    return true;
+  }
+  
+  // Method 4: Auto injection (when domain was previously saved)
+  if (window.n8nAIAutoActivation) {
+    console.log('✅ n8n detected via auto activation for saved domain:', hostname);
+    return true;
+  }
+  
+  // Method 5: Check saved custom domains (async check)
+  checkSavedDomains(hostname);
+  
+  return false;
+}
+
+// New function to check saved domains asynchronously
+async function checkSavedDomains(currentHostname) {
+  try {
+    const result = await chrome.storage.sync.get(['customDomains']);
+    const customDomains = result.customDomains || [];
+    
+    if (customDomains.includes(currentHostname)) {
+      console.log('✅ n8n detected via saved custom domain:', currentHostname);
+      window.n8nAIAutoActivation = true;
+      window.n8nAIManualActivation = true;
+      
+      // Trigger initialization if not already loaded
+      if (!window.__n8nAiAssistantLoaded) {
+        console.log('🚀 Triggering initialization for saved domain');
+        setTimeout(() => {
+          init().catch(error => {
+            console.error('❌ Failed to initialize after domain detection:', error);
+          });
+        }, 500);
+      }
+      
+      return true;
+    }
+  } catch (error) {
+    console.log('⚠️ Could not check saved domains:', error.message);
+  }
+  return false;
+}
+
+// Main initialization function
+(async function initializeExtension() {
+  console.log('🚀 Starting extension initialization...');
+  
+  // FIRST: Check for saved custom domains and auto-activate if needed
+  try {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      const hostname = window.location.hostname;
+      console.log('🔍 Checking if domain is in saved custom domains:', hostname);
+      
+      const { customDomains = [] } = await chrome.storage.sync.get(['customDomains']);
+      console.log('📋 Saved custom domains:', customDomains);
+      
+      if (customDomains.includes(hostname)) {
+        console.log('✅ Domain found in saved list! Auto-activating:', hostname);
+        window.n8nAIManualActivation = true;
+        window.n8nAIAutoActivation = true;
+      } else {
+        console.log('❌ Domain not in saved list:', hostname);
+      }
+    } else {
+      console.log('⚠️ Chrome storage not available');
+    }
+  } catch (error) {
+    console.log('❌ Error checking storage for auto-activation:', error.message);
+  }
+
+  // THEN: Detect if this is an n8n page (now with potential auto-activation flag set)
+  const isN8nPage = detectN8nPage();
+
+  console.log('🔍 Final page analysis:', {
+    hostname: window.location.hostname,
+    pathname: window.location.pathname,
+    manualActivation: !!window.n8nAIManualActivation,
+    isN8nPage: isN8nPage
+  });
+
+  if (!isN8nPage) {
+    console.log('❌ Not detected as n8n page, stopping initialization');
+    return;
+  }
+
+  // Continue with n8n AI Assistant initialization
+  console.log('✅ n8n page confirmed! Initializing AI Assistant...');
+
+  if (window.__n8nAiAssistantLoaded) {
+    console.log('⚠️ Extension already loaded in this context');
+    return;
+  }
   console.log('✅ On n8n workflow page, continuing...');
   window.__n8nAiAssistantLoaded = true;
   
@@ -275,23 +343,23 @@ if (!isN8n || !isWorkflowPage) {
       }
 
       .ai-json-highlight .json-key {
-        color: #9cdcfe;
+        color: var(--ai-code-key);
       }
 
       .ai-json-highlight .json-string {
-        color: #ce9178;
+        color: var(--ai-code-string);
       }
 
       .ai-json-highlight .json-number {
-        color: #b5cea8;
+        color: var(--ai-code-number);
       }
 
       .ai-json-highlight .json-boolean {
-        color: #569cd6;
+        color: var(--ai-code-boolean);
       }
 
       .ai-json-highlight .json-null {
-        color: #569cd6;
+        color: var(--ai-code-null);
       }
 
       .ai-message {
@@ -367,12 +435,12 @@ if (!isN8n || !isWorkflowPage) {
 
       .ai-resize-handle:hover .ai-resize-indicator {
         opacity: 0.8 !important;
-        background: var(--ai-accent) !important;
+        background: var(--ai-accent-blue) !important;
       }
 
       .ai-resize-handle.active .ai-resize-indicator {
         opacity: 1 !important;
-        background: var(--ai-accent) !important;
+        background: var(--ai-accent-blue) !important;
         transform: translateX(-50%) scaleX(1.2) !important;
       }
 
@@ -461,12 +529,12 @@ if (!isN8n || !isWorkflowPage) {
 
       .ai-resize-handle-horizontal:hover .ai-resize-indicator-horizontal {
         opacity: 0.8 !important;
-        background: var(--ai-accent) !important;
+        background: var(--ai-accent-blue) !important;
       }
 
       .ai-resize-handle-horizontal.active .ai-resize-indicator-horizontal {
         opacity: 1 !important;
-        background: var(--ai-accent) !important;
+        background: var(--ai-accent-blue) !important;
         transform: translateY(-50%) scaleY(1.2) !important;
       }
 
@@ -490,6 +558,34 @@ if (!isN8n || !isWorkflowPage) {
 
         .ai-assistant-container.resizing-width .n8n-layout-modified {
           transition: none !important;
+        }
+
+        /* NDV mode - compact styling when node detail view is open */
+        .n8n-ai-assistant.ndv-mode {
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.3) !important;
+          border-left: 2px solid var(--ai-border-accent) !important;
+        }
+
+        .n8n-ai-assistant.ndv-mode .ai-header {
+          padding: 8px 12px !important;
+          font-size: 13px !important;
+        }
+
+        .n8n-ai-assistant.ndv-mode .ai-content {
+          padding: 8px 12px !important;
+        }
+
+        .n8n-ai-assistant.ndv-mode .ai-chat-messages {
+          max-height: 200px !important;
+        }
+
+        .n8n-ai-assistant.ndv-mode .ai-input-auto {
+          height: 60px !important;
+          font-size: 11px !important;
+        }
+
+        .n8n-ai-assistant.ndv-mode .ai-code-panel {
+          max-height: 250px !important;
         }
 
         /* n8n-style input focus states */
@@ -703,12 +799,14 @@ if (!isN8n || !isWorkflowPage) {
 
       /* SIMPLE SCROLL FIX for JSON code panel */
       .ai-code-panel.expanded {
-        height: 300px !important;
+        /* Use dynamic --panel-height so JS resize works */
+        height: var(--panel-height, 300px) !important;
         overflow: hidden !important;
       }
 
       .ai-code-panel.expanded #ai-code-content {
-        height: 250px !important;
+        /* Keep 50px less than panel to account for header */
+        height: calc(var(--panel-height, 300px) - 50px) !important;
         overflow-y: scroll !important;
         overflow-x: hidden !important;
         overscroll-behavior: contain !important;
@@ -1432,6 +1530,11 @@ if (!isN8n || !isWorkflowPage) {
     document.body.appendChild(container);
     setupEventListeners();
     
+    // Open the code panel by default (was collapsed previously)
+    if (!isCodePanelExpanded) {
+      toggleCodePanel();
+    }
+    
     // Ensure console starts completely clean and UI state is reset
     // Wait longer to ensure all DOM elements are ready
     setTimeout(() => {
@@ -1594,6 +1697,28 @@ if (!isN8n || !isWorkflowPage) {
     const autoImportCheckbox = document.getElementById('ai-auto-import');
     const copyButton = document.getElementById('ai-copy-json');
     
+    // Close chat when a node opens (detected by URL change)
+    let lastUrl = window.location.href;
+    
+    function checkUrlChange() {
+      const currentUrl = window.location.href;
+      if (currentUrl !== lastUrl) {
+        // Check if URL contains a node ID (format: /workflow/ID/NODE_ID)
+        const nodeIdMatch = currentUrl.match(/\/workflow\/[^\/]+\/([a-zA-Z0-9]+)$/);
+        if (nodeIdMatch && isOpen) {
+          console.log('🔴 Node opened (URL changed) - closing AI assistant:', nodeIdMatch[1]);
+          toggleInterface();
+        }
+        lastUrl = currentUrl;
+      }
+    }
+    
+    // Listen for URL changes via popstate
+    window.addEventListener('popstate', checkUrlChange);
+    
+    // Also check periodically since n8n uses client-side routing
+    setInterval(checkUrlChange, 500);
+    
     // Close button
     if (closeButton) {
       closeButton.onclick = toggleInterface;
@@ -1628,27 +1753,25 @@ if (!isN8n || !isWorkflowPage) {
         autoResizeTextarea(inputField);
       });
       
-      // Prevent paste in chat from triggering n8n import
+      // Gentle protection: mark when pasting in chat to avoid auto-import
+      let isPastingInChat = false;
+      
       inputField.addEventListener('paste', (e) => {
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        console.log('📋 Paste in chat - preventing n8n auto-import');
+        isPastingInChat = true;
+        console.log('📋 Paste in chat detected - marking to prevent n8n auto-import');
         
-        // Let the paste happen normally in the textarea
+        // Clear the flag after a short delay
         setTimeout(() => {
+          isPastingInChat = false;
           autoResizeTextarea(inputField);
-        }, 0);
+        }, 1000);
       });
       
-      // Prevent Ctrl+V in chat from triggering n8n import
+      // Expose flag globally to prevent auto-import when pasting in chat
+      window.aiChatPastingFlag = () => isPastingInChat;
+      
+      // Handle Ctrl+Enter for sending message
       inputField.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'v') {
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-          console.log('⌨️ Ctrl+V in chat - preventing n8n auto-import');
-        }
-        
-        // Handle Ctrl+Enter for sending message
         if (e.ctrlKey && e.key === 'Enter') {
           e.preventDefault();
           e.stopPropagation();
@@ -1724,6 +1847,9 @@ if (!isN8n || !isWorkflowPage) {
     
     // Horizontal resize functionality
     setupHorizontalResize();
+    
+    // NDV detection and adaptation
+    startNDVDetection();
     
     // Copy JSON button (now permanently in DOM)
     if (copyButton) {
@@ -1849,8 +1975,8 @@ if (!isN8n || !isWorkflowPage) {
     // 🔧 Wake up service worker when opening interface
     if (!isOpen) {
       console.log('🚀 Waking up service worker on interface open...');
-      pingServiceWorker().catch(err => {
-        console.warn('⚠️ Service worker wake-up failed:', err.message);
+      pingServiceWorker().catch(error => {
+        console.warn('⚠️ Service worker wake-up failed:', error.message);
       });
     }
     
@@ -2056,6 +2182,152 @@ if (!isN8n || !isWorkflowPage) {
     document.documentElement.style.setProperty(name, value);
   }
 
+  // 🎯 NODE DETAIL VIEW (NDV) DETECTION AND ADAPTATION
+  let ndvObserver = null;
+  let isNDVOpen = false;
+  let originalPanelWidth = null;
+
+  // Detect when Node Detail View opens/closes
+  function detectNDVState() {
+    const ndvContainer = document.querySelector('.ndv-container, [data-test-id="ndv"], .node-view-wrapper');
+    const newNDVState = !!(ndvContainer && ndvContainer.offsetParent !== null);
+    
+    if (newNDVState !== isNDVOpen) {
+      console.log(`🔍 NDV state changed: ${isNDVOpen ? 'open' : 'closed'} → ${newNDVState ? 'open' : 'closed'}`);
+      isNDVOpen = newNDVState;
+      adaptToNDVState(isNDVOpen);
+    }
+    
+    return isNDVOpen;
+  }
+
+  // Adapt AI panel when NDV opens/closes
+  function adaptToNDVState(ndvOpen) {
+    const container = document.getElementById('n8n-ai-assistant');
+    if (!container) return;
+
+    if (ndvOpen) {
+      // NDV is open - make AI panel smaller and more discreet
+      console.log('🔧 Adapting AI panel for NDV view...');
+      
+      // Store original width if not already stored
+      if (originalPanelWidth === null) {
+        originalPanelWidth = currentPanelWidth;
+      }
+      
+      // Reduce panel width significantly for NDV mode
+      const ndvModeWidth = Math.min(300, originalPanelWidth * 0.6);
+      updatePanelWidth(ndvModeWidth);
+      
+      // Add special class for NDV mode styling
+      container.classList.add('ndv-mode');
+      
+      // Update container with new width
+      container.style.width = ndvModeWidth + 'px';
+      container.style.right = isOpen ? '0px' : `-${ndvModeWidth}px`;
+      
+      // Update CSS variable
+      updateCSSVariable('--ai-panel-width', ndvModeWidth + 'px');
+      
+      console.log(`📐 AI panel adapted for NDV: ${originalPanelWidth}px → ${ndvModeWidth}px`);
+      
+    } else {
+      // NDV is closed - restore original size
+      console.log('🔧 Restoring AI panel size after NDV close...');
+      
+      // Remove NDV mode class
+      container.classList.remove('ndv-mode');
+      
+      // Restore original width if it was stored
+      if (originalPanelWidth !== null) {
+        updatePanelWidth(originalPanelWidth);
+        
+        // Update container with restored width
+        container.style.width = originalPanelWidth + 'px';
+        container.style.right = isOpen ? '0px' : `-${originalPanelWidth}px`;
+        
+        // Update CSS variable
+        updateCSSVariable('--ai-panel-width', originalPanelWidth + 'px');
+        
+        console.log(`📐 AI panel restored after NDV: ${currentPanelWidth}px → ${originalPanelWidth}px`);
+        
+        // Clear the stored width
+        originalPanelWidth = null;
+      }
+    }
+    
+    // Reapply layout modifications if needed
+    if (isOpen && n8nLayoutModified) {
+      // Small delay to ensure NDV transition is complete
+      setTimeout(() => {
+        removeN8nLayoutModifications();
+        applyN8nLayoutModifications();
+      }, 100);
+    }
+  }
+
+  // Start NDV monitoring
+  function startNDVDetection() {
+    if (ndvObserver) return; // Already running
+    
+    console.log('🔍 Starting NDV detection...');
+    
+    // Initial detection
+    detectNDVState();
+    
+    // Create observer for NDV changes
+    ndvObserver = new MutationObserver((mutations) => {
+      let shouldCheck = false;
+      
+      mutations.forEach((mutation) => {
+        // Check for node additions/removals that might be NDV
+        if (mutation.type === 'childList') {
+          const addedNodes = Array.from(mutation.addedNodes);
+          const removedNodes = Array.from(mutation.removedNodes);
+          
+          const isNDVRelated = [...addedNodes, ...removedNodes].some(node => {
+            if (node.nodeType !== Node.ELEMENT_NODE) return false;
+            const element = node;
+            return element.classList.contains('ndv-container') ||
+                   element.classList.contains('node-view-wrapper') ||
+                   element.querySelector?.('.ndv-container, [data-test-id="ndv"]');
+          });
+          
+          if (isNDVRelated) {
+            shouldCheck = true;
+          }
+        }
+        
+        // Check for style/class changes that might affect NDV visibility
+        if (mutation.type === 'attributes') {
+          const target = mutation.target;
+          if (target.classList.contains('ndv-container') ||
+              target.classList.contains('node-view-wrapper') ||
+              target.hasAttribute('data-test-id') && target.getAttribute('data-test-id') === 'ndv') {
+            shouldCheck = true;
+          }
+        }
+      });
+      
+      if (shouldCheck) {
+        // Debounce NDV detection
+        setTimeout(() => {
+          detectNDVState();
+        }, 50);
+      }
+    });
+    
+    // Observe the document for NDV changes
+    ndvObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style', 'data-test-id']
+    });
+    
+    console.log('✅ NDV detection started');
+  }
+
   // 🎨 THEME DETECTION AND ADAPTATION
   let currentTheme = 'light';
   let themeObserver = null;
@@ -2063,28 +2335,110 @@ if (!isN8n || !isWorkflowPage) {
 
   // Detect n8n theme (dark/light)
   function detectN8nTheme() {
-    // Method 1: Check for dark theme classes
+    console.log('🔍 Detecting n8n theme...');
+    
+    // Method 0: PRIORITY - Check if n8n is using system preferences
+    const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    console.log('🖥️ System prefers dark mode:', systemPrefersDark);
+    
+    // Check if n8n is following system preferences (common indicators)
     const html = document.documentElement;
     const body = document.body;
+    
+    // Look for indicators that n8n is in "system default" mode
+    const systemDefaultIndicators = [
+      // Check if CSS uses system color schemes
+      () => {
+        const rootStyles = window.getComputedStyle(document.documentElement);
+        const colorScheme = rootStyles.getPropertyValue('color-scheme').trim();
+        return colorScheme.includes('light dark') || colorScheme.includes('dark light');
+      },
+      // Check if body/html don't have explicit theme classes (indicating system default)
+      () => {
+        const hasExplicitTheme = html.classList.contains('dark') || html.classList.contains('light') ||
+                               body.classList.contains('dark') || body.classList.contains('light') ||
+                               html.classList.contains('dark-theme') || html.classList.contains('light-theme') ||
+                               body.classList.contains('dark-theme') || body.classList.contains('light-theme');
+        return !hasExplicitTheme;
+      },
+      // Check for CSS variables that respond to prefers-color-scheme
+      () => {
+        const style = document.createElement('div');
+        style.style.color = 'var(--color-background, transparent)';
+        document.body.appendChild(style);
+        const hasThemeVars = window.getComputedStyle(style).color !== 'transparent';
+        document.body.removeChild(style);
+        return hasThemeVars;
+      }
+    ];
+    
+    const systemDefaultScore = systemDefaultIndicators.filter(check => check()).length;
+    console.log('🎯 System default indicators score:', systemDefaultScore, '/3');
+    
+    // If we have good evidence n8n is following system preferences, use that
+    if (systemDefaultScore >= 1) {
+      console.log('✅ n8n appears to be following system preferences');
+      if (systemPrefersDark) {
+        console.log('✅ Dark theme detected via system preference (n8n system default mode)');
+        return 'dark';
+      } else {
+        console.log('✅ Light theme detected via system preference (n8n system default mode)');
+        return 'light';
+      }
+    }
+    
+    // Method 1: Check for explicit dark theme classes
+    
+    console.log('📋 HTML classes:', html.className);
+    console.log('📋 Body classes:', body.className);
     
     if (html.classList.contains('dark') || 
         body.classList.contains('dark') ||
         html.classList.contains('dark-theme') ||
         body.classList.contains('dark-theme')) {
+      console.log('✅ Dark theme detected via HTML/body classes');
       return 'dark';
     }
     
     // Method 2: Check n8n specific dark theme indicators
     const n8nApp = document.querySelector('#app, .n8n-app, [data-theme]');
     if (n8nApp) {
+      console.log('📋 n8n app element found:', n8nApp.tagName, n8nApp.className);
       const theme = n8nApp.getAttribute('data-theme');
+      console.log('📋 data-theme attribute:', theme);
+      
       if (theme && theme.includes('dark')) {
+        console.log('✅ Dark theme detected via data-theme attribute');
         return 'dark';
       }
       
       const classList = n8nApp.classList;
       if (classList.contains('dark') || classList.contains('dark-theme')) {
+        console.log('✅ Dark theme detected via n8n app classes');
         return 'dark';
+      }
+    }
+    
+    // Method 2.5: Look for n8n light mode indicators
+    if (html.classList.contains('light') || 
+        body.classList.contains('light') ||
+        html.classList.contains('light-theme') ||
+        body.classList.contains('light-theme')) {
+      console.log('✅ Light theme detected via HTML/body classes');
+      return 'light';
+    }
+    
+    if (n8nApp) {
+      const theme = n8nApp.getAttribute('data-theme');
+      if (theme && theme.includes('light')) {
+        console.log('✅ Light theme detected via data-theme attribute');
+        return 'light';
+      }
+      
+      const classList = n8nApp.classList;
+      if (classList.contains('light') || classList.contains('light-theme')) {
+        console.log('✅ Light theme detected via n8n app classes');
+        return 'light';
       }
     }
     
@@ -2098,6 +2452,13 @@ if (!isN8n || !isWorkflowPage) {
       '.main-header',
       '.header-wrapper',
       '.content-wrapper',
+      // More specific n8n selectors
+      '.left-panel',
+      '.nodeview',
+      '.node-view',
+      '.canvas-container',
+      '.main-panel',
+      '.workflow-canvas',
       // Generic selectors
       '.navbar', 
       '.header', 
@@ -2111,11 +2472,15 @@ if (!isN8n || !isWorkflowPage) {
       '[class*="main"]'
     ];
     
+    console.log('🔍 Checking background colors of elements...');
+    
     for (const selector of n8nElements) {
       const element = document.querySelector(selector);
       if (element) {
         const computedStyle = window.getComputedStyle(element);
         const bgColor = computedStyle.backgroundColor;
+        
+        console.log(`📋 Element ${selector} background:`, bgColor);
         
         // Parse RGB values to determine if it's dark
         const rgb = bgColor.match(/\d+/g);
@@ -2123,10 +2488,18 @@ if (!isN8n || !isWorkflowPage) {
           const [r, g, b] = rgb.map(Number);
           const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
           
+          console.log(`📊 ${selector} luminance: ${luminance} (RGB: ${r},${g},${b})`);
+          
           // If luminance is low, it's likely a dark theme
           if (luminance < 100) { // More strict threshold for dark detection
-            console.log(`🎨 Dark theme detected via element ${selector}: RGB(${r},${g},${b}) luminance=${luminance}`);
+            console.log(`✅ Dark theme detected via element ${selector}: RGB(${r},${g},${b}) luminance=${luminance}`);
             return 'dark';
+          }
+          
+          // If luminance is high, it's likely a light theme
+          if (luminance > 200) {
+            console.log(`✅ Light theme detected via element ${selector}: RGB(${r},${g},${b}) luminance=${luminance}`);
+            return 'light';
           }
         }
       }
@@ -2179,15 +2552,140 @@ if (!isN8n || !isWorkflowPage) {
       }
     }
     
-    // Method 5: Check system preference as ultimate fallback
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      console.log('🎨 Dark theme detected via system preference');
+    // Method 5: Enhanced system preference fallback
+    console.log('🔍 No explicit theme found, checking system preferences more thoroughly...');
+    
+    // Check multiple system preference indicators
+    const systemChecks = {
+      mediaQuery: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+      cssColorScheme: (() => {
+        const computedStyle = window.getComputedStyle(document.documentElement);
+        const colorScheme = computedStyle.getPropertyValue('color-scheme');
+        return colorScheme.includes('dark');
+      })(),
+      browserDefault: (() => {
+        // Check if browser chrome itself is dark
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      })()
+    };
+    
+    console.log('🖥️ System preference checks:', systemChecks);
+    
+    if (systemChecks.mediaQuery || systemChecks.cssColorScheme || systemChecks.browserDefault) {
+      console.log('✅ Dark theme detected via enhanced system preference detection');
       return 'dark';
     }
     
-    console.log('🎨 No dark theme indicators found, defaulting to light');
+    // Final fallback: Check if CSS is using system colors that might indicate dark mode
+    const testElement = document.createElement('div');
+    testElement.style.cssText = 'position: absolute; visibility: hidden; background: Canvas; color: CanvasText;';
+    document.body.appendChild(testElement);
+    
+    try {
+      const style = window.getComputedStyle(testElement);
+      const bgColor = style.backgroundColor;
+      const textColor = style.color;
+      
+      console.log('🎨 System Canvas colors - bg:', bgColor, 'text:', textColor);
+      
+      // Parse and check luminance of system canvas color
+      const bgRgb = bgColor.match(/\d+/g);
+      if (bgRgb && bgRgb.length >= 3) {
+        const [r, g, b] = bgRgb.map(Number);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+        console.log('🎨 System canvas luminance:', luminance);
+        
+        if (luminance < 128) {
+          console.log('✅ Dark theme detected via system Canvas colors');
+          document.body.removeChild(testElement);
+          return 'dark';
+        }
+      }
+    } catch (error) {
+      console.log('⚠️ Error checking system Canvas colors:', error.message);
+    }
+    
+    document.body.removeChild(testElement);
+    
+    console.log('⚠️ No clear theme indicators found, defaulting to light');
+    console.log('🔍 Consider opening browser dev tools and running: window.debugThemeDetection()');
     return 'light'; // Default fallback
   }
+
+  // Debug function to manually test theme detection
+  function debugThemeDetection() {
+    console.log('🐛 ENHANCED THEME DETECTION DEBUG');
+    console.log('==================================');
+    
+    // System information
+    console.log('🖥️ SYSTEM INFO:');
+    console.log('  - User agent:', navigator.userAgent);
+    console.log('  - System prefers dark:', window.matchMedia('(prefers-color-scheme: dark)').matches);
+    console.log('  - System prefers light:', window.matchMedia('(prefers-color-scheme: light)').matches);
+    
+    // Document info
+    console.log('📄 DOCUMENT INFO:');
+    console.log('  - URL:', window.location.href);
+    console.log('  - Title:', document.title);
+    console.log('  - HTML classes:', document.documentElement.className);
+    console.log('  - Body classes:', document.body.className);
+    
+    // CSS info
+    console.log('🎨 CSS INFO:');
+    const rootStyle = window.getComputedStyle(document.documentElement);
+    console.log('  - color-scheme:', rootStyle.getPropertyValue('color-scheme'));
+    console.log('  - Background color:', rootStyle.getPropertyValue('background-color'));
+    console.log('  - Color:', rootStyle.getPropertyValue('color'));
+    
+    // n8n specific
+    console.log('🎯 N8N SPECIFIC:');
+    const n8nApp = document.querySelector('#app, .n8n-app, [data-theme]');
+    if (n8nApp) {
+      console.log('  - n8n app element:', n8nApp.tagName);
+      console.log('  - n8n app classes:', n8nApp.className);
+      console.log('  - data-theme:', n8nApp.getAttribute('data-theme'));
+    } else {
+      console.log('  - n8n app element: NOT FOUND');
+    }
+    
+    // Detection result
+    console.log('🔍 DETECTION RESULT:');
+    const theme = detectN8nTheme();
+    console.log(`  - Detected theme: ${theme}`);
+    console.log(`  - Current applied theme: ${currentTheme}`);
+    
+    if (theme !== currentTheme) {
+      console.log('🔄 Applying new theme...');
+      applyThemeColors(theme);
+    } else {
+      console.log('✅ Theme is already correct');
+    }
+    
+    return theme;
+  }
+  
+  // Expose debug functions globally for easier troubleshooting
+  window.debugThemeDetection = debugThemeDetection;
+  window.forceThemeDetection = () => {
+    console.log('🔄 Forcing theme re-detection...');
+    const newTheme = detectN8nTheme();
+    console.log('🎯 Re-detected theme:', newTheme);
+    applyThemeColors(newTheme);
+    return newTheme;
+  };
+  window.getSystemPreferences = () => {
+    return {
+      prefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
+      prefersLight: window.matchMedia('(prefers-color-scheme: light)').matches,
+      prefersNoPreference: window.matchMedia('(prefers-color-scheme: no-preference)').matches,
+      supportsColorScheme: !!window.matchMedia
+    };
+  };
+  
+  console.log('🛠️ Theme debug functions available:');
+  console.log('  - window.debugThemeDetection() - Full theme detection debug');
+  console.log('  - window.forceThemeDetection() - Force re-detect and apply theme');
+  console.log('  - window.getSystemPreferences() - Check system color preferences');
 
   // Apply theme-specific colors
   function applyThemeColors(theme) {
@@ -2241,11 +2739,11 @@ if (!isN8n || !isWorkflowPage) {
       // Code syntax highlighting for light theme
       updateCSSVariable('--ai-code-bg', '#f8f9fa');
       updateCSSVariable('--ai-code-border', '#e5e7eb');
-      updateCSSVariable('--ai-code-string', '#22c55e');
-      updateCSSVariable('--ai-code-number', '#f59e0b');
-      updateCSSVariable('--ai-code-boolean', '#a855f7');
-      updateCSSVariable('--ai-code-null', '#ef4444');
-      updateCSSVariable('--ai-code-key', '#3b82f6');
+      updateCSSVariable('--ai-code-string', '#006400');   // deep green strings
+      updateCSSVariable('--ai-code-number', '#b45200');   // softer brown-orange numbers
+      updateCSSVariable('--ai-code-boolean', '#6a1b9a');  // purple booleans
+      updateCSSVariable('--ai-code-null', '#b71c1c');     // dark red null
+      updateCSSVariable('--ai-code-key', '#0d47a1');      // dark blue keys
     }
     
     currentTheme = theme;
@@ -2259,6 +2757,35 @@ if (!isN8n || !isWorkflowPage) {
     const detectedTheme = detectN8nTheme();
     console.log(`🎨 Initial theme detected: ${detectedTheme}`);
     applyThemeColors(detectedTheme);
+    
+    // NEW: Monitor system preference changes in real-time for "System default" mode
+    if (window.matchMedia) {
+      const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      
+      // Function to handle system preference changes
+      const handleSystemThemeChange = (e) => {
+        console.log('🖥️ System theme preference changed to:', e.matches ? 'dark' : 'light');
+        
+        // Give n8n a moment to update its theme, then check
+        setTimeout(() => {
+          const newTheme = detectN8nTheme();
+          if (newTheme !== currentTheme) {
+            console.log(`🔄 Theme auto-updated due to system change: ${currentTheme} → ${newTheme}`);
+            applyThemeColors(newTheme);
+          }
+        }, 100);
+      };
+      
+      // Listen for system theme changes (modern browsers)
+      if (systemThemeQuery.addEventListener) {
+        systemThemeQuery.addEventListener('change', handleSystemThemeChange);
+        console.log('🖥️ System theme change listener added (modern)');
+      } else if (systemThemeQuery.addListener) {
+        // Fallback for older browsers
+        systemThemeQuery.addListener(handleSystemThemeChange);
+        console.log('🖥️ System theme change listener added (legacy)');
+      }
+    }
     
     // Monitor theme changes with MutationObserver
     if (themeObserver) {
@@ -2496,6 +3023,12 @@ if (!isN8n || !isWorkflowPage) {
 
   // Insert workflow into n8n
   function insertWorkflow(isReplacement = false) {
+    // Check if currently pasting in chat to avoid auto-import
+    if (window.aiChatPastingFlag && window.aiChatPastingFlag()) {
+      console.log('🛡️ Skipping workflow import - pasting in chat detected');
+      return;
+    }
+    
     const codeContent = document.getElementById('ai-code-content');
     const workflowJSON = codeContent.textContent;
     
@@ -2871,28 +3404,31 @@ if (!isN8n || !isWorkflowPage) {
 
   // Ping service worker pour vérifier qu'il est actif
   async function pingServiceWorker() {
-    try {
-      console.log('🏓 Pinging service worker...');
-      
-      const response = await chrome.runtime.sendMessage({ 
-        type: 'PING_SERVICE_WORKER' 
-      });
-      
-      if (response && response.pong) {
-        console.log('✅ Service worker is active and responsive');
-        console.log('📊 Service worker uptime:', response.uptime, 'ms');
-        console.log('⏰ Service worker timestamp:', response.timestamp);
-        return true;
-      } else {
-        console.warn('⚠️ Service worker responded but with unexpected data:', response);
-        return false;
+    console.log('🏓 Pinging service worker...');
+
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.runtime.sendMessage({ type: 'PING_SERVICE_WORKER' }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.warn('⚠️ Service worker ping lastError:', chrome.runtime.lastError.message);
+            return reject(new Error(chrome.runtime.lastError.message));
+          }
+
+          if (response && response.pong) {
+            console.log('✅ Service worker is active and responsive');
+            console.log('📊 Service worker uptime:', response.uptime, 'ms');
+            console.log('⏰ Service worker timestamp:', response.timestamp);
+            resolve(true);
+          } else {
+            console.warn('⚠️ Service worker responded but with unexpected data:', response);
+            resolve(false);
+          }
+        });
+      } catch (err) {
+        console.error('❌ Service worker ping threw:', err);
+        reject(err);
       }
-    } catch (error) {
-      console.error('❌ Service worker ping failed:', error);
-      console.log('🔧 This might indicate the service worker is sleeping or crashed');
-      console.log('💡 Tip: Go to chrome://extensions → Details → Inspect views: service worker');
-      throw new Error('Service worker not responding - it may be sleeping. Try again or check extension status.');
-    }
+    });
   }
 
   // Vérifier l'état du service worker et mettre à jour l'interface
@@ -3367,6 +3903,11 @@ if (!isN8n || !isWorkflowPage) {
         // Update code panel
         updateCodeContent(decompressed, true);
         
+        // === NEW: Reset UI state and update status after successful decompression ===
+        resetUIState();
+        updateCodeStatus('complete');
+        // === END NEW ===
+        
         if (messageElement) {
           updateChatMessage(messageElement, '✅ Large workflow decompressed and ready for import!', false);
         }
@@ -3437,16 +3978,30 @@ if (!isN8n || !isWorkflowPage) {
       });
       
       // Auto-open AI assistant by default after n8n is ready
-      waitForN8nReady().then(() => {
-        console.log('🚀 Auto-opening AI assistant (default behavior)');
-        toggleInterface();
-      }).catch(() => {
-        // Fallback: open after delay even if we can't detect n8n readiness
+      // Special handling for saved custom domains
+      const hostname = window.location.hostname;
+      const isSavedCustomDomain = window.n8nAIManualActivation && !hostname.includes('n8n.io') && !hostname.includes('n8n.cloud');
+      
+      if (isSavedCustomDomain) {
+        console.log('🔄 Auto-opening for saved custom domain:', hostname);
+        // For saved custom domains, open immediately after a short delay
         setTimeout(() => {
-          console.log('🚀 Auto-opening AI assistant (fallback)');
+          console.log('🚀 Auto-opening AI assistant (saved custom domain)');
           toggleInterface();
-        }, 3000);
-      });
+        }, 1500);
+      } else {
+        // For official domains, wait for n8n readiness
+        waitForN8nReady().then(() => {
+          console.log('🚀 Auto-opening AI assistant (official domain)');
+          toggleInterface();
+        }).catch(() => {
+          // Fallback: open after delay even if we can't detect n8n readiness
+          setTimeout(() => {
+            console.log('🚀 Auto-opening AI assistant (fallback)');
+            toggleInterface();
+          }, 3000);
+        });
+      }
       
     } catch (error) {
       console.error('❌ Init error:', error);
@@ -3467,4 +4022,13 @@ if (!isN8n || !isWorkflowPage) {
       init();
     }
   }, 1000);
-} 
+
+  // Listen for click on n8n "+" (add node) button to auto-close assistant
+  document.addEventListener('click', (e) => {
+    const plusBtn = e.target.closest('button._nodeCreatorPlus_ebnw3_154');
+    if (plusBtn && isOpen) {
+      console.log('➕ n8n node creator plus clicked – closing AI assistant');
+      toggleInterface();
+    }
+  });
+})(); // End of initializeExtension function 
