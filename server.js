@@ -23,6 +23,9 @@ app.use('/api/claude', claudeHandler);
 // Routes de pricing (Stripe + Firebase)
 app.use('/api', pricingRoutes);
 
+// Servir le mini-site Firebase Auth pour l'extension Chrome
+app.use('/firebase-auth', express.static('firebase-auth-site'));
+
 // Page d'accueil
 app.get('/', async (req, res) => {
   try {

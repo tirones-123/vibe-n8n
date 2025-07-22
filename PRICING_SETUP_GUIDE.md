@@ -120,7 +120,7 @@ FIREBASE_CLIENT_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/fireb
 5. Unité : `token`
 6. Granularité : `1`
 
-### 4. Créer le prix usage-based
+### 4. Créer le prix 
 
 1. Retourner au produit **Vibe Pro**
 2. Ajouter un nouveau prix :

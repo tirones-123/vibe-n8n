@@ -47,6 +47,44 @@
             overflow-x: auto;
         }
     </style>
+    
+    <!-- Firebase v9 SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I",
+            authDomain: "vibe-n8n-7e40d.firebaseapp.com",
+            projectId: "vibe-n8n-7e40d",
+            storageBucket: "vibe-n8n-7e40d.firebasestorage.app",
+            messagingSenderId: "247816285693",
+            appId: "1:247816285693:web:1229eea4a52d6d765afd94",
+            measurementId: "G-1CLFCN7KVL"
+        };
+        
+        // Initialisation Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // Rendre Firebase disponible globalement
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+        
+        console.log('🔥 Firebase SDK chargé et initialisé');
+        
+        // Écouter les changements d'authentification
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('✅ Utilisateur connecté:', user.email);
+                updateResults(`✅ Utilisateur connecté: ${user.email}`, 'success');
+            } else {
+                console.log('❌ Utilisateur non connecté');
+                updateResults('❌ Utilisateur non connecté', 'warning');
+            }
+        });
+    </script>
 </head>
 <body>
     <h1>🧪 Test Extension Vibe n8n</h1>

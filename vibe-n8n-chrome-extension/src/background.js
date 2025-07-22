@@ -1,7 +1,174 @@
 /**
  * Service Worker pour l'extension n8n AI Assistant
  * Gère la communication avec le backend workflow RAG
+ * + Firebase Auth via Offscreen Document (méthode officielle)
  */
+
+// FIREBASE OFFSCREEN DOCUMENT MANAGEMENT
+// Basé sur https://firebase.google.com/docs/auth/web/chrome-extension
+const OFFSCREEN_DOCUMENT_PATH = '/offscreen.html';
+let creatingOffscreenDocument;
+
+// Check if offscreen document already exists
+async function hasOffscreenDocument() {
+  try {
+    console.log('🔍 Checking if offscreen document exists...');
+    const matchedClients = await clients.matchAll();
+    const offscreenUrl = chrome.runtime.getURL(OFFSCREEN_DOCUMENT_PATH);
+    console.log('🔍 Looking for offscreen URL:', offscreenUrl);
+    console.log('🔍 Available clients:', matchedClients.map(c => c.url));
+    return matchedClients.some(
+      (c) => c.url === chrome.runtime.getURL(OFFSCREEN_DOCUMENT_PATH)
+    );
+  } catch (error) {
+    console.warn('Error checking offscreen document:', error);
+    return false;
+  }
+}
+
+// Setup offscreen document
+async function setupOffscreenDocument() {
+  console.log('🔄 setupOffscreenDocument called');
+  if (await hasOffscreenDocument()) {
+    console.log('🔥 Offscreen document already exists');
+    return;
+  }
+
+  if (creatingOffscreenDocument) {
+    console.log('🔄 Waiting for existing creation...');
+    await creatingOffscreenDocument;
+    console.log('🔄 Existing creation completed');
+    return;
+  }
+
+  try {
+    console.log('🔥 Creating Firebase Auth offscreen document...');
+    console.log('🔥 Offscreen path:', OFFSCREEN_DOCUMENT_PATH);
+    console.log('🔥 Full URL:', chrome.runtime.getURL(OFFSCREEN_DOCUMENT_PATH));
+    creatingOffscreenDocument = chrome.offscreen.createDocument({
+      url: OFFSCREEN_DOCUMENT_PATH,
+      reasons: [chrome.offscreen.Reason.DOM_SCRAPING],
+      justification: 'Firebase Authentication with signInWithPopup'
+    });
+    
+    await creatingOffscreenDocument;
+    creatingOffscreenDocument = null;
+    console.log('✅ Firebase Auth offscreen document created');
+    
+    // Wait for Firebase to initialize in the offscreen document
+    await new Promise(r => setTimeout(r, 1000));
+    console.log('✅ Offscreen document initialization wait completed');
+  } catch (error) {
+    console.error('❌ Failed to create offscreen document:', error);
+    creatingOffscreenDocument = null;
+    throw error;
+  }
+}
+
+// Close offscreen document
+async function closeOffscreenDocument() {
+  if (!(await hasOffscreenDocument())) {
+    return;
+  }
+  
+  try {
+    await chrome.offscreen.closeDocument();
+    console.log('🔥 Offscreen document closed');
+  } catch (error) {
+    console.warn('Failed to close offscreen document:', error);
+  }
+}
+
+// Firebase Auth wrapper functions
+async function firebaseSignInWithEmail(email, password) {
+  console.log('🔐 firebaseSignInWithEmail called for:', email);
+  
+  return sendToOffscreen({
+    type: 'firebase-auth-signin-email',
+    target: 'offscreen',
+    data: { email, password }
+  });
+}
+
+// Helper: send a message to the offscreen document
+async function sendToOffscreen(payload) {
+  console.log('📤 sendToOffscreen called with payload type:', payload.type);
+  
+  // S'assurer que l'offscreen document existe
+  await setupOffscreenDocument();
+  
+  return new Promise((resolve, reject) => {
+    // Envoyer le message normalement - l'offscreen document écoute avec chrome.runtime.onMessage
+    chrome.runtime.sendMessage(payload, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('❌ sendToOffscreen error:', chrome.runtime.lastError.message);
+        reject(new Error(chrome.runtime.lastError.message));
+      } else {
+        console.log('✅ sendToOffscreen response:', response);
+        resolve(response);
+      }
+    });
+  });
+}
+
+async function firebaseSignUpWithEmail(email, password) {
+  console.log('🔐 firebaseSignUpWithEmail called for:', email);
+  
+  return sendToOffscreen({
+    type: 'firebase-auth-signup-email',
+    target: 'offscreen',
+    data: { email, password }
+  });
+}
+
+async function firebaseSignInWithGoogle() {
+  console.log('🔐 firebaseSignInWithGoogle called');
+  
+  return sendToOffscreen({
+    type: 'firebase-auth-signin-google',
+    target: 'offscreen'
+  });
+}
+
+async function firebaseSignOut() {
+  console.log('🚪 firebaseSignOut called');
+  
+  return sendToOffscreen({
+    type: 'firebase-auth-signout',
+    target: 'offscreen'
+  });
+}
+
+async function firebaseGetIdToken(forceRefresh = false) {
+  console.log('🎫 firebaseGetIdToken called');
+  
+  const response = await sendToOffscreen({
+    type: 'firebase-auth-get-token',
+    target: 'offscreen',
+    data: { forceRefresh }
+  });
+  
+  if (response.success) {
+    return response.token;
+  } else {
+    throw new Error(response.error.message);
+  }
+}
+
+async function firebaseGetCurrentUser() {
+  console.log('👤 firebaseGetCurrentUser called');
+  
+  const response = await sendToOffscreen({
+    type: 'firebase-auth-get-user',
+    target: 'offscreen'
+  });
+  
+  if (response.success) {
+    return response.user;
+  } else {
+    throw new Error(response.error.message);
+  }
+}
 
 // Configuration intégrée pour éviter les problèmes d'import ES6
 const CONFIG = {
@@ -65,6 +232,10 @@ function safeSendMessage(tabId, payload) {
 
 // Log du démarrage du service worker
 console.log('🚀 Service Worker started at:', new Date().toISOString());
+console.log('🆔 Extension ID:', chrome.runtime.id);
+console.log('🔗 Firebase domain to add:', `chrome-extension://${chrome.runtime.id}`);
+console.log('📋 Add this to Firebase Console > Authentication > Settings > Authorized domains');
+console.log('=====================================');
 
 // 🎯 INJECTION AUTOMATIQUE DES DOMAINES PERSONNALISÉS
 // Écoute la navigation pour injecter automatiquement sur les domaines sauvegardés
@@ -242,6 +413,79 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       timestamp: new Date().toISOString()
     });
     return false; // Sync response
+  }
+
+  // FIREBASE AUTH HANDLERS
+  if (request.type === 'test-firebase-available') {
+    console.log('🔥 Testing Firebase availability...');
+    sendResponse({ available: true });
+    return false; // Sync response
+  }
+
+  if (request.type === 'firebase-signin-email') {
+    console.log('🔐 Firebase sign in with email:', request.data?.email);
+    firebaseSignInWithEmail(request.data.email, request.data.password)
+      .then(response => sendResponse(response))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: { code: error.code, message: error.message } 
+      }));
+    return true; // Async response
+  }
+
+  if (request.type === 'firebase-signup-email') {
+    console.log('📝 Firebase sign up with email:', request.data?.email);
+    firebaseSignUpWithEmail(request.data.email, request.data.password)
+      .then(response => sendResponse(response))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: { code: error.code, message: error.message } 
+      }));
+    return true; // Async response
+  }
+
+  if (request.type === 'firebase-signin-google') {
+    console.log('🔐 Firebase sign in with Google');
+    firebaseSignInWithGoogle()
+      .then(response => sendResponse(response))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: { code: error.code, message: error.message } 
+      }));
+    return true; // Async response
+  }
+
+  if (request.type === 'firebase-signout') {
+    console.log('🚪 Firebase sign out');
+    firebaseSignOut()
+      .then(response => sendResponse(response))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: { code: error.code, message: error.message } 
+      }));
+    return true; // Async response
+  }
+
+  if (request.type === 'firebase-get-token') {
+    console.log('🎫 Firebase get ID token');
+    firebaseGetIdToken(request.data?.forceRefresh)
+      .then(token => sendResponse(token))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: { code: error.code, message: error.message } 
+      }));
+    return true; // Async response
+  }
+
+  if (request.type === 'firebase-get-user') {
+    console.log('👤 Firebase get current user');
+    firebaseGetCurrentUser()
+      .then(user => sendResponse(user))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: { code: error.code, message: error.message } 
+      }));
+    return true; // Async response
   }
   
   console.log('⚠️ Unknown message type:', request.type);

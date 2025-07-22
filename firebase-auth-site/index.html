@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Firebase Auth for n8n AI Assistant Extension</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .status {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🤖</div>
+        <h1>n8n AI Assistant</h1>
+        <div class="status">
+            <div class="loading"></div>
+            Initializing Firebase Auth...
+        </div>
+        <p>This page handles authentication for the n8n AI Assistant Chrome Extension.</p>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider,
+            signOut,
+            onAuthStateChanged
+        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I",
+            authDomain: "vibe-n8n-7e40d.firebaseapp.com",
+            projectId: "vibe-n8n-7e40d",
+            storageBucket: "vibe-n8n-7e40d.firebasestorage.app",
+            messagingSenderId: "247816285693",
+            appId: "1:247816285693:web:1229eea4a52d6d765afd94",
+            measurementId: "G-1CLFCN7KVL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        console.log('🔥 Firebase Auth Site initialized');
+
+        // Update status
+        function updateStatus(message, success = false) {
+            const statusElement = document.querySelector('.status');
+            statusElement.innerHTML = success ? 
+                `✅ ${message}` : 
+                `<div class="loading"></div> ${message}`;
+        }
+
+        updateStatus('Firebase initialized successfully', true);
+
+        // Listen for messages from parent (offscreen document)
+        window.addEventListener('message', async (event) => {
+            console.log('📨 Firebase Auth Site received message:', event.data);
+
+            try {
+                let result;
+                
+                switch (event.data.type) {
+                    case 'firebase-auth-signin-email':
+                        updateStatus('Signing in with email...');
+                        result = await signInWithEmailAndPassword(auth, event.data.email, event.data.password);
+                        break;
+                        
+                    case 'firebase-auth-signup-email':
+                        updateStatus('Creating account...');
+                        result = await createUserWithEmailAndPassword(auth, event.data.email, event.data.password);
+                        break;
+                        
+                    case 'firebase-auth-signin-google':
+                        updateStatus('Signing in with Google...');
+                        result = await signInWithPopup(auth, googleProvider);
+                        break;
+                        
+                    case 'firebase-auth-signout':
+                        updateStatus('Signing out...');
+                        await signOut(auth);
+                        result = { success: true };
+                        break;
+                        
+                    case 'firebase-auth-get-token':
+                        const token = await auth.currentUser?.getIdToken(event.data.forceRefresh);
+                        result = { success: true, token };
+                        break;
+                        
+                    case 'firebase-auth-get-user':
+                        const user = auth.currentUser;
+                        result = { 
+                            success: true, 
+                            user: user ? {
+                                uid: user.uid,
+                                email: user.email,
+                                displayName: user.displayName,
+                                photoURL: user.photoURL
+                            } : null 
+                        };
+                        break;
+                        
+                    default:
+                        throw new Error('Unknown action: ' + event.data.type);
+                }
+
+                // Send success response to parent (offscreen document)
+                const responseData = {
+                    success: true,
+                    user: result.user ? {
+                        uid: result.user.uid,
+                        email: result.user.email,
+                        displayName: result.user.displayName,
+                        photoURL: result.user.photoURL
+                    } : null,
+                    token: result.user ? await result.user.getIdToken() : null
+                };
+
+                updateStatus('Operation completed successfully', true);
+                window.parent.postMessage(responseData, '*');
+
+            } catch (error) {
+                console.error('❌ Firebase Auth Site error:', error);
+                
+                updateStatus(`Error: ${error.message}`);
+                
+                // Send error response to parent (offscreen document)
+                window.parent.postMessage({
+                    success: false,
+                    error: {
+                        code: error.code,
+                        message: error.message
+                    }
+                }, '*');
+            }
+        });
+
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            console.log('🔐 Auth state changed:', user ? user.email : 'signed out');
+            
+            // Notify parent (offscreen document) of auth state change
+            window.parent.postMessage({
+                type: 'auth-state-changed',
+                user: user ? {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL
+                } : null
+            }, '*');
+        });
+
+        // Signal ready to parent (offscreen document)
+        setTimeout(() => {
+            window.parent.postMessage({ type: 'firebase-ready' }, '*');
+            updateStatus('Ready for authentication', true);
+        }, 1000);
+    </script>
+</body>
+</html> 

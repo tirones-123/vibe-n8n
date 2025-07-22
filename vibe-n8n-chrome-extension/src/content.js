@@ -3,6 +3,180 @@
  * Modern code editor-inspired interface for workflow RAG system
  */
 
+// ===== NOUVEAU SYSTÈME AUTH (STANDALONE) =====
+// Utilisation des services globaux (pas d'imports ES6)
+let contentAuthIntegration = null;
+
+  // Firebase Auth OBLIGATOIRE en production (pas de Legacy mode)
+  // Plus de variable de mode - toujours Firebase Auth
+
+// ANCIENNE MÉTHODE IFRAME SUPPRIMÉE - Maintenant utilise Offscreen Documents
+// Firebase SDK est géré par background.js via Offscreen Document API
+
+// Fonction pour attendre qu'un objet soit disponible
+function waitForGlobalObject(objectName, maxAttempts = 10, interval = 100) {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    
+    const checkInterval = setInterval(() => {
+      attempts++;
+      
+      if (window[objectName]) {
+        clearInterval(checkInterval);
+        resolve(window[objectName]);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkInterval);
+        reject(new Error(`${objectName} not available after ${maxAttempts} attempts`));
+      }
+    }, interval);
+  });
+}
+
+// Fonction pour exposer les fonctions de test globalement
+function exposeTestFunctions() {
+  console.log('🔧 Exposition des fonctions de test...');
+  
+  // testFirebaseSystem - Test complet du système
+  window.testFirebaseSystem = async () => {
+    console.log('🧪 === TEST FIREBASE SYSTEM ===');
+    
+    const results = {
+      contentAuthIntegration: !!window.contentAuthIntegration,
+      authService: !!window.authService,
+      simulationMode: window.contentAuthIntegration?.simulationMode || false,
+      backgroundConnection: false
+    };
+    
+    // Test communication background via chrome.runtime
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      try {
+        const response = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({ type: 'test-firebase-available' }, resolve);
+        });
+        results.backgroundConnection = !!response?.available;
+      } catch (error) {
+        console.error('Background test failed:', error);
+      }
+    }
+    
+    console.log('📊 Résultats:');
+    Object.entries(results).forEach(([key, value]) => {
+      console.log(`  ${key}: ${value ? '✅' : '❌'}`);
+    });
+    
+    // Test fonctionnel si possible
+    if (window.contentAuthIntegration) {
+      console.log('🧪 Test fonctionnel...');
+      try {
+        const canMake = await window.contentAuthIntegration.canMakeRequest();
+        console.log('  canMakeRequest:', canMake.allowed ? '✅' : '❌');
+        console.log('  method:', canMake.method || 'unknown');
+      } catch (error) {
+        console.error('  canMakeRequest error:', error);
+      }
+    }
+    
+    return results;
+  };
+  
+  // showFirebaseAuthModal - Afficher modal d'auth
+  window.showFirebaseAuthModal = () => {
+    console.log('🔐 Affichage modal Firebase Auth...');
+    if (window.contentAuthIntegration?.showSimpleAuthModal) {
+      window.contentAuthIntegration.showSimpleAuthModal();
+    } else {
+      console.log('❌ Modal non disponible');
+      // Créer modal basique
+      const modal = document.createElement('div');
+      modal.innerHTML = `
+        <div style="
+          position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+          background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          z-index: 99999; text-align: center; color: black;
+        ">
+          <h3>🔐 Firebase Auth</h3>
+          <p>contentAuthIntegration: ${!!window.contentAuthIntegration ? '✅' : '❌'}</p>
+          <p>authService: ${!!window.authService ? '✅' : '❌'}</p>
+          <button onclick="this.parentElement.parentElement.remove()" 
+                  style="padding: 8px 16px; background: #007acc; color: white; border: none; border-radius: 4px;">
+            Fermer
+          </button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+  };
+  
+  // createTestUser - Créer utilisateur de test
+  window.createTestUser = async () => {
+    console.log('👤 Création utilisateur test...');
+    if (window.authService) {
+      try {
+        const user = await window.authService.signUpWithEmail('test@vibe-n8n.com', 'test123456');
+        console.log('✅ Utilisateur test créé:', user);
+        return user;
+      } catch (error) {
+        console.error('❌ Erreur création utilisateur:', error);
+        return null;
+      }
+    } else {
+      console.log('❌ authService non disponible');
+      return null;
+    }
+  };
+  
+  // toggleAuthMode supprimé - Firebase Auth OBLIGATOIRE en production
+  
+  // debugFirebaseAuth - Debug état auth
+  window.debugFirebaseAuth = () => {
+    console.log('🔍 === DEBUG FIREBASE AUTH (OBLIGATOIRE) ===');
+    console.log('  contentAuthIntegration:', !!window.contentAuthIntegration);
+    console.log('  authService:', !!window.authService);
+    console.log('  simulationMode:', window.contentAuthIntegration?.simulationMode);
+    console.log('  Chrome runtime:', typeof chrome?.runtime);
+    
+    if (window.contentAuthIntegration) {
+      const status = window.contentAuthIntegration.getAuthStatus?.() || {};
+      console.log('  Auth status:', status);
+    }
+    
+    console.log('  🔐 Firebase Auth est OBLIGATOIRE - pas de mode Legacy');
+  };
+  
+  // testFirebaseAuth - Test auth spécifique
+  window.testFirebaseAuth = window.testFirebaseSystem; // Alias
+  
+  console.log('✅ Fonctions de test exposées globalement !');
+}
+
+// Fonction d'initialisation Firebase Auth - OBLIGATOIRE EN PRODUCTION
+async function initializeFirebaseAuth() {
+  try {
+    console.log('🔐 Initialisation Firebase Auth (OBLIGATOIRE)...');
+    
+    // Utilise Offscreen Document via background.js (méthode officielle Firebase)
+    
+    // Étape 1: Attendre que contentAuthIntegration soit disponible
+    console.log('⏳ Attente de contentAuthIntegration...');
+    contentAuthIntegration = await waitForGlobalObject('contentAuthIntegration', 20, 100);
+    console.log('✅ contentAuthIntegration trouvé');
+    
+    // Étape 2: Initialiser le système d'authentification
+    await contentAuthIntegration.initialize();
+    
+    // Étape 3: Exposer globalement pour les tests
+    window.contentAuthIntegration = contentAuthIntegration;
+    window.authService = window.authService || contentAuthIntegration.authService;
+    
+    console.log('✅ Firebase Auth initialisé avec succès');
+    return true;
+  } catch (error) {
+    console.error('❌ ERREUR CRITIQUE: Firebase Auth failed (OBLIGATOIRE):', error);
+    console.error('💀 L\'application ne peut pas fonctionner sans Firebase Auth');
+    return false;
+  }
+}
+
 // Initial load check
 
 // Quick test injection
@@ -703,6 +877,39 @@ async function checkSavedDomains(currentHostname) {
       /* Custom tooltip styling for Auto checkbox - adapts to theme */
       label[title="auto insert & replace"] {
         position: relative;
+      }
+
+      /* Firebase Auth status indicators */
+      #ai-status.auth-ready {
+        background: var(--ai-text-success) !important;
+        color: white !important;
+        font-weight: 600 !important;
+      }
+
+      #ai-status.legacy-mode {
+        background: var(--ai-text-warning) !important;
+        color: white !important;
+        font-weight: 600 !important;
+      }
+
+      #ai-status.auth-error {
+        background: var(--ai-text-error) !important;
+        color: white !important;
+        font-weight: 600 !important;
+      }
+
+      /* Firebase Auth modal styles */
+      .firebase-auth-modal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.7) !important;
+        z-index: 99999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
       }
 
       label[title="auto insert & replace"]:hover::after {
@@ -2511,6 +2718,177 @@ async function checkSavedDomains(currentHostname) {
       supportsColorScheme: !!window.matchMedia
     };
   };
+
+  // ===== FIREBASE AUTH DEBUG FUNCTIONS =====
+  // Expose Firebase Auth functions globally for debugging
+  window.debugFirebaseAuth = () => {
+    const status = contentAuthIntegration ? contentAuthIntegration.getAuthStatus() : null;
+    console.log('🔍 Firebase Auth Status (OBLIGATOIRE):', {
+      contentAuthIntegration: !!contentAuthIntegration,
+      status,
+      mode: 'Firebase Auth (OBLIGATOIRE)'
+    });
+    return status;
+  };
+
+  // toggleAuthMode supprimé - Firebase Auth OBLIGATOIRE en production
+
+  window.testFirebaseAuth = async () => {
+    if (!contentAuthIntegration) {
+      console.log('❌ contentAuthIntegration non disponible');
+      return false;
+    }
+    
+    try {
+      console.log('🧪 Test d\'authentification Firebase...');
+      const canMakeRequest = await contentAuthIntegration.canMakeRequest();
+      console.log('✅ Résultat du test:', canMakeRequest);
+      return canMakeRequest;
+    } catch (error) {
+      console.error('❌ Erreur lors du test:', error);
+      return false;
+    }
+  };
+
+  window.showFirebaseAuthModal = () => {
+    if (!contentAuthIntegration) {
+      console.log('❌ contentAuthIntegration non disponible');
+      return;
+    }
+    
+    // Utiliser les services globaux
+    const authUI = window.authUI || window.AuthUI;
+    if (authUI && authUI.showAuthModal) {
+      authUI.showAuthModal();
+      console.log('✅ Modal d\'authentification affichée');
+    } else {
+      // Fallback: modal simple
+      contentAuthIntegration.showSimpleAuthModal();
+      console.log('✅ Modal d\'authentification simple affichée');
+    }
+  };
+
+  // Fonction de test complète Firebase + Backend + Quotas + Pricing
+  window.testFirebaseSystem = async () => {
+    console.log('🧪 === TEST COMPLET DU SYSTÈME FIREBASE ===');
+    
+    const results = {
+      firebaseSDK: false,
+      authentication: false,
+      backendConnection: false,
+      quotas: false,
+      pricing: false
+    };
+    
+    try {
+      // Test 1: Firebase Offscreen Document disponible
+      console.log('🔥 Test 1: Disponibilité Firebase Offscreen...');
+      if (contentAuthIntegration && !contentAuthIntegration.simulationMode) {
+        console.log('✅ Firebase Offscreen opérationnel');
+        results.firebaseSDK = true;
+      } else if (contentAuthIntegration && contentAuthIntegration.simulationMode) {
+        console.log('🧪 Firebase en mode simulation');
+        results.firebaseSDK = true; // Considéré comme fonctionnel même en simulation
+      } else {
+        console.log('❌ Firebase Offscreen non disponible');
+      }
+      
+      // Test 2: Authentification
+      console.log('🔐 Test 2: Système d\'authentification...');
+      if (contentAuthIntegration) {
+        const authStatus = contentAuthIntegration.getAuthStatus();
+        console.log('📊 Auth Status:', authStatus);
+        results.authentication = authStatus.isRequired;
+        
+        // Test capacité de requête
+        const canMakeRequest = await contentAuthIntegration.canMakeRequest();
+        console.log('🎯 Can make request:', canMakeRequest);
+        results.quotas = canMakeRequest.allowed || canMakeRequest.reason !== 'ERROR';
+      }
+      
+      // Test 3: Connexion backend
+      console.log('🌐 Test 3: Connexion backend...');
+      try {
+        const response = await fetch('https://vibe-n8n-production.up.railway.app/api');
+        const data = await response.json();
+        console.log('✅ Backend opérationnel:', data.status);
+        results.backendConnection = data.status === 'ok';
+      } catch (error) {
+        console.log('❌ Backend inaccessible:', error.message);
+      }
+      
+      // Test 4: Pricing endpoints
+      console.log('💳 Test 4: Endpoints de pricing...');
+      try {
+        const pricingResponse = await fetch('https://vibe-n8n-production.up.railway.app/api/status');
+        if (pricingResponse.ok) {
+          console.log('✅ Endpoints pricing disponibles');
+          results.pricing = true;
+        }
+      } catch (error) {
+        console.log('❌ Endpoints pricing indisponibles');
+      }
+      
+      // Résumé
+      console.log('\n📊 === RÉSUMÉ DES TESTS ===');
+      console.log('🔥 Firebase SDK:', results.firebaseSDK ? '✅' : '❌');
+      console.log('🔐 Authentication:', results.authentication ? '✅' : '❌');
+      console.log('🌐 Backend:', results.backendConnection ? '✅' : '❌');
+      console.log('📊 Quotas:', results.quotas ? '✅' : '❌');
+      console.log('💳 Pricing:', results.pricing ? '✅' : '❌');
+      
+      const allWorking = Object.values(results).every(result => result === true);
+      console.log('\n🎯 ÉTAT GLOBAL:', allWorking ? '✅ TOUT FONCTIONNE' : '⚠️ PROBLÈMES DÉTECTÉS');
+      
+      // Message d'aide
+      if (!allWorking) {
+        console.log('\n🔧 ACTIONS RECOMMANDÉES :');
+        if (!results.firebaseSDK) console.log('  - Rechargez la page pour réinjecter Firebase SDK');
+        if (!results.backendConnection) console.log('  - Vérifiez que Railway backend est opérationnel');
+        if (!results.authentication) console.log('  - Vérifiez les credentials Firebase');
+        if (!results.quotas) console.log('  - Vérifiez la base de données Firebase');
+        if (!results.pricing) console.log('  - Vérifiez les endpoints Stripe');
+      }
+      
+      return results;
+      
+    } catch (error) {
+      console.error('❌ Erreur lors des tests:', error);
+      return results;
+    }
+  };
+
+  // Fonction pour créer un utilisateur de test
+  window.createTestUser = async () => {
+    console.log('👤 Création d\'un utilisateur de test...');
+    
+    if (!contentAuthIntegration) {
+      console.error('❌ ContentAuthIntegration non disponible');
+      return false;
+    }
+    
+    try {
+      // Utiliser authService global
+      const authService = window.authService || window.AuthService;
+      if (!authService) {
+        console.error('❌ AuthService non disponible globalement');
+        return false;
+      }
+      
+      const testEmail = 'test@vibe-n8n.com';
+      const testPassword = 'test123456';
+      
+      console.log('📝 Tentative de création utilisateur test:', testEmail);
+      
+      const user = await authService.signUpWithEmail(testEmail, testPassword);
+      console.log('✅ Utilisateur test créé:', user.email);
+      
+      return user;
+    } catch (error) {
+      console.error('❌ Erreur création utilisateur test:', error);
+      return false;
+    }
+  };
   
 
   // Apply theme-specific colors
@@ -3235,55 +3613,38 @@ async function checkSavedDomains(currentHostname) {
       // Ping service worker pour vérifier qu'il est actif
       await pingServiceWorker();
       
-      // Send to background with appropriate mode
-      if (typeof chrome !== 'undefined' && chrome.runtime) {
+      // ===== FIREBASE AUTH OBLIGATOIRE =====
+      if (!contentAuthIntegration) {
+        console.error('💀 ERREUR CRITIQUE: contentAuthIntegration non disponible');
+        handleError('Système d\'authentification non disponible. Veuillez recharger la page.', assistantMessage);
+        return;
+      }
+
+      console.log('🔐 Traitement avec Firebase Auth (OBLIGATOIRE)...');
+      
+      try {
+        // Vérifier auth + quotas avant envoi
+        const response = await contentAuthIntegration.makeWorkflowRequest(
+          message, 
+          hasExistingWorkflow ? currentWorkflow : null
+        );
         
-        if (hasExistingWorkflow) {
-          // Mode amélioration - envoyer le workflow actuel
-          
-          const messagePayload = {
-            type: 'IMPROVE_WORKFLOW',
-            currentWorkflow: currentWorkflow,
-            improvementRequest: message
-          };
-          
-          // 📊 DETAILED LOGGING - Message payload
-          
-          const payloadSize = JSON.stringify(messagePayload).length;
-          
-          chrome.runtime.sendMessage(messagePayload).then(response => {
-            if (response && response.serviceWorkerActive) {
-            }
-          }).catch(err => {
-            console.error('❌ Background communication error:', err);
-            const errorMsg = err.message.includes('service worker') ? 
-              'Service worker is sleeping. Try clicking the extension icon to wake it up, or wait a moment and try again.' :
-              `Communication error with service worker: ${err.message}`;
-            handleError(errorMsg, assistantMessage);
-          });
-        } else {
-          // Mode génération normale - nouveau workflow
-          
-          const messagePayload = {
-            type: 'SEND_TO_CLAUDE',
-            prompt: message
-          };
-          
-          // 📊 DETAILED LOGGING - Message payload
-          
-          const payloadSize = JSON.stringify(messagePayload).length;
-          
-          chrome.runtime.sendMessage(messagePayload).then(response => {
-            if (response && response.serviceWorkerActive) {
-            }
-          }).catch(err => {
-            console.error('❌ Background communication error:', err);
-            const errorMsg = err.message.includes('service worker') ? 
-              'Service worker is sleeping. Try clicking the extension icon to wake it up, or wait a moment and try again.' :
-              `Communication error with service worker: ${err.message}`;
-            handleError(errorMsg, assistantMessage);
-          });
+        if (!response) {
+          // Auth failed ou quota exceeded - popups gérés automatiquement
+          console.warn('❌ Firebase Auth request failed');
+          handleError('Authentification ou quota requis. Veuillez vous connecter.', assistantMessage);
+          return;
         }
+        
+        console.log('✅ Firebase Auth request successful, handling streaming response...');
+        
+        // La réponse sera gérée via les handlers de messages existants
+        return;
+        
+      } catch (authError) {
+        console.error('❌ Firebase Auth error:', authError);
+        handleError('Erreur d\'authentification. Veuillez vous reconnecter.', assistantMessage);
+        return;
       }
     } catch (err) {
       console.error('❌ Send message error:', err);
@@ -3561,9 +3922,75 @@ async function checkSavedDomains(currentHostname) {
   async function init() {
     
     try {
+      // ===== INITIALISATION FIREBASE AUTH =====
+      console.log('🚀 Initialisation de l\'extension n8n AI Assistant...');
+      
+      // Initialiser Firebase Auth en arrière-plan (non-bloquant)
+      initializeFirebaseAuth().then(success => {
+        if (success) {
+          console.log('✅ Firebase Auth prêt');
+          
+          // Mettre à jour le statut dans l'interface si elle existe
+          const statusEl = document.getElementById('ai-status');
+          if (statusEl) {
+            statusEl.textContent = 'firebase';
+            statusEl.className = 'auth-ready';
+            statusEl.title = 'Firebase authentication active - quotas and pricing enabled';
+          }
+        } else {
+          console.log('🔄 Mode legacy activé');
+          
+          // Mettre à jour le statut pour indiquer le mode legacy
+          const statusEl = document.getElementById('ai-status');
+          if (statusEl) {
+            statusEl.textContent = 'legacy';
+            statusEl.className = 'legacy-mode';
+            statusEl.title = 'Legacy mode active - unlimited access with API key';
+          }
+        }
+      }).catch(error => {
+        console.error('💀 ERREUR CRITIQUE: Firebase Auth initialisation failed:', error);
+        
+        // Mettre à jour le statut pour indiquer l'erreur critique
+        const statusEl = document.getElementById('ai-status');
+        if (statusEl) {
+          statusEl.textContent = 'auth failed';
+          statusEl.className = 'auth-error';
+          statusEl.title = 'ERREUR CRITIQUE: Système d\'authentification requis non disponible';
+        }
+      });
+      
+      // ===== INITIALISATION INTERFACE =====
       injectStyles();
       const container = createInterface();
       const button = createFloatingButton();
+      
+      // ===== DIAGNOSTIC DE DÉMARRAGE =====
+      setTimeout(() => {
+        console.log('📊 === DIAGNOSTIC n8n AI Assistant ===');
+        console.log('🔧 Extension Version: 2.0.0 avec Firebase Auth');
+        console.log('🌐 Page:', window.location.href);
+        console.log('🔐 Mode Auth: Firebase Auth (OBLIGATOIRE)');
+        console.log('📦 ContentAuthIntegration:', !!contentAuthIntegration);
+        console.log('🔥 Firebase SDK (Offscreen):', !!(contentAuthIntegration && !contentAuthIntegration.simulationMode));
+        console.log('🎯 Status Element:', !!document.getElementById('ai-status'));
+        console.log('💻 User Agent:', navigator.userAgent.substring(0, 50) + '...');
+        console.log('⚡ Chrome Extension API:', typeof chrome !== 'undefined');
+        console.log('');
+        console.log('🧪 === FONCTIONS DE TEST DISPONIBLES ===');
+        console.log('   testFirebaseSystem()     - 🔥 TEST COMPLET (recommandé)');
+        console.log('   debugFirebaseAuth()      - État actuel auth');
+                  console.log('   🔐 Firebase Auth OBLIGATOIRE - Pas de mode Legacy');
+        console.log('   testFirebaseAuth()       - Tester authentification');
+        console.log('   showFirebaseAuthModal()  - Afficher modal de connexion');
+        console.log('   createTestUser()         - Créer utilisateur de test');
+        console.log('');
+        console.log('💡 POUR COMMENCER: Tapez testFirebaseSystem() pour vérifier tout le système');
+        console.log('=====================================');
+        
+        // ===== EXPOSITION DES FONCTIONS DE TEST =====
+        exposeTestFunctions();
+      }, 2000);
       
       // Listen for window resize
       window.addEventListener('resize', handleWindowResize);

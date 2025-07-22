@@ -3,12 +3,18 @@
   "name": "n8n AI Assistant - Claude + Pricing",
   "version": "2.0.0",
   "description": "AI-powered workflow assistant for n8n with Claude 4 Sonnet, Firebase Auth & Stripe Pricing",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'",
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self'",
+    "offscreen": "script-src 'self' https://www.gstatic.com https://www.googleapis.com https://securetoken.googleapis.com https://apis.google.com; object-src 'self';"
+  },
   "permissions": [
     "scripting",
     "activeTab",
     "tabs",
     "storage",
-    "identity"
+    "identity",
+    "offscreen"
   ],
   "host_permissions": [
     "https://vibe-n8n-production.up.railway.app/*",
@@ -23,6 +29,8 @@
     "https://accounts.google.com/*",
     "https://securetoken.googleapis.com/*",
     "https://identitytoolkit.googleapis.com/*",
+    "https://apis.google.com/*",
+    "https://www.gstatic.com/*",
     "https://*.stripe.com/*",
     "https://checkout.stripe.com/*"
   ],
@@ -42,9 +50,8 @@
       ],
       "js": [
         "src/config.js",
-        "src/auth.js",
-        "src/auth-ui.js",
-        "src/content-auth-integration.js",
+        "src/auth-offscreen.js",
+        "src/content-auth-integration-standalone.js",
         "src/content.js"
       ],
       "css": [
@@ -60,14 +67,21 @@
       "resources": [
         "src/inject.js",
         "src/config.js",
-        "src/auth.js",
-        "src/auth-ui.js",
-        "src/content-auth-integration.js"
+        "src/auth-offscreen.js",
+        "src/auth-mainworld.js",
+        "src/content-auth-integration-standalone.js",
+        "offscreen.html",
+        "offscreen.js"
       ],
       "matches": ["<all_urls>"]
     }
   ],
   "action": {
     "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
   }
 } 

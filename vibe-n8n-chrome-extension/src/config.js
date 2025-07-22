@@ -83,5 +83,5 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = CONFIG;
 }
 
-// Export ES6 pour les modules modernes
-export default CONFIG; 
+// Pas d'export ES6 - incompatible avec Chrome Extension content scripts
+// CONFIG est disponible globalement via window.CONFIG 

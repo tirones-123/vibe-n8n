@@ -1,11 +1,5 @@
-// Firebase Authentication Module for Chrome Extension - COMPATIBLE VERSION
-// Using Firebase v9 via dynamic imports for Chrome Extension compatibility
-
-// Import configuration from config.js
-import CONFIG from './config.js';
-
-// Firebase Configuration
-const FIREBASE_CONFIG = CONFIG.FIREBASE_CONFIG;
+// Firebase Authentication Module for Chrome Extension - STANDALONE VERSION
+// Compatible with Chrome Extension content scripts (no import/export)
 
 class AuthService {
   constructor() {
@@ -16,15 +10,26 @@ class AuthService {
     this.initialized = false;
     this.authStateCallbacks = [];
     this.firebase = null;
+    
+    // Firebase Configuration from window.CONFIG or fallback
+    this.FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I",
+      authDomain: "vibe-n8n-7e40d.firebaseapp.com",
+      projectId: "vibe-n8n-7e40d",
+      storageBucket: "vibe-n8n-7e40d.firebasestorage.app",
+      messagingSenderId: "247816285693",
+      appId: "1:247816285693:web:1229eea4a52d6d765afd94",
+      measurementId: "G-1CLFCN7KVL"
+    };
   }
 
   async initialize() {
     if (this.initialized) return;
 
     try {
-      console.log('🔥 Initializing Firebase Auth for Chrome Extension...');
+      console.log('🔥 Initializing Firebase Auth (Standalone)...');
       
-      // Method 1: Try to use Firebase from global scope (if loaded via script tag)
+      // Method 1: Use Firebase from global scope (if available)
       if (typeof window !== 'undefined' && window.firebaseApp && window.firebaseAuth) {
         console.log('📦 Using Firebase from global scope');
         this.app = window.firebaseApp;
@@ -34,120 +39,102 @@ class AuthService {
         return;
       }
 
-      // Method 2: Dynamic import with CDN fallback for Chrome Extension
+      // Method 2: Load Firebase via external script (CSP compatible)
       try {
-        console.log('📦 Loading Firebase SDK dynamically...');
+        console.log('📦 Loading Firebase SDK via external script...');
+        await this.loadFirebaseViaScript();
         
-        // Create script element for Firebase App
-        await this.loadFirebaseSDK();
-        
-        // Initialize Firebase after SDK is loaded
-        const { initializeApp } = await this.getFirebaseModule('app');
-        const { getAuth, onAuthStateChanged } = await this.getFirebaseModule('auth');
-        
-        this.app = initializeApp(FIREBASE_CONFIG);
-        this.auth = getAuth(this.app);
-        
-        console.log('🔥 Firebase Auth initialized via dynamic loading');
-        this.setupAuthStateListener();
-        this.initialized = true;
-        
-      } catch (dynamicError) {
-        console.warn('❌ Dynamic Firebase loading failed:', dynamicError);
-        
-        // Method 3: Fallback - simulate Firebase for development
-        console.log('🔄 Using Firebase simulation mode for development');
-        this.initializeSimulationMode();
+        if (window.firebaseApp && window.firebaseAuth) {
+          this.app = window.firebaseApp;
+          this.auth = window.firebaseAuth;
+          this.setupAuthStateListener();
+          this.initialized = true;
+          console.log('✅ Firebase loaded via external script');
+          return;
+        }
+      } catch (scriptError) {
+        console.warn('❌ External Firebase loading failed:', scriptError);
       }
+
+      // Method 3: Simulation mode
+      console.log('🔄 Using Firebase simulation mode');
+      this.initializeSimulationMode();
 
     } catch (error) {
       console.error('❌ Firebase Auth initialization failed:', error);
-      
-      // Ultimate fallback - disable Firebase features
-      console.log('🔄 Disabling Firebase features - using legacy mode');
       this.initialized = false;
       throw error;
     }
   }
 
-  // Load Firebase SDK dynamically
-  async loadFirebaseSDK() {
+  // Load Firebase via external script (CSP compatible)
+  async loadFirebaseViaScript() {
     return new Promise((resolve, reject) => {
       // Check if already loaded
-      if (window.firebase || window.firebaseApp) {
+      if (window.firebaseApp && window.firebaseAuth) {
         resolve();
         return;
       }
 
-      // Create script element for Firebase App
-      const appScript = document.createElement('script');
-      appScript.type = 'module';
-      appScript.innerHTML = `
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-        import { 
-          getAuth, 
-          signInWithEmailAndPassword, 
-          createUserWithEmailAndPassword,
-          signInWithPopup,
-          GoogleAuthProvider,
-          signOut,
-          onAuthStateChanged
-        } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-        
-        // Store Firebase modules globally
-        window._firebaseModules = {
-          app: { initializeApp },
-          auth: { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword,
-            signInWithPopup,
-            GoogleAuthProvider,
-            signOut,
-            onAuthStateChanged
+      // Create external script that will be loaded from extension
+      const scriptUrl = chrome.runtime.getURL('firebase-inject.html');
+      
+      // Create invisible iframe to load Firebase
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = scriptUrl;
+      
+      iframe.onload = () => {
+        // Try to get Firebase from iframe
+        try {
+          const iframeWindow = iframe.contentWindow;
+          if (iframeWindow.firebaseApp && iframeWindow.firebaseAuth) {
+            window.firebaseApp = iframeWindow.firebaseApp;
+            window.firebaseAuth = iframeWindow.firebaseAuth;
+            window._firebaseModules = iframeWindow._firebaseModules;
+            
+            console.log('✅ Firebase loaded from iframe');
+            document.body.removeChild(iframe);
+            resolve();
+          } else {
+            throw new Error('Firebase not available in iframe');
           }
-        };
-        
-        // Signal that Firebase is ready
-        window.dispatchEvent(new CustomEvent('firebaseReady'));
-      `;
-
-      // Listen for Firebase ready event
-      const handleFirebaseReady = () => {
-        window.removeEventListener('firebaseReady', handleFirebaseReady);
-        resolve();
+        } catch (error) {
+          document.body.removeChild(iframe);
+          reject(error);
+        }
       };
       
-      window.addEventListener('firebaseReady', handleFirebaseReady);
-
-      // Add script to page
-      document.head.appendChild(appScript);
+      iframe.onerror = () => {
+        document.body.removeChild(iframe);
+        reject(new Error('Failed to load Firebase iframe'));
+      };
+      
+      document.body.appendChild(iframe);
 
       // Timeout fallback
       setTimeout(() => {
-        window.removeEventListener('firebaseReady', handleFirebaseReady);
-        reject(new Error('Firebase SDK loading timeout'));
+        if (iframe.parentNode) {
+          document.body.removeChild(iframe);
+        }
+        reject(new Error('Firebase loading timeout'));
       }, 10000);
     });
   }
 
-  // Get Firebase module from global scope
-  async getFirebaseModule(moduleName) {
-    if (window._firebaseModules && window._firebaseModules[moduleName]) {
-      return window._firebaseModules[moduleName];
-    }
-    throw new Error(`Firebase ${moduleName} module not available`);
-  }
-
   // Initialize simulation mode for development
   initializeSimulationMode() {
-    console.log('🧪 Firebase simulation mode - for development only');
+    console.log('🧪 Firebase simulation mode - for development/testing');
     
     this.auth = {
       currentUser: null,
       signInWithEmailAndPassword: async (email, password) => {
         console.log('🧪 Simulated sign in:', email);
-        const user = { uid: 'sim_' + Date.now(), email, getIdToken: () => 'sim_token_' + Date.now() };
+        const user = { 
+          uid: 'sim_' + Date.now(), 
+          email, 
+          getIdToken: async () => 'sim_token_' + Date.now() 
+        };
         this.currentUser = user;
         this.currentToken = await user.getIdToken();
         this.authStateCallbacks.forEach(cb => cb(user, this.currentToken));
@@ -162,6 +149,10 @@ class AuthService {
         this.currentUser = null;
         this.currentToken = null;
         this.authStateCallbacks.forEach(cb => cb(null, null));
+      },
+      onAuthStateChanged: (callback) => {
+        console.log('🧪 Auth state listener registered');
+        this.authStateCallbacks.push(callback);
       }
     };
     
@@ -173,14 +164,12 @@ class AuthService {
     if (!this.auth) return;
 
     try {
-      // Use the Firebase onAuthStateChanged
       if (this.auth.onAuthStateChanged) {
         this.auth.onAuthStateChanged(async (user) => {
           console.log('🔐 Auth state changed:', user ? `${user.email} (${user.uid})` : 'signed out');
           
           if (user) {
             this.currentUser = user;
-            // Get fresh token
             this.currentToken = await user.getIdToken();
             console.log('🎫 ID Token refreshed');
           } else {
@@ -188,7 +177,6 @@ class AuthService {
             this.currentToken = null;
           }
 
-          // Notify callbacks
           this.authStateCallbacks.forEach(callback => {
             try {
               callback(user, this.currentToken);
@@ -207,7 +195,6 @@ class AuthService {
   onAuthStateChanged(callback) {
     this.authStateCallbacks.push(callback);
     
-    // If already authenticated, call immediately
     if (this.currentUser && this.currentToken) {
       callback(this.currentUser, this.currentToken);
     }
@@ -220,10 +207,12 @@ class AuthService {
     }
 
     try {
-      const { signInWithEmailAndPassword } = await this.getFirebaseModule('auth');
-      const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-      console.log('✅ Sign in successful:', userCredential.user.email);
-      return userCredential.user;
+      if (this.auth.signInWithEmailAndPassword) {
+        const result = await this.auth.signInWithEmailAndPassword(email, password);
+        console.log('✅ Sign in successful:', result.user?.email || email);
+        return result.user;
+      }
+      throw new Error('signInWithEmailAndPassword not available');
     } catch (error) {
       console.error('❌ Sign in failed:', error.message);
       throw this.handleAuthError(error);
@@ -237,43 +226,26 @@ class AuthService {
     }
 
     try {
-      const { createUserWithEmailAndPassword } = await this.getFirebaseModule('auth');
-      const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-      console.log('✅ Sign up successful:', userCredential.user.email);
-      return userCredential.user;
+      if (this.auth.createUserWithEmailAndPassword) {
+        const result = await this.auth.createUserWithEmailAndPassword(email, password);
+        console.log('✅ Sign up successful:', result.user?.email || email);
+        return result.user;
+      }
+      throw new Error('createUserWithEmailAndPassword not available');
     } catch (error) {
       console.error('❌ Sign up failed:', error.message);
       throw this.handleAuthError(error);
     }
   }
 
-  // Sign in with Google
-  async signInWithGoogle() {
-    if (!this.initialized) {
-      throw new Error('Firebase not initialized');
-    }
-
-    try {
-      const { signInWithPopup, GoogleAuthProvider } = await this.getFirebaseModule('auth');
-      const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(this.auth, provider);
-      console.log('✅ Google sign in successful:', userCredential.user.email);
-      return userCredential.user;
-    } catch (error) {
-      console.error('❌ Google sign in failed:', error.message);
-      throw this.handleAuthError(error);
-    }
-  }
-
   // Sign out
   async signOut() {
-    if (!this.initialized) {
+    if (!this.initialized || !this.auth) {
       throw new Error('Firebase not initialized');
     }
 
     try {
-      const { signOut } = await this.getFirebaseModule('auth');
-      await signOut(this.auth);
+      await this.auth.signOut();
       console.log('✅ Sign out successful');
     } catch (error) {
       console.error('❌ Sign out failed:', error.message);
@@ -316,7 +288,6 @@ class AuthService {
       'auth/weak-password': 'Le mot de passe doit contenir au moins 6 caractères',
       'auth/invalid-email': 'Format d\'email invalide',
       'auth/too-many-requests': 'Trop de tentatives. Réessayez plus tard',
-      'auth/popup-closed-by-user': 'Connexion annulée par l\'utilisateur',
       'auth/network-request-failed': 'Erreur réseau. Vérifiez votre connexion'
     };
 
@@ -350,11 +321,8 @@ class AuthService {
       });
 
       if (response.status === 401) {
-        // Token expired, try to refresh
         console.log('🔄 Token expired, refreshing...');
         const newToken = await this.getIdToken(true);
-        
-        // Retry with new token
         headers.Authorization = `Bearer ${newToken}`;
         return fetch(url, { ...options, headers });
       }
@@ -367,5 +335,13 @@ class AuthService {
   }
 }
 
-// Export singleton instance
-export default new AuthService(); 
+// Create and export singleton instance - make it globally available
+if (typeof window !== 'undefined') {
+  window.AuthService = window.AuthService || new AuthService();
+  window.authService = window.authService || window.AuthService;
+}
+
+// Also make it available for potential imports
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = window.AuthService;
+} 
