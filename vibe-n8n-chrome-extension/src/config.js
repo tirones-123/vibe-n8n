@@ -73,7 +73,12 @@ const CONFIG = {
   }
 };
 
-// Export pour utilisation dans d'autres modules
+// Rendre CONFIG disponible globalement pour Service Worker
+if (typeof globalThis !== 'undefined') {
+  globalThis.CONFIG = CONFIG;
+}
+
+// Export pour utilisation dans d'autres modules (Node.js)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = CONFIG;
 }

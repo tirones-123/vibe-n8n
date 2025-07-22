@@ -3,8 +3,13 @@
  * Gère la communication avec le backend workflow RAG
  */
 
-// Importer la configuration
-importScripts('./config.js');
+// Configuration intégrée pour éviter les problèmes d'import ES6
+const CONFIG = {
+  API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
+  API_BASE_URL: 'https://vibe-n8n-production.up.railway.app',
+  LEGACY_API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2',
+  API_TIMEOUT: 900000
+};
 
 // State pour les gros workflows
 let chunkBuffer = {};
