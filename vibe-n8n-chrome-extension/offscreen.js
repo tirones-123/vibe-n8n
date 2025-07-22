@@ -4,7 +4,7 @@
 console.log('🔥 Firebase Auth Offscreen Document starting (with external site)...');
 
 // URL du mini-site Firebase Auth sur Railway
-const FIREBASE_AUTH_SITE_URL = 'https://vibe-n8n-production.up.railway.app/firebase-auth';
+const FIREBASE_AUTH_SITE_URL = 'https://vibe-n8n-production.up.railway.app/firebase-auth/';
 
 let firebaseIframe;
 let firebaseReady = false;

@@ -1,59 +1,51 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>n8n AI Assistant</title>
-  <link rel="stylesheet" href="styles/popup.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>n8n AI Assistant</title>
+    <link rel="stylesheet" href="styles/popup.css">
 </head>
 <body>
-  <div class="popup-container">
-    <div class="popup-header">
-      <div class="popup-icon">🤖</div>
-      <h1>n8n AI Assistant</h1>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 n8n AI Assistant</h1>
+            <p>Extension Chrome pour génération de workflows IA</p>
+        </div>
+        
+        <div class="content">
+            <div class="status-section">
+                <div id="statusIndicator" class="status unknown">
+                    <span class="status-dot"></span>
+                    <span id="statusText">Vérification...</span>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="activateBtn" class="btn primary">
+                    Activer sur ce domaine
+                </button>
+                
+                <button id="openPanelBtn" class="btn secondary">
+                    Ouvrir le panneau IA
+                </button>
+            </div>
+
+            <div class="domain-info">
+                <p><strong>Domaine actuel :</strong></p>
+                <p id="currentDomain" class="domain">Chargement...</p>
+            </div>
+
+            <div class="help">
+                <p>💡 <strong>Astuce :</strong> Une fois activé, utilisez le bouton 🤖 sur la page n8n pour ouvrir l'assistant IA.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <small>Version 2.0.0 - Workflow RAG + Firebase Auth</small>
+        </div>
     </div>
-    
-    <div class="popup-content">
-      <div class="success-icon">✓</div>
-      <h2>n8n AI Assistant</h2>
-      <p>L'assistant IA est prêt à être utilisé!</p>
-      <p class="instructions">
-        Ouvrez n8n et cliquez sur le bouton bleu en bas à droite pour commencer à créer et modifier vos workflows avec l'IA.
-      </p>
-      
-      <div class="actions">
-        <button id="open-n8n" class="btn btn-primary">
-          Ouvrir n8n
-        </button>
-        <button id="activate-here" class="btn btn-secondary" style="display: none;">
-          🎯 Activer sur cette page
-        </button>
-      </div>
-      
-      <div id="custom-domain-section" style="display: none;">
-        <h3>🌐 Domaine personnalisé détecté</h3>
-        <p id="current-domain"></p>
-        <p class="small-text">Cliquez sur "Activer sur cette page" pour utiliser l'assistant IA sur cette instance n8n.</p>
-      </div>
-      
-      <div class="features">
-        <h3>Fonctionnalités disponibles:</h3>
-        <ul>
-          <li>Créer des workflows complets en langage naturel</li>
-          <li>Modifier des nœuds existants</li>
-          <li>Connecter et organiser les nœuds</li>
-          <li>Supprimer des éléments</li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="popup-footer">
-      <a href="https://github.com/yourusername/n8n-ai-assistant" target="_blank">Documentation</a>
-      <span class="separator">•</span>
-      <span class="version">v1.0.0</span>
-    </div>
-  </div>
-  
-  <script src="src/popup.js"></script>
+
+    <script src="src/popup.js"></script>
 </body>
 </html> 
