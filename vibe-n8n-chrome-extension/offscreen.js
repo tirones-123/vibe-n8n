@@ -1,330 +1,124 @@
-// Firebase Auth Offscreen Document - Version avec mini-site externe
-// Basé sur la documentation officielle Firebase : https://firebase.google.com/docs/auth/web/chrome-extension
+// Firebase Auth Offscreen Document - Implementation selon la doc officielle
+// Basé sur https://firebase.google.com/docs/auth/web/chrome-extension
 
-console.log('🔥 Firebase Auth Offscreen Document starting (with external site)...');
+console.log('🔥 Firebase Auth Offscreen Document starting...');
 
-// URL du mini-site Firebase Auth sur Railway
-const FIREBASE_AUTH_SITE_URL = 'https://vibe-n8n-production.up.railway.app/firebase-auth/';
+// This URL must point to the public site - selon la doc officielle
+const _URL = 'https://vibe-n8n-production.up.railway.app/firebase-auth/';
 
-let firebaseIframe;
-let firebaseReady = false;
-let pendingRequests = new Map();
+// Créer l'iframe selon la doc officielle
+const iframe = document.createElement('iframe');
+iframe.src = _URL;
+iframe.style.display = 'none';
+document.documentElement.appendChild(iframe);
 
-// Create iframe for Firebase auth
-function createFirebaseIframe() {
-  firebaseIframe = document.createElement('iframe');
-  firebaseIframe.src = FIREBASE_AUTH_SITE_URL;
-  firebaseIframe.style.display = 'none';
-  firebaseIframe.onload = () => {
-    console.log('📱 Firebase iframe loaded successfully from:', FIREBASE_AUTH_SITE_URL);
-  };
-  firebaseIframe.onerror = (error) => {
-    console.error('❌ Firebase iframe load error:', error);
-  };
-  document.body.appendChild(firebaseIframe);
-  
-  console.log('📱 Firebase iframe created');
-  console.log('🔗 Firebase iframe src:', firebaseIframe.src);
-}
+console.log('📱 Firebase iframe created with URL:', _URL);
 
-// Listen for messages from Firebase iframe
-window.addEventListener('message', (event) => {
-  console.log('📨 Offscreen received from iframe:', event.data);
-  
-  if (event.data.type === 'firebase-ready') {
-    firebaseReady = true;
-    console.log('✅ Firebase iframe ready');
-    return;
-  }
-  
-  if (event.data.type === 'auth-state-changed') {
-    // Forward auth state changes to background script
-    chrome.runtime.sendMessage({
-      type: 'firebase-auth-state-changed',
-      user: event.data.user
-    }).catch(() => {
-      // Ignore if background script is not available
-    });
-    return;
-  }
-  
-  // Handle auth responses - find the matching request
-  for (let [requestId, callback] of pendingRequests.entries()) {
-    callback(event.data);
-    pendingRequests.delete(requestId);
-    break; // Assume first match is correct
-  }
-});
+// Écouter les messages depuis le background script - selon la doc officielle
+chrome.runtime.onMessage.addListener(handleChromeMessages);
 
-// Send message to Firebase iframe and wait for response
-function sendToFirebaseIframe(message) {
-  return new Promise((resolve) => {
-    // If Firebase is not ready, wait for it
-    if (!firebaseReady) {
-      console.log('⏳ Firebase not ready, waiting...');
-      
-      // Wait up to 10 seconds for Firebase to be ready
-      const waitForFirebase = (attempts = 0) => {
-        if (firebaseReady) {
-          console.log('✅ Firebase ready after waiting');
-          sendMessage();
-        } else if (attempts < 40) { // 40 * 250ms = 10 seconds
-          setTimeout(() => waitForFirebase(attempts + 1), 250);
-        } else {
-          console.error('❌ Firebase timeout after 10 seconds');
-          resolve({ success: false, error: { message: 'Firebase initialization timeout' } });
-        }
-      };
-      
-      waitForFirebase();
-      return;
-    }
-    
-    sendMessage();
-    
-    function sendMessage() {
-      const requestId = Math.random().toString(36);
-      pendingRequests.set(requestId, resolve);
-      
-      console.log('📤 Sending to Firebase iframe:', message.type);
-      firebaseIframe.contentWindow.postMessage(message, '*');
-      
-      // Timeout after 15 seconds
-      setTimeout(() => {
-        if (pendingRequests.has(requestId)) {
-          pendingRequests.delete(requestId);
-          console.error('❌ Firebase request timeout');
-          resolve({ success: false, error: { message: 'Request timeout' } });
-        }
-      }, 15000);
-    }
-  });
-}
-
-// Initialize iframe
-createFirebaseIframe();
-
-// Listen for messages from background script
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+function handleChromeMessages(message, sender, sendResponse) {
   console.log('📨 Offscreen received message:', message);
   
-  // Filter messages intended for offscreen document
+  // Extensions may have a number of other reasons to send messages, so you
+  // should filter out any that are not meant for the offscreen document.
   if (message.target !== 'offscreen') {
     return false;
   }
 
+  function handleIframeMessage({data}) {
+    try {
+      if (data.startsWith && data.startsWith('!_{')) {
+        // Other parts of the Firebase library send messages using postMessage.
+        // You don't care about them in this context, so return early.
+        console.log('📝 Ignoring Firebase internal message');
+        return;
+      }
+      
+      console.log('📨 Received data from iframe:', data);
+      
+      // If data is already an object, use it directly
+      let parsedData = data;
+      if (typeof data === 'string') {
+        try {
+          parsedData = JSON.parse(data);
+        } catch (e) {
+          console.log(`JSON parse failed - ${e.message}`);
+          return;
+        }
+      }
+      
+      self.removeEventListener('message', handleIframeMessage);
+      console.log('📤 Sending response to background script:', parsedData);
+      sendResponse(parsedData);
+    } catch (e) {
+      console.error(`Error handling iframe message - ${e.message}`);
+      sendResponse({
+        success: false,
+        error: { code: 'offscreen/message-error', message: e.message }
+      });
+    }
+  }
+
+  globalThis.addEventListener('message', handleIframeMessage, false);
+
+  // Déterminer le message à envoyer à l'iframe
+  let iframeMessage;
+  
   switch (message.type) {
+    case 'firebase-auth-signin-google':
+      // Pour Google sign-in, utiliser initAuth selon la doc officielle
+      iframeMessage = {"initAuth": true};
+      break;
+      
     case 'firebase-auth-signin-email':
-      handleSignInWithEmail(message.data, sendResponse);
+      iframeMessage = {
+        type: 'firebase-auth-signin-email',
+        email: message.data.email,
+        password: message.data.password
+      };
       break;
       
     case 'firebase-auth-signup-email':
-      handleSignUpWithEmail(message.data, sendResponse);
-      break;
-      
-    case 'firebase-auth-signin-google':
-      handleSignInWithGoogle(sendResponse);
+      iframeMessage = {
+        type: 'firebase-auth-signup-email',
+        email: message.data.email,
+        password: message.data.password
+      };
       break;
       
     case 'firebase-auth-signout':
-      handleSignOut(sendResponse);
+      iframeMessage = { type: 'firebase-auth-signout' };
       break;
       
     case 'firebase-auth-get-token':
-      handleGetToken(message.data, sendResponse);
+      iframeMessage = { 
+        type: 'firebase-auth-get-token',
+        forceRefresh: message.data?.forceRefresh 
+      };
       break;
       
     case 'firebase-auth-get-user':
-      handleGetCurrentUser(sendResponse);
+      iframeMessage = { type: 'firebase-auth-get-user' };
       break;
       
     default:
       console.warn('⚠️ Unknown message type:', message.type);
-      sendResponse({ success: false, error: 'Unknown message type' });
-      break;
+      sendResponse({
+        success: false,
+        error: { code: 'offscreen/unknown-type', message: 'Unknown message type' }
+      });
+      return false;
   }
+
+  console.log('📤 Sending message to iframe:', iframeMessage);
+  
+  // Initialize the authentication flow in the iframed document. You must set the
+  // second argument (targetOrigin) of the message in order for it to be successfully
+  // delivered.
+  iframe.contentWindow.postMessage(iframeMessage, new URL(_URL).origin);
   
   return true; // Keep message channel open for async response
-});
-
-// Sign in with email/password
-async function handleSignInWithEmail(data, sendResponse) {
-  try {
-    console.log('🔐 Signing in with email:', data.email);
-    const response = await sendToFirebaseIframe({
-      type: 'firebase-auth-signin-email',
-      email: data.email,
-      password: data.password
-    });
-    
-    if (response.success) {
-      sendResponse({ 
-        success: true, 
-        user: response.user,
-        token: response.token
-      });
-    } else {
-      sendResponse({ 
-        success: false, 
-        error: response.error
-      });
-    }
-  } catch (error) {
-    console.error('❌ Sign in failed:', error);
-    sendResponse({ 
-      success: false, 
-      error: { code: error.code, message: error.message } 
-    });
-  }
 }
 
-// Sign up with email/password
-async function handleSignUpWithEmail(data, sendResponse) {
-  try {
-    console.log('📝 Signing up with email:', data.email);
-    const response = await sendToFirebaseIframe({
-      type: 'firebase-auth-signup-email',
-      email: data.email,
-      password: data.password
-    });
-    
-    if (response.success) {
-      sendResponse({ 
-        success: true, 
-        user: response.user,
-        token: response.token
-      });
-    } else {
-      sendResponse({ 
-        success: false, 
-        error: response.error
-      });
-    }
-  } catch (error) {
-    console.error('❌ Sign up failed:', error);
-    sendResponse({ 
-      success: false, 
-      error: { code: error.code, message: error.message } 
-    });
-  }
-}
-
-// Sign in with Google popup
-async function handleSignInWithGoogle(sendResponse) {
-  try {
-    console.log('🔐 Signing in with Google...');
-    const response = await sendToFirebaseIframe({
-      type: 'firebase-auth-signin-google'
-    });
-    
-    if (response.success) {
-      sendResponse({ 
-        success: true, 
-        user: response.user,
-        token: response.token
-      });
-    } else {
-      sendResponse({ 
-        success: false, 
-        error: response.error
-      });
-    }
-  } catch (error) {
-    console.error('❌ Google sign in failed:', error);
-    sendResponse({ 
-      success: false, 
-      error: {
-        code: error.code,
-        message: error.message
-      }
-    });
-  }
-}
-
-// Sign out
-async function handleSignOut(sendResponse) {
-  try {
-    console.log('🚪 Signing out...');
-    const response = await sendToFirebaseIframe({
-      type: 'firebase-auth-signout'
-    });
-    
-    if (response.success) {
-      sendResponse({ success: true });
-    } else {
-      sendResponse({ 
-        success: false, 
-        error: response.error
-      });
-    }
-  } catch (error) {
-    console.error('❌ Sign out failed:', error);
-    sendResponse({ 
-      success: false, 
-      error: {
-        code: error.code,
-        message: error.message
-      }
-    });
-  }
-}
-
-// Get current ID token
-async function handleGetToken(data, sendResponse) {
-  try {
-    const response = await sendToFirebaseIframe({
-      type: 'firebase-auth-get-token',
-      data: data
-    });
-    
-    if (response.success) {
-      sendResponse({ success: true, token: response.token });
-    } else {
-      sendResponse({ 
-        success: false, 
-        error: response.error
-      });
-    }
-  } catch (error) {
-    console.error('❌ Get token failed:', error);
-    sendResponse({ 
-      success: false, 
-      error: {
-        code: error.code || 'auth/no-current-user',
-        message: error.message
-      }
-    });
-  }
-}
-
-// Get current user
-async function handleGetCurrentUser(sendResponse) {
-  try {
-    const response = await sendToFirebaseIframe({
-      type: 'firebase-auth-get-user'
-    });
-    
-    if (response.success) {
-      sendResponse({ 
-        success: true, 
-        user: response.user
-      });
-    } else {
-      sendResponse({ 
-        success: false, 
-        error: response.error
-      });
-    }
-  } catch (error) {
-    console.error('❌ Get current user failed:', error);
-    sendResponse({ 
-      success: false, 
-      error: {
-        code: error.code,
-        message: error.message
-      }
-    });
-  }
-}
-
-console.log('📱 Offscreen document ready with external Firebase site'); 
+console.log('✅ Offscreen document ready according to Firebase official docs'); 

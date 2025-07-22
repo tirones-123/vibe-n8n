@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Firebase Auth for n8n AI Assistant Extension</title>
+    <title>Firebase Auth for Chrome Extension</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -22,14 +22,6 @@
             border-radius: 16px;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        .logo {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        .status {
-            font-size: 1.2rem;
-            margin: 1rem 0;
         }
         .loading {
             display: inline-block;
@@ -51,12 +43,12 @@
         <h1>n8n AI Assistant</h1>
         <div class="status">
             <div class="loading"></div>
-            Initializing Firebase Auth...
+            Firebase Auth Ready
         </div>
-        <p>This page handles authentication for the n8n AI Assistant Chrome Extension.</p>
+        <p>This page handles authentication for the Chrome Extension.</p>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK selon la doc officielle -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { 
@@ -69,7 +61,7 @@
             onAuthStateChanged
         } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
-        // Firebase Configuration
+        // Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I",
             authDomain: "vibe-n8n-7e40d.firebaseapp.com",
@@ -83,57 +75,103 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
+        const PROVIDER = new GoogleAuthProvider();
 
-        console.log('🔥 Firebase Auth Site initialized');
+        console.log('🔥 Firebase Auth Site initialized according to official docs');
 
-        // Update status
-        function updateStatus(message, success = false) {
-            const statusElement = document.querySelector('.status');
-            statusElement.innerHTML = success ? 
-                `✅ ${message}` : 
-                `<div class="loading"></div> ${message}`;
+        // Helper function to send response to parent (offscreen document)
+        function sendResponse(result) {
+            console.log('📤 Sending response to parent:', result);
+            
+            let response;
+            if (result.user) {
+                // Success case
+                response = {
+                    success: true,
+                    user: {
+                        uid: result.user.uid,
+                        email: result.user.email,
+                        displayName: result.user.displayName,
+                        photoURL: result.user.photoURL
+                    }
+                };
+                
+                // Get ID token
+                result.user.getIdToken().then(token => {
+                    response.token = token;
+                    window.parent.postMessage(response, '*');
+                });
+            } else if (result.code) {
+                // Error case
+                response = {
+                    success: false,
+                    error: {
+                        code: result.code,
+                        message: result.message
+                    }
+                };
+                window.parent.postMessage(response, '*');
+            } else {
+                // Success case without user (like signOut)
+                response = { success: true };
+                window.parent.postMessage(response, '*');
+            }
         }
 
-        updateStatus('Firebase initialized successfully', true);
-
-        // Listen for messages from parent (offscreen document)
+        // Listen for messages from parent (offscreen document) - SELON DOC OFFICIELLE
         window.addEventListener('message', async (event) => {
             console.log('📨 Firebase Auth Site received message:', event.data);
 
+            // Handle initAuth message selon la doc officielle
+            if (event.data.initAuth) {
+                console.log('🚀 Authentication flow initialized');
+                // Opens the Google sign-in page in a popup
+                // To centralize logic, all responses are forwarded to the parent frame
+                signInWithPopup(auth, PROVIDER)
+                    .then(sendResponse)
+                    .catch(sendResponse);
+                return;
+            }
+
+            // Handle other auth operations
             try {
                 let result;
                 
                 switch (event.data.type) {
                     case 'firebase-auth-signin-email':
-                        updateStatus('Signing in with email...');
+                        console.log('🔐 Email sign in...');
                         result = await signInWithEmailAndPassword(auth, event.data.email, event.data.password);
+                        sendResponse(result);
                         break;
                         
                     case 'firebase-auth-signup-email':
-                        updateStatus('Creating account...');
+                        console.log('📝 Email sign up...');
                         result = await createUserWithEmailAndPassword(auth, event.data.email, event.data.password);
+                        sendResponse(result);
                         break;
                         
                     case 'firebase-auth-signin-google':
-                        updateStatus('Signing in with Google...');
-                        result = await signInWithPopup(auth, googleProvider);
+                        console.log('🔗 Google sign in...');
+                        result = await signInWithPopup(auth, PROVIDER);
+                        sendResponse(result);
                         break;
                         
                     case 'firebase-auth-signout':
-                        updateStatus('Signing out...');
+                        console.log('🚪 Sign out...');
                         await signOut(auth);
-                        result = { success: true };
+                        sendResponse({ success: true });
                         break;
                         
                     case 'firebase-auth-get-token':
+                        console.log('🎫 Get token...');
                         const token = await auth.currentUser?.getIdToken(event.data.forceRefresh);
-                        result = { success: true, token };
+                        sendResponse({ success: true, token });
                         break;
                         
                     case 'firebase-auth-get-user':
+                        console.log('👤 Get user...');
                         const user = auth.currentUser;
-                        result = { 
+                        const response = { 
                             success: true, 
                             user: user ? {
                                 uid: user.uid,
@@ -142,64 +180,31 @@
                                 photoURL: user.photoURL
                             } : null 
                         };
+                        sendResponse(response);
                         break;
                         
                     default:
-                        throw new Error('Unknown action: ' + event.data.type);
+                        console.warn('⚠️ Unknown message type:', event.data.type);
                 }
-
-                // Send success response to parent (offscreen document)
-                const responseData = {
-                    success: true,
-                    user: result.user ? {
-                        uid: result.user.uid,
-                        email: result.user.email,
-                        displayName: result.user.displayName,
-                        photoURL: result.user.photoURL
-                    } : null,
-                    token: result.user ? await result.user.getIdToken() : null
-                };
-
-                updateStatus('Operation completed successfully', true);
-                window.parent.postMessage(responseData, '*');
-
+                
             } catch (error) {
                 console.error('❌ Firebase Auth Site error:', error);
-                
-                updateStatus(`Error: ${error.message}`);
-                
-                // Send error response to parent (offscreen document)
-                window.parent.postMessage({
+                sendResponse({
                     success: false,
                     error: {
-                        code: error.code,
-                        message: error.message
+                        code: error.code || 'auth/unknown-error',
+                        message: error.message || 'Unknown authentication error'
                     }
-                }, '*');
+                });
             }
         });
 
-        // Auth state listener
+        // Auth state listener (optionnel pour debugging)
         onAuthStateChanged(auth, (user) => {
             console.log('🔐 Auth state changed:', user ? user.email : 'signed out');
-            
-            // Notify parent (offscreen document) of auth state change
-            window.parent.postMessage({
-                type: 'auth-state-changed',
-                user: user ? {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL
-                } : null
-            }, '*');
         });
 
-        // Signal ready to parent (offscreen document)
-        setTimeout(() => {
-            window.parent.postMessage({ type: 'firebase-ready' }, '*');
-            updateStatus('Ready for authentication', true);
-        }, 1000);
+        console.log('✅ Firebase Auth Site ready for Chrome Extension communication');
     </script>
 </body>
 </html> 

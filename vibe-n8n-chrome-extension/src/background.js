@@ -233,9 +233,19 @@ function safeSendMessage(tabId, payload) {
 // Log du démarrage du service worker
 console.log('🚀 Service Worker started at:', new Date().toISOString());
 console.log('🆔 Extension ID:', chrome.runtime.id);
-console.log('🔗 Firebase domain to add:', `chrome-extension://${chrome.runtime.id}`);
-console.log('📋 Add this to Firebase Console > Authentication > Settings > Authorized domains');
-console.log('=====================================');
+console.log('');
+console.log('🔥 ===================== FIREBASE SETUP REQUIRED =====================');
+console.log('🔗 Add this domain to Firebase Console:');
+console.log(`   chrome-extension://${chrome.runtime.id}`);
+console.log('');
+console.log('📋 Steps:');
+console.log('   1. Go to Firebase Console > Authentication > Settings');
+console.log('   2. Scroll to "Authorized domains"');
+console.log('   3. Click "Add domain"');
+console.log(`   4. Enter: chrome-extension://${chrome.runtime.id}`);
+console.log('   5. Save');
+console.log('🔥 ================================================================');
+console.log('');
 
 // 🎯 INJECTION AUTOMATIQUE DES DOMAINES PERSONNALISÉS
 // Écoute la navigation pour injecter automatiquement sur les domaines sauvegardés

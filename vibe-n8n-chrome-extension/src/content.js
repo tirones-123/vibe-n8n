@@ -7,8 +7,7 @@
 // Utilisation des services globaux (pas d'imports ES6)
 let contentAuthIntegration = null;
 
-  // Firebase Auth OBLIGATOIRE en production (pas de Legacy mode)
-  // Plus de variable de mode - toujours Firebase Auth
+  // Firebase Auth
 
 // ANCIENNE MÉTHODE IFRAME SUPPRIMÉE - Maintenant utilise Offscreen Documents
 // Firebase SDK est géré par background.js via Offscreen Document API
@@ -125,11 +124,9 @@ function exposeTestFunctions() {
     }
   };
   
-  // toggleAuthMode supprimé - Firebase Auth OBLIGATOIRE en production
-  
   // debugFirebaseAuth - Debug état auth
   window.debugFirebaseAuth = () => {
-    console.log('🔍 === DEBUG FIREBASE AUTH (OBLIGATOIRE) ===');
+    console.log('🔍 === DEBUG FIREBASE AUTH ===');
     console.log('  contentAuthIntegration:', !!window.contentAuthIntegration);
     console.log('  authService:', !!window.authService);
     console.log('  simulationMode:', window.contentAuthIntegration?.simulationMode);
@@ -140,7 +137,7 @@ function exposeTestFunctions() {
       console.log('  Auth status:', status);
     }
     
-    console.log('  🔐 Firebase Auth est OBLIGATOIRE - pas de mode Legacy');
+    console.log('  🔐 Firebase Auth activé');
   };
   
   // testFirebaseAuth - Test auth spécifique
@@ -149,10 +146,10 @@ function exposeTestFunctions() {
   console.log('✅ Fonctions de test exposées globalement !');
 }
 
-// Fonction d'initialisation Firebase Auth - OBLIGATOIRE EN PRODUCTION
+  // Fonction d'initialisation Firebase Auth
 async function initializeFirebaseAuth() {
   try {
-    console.log('🔐 Initialisation Firebase Auth (OBLIGATOIRE)...');
+    console.log('🔐 Initialisation Firebase Auth...');
     
     // Utilise Offscreen Document via background.js (méthode officielle Firebase)
     
@@ -171,7 +168,7 @@ async function initializeFirebaseAuth() {
     console.log('✅ Firebase Auth initialisé avec succès');
     return true;
   } catch (error) {
-    console.error('❌ ERREUR CRITIQUE: Firebase Auth failed (OBLIGATOIRE):', error);
+    console.error('❌ ERREUR CRITIQUE: Firebase Auth failed:', error);
     console.error('💀 L\'application ne peut pas fonctionner sans Firebase Auth');
     return false;
   }
@@ -2723,15 +2720,15 @@ async function checkSavedDomains(currentHostname) {
   // Expose Firebase Auth functions globally for debugging
   window.debugFirebaseAuth = () => {
     const status = contentAuthIntegration ? contentAuthIntegration.getAuthStatus() : null;
-    console.log('🔍 Firebase Auth Status (OBLIGATOIRE):', {
+    console.log('🔍 Firebase Auth Status:', {
       contentAuthIntegration: !!contentAuthIntegration,
       status,
-      mode: 'Firebase Auth (OBLIGATOIRE)'
+      mode: 'Firebase Auth'
     });
     return status;
   };
 
-  // toggleAuthMode supprimé - Firebase Auth OBLIGATOIRE en production
+
 
   window.testFirebaseAuth = async () => {
     if (!contentAuthIntegration) {
@@ -3613,14 +3610,14 @@ async function checkSavedDomains(currentHostname) {
       // Ping service worker pour vérifier qu'il est actif
       await pingServiceWorker();
       
-      // ===== FIREBASE AUTH OBLIGATOIRE =====
+      // ===== FIREBASE AUTH =====
       if (!contentAuthIntegration) {
         console.error('💀 ERREUR CRITIQUE: contentAuthIntegration non disponible');
         handleError('Système d\'authentification non disponible. Veuillez recharger la page.', assistantMessage);
         return;
       }
 
-      console.log('🔐 Traitement avec Firebase Auth (OBLIGATOIRE)...');
+      console.log('🔐 Traitement avec Firebase Auth...');
       
       try {
         // Vérifier auth + quotas avant envoi
@@ -3970,7 +3967,7 @@ async function checkSavedDomains(currentHostname) {
         console.log('📊 === DIAGNOSTIC n8n AI Assistant ===');
         console.log('🔧 Extension Version: 2.0.0 avec Firebase Auth');
         console.log('🌐 Page:', window.location.href);
-        console.log('🔐 Mode Auth: Firebase Auth (OBLIGATOIRE)');
+        console.log('🔐 Mode Auth: Firebase Auth');
         console.log('📦 ContentAuthIntegration:', !!contentAuthIntegration);
         console.log('🔥 Firebase SDK (Offscreen):', !!(contentAuthIntegration && !contentAuthIntegration.simulationMode));
         console.log('🎯 Status Element:', !!document.getElementById('ai-status'));
@@ -3980,7 +3977,7 @@ async function checkSavedDomains(currentHostname) {
         console.log('🧪 === FONCTIONS DE TEST DISPONIBLES ===');
         console.log('   testFirebaseSystem()     - 🔥 TEST COMPLET (recommandé)');
         console.log('   debugFirebaseAuth()      - État actuel auth');
-                  console.log('   🔐 Firebase Auth OBLIGATOIRE - Pas de mode Legacy');
+                  console.log('   🔐 Firebase Auth - Architecture Offscreen Document');
         console.log('   testFirebaseAuth()       - Tester authentification');
         console.log('   showFirebaseAuthModal()  - Afficher modal de connexion');
         console.log('   createTestUser()         - Créer utilisateur de test');
