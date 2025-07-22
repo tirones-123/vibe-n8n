@@ -5,8 +5,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import zlib from 'zlib';
 import { promisify } from 'util';
-// NEW: Robust JSON auto-repair helper
-import { jsonrepair } from 'jsonrepair';
 
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
@@ -641,44 +639,6 @@ ${baseWorkflow ?
           
         } catch (repairError) {
           console.error('❌ Impossible de réparer le JSON:', repairError.message);
-
-          // === NEW FALLBACK USING jsonrepair ===
-          try {
-            console.log('🩹 Tentative de réparation JSON via jsonrepair…');
-            const repairedViaLib = jsonrepair(jsonText);
-            const repairedObj = JSON.parse(repairedViaLib);
-
-            console.log('✅ jsonrepair a corrigé le JSON !');
-
-            const finalWorkflow = repairedObj.workflow ? repairedObj.workflow : repairedObj;
-            const finalExplanation = repairedObj.explanation || {
-              summary: 'Workflow généré (jsonrepair)',
-              notes: 'JSON réparé automatiquement avec jsonrepair – vérifiez la configuration.'
-            };
-
-            finalWorkflow.name = workflowName;
-
-            if (onProgress) {
-              onProgress('warning', { message: 'Workflow réparé automatiquement (jsonrepair)' });
-            }
-
-            const transmission = await this.prepareWorkflowForTransmission(finalWorkflow, finalExplanation);
-            await this.sendWorkflowTransmission(transmission, onProgress);
-
-            return {
-              success: true,
-              workflow: finalWorkflow,
-              explanation: finalExplanation,
-              similarWorkflows: similarWorkflows.map(w => w.name),
-              repaired: true,
-              transmissionType: transmission.type
-            };
-
-          } catch (jsonRepairError) {
-            console.error('❌ jsonrepair n’a pas réussi :', jsonRepairError.message);
-          }
-
-          // === END NEW jsonrepair fallback ===
 
           // --- Nouveau fallback : parsing « unsafe » via Function ---
           try {

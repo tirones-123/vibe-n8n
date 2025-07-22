@@ -4,7 +4,6 @@
  */
 
 // Initial load check
-console.log('%c🚀 n8n AI Assistant (Workflow RAG): SCRIPT LOADED !', 'background: green; color: white; font-size: 16px; padding: 5px;');
 
 // Quick test injection
 (function testImmediate() {
@@ -29,14 +28,14 @@ console.log('%c🚀 n8n AI Assistant (Workflow RAG): SCRIPT LOADED !', 'backgrou
   setTimeout(() => testDiv.remove(), 2000);
 })();
 
-console.log('📍 Current URL:', window.location.href);
 
-// Prevent double execution
-if (window.n8nAIAssistantLoaded) {
-  console.log('🔄 n8n AI Assistant already loaded, skipping...');
-  throw new Error('Already loaded');
-}
-window.n8nAIAssistantLoaded = true;
+// Prevent double execution without throwing hard error
++(function() {
+  if (window.n8nAIAssistantLoaded) {
+    return; // early exit for duplicate injection (inside IIFE, legal)
+  }
+  window.n8nAIAssistantLoaded = true;
+})();
 
 // Check if we're on potential n8n page
 function detectN8nPage() {
@@ -45,26 +44,22 @@ function detectN8nPage() {
   
   // Method 1: Domain contains 'n8n'
   if (hostname.includes('n8n')) {
-    console.log('✅ n8n detected via domain:', hostname);
     return true;
   }
   
   // Method 2: URL patterns suggest n8n
   const n8nPatterns = ['/workflow/', '/execution/', '/editor/', '/credentials/', '/settings/'];
   if (n8nPatterns.some(pattern => pathname.includes(pattern))) {
-    console.log('✅ n8n detected via URL pattern:', pathname);
     return true;
   }
   
   // Method 3: Manual injection (when user clicked "Activate on this page")
   if (window.n8nAIManualActivation) {
-    console.log('✅ n8n detected via manual activation');
     return true;
   }
   
   // Method 4: Auto injection (when domain was previously saved)
   if (window.n8nAIAutoActivation) {
-    console.log('✅ n8n detected via auto activation for saved domain:', hostname);
     return true;
   }
   
@@ -81,13 +76,11 @@ async function checkSavedDomains(currentHostname) {
     const customDomains = result.customDomains || [];
     
     if (customDomains.includes(currentHostname)) {
-      console.log('✅ n8n detected via saved custom domain:', currentHostname);
       window.n8nAIAutoActivation = true;
       window.n8nAIManualActivation = true;
       
       // Trigger initialization if not already loaded
       if (!window.__n8nAiAssistantLoaded) {
-        console.log('🚀 Triggering initialization for saved domain');
         setTimeout(() => {
           init().catch(error => {
             console.error('❌ Failed to initialize after domain detection:', error);
@@ -98,61 +91,43 @@ async function checkSavedDomains(currentHostname) {
       return true;
     }
   } catch (error) {
-    console.log('⚠️ Could not check saved domains:', error.message);
   }
   return false;
 }
 
 // Main initialization function
 (async function initializeExtension() {
-  console.log('🚀 Starting extension initialization...');
   
   // FIRST: Check for saved custom domains and auto-activate if needed
   try {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       const hostname = window.location.hostname;
-      console.log('🔍 Checking if domain is in saved custom domains:', hostname);
       
       const { customDomains = [] } = await chrome.storage.sync.get(['customDomains']);
-      console.log('📋 Saved custom domains:', customDomains);
       
       if (customDomains.includes(hostname)) {
-        console.log('✅ Domain found in saved list! Auto-activating:', hostname);
         window.n8nAIManualActivation = true;
         window.n8nAIAutoActivation = true;
       } else {
-        console.log('❌ Domain not in saved list:', hostname);
       }
     } else {
-      console.log('⚠️ Chrome storage not available');
     }
   } catch (error) {
-    console.log('❌ Error checking storage for auto-activation:', error.message);
   }
 
   // THEN: Detect if this is an n8n page (now with potential auto-activation flag set)
   const isN8nPage = detectN8nPage();
 
-  console.log('🔍 Final page analysis:', {
-    hostname: window.location.hostname,
-    pathname: window.location.pathname,
-    manualActivation: !!window.n8nAIManualActivation,
-    isN8nPage: isN8nPage
-  });
-
+  // Abort initialization if not on an n8n page
   if (!isN8nPage) {
-    console.log('❌ Not detected as n8n page, stopping initialization');
     return;
   }
 
   // Continue with n8n AI Assistant initialization
-  console.log('✅ n8n page confirmed! Initializing AI Assistant...');
 
   if (window.__n8nAiAssistantLoaded) {
-    console.log('⚠️ Extension already loaded in this context');
     return;
   }
-  console.log('✅ On n8n workflow page, continuing...');
   window.__n8nAiAssistantLoaded = true;
   
   // Inject script for Pinia access
@@ -171,6 +146,8 @@ async function checkSavedDomains(currentHostname) {
   let autoImportEnabled = true; // Auto-import activé par défaut
   let n8nLayoutModified = false;
   let isResizingWidth = false;
+  // Keep-alive interval ID for service worker
+  let keepAliveIntervalId = null;
   const MIN_PANEL_WIDTH = 280;  // Minimum usable width
   const MAX_PANEL_WIDTH = 800;  // Maximum width
   
@@ -181,7 +158,6 @@ async function checkSavedDomains(currentHostname) {
     if (savedWidth) {
       const width = parseInt(savedWidth);
       if (width >= MIN_PANEL_WIDTH && width <= MAX_PANEL_WIDTH) {
-        console.log('📏 Using saved panel width:', width + 'px');
         return width;
       }
     }
@@ -209,7 +185,6 @@ async function checkSavedDomains(currentHostname) {
     // Save user preference
     localStorage.setItem('n8n-ai-panel-width', clampedWidth.toString());
     
-    console.log('📏 Panel width updated to:', clampedWidth + 'px');
     return clampedWidth;
   }
   
@@ -873,11 +848,8 @@ async function checkSavedDomains(currentHostname) {
 
   // Detect and modify n8n layout (SAFE mode - protect editor functionality)
   function detectAndModifyN8nLayout() {
-    console.log('🔍 Detecting n8n layout elements (SAFE mode)...');
     
     // Log current page info
-    console.log('📍 Current URL:', window.location.href);
-    console.log('📏 Window size:', window.innerWidth, 'x', window.innerHeight);
     
     // CONSERVATIVE approach: Only target the highest-level containers
     // Avoid canvas, editor, and interactive elements
@@ -906,24 +878,19 @@ async function checkSavedDomains(currentHostname) {
     let modifiedElements = [];
     
     // First, log all found elements for debugging
-    console.log('🔍 Scanning for safe n8n container elements:');
     n8nSelectors.forEach(selector => {
       const elements = document.querySelectorAll(selector);
       if (elements.length > 0) {
-        console.log(`  Found ${elements.length} elements for "${selector}"`);
         elements.forEach((el, i) => {
           const rect = el.getBoundingClientRect();
-          console.log(`    ${i + 1}. Size: ${rect.width}x${rect.height}, Position: ${window.getComputedStyle(el).position}`);
         });
       }
     });
     
     // Check protected elements to avoid
-    console.log('🛡️ Checking protected editor elements:');
     protectedSelectors.forEach(selector => {
       const elements = document.querySelectorAll(selector);
       if (elements.length > 0) {
-        console.log(`  Protected: ${elements.length} elements for "${selector}"`);
       }
     });
     
@@ -942,7 +909,6 @@ async function checkSavedDomains(currentHostname) {
         let hasProtectedElements = false;
         for (const protectedSelector of protectedSelectors) {
           if (element.querySelector(protectedSelector)) {
-            console.log(`🛡️ Skipping ${selector} - contains protected element: ${protectedSelector}`);
             hasProtectedElements = true;
             break;
           }
@@ -952,10 +918,8 @@ async function checkSavedDomains(currentHostname) {
           // Instead of modifying this element, look for its parent
           const parent = element.parentElement;
           if (parent && parent !== document.body && parent !== document.documentElement) {
-            console.log(`🔍 Trying parent element instead...`);
             const parentRect = parent.getBoundingClientRect();
             if (parentRect.width > window.innerWidth * 0.8) {
-              console.log(`🎯 Using parent element for layout modification`);
               parent.classList.add('n8n-layout-modified');
               modifiedElements.push({
                 element: parent,
@@ -980,16 +944,7 @@ async function checkSavedDomains(currentHostname) {
                           element.closest('html') === document.documentElement;
         
         if (isWideEnough && isNotFloating && hasReasonableHeight) {
-          console.log(`🔧 Safe to modify element: ${selector}`, {
-            width: rect.width,
-            height: rect.height,
-            position: computedStyle.position,
-            display: computedStyle.display,
-            id: element.id,
-            classes: Array.from(element.classList).join(' '),
-            isTopLevel: isTopLevel
-          });
-          
+          // debug info removed
           // Add transition class
           element.classList.add('n8n-layout-modified');
           modifiedElements.push({
@@ -1002,7 +957,6 @@ async function checkSavedDomains(currentHostname) {
           // Only modify the first suitable element to avoid conflicts
           break;
         } else {
-          console.log(`⏭️ Skipping element: ${selector} (width: ${rect.width}, height: ${rect.height}, position: ${computedStyle.position})`);
         }
       }
       
@@ -1010,16 +964,13 @@ async function checkSavedDomains(currentHostname) {
       if (modifiedElements.length > 0) break;
     }
     
-    console.log(`✅ Found ${modifiedElements.length} safe elements to modify`);
     
     // Enhanced fallback: Only if absolutely necessary
     if (modifiedElements.length === 0) {
-      console.log('🔍 No safe elements found, trying ultra-conservative fallback...');
       
       // Try to modify only body or html
       const bodyRect = document.body.getBoundingClientRect();
       if (bodyRect.width > window.innerWidth * 0.9) {
-        console.log('🎯 Using document.body as fallback');
         document.body.classList.add('n8n-layout-modified');
         modifiedElements.push({
           element: document.body,
@@ -1043,20 +994,14 @@ async function checkSavedDomains(currentHostname) {
       const minHeight = 200; // Minimum height for usable editor
       
       if (rect.width < minWidth || rect.height < minHeight) {
-        console.warn('⚠️ Editor canvas too small after layout modification:', {
-          width: rect.width,
-          height: rect.height,
-          minRequired: { width: minWidth, height: minHeight }
-        });
+        // Editor canvas too small after layout modification
         return false;
       }
       
-      console.log('✅ Editor canvas size OK:', { width: rect.width, height: rect.height });
       return true;
     }
     
     // No canvas found - might be loading
-    console.log('🔍 No editor canvas found yet');
     return true; // Don't fail if we can't find the canvas yet
   }
 
@@ -1064,14 +1009,10 @@ async function checkSavedDomains(currentHostname) {
   function applyN8nLayoutModifications() {
     if (n8nLayoutModified) return;
     
-    console.log('🎨 Applying n8n layout modifications...');
-    console.log('📏 Panel width:', currentPanelWidth, 'px');
-    console.log('📏 Screen width:', window.innerWidth, 'px');
     
     const modifiedElements = detectAndModifyN8nLayout();
     
     if (modifiedElements.length === 0) {
-      console.warn('⚠️ No elements found to modify - layout integration may not work properly');
       // Still mark as modified to avoid infinite retry
       n8nLayoutModified = true;
       return;
@@ -1080,7 +1021,6 @@ async function checkSavedDomains(currentHostname) {
     // Apply width modifications
     modifiedElements.forEach(({ element, selector }) => {
       element.classList.add('n8n-layout-with-ai');
-      console.log(`✅ Applied layout class to: ${selector}`);
     });
     
     // Store body margin for restoration
@@ -1093,7 +1033,6 @@ async function checkSavedDomains(currentHostname) {
     // Apply body modifications more conservatively
     const shouldModifyBody = window.innerWidth < 1200 || modifiedElements.length === 0;
     if (shouldModifyBody) {
-      console.log('📐 Applying body margin for smaller screen or fallback');
       body.style.marginRight = currentPanelWidth + 'px';
     }
     
@@ -1103,18 +1042,15 @@ async function checkSavedDomains(currentHostname) {
     setTimeout(() => {
       const isEditorOK = checkEditorFunctionality();
       if (!isEditorOK) {
-        console.warn('⚠️ Editor functionality compromised - consider reducing panel width');
       }
     }, 500);
     
-    console.log('✅ N8n layout modifications applied successfully');
   }
 
   // Remove layout modifications
   function removeN8nLayoutModifications() {
     if (!n8nLayoutModified) return;
     
-    console.log('🔄 Removing n8n layout modifications...');
     
     // Remove all layout classes
     const modifiedElements = document.querySelectorAll('.n8n-layout-modified');
@@ -1130,12 +1066,10 @@ async function checkSavedDomains(currentHostname) {
     }
     
     n8nLayoutModified = false;
-    console.log('✅ N8n layout modifications removed');
   }
 
   // Create the main interface
   function createInterface() {
-    console.log('🎨 Creating integrated interface');
     
     // Remove existing
     const existing = document.getElementById('n8n-ai-assistant');
@@ -1538,10 +1472,8 @@ async function checkSavedDomains(currentHostname) {
     // Ensure console starts completely clean and UI state is reset
     // Wait longer to ensure all DOM elements are ready
     setTimeout(() => {
-      console.log('🔧 Initializing UI state after DOM ready...');
       clearCode();
       resetUIState();
-      console.log('✅ Interface ready, UI state reset');
       
       // 🔧 Test initial du service worker
       checkServiceWorkerStatus();
@@ -1553,7 +1485,6 @@ async function checkSavedDomains(currentHostname) {
   // Handle window resize
   function handleWindowResize() {
     if (isOpen && n8nLayoutModified) {
-      console.log('📏 Window resized - updating layout');
       
       // Re-detect and apply layout modifications
       setTimeout(() => {
@@ -1596,7 +1527,6 @@ async function checkSavedDomains(currentHostname) {
       });
       
       if (shouldReapply) {
-        console.log('🔄 DOM changes detected - reapplying layout');
         setTimeout(() => {
           removeN8nLayoutModifications();
           applyN8nLayoutModifications();
@@ -1611,13 +1541,11 @@ async function checkSavedDomains(currentHostname) {
       attributeFilter: ['class', 'style']
     });
     
-    console.log('👁️ DOM observer setup for layout maintenance');
     return observer;
   }
 
   // Create floating button
   function createFloatingButton() {
-    console.log('🔵 Creating floating button');
     
     const existing = document.getElementById('n8n-ai-toggle');
     if (existing) existing.remove();
@@ -1671,7 +1599,6 @@ async function checkSavedDomains(currentHostname) {
     document.body.appendChild(button);
     
     // Button stays in original position and visibility is handled by toggle function
-    console.log('🔵 Floating button created - visibility managed by toggle function');
     
     return button;
   }
@@ -1685,7 +1612,6 @@ async function checkSavedDomains(currentHostname) {
 
   // Setup event listeners
   function setupEventListeners() {
-    console.log('🎧 Setting up event listeners...');
     
     // Safety checks for all elements
     const closeButton = document.getElementById('ai-close');
@@ -1706,7 +1632,6 @@ async function checkSavedDomains(currentHostname) {
         // Check if URL contains a node ID (format: /workflow/ID/NODE_ID)
         const nodeIdMatch = currentUrl.match(/\/workflow\/[^\/]+\/([a-zA-Z0-9]+)$/);
         if (nodeIdMatch && isOpen) {
-          console.log('🔴 Node opened (URL changed) - closing AI assistant:', nodeIdMatch[1]);
           toggleInterface();
         }
         lastUrl = currentUrl;
@@ -1722,9 +1647,7 @@ async function checkSavedDomains(currentHostname) {
     // Close button
     if (closeButton) {
       closeButton.onclick = toggleInterface;
-      console.log('✅ Close button listener set');
     } else {
-      console.log('⚠️ Close button not found');
     }
     
     // Status indicator (clickable diagnostic)
@@ -1732,10 +1655,8 @@ async function checkSavedDomains(currentHostname) {
     if (statusIndicator) {
       statusIndicator.onclick = (e) => {
         e.stopPropagation();
-        console.log('🔧 Manual service worker check triggered');
         checkServiceWorkerStatus();
       };
-      console.log('✅ Status indicator listener set');
     }
     
     // Send button and input
@@ -1743,7 +1664,6 @@ async function checkSavedDomains(currentHostname) {
       sendButton.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('🔴 Send button clicked!');
         sendMessage();
       };
       
@@ -1758,7 +1678,6 @@ async function checkSavedDomains(currentHostname) {
       
       inputField.addEventListener('paste', (e) => {
         isPastingInChat = true;
-        console.log('📋 Paste in chat detected - marking to prevent n8n auto-import');
         
         // Clear the flag after a short delay
         setTimeout(() => {
@@ -1775,14 +1694,11 @@ async function checkSavedDomains(currentHostname) {
         if (e.ctrlKey && e.key === 'Enter') {
           e.preventDefault();
           e.stopPropagation();
-          console.log('⌨️ Ctrl+Enter in chat - sending message');
           sendMessage();
         }
       });
       
-      console.log('✅ Send button and input listeners set');
     } else {
-      console.log('⚠️ Send button or input field not found');
     }
     
 
@@ -1790,9 +1706,7 @@ async function checkSavedDomains(currentHostname) {
     // Code panel toggle
     if (codeToggle) {
       codeToggle.onclick = toggleCodePanel;
-      console.log('✅ Code panel toggle listener set');
     } else {
-      console.log('⚠️ Code toggle not found');
     }
     
     // Insert code button
@@ -1801,9 +1715,7 @@ async function checkSavedDomains(currentHostname) {
       e.stopPropagation();
         insertWorkflow(false); // Insert without replacing
       };
-      console.log('✅ Insert button listener set');
     } else {
-      console.log('⚠️ Insert button not found');
     }
     
     // Insert & Replace code button
@@ -1812,9 +1724,7 @@ async function checkSavedDomains(currentHostname) {
         e.stopPropagation();
         insertWorkflow(true); // Insert with replacement
       };
-      console.log('✅ Insert & Replace button listener set');
     } else {
-      console.log('⚠️ Insert & Replace button not found');
     }
     
     // Auto-import checkbox
@@ -1822,7 +1732,6 @@ async function checkSavedDomains(currentHostname) {
       autoImportCheckbox.onchange = (e) => {
         e.stopPropagation();
         autoImportEnabled = e.target.checked;
-        console.log(autoImportEnabled ? '✅ Auto-import enabled' : '❌ Auto-import disabled');
     };
     
       // Prevent checkbox click from toggling code panel
@@ -1837,9 +1746,7 @@ async function checkSavedDomains(currentHostname) {
         };
       }
       
-      console.log('✅ Auto-import checkbox listeners set');
     } else {
-      console.log('⚠️ Auto-import checkbox not found');
     }
     
     // Resize handle functionality
@@ -1863,21 +1770,13 @@ async function checkSavedDomains(currentHostname) {
       copyButton.style.opacity = '0';
       copyButton.classList.remove('visible');
       
-      console.log('✅ Copy button listener set and initialized hidden');
       
       // Debug: Test copy button positioning
       setTimeout(() => {
         const rect = copyButton.getBoundingClientRect();
         const computed = window.getComputedStyle(copyButton);
-        console.log('🔧 Copy button debug info:');
-        console.log('  Position:', rect);
-        console.log('  Display:', computed.display);
-        console.log('  Opacity:', computed.opacity);
-        console.log('  Z-index:', computed.zIndex);
-        console.log('  Parent:', copyButton.parentElement?.id);
         
         // Temporary test: force show button for 3 seconds to test visibility
-        console.log('🧪 Testing copy button visibility...');
         copyButton.style.display = 'flex';
         copyButton.style.opacity = '1';
         copyButton.classList.add('visible');
@@ -1886,11 +1785,9 @@ async function checkSavedDomains(currentHostname) {
           copyButton.style.display = 'none';
           copyButton.style.opacity = '0';
           copyButton.classList.remove('visible');
-          console.log('🧪 Copy button test complete');
         }, 3000);
       }, 1000);
     } else {
-      console.log('⚠️ Copy button not found');
     }
     
     // Input focus effects (only if inputField exists)
@@ -1930,7 +1827,6 @@ async function checkSavedDomains(currentHostname) {
       e.stopPropagation();
     });
     
-      console.log('✅ Input field focus and keyboard listeners set');
     }
     
     // Note: input event listener already added above in the setup
@@ -1959,25 +1855,32 @@ async function checkSavedDomains(currentHostname) {
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
           e.preventDefault();
           e.stopPropagation();
-          console.log('🔧 Force reset triggered');
           resetUIState();
         }
       }
     });
     
-    console.log('✅ All event listeners setup complete');
   }
 
   // Toggle interface
   function toggleInterface() {
-    console.log('🔄 Toggle integrated interface');
     
     // 🔧 Wake up service worker when opening interface
     if (!isOpen) {
-      console.log('🚀 Waking up service worker on interface open...');
-      pingServiceWorker().catch(error => {
-        console.warn('⚠️ Service worker wake-up failed:', error.message);
-      });
+      // We are opening the assistant – wake the service worker immediately
+      pingServiceWorker().catch(() => {});
+      // Start keep-alive ping every 15 s while the assistant is visible
+      if (!keepAliveIntervalId) {
+        keepAliveIntervalId = setInterval(() => {
+          pingServiceWorker().catch(() => {});
+        }, 15000); // 15 seconds
+      }
+    } else {
+      // We are closing the assistant – stop keep-alive pings
+      if (keepAliveIntervalId) {
+        clearInterval(keepAliveIntervalId);
+        keepAliveIntervalId = null;
+      }
     }
     
     isOpen = !isOpen;
@@ -1985,7 +1888,6 @@ async function checkSavedDomains(currentHostname) {
     const button = document.getElementById('n8n-ai-toggle');
     
     if (isOpen) {
-      console.log('📖 Opening AI assistant - modifying n8n layout');
       
       // Apply layout modifications to make space
       applyN8nLayoutModifications();
@@ -2006,7 +1908,6 @@ async function checkSavedDomains(currentHostname) {
       }, 350); // Wait for transition to complete
       
     } else {
-      console.log('📚 Closing AI assistant - restoring n8n layout');
       
       // Hide the panel first
       container.style.right = `-${currentPanelWidth}px`;
@@ -2068,7 +1969,6 @@ async function checkSavedDomains(currentHostname) {
       document.body.style.userSelect = 'none';
       document.body.style.cursor = 'ns-resize';
       
-      console.log('🔧 Resize started');
     });
     
     document.addEventListener('mousemove', (e) => {
@@ -2091,7 +1991,6 @@ async function checkSavedDomains(currentHostname) {
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
       
-      console.log('🔧 Resize ended, new height:', currentPanelHeight + 'px');
     });
     
     // Prevent resize handle click from toggling panel
@@ -2106,7 +2005,6 @@ async function checkSavedDomains(currentHostname) {
     const container = document.getElementById('n8n-ai-assistant');
     
     if (!resizeHandle || !container) {
-      console.log('⚠️ Horizontal resize elements not found');
       return;
     }
     
@@ -2129,7 +2027,6 @@ async function checkSavedDomains(currentHostname) {
       // Disable CSS transitions temporarily
       updateCSSVariable('--ai-panel-width', currentPanelWidth + 'px');
       
-      console.log('🔧 Horizontal resize started, initial width:', startWidth + 'px');
     });
     
     document.addEventListener('mousemove', (e) => {
@@ -2166,7 +2063,6 @@ async function checkSavedDomains(currentHostname) {
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
       
-      console.log('🔧 Horizontal resize ended, final width:', currentPanelWidth + 'px');
     });
     
     // Prevent resize handle click from interfering with other events
@@ -2174,7 +2070,6 @@ async function checkSavedDomains(currentHostname) {
       e.stopPropagation();
     });
     
-    console.log('✅ Horizontal resize functionality setup complete');
   }
 
   // Update CSS variable dynamically
@@ -2193,7 +2088,6 @@ async function checkSavedDomains(currentHostname) {
     const newNDVState = !!(ndvContainer && ndvContainer.offsetParent !== null);
     
     if (newNDVState !== isNDVOpen) {
-      console.log(`🔍 NDV state changed: ${isNDVOpen ? 'open' : 'closed'} → ${newNDVState ? 'open' : 'closed'}`);
       isNDVOpen = newNDVState;
       adaptToNDVState(isNDVOpen);
     }
@@ -2208,7 +2102,6 @@ async function checkSavedDomains(currentHostname) {
 
     if (ndvOpen) {
       // NDV is open - make AI panel smaller and more discreet
-      console.log('🔧 Adapting AI panel for NDV view...');
       
       // Store original width if not already stored
       if (originalPanelWidth === null) {
@@ -2229,11 +2122,9 @@ async function checkSavedDomains(currentHostname) {
       // Update CSS variable
       updateCSSVariable('--ai-panel-width', ndvModeWidth + 'px');
       
-      console.log(`📐 AI panel adapted for NDV: ${originalPanelWidth}px → ${ndvModeWidth}px`);
       
     } else {
       // NDV is closed - restore original size
-      console.log('🔧 Restoring AI panel size after NDV close...');
       
       // Remove NDV mode class
       container.classList.remove('ndv-mode');
@@ -2249,7 +2140,6 @@ async function checkSavedDomains(currentHostname) {
         // Update CSS variable
         updateCSSVariable('--ai-panel-width', originalPanelWidth + 'px');
         
-        console.log(`📐 AI panel restored after NDV: ${currentPanelWidth}px → ${originalPanelWidth}px`);
         
         // Clear the stored width
         originalPanelWidth = null;
@@ -2270,7 +2160,6 @@ async function checkSavedDomains(currentHostname) {
   function startNDVDetection() {
     if (ndvObserver) return; // Already running
     
-    console.log('🔍 Starting NDV detection...');
     
     // Initial detection
     detectNDVState();
@@ -2325,7 +2214,6 @@ async function checkSavedDomains(currentHostname) {
       attributeFilter: ['class', 'style', 'data-test-id']
     });
     
-    console.log('✅ NDV detection started');
   }
 
   // 🎨 THEME DETECTION AND ADAPTATION
@@ -2335,11 +2223,9 @@ async function checkSavedDomains(currentHostname) {
 
   // Detect n8n theme (dark/light)
   function detectN8nTheme() {
-    console.log('🔍 Detecting n8n theme...');
     
     // Method 0: PRIORITY - Check if n8n is using system preferences
     const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    console.log('🖥️ System prefers dark mode:', systemPrefersDark);
     
     // Check if n8n is following system preferences (common indicators)
     const html = document.documentElement;
@@ -2373,48 +2259,37 @@ async function checkSavedDomains(currentHostname) {
     ];
     
     const systemDefaultScore = systemDefaultIndicators.filter(check => check()).length;
-    console.log('🎯 System default indicators score:', systemDefaultScore, '/3');
     
     // If we have good evidence n8n is following system preferences, use that
     if (systemDefaultScore >= 1) {
-      console.log('✅ n8n appears to be following system preferences');
       if (systemPrefersDark) {
-        console.log('✅ Dark theme detected via system preference (n8n system default mode)');
         return 'dark';
       } else {
-        console.log('✅ Light theme detected via system preference (n8n system default mode)');
         return 'light';
       }
     }
     
     // Method 1: Check for explicit dark theme classes
     
-    console.log('📋 HTML classes:', html.className);
-    console.log('📋 Body classes:', body.className);
     
     if (html.classList.contains('dark') || 
         body.classList.contains('dark') ||
         html.classList.contains('dark-theme') ||
         body.classList.contains('dark-theme')) {
-      console.log('✅ Dark theme detected via HTML/body classes');
       return 'dark';
     }
     
     // Method 2: Check n8n specific dark theme indicators
     const n8nApp = document.querySelector('#app, .n8n-app, [data-theme]');
     if (n8nApp) {
-      console.log('📋 n8n app element found:', n8nApp.tagName, n8nApp.className);
       const theme = n8nApp.getAttribute('data-theme');
-      console.log('📋 data-theme attribute:', theme);
       
       if (theme && theme.includes('dark')) {
-        console.log('✅ Dark theme detected via data-theme attribute');
         return 'dark';
       }
       
       const classList = n8nApp.classList;
       if (classList.contains('dark') || classList.contains('dark-theme')) {
-        console.log('✅ Dark theme detected via n8n app classes');
         return 'dark';
       }
     }
@@ -2424,20 +2299,17 @@ async function checkSavedDomains(currentHostname) {
         body.classList.contains('light') ||
         html.classList.contains('light-theme') ||
         body.classList.contains('light-theme')) {
-      console.log('✅ Light theme detected via HTML/body classes');
       return 'light';
     }
     
     if (n8nApp) {
       const theme = n8nApp.getAttribute('data-theme');
       if (theme && theme.includes('light')) {
-        console.log('✅ Light theme detected via data-theme attribute');
         return 'light';
       }
       
       const classList = n8nApp.classList;
       if (classList.contains('light') || classList.contains('light-theme')) {
-        console.log('✅ Light theme detected via n8n app classes');
         return 'light';
       }
     }
@@ -2472,7 +2344,6 @@ async function checkSavedDomains(currentHostname) {
       '[class*="main"]'
     ];
     
-    console.log('🔍 Checking background colors of elements...');
     
     for (const selector of n8nElements) {
       const element = document.querySelector(selector);
@@ -2480,7 +2351,6 @@ async function checkSavedDomains(currentHostname) {
         const computedStyle = window.getComputedStyle(element);
         const bgColor = computedStyle.backgroundColor;
         
-        console.log(`📋 Element ${selector} background:`, bgColor);
         
         // Parse RGB values to determine if it's dark
         const rgb = bgColor.match(/\d+/g);
@@ -2488,17 +2358,14 @@ async function checkSavedDomains(currentHostname) {
           const [r, g, b] = rgb.map(Number);
           const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
           
-          console.log(`📊 ${selector} luminance: ${luminance} (RGB: ${r},${g},${b})`);
           
           // If luminance is low, it's likely a dark theme
           if (luminance < 100) { // More strict threshold for dark detection
-            console.log(`✅ Dark theme detected via element ${selector}: RGB(${r},${g},${b}) luminance=${luminance}`);
             return 'dark';
           }
           
           // If luminance is high, it's likely a light theme
           if (luminance > 200) {
-            console.log(`✅ Light theme detected via element ${selector}: RGB(${r},${g},${b}) luminance=${luminance}`);
             return 'light';
           }
         }
@@ -2515,7 +2382,6 @@ async function checkSavedDomains(currentHostname) {
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
         
         if (luminance < 100) {
-          console.log(`🎨 Dark theme detected via body background: RGB(${r},${g},${b}) luminance=${luminance}`);
           return 'dark';
         }
       }
@@ -2553,7 +2419,6 @@ async function checkSavedDomains(currentHostname) {
     }
     
     // Method 5: Enhanced system preference fallback
-    console.log('🔍 No explicit theme found, checking system preferences more thoroughly...');
     
     // Check multiple system preference indicators
     const systemChecks = {
@@ -2569,10 +2434,8 @@ async function checkSavedDomains(currentHostname) {
       })()
     };
     
-    console.log('🖥️ System preference checks:', systemChecks);
     
     if (systemChecks.mediaQuery || systemChecks.cssColorScheme || systemChecks.browserDefault) {
-      console.log('✅ Dark theme detected via enhanced system preference detection');
       return 'dark';
     }
     
@@ -2586,79 +2449,48 @@ async function checkSavedDomains(currentHostname) {
       const bgColor = style.backgroundColor;
       const textColor = style.color;
       
-      console.log('🎨 System Canvas colors - bg:', bgColor, 'text:', textColor);
       
       // Parse and check luminance of system canvas color
       const bgRgb = bgColor.match(/\d+/g);
       if (bgRgb && bgRgb.length >= 3) {
         const [r, g, b] = bgRgb.map(Number);
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
-        console.log('🎨 System canvas luminance:', luminance);
         
         if (luminance < 128) {
-          console.log('✅ Dark theme detected via system Canvas colors');
           document.body.removeChild(testElement);
           return 'dark';
         }
       }
     } catch (error) {
-      console.log('⚠️ Error checking system Canvas colors:', error.message);
     }
     
     document.body.removeChild(testElement);
     
-    console.log('⚠️ No clear theme indicators found, defaulting to light');
-    console.log('🔍 Consider opening browser dev tools and running: window.debugThemeDetection()');
     return 'light'; // Default fallback
   }
 
   // Debug function to manually test theme detection
   function debugThemeDetection() {
-    console.log('🐛 ENHANCED THEME DETECTION DEBUG');
-    console.log('==================================');
     
     // System information
-    console.log('🖥️ SYSTEM INFO:');
-    console.log('  - User agent:', navigator.userAgent);
-    console.log('  - System prefers dark:', window.matchMedia('(prefers-color-scheme: dark)').matches);
-    console.log('  - System prefers light:', window.matchMedia('(prefers-color-scheme: light)').matches);
     
     // Document info
-    console.log('📄 DOCUMENT INFO:');
-    console.log('  - URL:', window.location.href);
-    console.log('  - Title:', document.title);
-    console.log('  - HTML classes:', document.documentElement.className);
-    console.log('  - Body classes:', document.body.className);
     
     // CSS info
-    console.log('🎨 CSS INFO:');
     const rootStyle = window.getComputedStyle(document.documentElement);
-    console.log('  - color-scheme:', rootStyle.getPropertyValue('color-scheme'));
-    console.log('  - Background color:', rootStyle.getPropertyValue('background-color'));
-    console.log('  - Color:', rootStyle.getPropertyValue('color'));
     
     // n8n specific
-    console.log('🎯 N8N SPECIFIC:');
     const n8nApp = document.querySelector('#app, .n8n-app, [data-theme]');
     if (n8nApp) {
-      console.log('  - n8n app element:', n8nApp.tagName);
-      console.log('  - n8n app classes:', n8nApp.className);
-      console.log('  - data-theme:', n8nApp.getAttribute('data-theme'));
     } else {
-      console.log('  - n8n app element: NOT FOUND');
     }
     
     // Detection result
-    console.log('🔍 DETECTION RESULT:');
     const theme = detectN8nTheme();
-    console.log(`  - Detected theme: ${theme}`);
-    console.log(`  - Current applied theme: ${currentTheme}`);
     
     if (theme !== currentTheme) {
-      console.log('🔄 Applying new theme...');
       applyThemeColors(theme);
     } else {
-      console.log('✅ Theme is already correct');
     }
     
     return theme;
@@ -2667,9 +2499,7 @@ async function checkSavedDomains(currentHostname) {
   // Expose debug functions globally for easier troubleshooting
   window.debugThemeDetection = debugThemeDetection;
   window.forceThemeDetection = () => {
-    console.log('🔄 Forcing theme re-detection...');
     const newTheme = detectN8nTheme();
-    console.log('🎯 Re-detected theme:', newTheme);
     applyThemeColors(newTheme);
     return newTheme;
   };
@@ -2682,14 +2512,9 @@ async function checkSavedDomains(currentHostname) {
     };
   };
   
-  console.log('🛠️ Theme debug functions available:');
-  console.log('  - window.debugThemeDetection() - Full theme detection debug');
-  console.log('  - window.forceThemeDetection() - Force re-detect and apply theme');
-  console.log('  - window.getSystemPreferences() - Check system color preferences');
 
   // Apply theme-specific colors
   function applyThemeColors(theme) {
-    console.log(`%c🎨 Applying ${theme} theme colors to AI Assistant`, `background: ${theme === 'dark' ? '#1e1e1e' : '#ffffff'}; color: ${theme === 'dark' ? '#ffffff' : '#1f2937'}; padding: 3px 8px; border-radius: 4px;`);
     
     if (theme === 'dark') {
       // Dark theme colors - perfectly harmonized with n8n dark mode
@@ -2751,111 +2576,36 @@ async function checkSavedDomains(currentHostname) {
 
   // Setup theme monitoring
   function setupThemeMonitoring() {
-    console.log('🎨 Setting up n8n theme monitoring...');
-    
-    // Initial theme detection
-    const detectedTheme = detectN8nTheme();
-    console.log(`🎨 Initial theme detected: ${detectedTheme}`);
-    applyThemeColors(detectedTheme);
-    
-    // NEW: Monitor system preference changes in real-time for "System default" mode
+    const applyDetectedTheme = () => {
+      const theme = detectN8nTheme();
+      if (theme !== currentTheme) {
+        applyThemeColors(theme);
+      }
+    };
+
+    // Initial apply
+    applyDetectedTheme();
+
+    // React to system color-scheme changes
     if (window.matchMedia) {
-      const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      
-      // Function to handle system preference changes
-      const handleSystemThemeChange = (e) => {
-        console.log('🖥️ System theme preference changed to:', e.matches ? 'dark' : 'light');
-        
-        // Give n8n a moment to update its theme, then check
-        setTimeout(() => {
-          const newTheme = detectN8nTheme();
-          if (newTheme !== currentTheme) {
-            console.log(`🔄 Theme auto-updated due to system change: ${currentTheme} → ${newTheme}`);
-            applyThemeColors(newTheme);
-          }
-        }, 100);
-      };
-      
-      // Listen for system theme changes (modern browsers)
-      if (systemThemeQuery.addEventListener) {
-        systemThemeQuery.addEventListener('change', handleSystemThemeChange);
-        console.log('🖥️ System theme change listener added (modern)');
-      } else if (systemThemeQuery.addListener) {
-        // Fallback for older browsers
-        systemThemeQuery.addListener(handleSystemThemeChange);
-        console.log('🖥️ System theme change listener added (legacy)');
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      // Modern browsers: addEventListener
+      if (media.addEventListener) {
+        media.addEventListener('change', applyDetectedTheme);
+      } else if (media.addListener) { // Safari <=13
+        media.addListener(applyDetectedTheme);
       }
     }
-    
-    // Monitor theme changes with MutationObserver
-    if (themeObserver) {
-      themeObserver.disconnect();
-    }
-    
-    themeObserver = new MutationObserver((mutations) => {
-      let themeChanged = false;
-      
-      mutations.forEach((mutation) => {
-        // Check for class changes that might indicate theme switch
-        if (mutation.type === 'attributes' && 
-            (mutation.attributeName === 'class' || 
-             mutation.attributeName === 'data-theme' ||
-             mutation.attributeName === 'style')) {
-          themeChanged = true;
-        }
-        
-        // Check for added/removed nodes that might contain theme info
-        if (mutation.type === 'childList') {
-          themeChanged = true;
-        }
-      });
-      
-      if (themeChanged) {
-        // Debounce theme detection to avoid excessive calls
-        clearTimeout(themeDetectionTimeout);
-        themeDetectionTimeout = setTimeout(() => {
-          const newTheme = detectN8nTheme();
-          if (newTheme !== currentTheme) {
-            console.log(`🎨 Theme changed: ${currentTheme} → ${newTheme}`);
-            applyThemeColors(newTheme);
-          }
-        }, 500);
-      }
+
+    // Observe html / body attribute or class mutations that may signal n8n theme change
+    const observer = new MutationObserver(() => {
+      // Debounce via animation frame
+      if (themeDetectionTimeout) cancelAnimationFrame(themeDetectionTimeout);
+      themeDetectionTimeout = requestAnimationFrame(applyDetectedTheme);
     });
-    
-    // Observe the entire document for theme changes
-    themeObserver.observe(document, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-      attributeFilter: ['class', 'data-theme', 'style']
-    });
-    
-    // Also monitor window resize and focus events (theme might change)
-    window.addEventListener('focus', () => {
-      setTimeout(() => {
-        const newTheme = detectN8nTheme();
-        if (newTheme !== currentTheme) {
-          console.log(`🎨 Theme check on focus: ${currentTheme} → ${newTheme}`);
-          applyThemeColors(newTheme);
-        }
-      }, 100);
-    });
-    
-    // Monitor system theme preference changes
-    if (window.matchMedia) {
-      const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      darkModeMediaQuery.addEventListener('change', (e) => {
-        console.log(`🎨 System theme preference changed: ${e.matches ? 'dark' : 'light'}`);
-        setTimeout(() => {
-          const newTheme = detectN8nTheme();
-          if (newTheme !== currentTheme) {
-            console.log(`🎨 Applying new theme based on system preference: ${newTheme}`);
-            applyThemeColors(newTheme);
-          }
-        }, 200);
-      });
-    }
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme'] });
   }
 
   // Copy JSON to clipboard
@@ -2863,26 +2613,18 @@ async function checkSavedDomains(currentHostname) {
     const codeContent = document.getElementById('ai-code-content');
     const copyButton = document.getElementById('ai-copy-json');
     
-    console.log('📋 copyJsonToClipboard called');
-    console.log('🔍 Code content found:', !!codeContent);
-    console.log('🔍 Copy button found:', !!copyButton);
     
     if (!codeContent) {
-      console.log('❌ Code content element not found');
       return;
     }
     
     if (!copyButton) {
-      console.log('❌ Copy button element not found');
       return;
     }
     
     const jsonText = codeContent.textContent || codeContent.innerText;
-    console.log('📄 JSON text length:', jsonText ? jsonText.length : 0);
-    console.log('📄 JSON text preview:', jsonText ? jsonText.substring(0, 100) + '...' : 'empty');
     
     if (!jsonText || jsonText.trim() === '') {
-      console.log('❌ No JSON to copy');
       return;
     }
     
@@ -2908,7 +2650,6 @@ async function checkSavedDomains(currentHostname) {
         </svg>
       `;
       
-      console.log('✅ JSON copied to clipboard');
       
       // Reset after 1.5 seconds
       setTimeout(() => {
@@ -2946,7 +2687,6 @@ async function checkSavedDomains(currentHostname) {
           </svg>
         `;
         
-        console.log('✅ JSON copied to clipboard (fallback)');
         
         setTimeout(() => {
           copyButton.classList.remove('copying');
@@ -2992,7 +2732,6 @@ async function checkSavedDomains(currentHostname) {
 
   // Clear code content
   function clearCode() {
-    console.log('🧹 Clearing code content...');
     
     const codeContent = document.getElementById('ai-code-content');
     const copyButton = document.getElementById('ai-copy-json');
@@ -3001,31 +2740,25 @@ async function checkSavedDomains(currentHostname) {
     if (codeContent) {
     codeContent.innerHTML = '';
       codeContent.textContent = '';
-      console.log('✅ Code content cleared');
     } else {
-      console.log('⚠️ Code content element not found');
     }
     
     if (copyButton) {
       copyButton.classList.remove('visible');
       copyButton.style.display = 'none';
       copyButton.style.opacity = '0';
-      console.log('✅ Copy button hidden');
     } else {
-      console.log('⚠️ Copy button element not found');
     }
     
     jsonBuffer = '';
     updateCodeStatus('ready');
     
-    console.log('🧹 Code content clearing complete');
   }
 
   // Insert workflow into n8n
   function insertWorkflow(isReplacement = false) {
     // Check if currently pasting in chat to avoid auto-import
     if (window.aiChatPastingFlag && window.aiChatPastingFlag()) {
-      console.log('🛡️ Skipping workflow import - pasting in chat detected');
       return;
     }
     
@@ -3063,13 +2796,11 @@ async function checkSavedDomains(currentHostname) {
 
   // Parse and clean workflow JSON
   function parseAndCleanWorkflowJSON(jsonString) {
-    console.log('🔧 Parsing and cleaning workflow JSON...');
     
     try {
       // Première tentative de parsing direct
       return JSON.parse(jsonString);
     } catch (error) {
-      console.log('⚠️ Direct JSON parse failed, attempting cleanup:', error.message);
       
       try {
         // Nettoyer le JSON automatiquement
@@ -3098,21 +2829,17 @@ async function checkSavedDomains(currentHostname) {
         // 3. Corriger les virgules en trop
         cleanedJSON = cleanedJSON.replace(/,(\s*[}\]])/g, '$1');
         
-        console.log('🧹 JSON cleaned, attempting parse...');
         const parsed = JSON.parse(cleanedJSON);
         
         // Mettre à jour l'affichage avec le JSON nettoyé
         updateCodeContent(JSON.stringify(parsed, null, 2), true);
         
-        console.log('✅ JSON successfully cleaned and parsed!');
         return parsed;
         
       } catch (cleanupError) {
-        console.log('❌ JSON cleanup also failed:', cleanupError.message);
         
         // Dernière tentative : nettoyage manuel spécifique pour les emails HTML
         try {
-          console.log('🔧 Attempting specific HTML email cleanup...');
           
           let manualCleanJSON = jsonString;
           
@@ -3127,13 +2854,11 @@ async function checkSavedDomains(currentHostname) {
           // Mettre à jour l'affichage
           updateCodeContent(JSON.stringify(manualParsed, null, 2), true);
           
-          console.log('✅ Manual cleanup successful!');
           addChatMessage('🔧 JSON was automatically cleaned and fixed!', false);
           
           return manualParsed;
           
         } catch (manualError) {
-          console.log('❌ Manual cleanup failed:', manualError.message);
           throw new Error(`JSON parsing failed: ${error.message}. Try copying the workflow again or simplify the HTML content.`);
         }
       }
@@ -3287,15 +3012,9 @@ async function checkSavedDomains(currentHostname) {
     const codeContent = document.getElementById('ai-code-content');
     const copyButton = document.getElementById('ai-copy-json');
     
-    console.log('🔧 updateCodeContent called');
-    console.log('📄 Content length:', content ? content.length : 0);
-    console.log('✅ Is complete:', isComplete);
-    console.log('🔍 Code content element found:', !!codeContent);
-    console.log('📋 Copy button element found:', !!copyButton);
     
     // Safety checks
     if (!codeContent) {
-      console.log('⚠️ Code content element not found in updateCodeContent');
       return;
     }
     
@@ -3303,8 +3022,6 @@ async function checkSavedDomains(currentHostname) {
     
     // Clean content properly
     const cleanContent = content ? content.trim() : '';
-    console.log('🧹 Clean content length:', cleanContent.length);
-    console.log('📄 Clean content preview:', cleanContent.substring(0, 100) + '...');
     
     // Update content directly (no need to preserve button since it's separate now)
     if (isComplete && cleanContent) {
@@ -3312,29 +3029,19 @@ async function checkSavedDomains(currentHostname) {
         const parsed = JSON.parse(cleanContent);
         const formatted = JSON.stringify(parsed, null, 2);
         codeContent.innerHTML = highlightJSON(formatted);
-        console.log('✅ JSON formatted and highlighted');
       } catch (e) {
-        console.log('⚠️ JSON parse failed, using raw content');
         codeContent.innerHTML = highlightJSON(cleanContent);
       }
     } else if (cleanContent) {
       codeContent.innerHTML = highlightJSON(cleanContent);
-      console.log('✅ Content highlighted (not complete)');
     } else {
       codeContent.innerHTML = '';
-      console.log('🧹 Content cleared');
     }
     
     // Show/hide copy button - better content detection
     const hasVisibleContent = cleanContent && cleanContent.length > 0 && 
                              cleanContent !== '{}' && cleanContent !== '[]';
     
-    console.log('🔍 Has visible content:', hasVisibleContent);
-    console.log('📊 Content conditions:');
-    console.log('  - cleanContent exists:', !!cleanContent);
-    console.log('  - cleanContent.length > 0:', cleanContent.length > 0);
-    console.log('  - not empty object:', cleanContent !== '{}');
-    console.log('  - not empty array:', cleanContent !== '[]');
     
     // Update copy button visibility (button stays in DOM, just show/hide)
     if (copyButton) {
@@ -3342,29 +3049,18 @@ async function checkSavedDomains(currentHostname) {
         copyButton.classList.add('visible');
         copyButton.style.display = 'flex';
         copyButton.style.opacity = '1';
-        console.log('✅ Copy button made visible with content');
-        console.log('📋 Copy button classes:', copyButton.className);
-        console.log('📋 Copy button style.display:', copyButton.style.display);
-        console.log('📋 Copy button style.opacity:', copyButton.style.opacity);
         
         // Force visibility check
         setTimeout(() => {
           const computedStyle = window.getComputedStyle(copyButton);
-          console.log('🔍 Copy button computed display:', computedStyle.display);
-          console.log('🔍 Copy button computed opacity:', computedStyle.opacity);
-          console.log('🔍 Copy button computed visibility:', computedStyle.visibility);
-          console.log('🔍 Copy button offset dimensions:', copyButton.offsetWidth, 'x', copyButton.offsetHeight);
-          console.log('🔍 Copy button position:', copyButton.getBoundingClientRect());
         }, 100);
         
       } else {
         copyButton.classList.remove('visible');
         copyButton.style.display = 'none';
         copyButton.style.opacity = '0';
-        console.log('🙈 Copy button hidden - no content');
       }
     } else {
-      console.log('⚠️ Copy button element not found');
     }
     
     // Auto-scroll to bottom
@@ -3372,7 +3068,6 @@ async function checkSavedDomains(currentHostname) {
     
     // Auto-expand code panel when JSON arrives
     if (hasVisibleContent && !isCodePanelExpanded) {
-      console.log('📂 Auto-expanding code panel');
       toggleCodePanel();
     }
   }
@@ -3404,23 +3099,17 @@ async function checkSavedDomains(currentHostname) {
 
   // Ping service worker pour vérifier qu'il est actif
   async function pingServiceWorker() {
-    console.log('🏓 Pinging service worker...');
 
     return new Promise((resolve, reject) => {
       try {
         chrome.runtime.sendMessage({ type: 'PING_SERVICE_WORKER' }, (response) => {
           if (chrome.runtime.lastError) {
-            console.warn('⚠️ Service worker ping lastError:', chrome.runtime.lastError.message);
             return reject(new Error(chrome.runtime.lastError.message));
           }
 
           if (response && response.pong) {
-            console.log('✅ Service worker is active and responsive');
-            console.log('📊 Service worker uptime:', response.uptime, 'ms');
-            console.log('⏰ Service worker timestamp:', response.timestamp);
             resolve(true);
           } else {
-            console.warn('⚠️ Service worker responded but with unexpected data:', response);
             resolve(false);
           }
         });
@@ -3437,7 +3126,6 @@ async function checkSavedDomains(currentHostname) {
     if (!statusEl) return;
     
     try {
-      console.log('🔍 Checking service worker status...');
       statusEl.textContent = 'checking...';
       statusEl.style.color = 'var(--ai-text-warning)';
       
@@ -3446,23 +3134,19 @@ async function checkSavedDomains(currentHostname) {
       if (isActive) {
         statusEl.textContent = 'ready';
         statusEl.style.color = 'var(--ai-text-success)';
-        console.log('✅ Service worker status: ACTIVE');
       } else {
         statusEl.textContent = 'service issue';
         statusEl.style.color = 'var(--ai-text-error)';
-        console.log('⚠️ Service worker status: ISSUE');
       }
     } catch (error) {
       statusEl.textContent = 'service sleeping';
       statusEl.style.color = 'var(--ai-text-error)';
       statusEl.title = 'Click the extension icon to wake up the service worker';
-      console.log('❌ Service worker status: SLEEPING/ERROR');
     }
   }
 
   // Reset UI state
   function resetUIState() {
-    console.log('🔄 Resetting UI state');
     isGenerating = false;
     
     const sendButton = document.getElementById('ai-send');
@@ -3478,7 +3162,6 @@ async function checkSavedDomains(currentHostname) {
     if (input) input.disabled = false;
     
     updateCodeStatus('ready');
-    console.log('✅ UI state reset complete');
   }
 
   // Send message
@@ -3486,20 +3169,15 @@ async function checkSavedDomains(currentHostname) {
     const input = document.getElementById('ai-input');
     const message = input.value.trim();
     
-    console.log('🔴 sendMessage called, isGenerating:', isGenerating, 'message:', message);
     
     if (!message) {
-      console.log('❌ No message to send');
       return;
     }
     
     if (isGenerating) {
-      console.log('❌ Already generating, stopping');
       return;
     }
 
-    console.log('%c💬 CONTENT: Sending message to backend', 'background: blue; color: white; padding: 2px 6px;');
-    console.log('📝 User prompt:', message);
     
     isGenerating = true;
     jsonBuffer = '';
@@ -3518,36 +3196,21 @@ async function checkSavedDomains(currentHostname) {
     const hasExistingWorkflow = currentWorkflow && currentWorkflow.nodes && currentWorkflow.nodes.length > 0;
     
     // 📊 DETAILED LOGGING - Current workflow analysis
-    console.log('%c📊 CONTENT: Current workflow analysis', 'background: purple; color: white; padding: 2px 6px;');
-    console.log('🔍 hasExistingWorkflow:', hasExistingWorkflow);
     if (currentWorkflow) {
-      console.log('📋 Current workflow structure:');
-      console.log('  - Nodes count:', currentWorkflow.nodes?.length || 0);
-      console.log('  - Connections count:', Object.keys(currentWorkflow.connections || {}).length);
-      console.log('  - Workflow name:', currentWorkflow.name);
-      console.log('  - Workflow ID:', currentWorkflow.id);
       
       if (currentWorkflow.nodes) {
-        console.log('📝 Node details:');
         currentWorkflow.nodes.forEach((node, i) => {
-          console.log(`  ${i + 1}. ${node.name} (${node.type}) - ID: ${node.id}`);
         });
       }
       
       // Calcul taille payload
       const workflowSize = JSON.stringify(currentWorkflow).length;
-      console.log('📏 Current workflow payload size:', workflowSize, 'chars (', (workflowSize / 1024).toFixed(1), 'KB)');
     } else {
-      console.log('📋 No current workflow detected');
     }
     
     if (hasExistingWorkflow) {
-      console.log('🔄 Detected existing workflow with', currentWorkflow.nodes.length, 'nodes - using improvement mode');
-      console.log('📋 Current workflow nodes:', currentWorkflow.nodes.map(n => `${n.name} (${n.type})`));
       updateChatMessage(assistantMessage, `🔄 Analyzing existing workflow (${currentWorkflow.nodes.length} nodes) for improvements...`, true);
     } else {
-      console.log('🆕 No existing workflow detected - using generation mode');
-      console.log('📋 Current workflow state:', currentWorkflow ? 'empty workflow' : 'no workflow data');
       updateChatMessage(assistantMessage, '🆕 Creating new workflow from scratch...', true);
     }
     
@@ -3568,18 +3231,15 @@ async function checkSavedDomains(currentHostname) {
 
     try {
       // 🔧 DIAGNOSTIC SERVICE WORKER
-      console.log('%c🔧 CONTENT: Checking service worker status', 'background: purple; color: white; padding: 2px 6px;');
       
       // Ping service worker pour vérifier qu'il est actif
       await pingServiceWorker();
       
       // Send to background with appropriate mode
       if (typeof chrome !== 'undefined' && chrome.runtime) {
-        console.log('%c🚀 CONTENT: Preparing message for background script', 'background: green; color: white; padding: 2px 6px;');
         
         if (hasExistingWorkflow) {
           // Mode amélioration - envoyer le workflow actuel
-          console.log('📋 Using IMPROVE_WORKFLOW mode with current workflow');
           
           const messagePayload = {
             type: 'IMPROVE_WORKFLOW',
@@ -3588,22 +3248,11 @@ async function checkSavedDomains(currentHostname) {
           };
           
           // 📊 DETAILED LOGGING - Message payload
-          console.log('%c📊 CONTENT: IMPROVE_WORKFLOW payload details', 'background: orange; color: white; padding: 2px 6px;');
-          console.log('🔧 Message type:', messagePayload.type);
-          console.log('📝 Improvement request:', messagePayload.improvementRequest);
-          console.log('📋 Current workflow payload:');
-          console.log('  - Nodes:', messagePayload.currentWorkflow.nodes?.length || 0);
-          console.log('  - Connections:', Object.keys(messagePayload.currentWorkflow.connections || {}).length);
-          console.log('  - Name:', messagePayload.currentWorkflow.name);
           
           const payloadSize = JSON.stringify(messagePayload).length;
-          console.log('📏 Total message payload size:', payloadSize, 'chars (', (payloadSize / 1024).toFixed(1), 'KB)');
-          console.log('📦 Raw payload sample (first 500 chars):', JSON.stringify(messagePayload).substring(0, 500) + '...');
           
           chrome.runtime.sendMessage(messagePayload).then(response => {
-            console.log('✅ Background response (improvement):', response);
             if (response && response.serviceWorkerActive) {
-              console.log('📊 Service worker confirmed active during request');
             }
           }).catch(err => {
             console.error('❌ Background communication error:', err);
@@ -3614,7 +3263,6 @@ async function checkSavedDomains(currentHostname) {
           });
         } else {
           // Mode génération normale - nouveau workflow
-          console.log('🆕 Using SEND_TO_CLAUDE mode for new workflow');
           
           const messagePayload = {
             type: 'SEND_TO_CLAUDE',
@@ -3622,18 +3270,11 @@ async function checkSavedDomains(currentHostname) {
           };
           
           // 📊 DETAILED LOGGING - Message payload
-          console.log('%c📊 CONTENT: SEND_TO_CLAUDE payload details', 'background: orange; color: white; padding: 2px 6px;');
-          console.log('🔧 Message type:', messagePayload.type);
-          console.log('📝 Prompt:', messagePayload.prompt);
           
           const payloadSize = JSON.stringify(messagePayload).length;
-          console.log('📏 Total message payload size:', payloadSize, 'chars (', (payloadSize / 1024).toFixed(1), 'KB)');
-          console.log('📦 Raw payload:', JSON.stringify(messagePayload));
           
           chrome.runtime.sendMessage(messagePayload).then(response => {
-            console.log('✅ Background response (generation):', response);
             if (response && response.serviceWorkerActive) {
-              console.log('📊 Service worker confirmed active during request');
             }
           }).catch(err => {
             console.error('❌ Background communication error:', err);
@@ -3652,7 +3293,6 @@ async function checkSavedDomains(currentHostname) {
 
   // Handle errors
   function handleError(error, messageElement = null) {
-    console.log('❌ handleError called:', error);
     resetUIState();
     updateCodeStatus('error');
     
@@ -3665,7 +3305,6 @@ async function checkSavedDomains(currentHostname) {
 
   // Handle background messages
   function handleBackgroundMessage(message) {
-    console.log('📨 Background message:', message.type);
     
     const lastMessage = document.querySelector('.ai-message-assistant:last-child .ai-message-bubble');
 
@@ -3712,7 +3351,6 @@ async function checkSavedDomains(currentHostname) {
 
       case 'WORKFLOW_COMPLETE':
         if (message.workflow) {
-          console.log('🎉 Complete workflow received');
           
           // Reset UI state
           resetUIState();
@@ -3767,7 +3405,6 @@ async function checkSavedDomains(currentHostname) {
               const manualMessage = finalMessage.replace('🔄 Importing to n8n editor...', '📄 Workflow ready! Use buttons above to import manually.');
               updateChatMessage(lastMessage, manualMessage, false);
             }
-            console.log('📄 Auto-import disabled - workflow available for manual import');
           }
         }
         break;
@@ -3788,7 +3425,6 @@ async function checkSavedDomains(currentHostname) {
         break;
 
       case 'DECOMPRESS_WORKFLOW':
-        console.log('🗜️ Decompression fallback requested');
         handleDecompressionFallback(message.compressedData, message.originalSize, lastMessage);
         break;
 
@@ -3799,18 +3435,14 @@ async function checkSavedDomains(currentHostname) {
       default:
         // Handle any unrecognized progress messages
         if (message.message && lastMessage) {
-          console.log('Unhandled message type:', message.type, 'treating as progress');
           updateChatMessage(lastMessage, message.message, true);
         } else {
-          console.log('Unknown message type:', message.type, message);
         }
     }
   }
 
   // Import workflow
   function importWorkflow(workflowData, isImprovement = false) {
-    console.log('🔄 Importing workflow:', workflowData);
-    console.log('🔄 Import mode:', isImprovement ? 'improvement (will clear existing)' : 'new workflow');
     
     window.postMessage({ 
       type: 'IMPORT_WORKFLOW',
@@ -3838,17 +3470,14 @@ async function checkSavedDomains(currentHostname) {
         ];
         
         const readyIndicators = indicators.filter(Boolean);
-        console.log(`🔍 N8n readiness check ${attempts}/${maxAttempts}: ${readyIndicators.length}/${indicators.length} indicators ready`);
         
         // If we have at least 2 indicators or the main app + store, consider it ready
         if (readyIndicators.length >= 2 || (indicators[0] && indicators[4])) {
-          console.log('✅ N8n appears to be ready');
           resolve();
           return;
         }
         
         if (attempts >= maxAttempts) {
-          console.warn('⏰ Timeout waiting for n8n to be ready');
           reject(new Error('Timeout waiting for n8n'));
           return;
         }
@@ -3930,7 +3559,6 @@ async function checkSavedDomains(currentHostname) {
 
   // Initialize
   async function init() {
-    console.log('🎯 Initializing integrated AI interface');
     
     try {
       injectStyles();
@@ -3939,7 +3567,6 @@ async function checkSavedDomains(currentHostname) {
       
       // Listen for window resize
       window.addEventListener('resize', handleWindowResize);
-      console.log('✅ Window resize listener added');
       
       // Setup DOM observer for layout maintenance
       const domObserver = setupDOMObserver();
@@ -3950,11 +3577,9 @@ async function checkSavedDomains(currentHostname) {
       // Listen for background messages
       if (typeof chrome !== 'undefined' && chrome.runtime) {
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-          console.log('📨 Message from background:', message.type);
           handleBackgroundMessage(message);
           sendResponse({ received: true });
         });
-        console.log('✅ Background listeners configured');
       }
       
       // Cleanup on page unload
@@ -3964,7 +3589,6 @@ async function checkSavedDomains(currentHostname) {
         }
       });
       
-      console.log('🎉 Integrated AI interface ready');
       
       // Listen for inject script messages
       window.addEventListener('message', (event) => {
@@ -3983,21 +3607,17 @@ async function checkSavedDomains(currentHostname) {
       const isSavedCustomDomain = window.n8nAIManualActivation && !hostname.includes('n8n.io') && !hostname.includes('n8n.cloud');
       
       if (isSavedCustomDomain) {
-        console.log('🔄 Auto-opening for saved custom domain:', hostname);
         // For saved custom domains, open immediately after a short delay
         setTimeout(() => {
-          console.log('🚀 Auto-opening AI assistant (saved custom domain)');
           toggleInterface();
         }, 1500);
       } else {
         // For official domains, wait for n8n readiness
         waitForN8nReady().then(() => {
-          console.log('🚀 Auto-opening AI assistant (official domain)');
           toggleInterface();
         }).catch(() => {
           // Fallback: open after delay even if we can't detect n8n readiness
           setTimeout(() => {
-            console.log('🚀 Auto-opening AI assistant (fallback)');
             toggleInterface();
           }, 3000);
         });
@@ -4018,7 +3638,6 @@ async function checkSavedDomains(currentHostname) {
   // Force init fallback
   setTimeout(() => {
     if (!document.getElementById('n8n-ai-toggle')) {
-      console.log('🔧 Force init after timeout');
       init();
     }
   }, 1000);
@@ -4027,8 +3646,17 @@ async function checkSavedDomains(currentHostname) {
   document.addEventListener('click', (e) => {
     const plusBtn = e.target.closest('button._nodeCreatorPlus_ebnw3_154');
     if (plusBtn && isOpen) {
-      console.log('➕ n8n node creator plus clicked – closing AI assistant');
       toggleInterface();
     }
   });
+
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onConnect) {
+    chrome.runtime.onConnect.addListener((port) => {
+      if (port.name === 'rag-stream') {
+        // Respond to keep the port open; do nothing else for now
+        port.onDisconnect.addListener(() => {
+        });
+      }
+    });
+  }
 })(); // End of initializeExtension function 
