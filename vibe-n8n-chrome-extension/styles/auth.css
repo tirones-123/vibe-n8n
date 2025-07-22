@@ -1,0 +1,537 @@
+/* Authentication Modal Styles */
+.vibe-auth-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.vibe-auth-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.auth-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-modal-content {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.auth-modal-header {
+  text-align: center;
+  padding: 32px 32px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.auth-modal-header h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.auth-modal-header p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Auth Tabs */
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.auth-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.auth-tab:hover {
+  color: #4285f4;
+  background: #f8f9ff;
+}
+
+.auth-tab.active {
+  color: #4285f4;
+}
+
+.auth-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #4285f4;
+}
+
+/* Auth Forms */
+.auth-form {
+  padding: 32px;
+  display: none;
+}
+
+.auth-form.active {
+  display: block;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+/* Auth Buttons */
+.auth-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.auth-btn.primary {
+  background: #4285f4;
+  color: white;
+}
+
+.auth-btn.primary:hover {
+  background: #3367d6;
+  transform: translateY(-1px);
+}
+
+.auth-btn.google {
+  background: white;
+  border: 1px solid #ddd;
+  color: #333;
+  margin-top: 12px;
+}
+
+.auth-btn.google:hover {
+  background: #f8f9fa;
+  border-color: #4285f4;
+}
+
+.auth-btn.secondary {
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.auth-btn.secondary:hover {
+  background: #e8eaed;
+}
+
+.auth-divider {
+  text-align: center;
+  margin: 20px 0;
+  color: #999;
+  font-size: 13px;
+  position: relative;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.auth-divider::before {
+  left: 0;
+}
+
+.auth-divider::after {
+  right: 0;
+}
+
+/* Auth Footer */
+.auth-footer {
+  padding: 0 32px 32px;
+  text-align: center;
+}
+
+.auth-terms {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.auth-terms a {
+  color: #4285f4;
+  text-decoration: none;
+}
+
+.auth-terms a:hover {
+  text-decoration: underline;
+}
+
+/* Error and Loading States */
+.auth-error {
+  margin: 16px 32px 0;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+.auth-error.hidden {
+  display: none;
+}
+
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.auth-loading.hidden {
+  display: none;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f0f0f0;
+  border-top: 2px solid #4285f4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* User Section in Chat Header */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-left: auto;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #4285f4;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-initials {
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #333;
+  font-weight: 500;
+}
+
+.user-plan {
+  font-size: 10px;
+  color: #666;
+  background: #e8f0fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.sign-out-btn,
+.sign-in-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sign-out-btn:hover,
+.sign-in-btn:hover {
+  background: #f0f0f0;
+}
+
+/* Quota Section */
+.quota-section {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.quota-bar {
+  width: 100%;
+  height: 4px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.quota-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50 0%, #ff9800 70%, #f44336 100%);
+  transition: width 0.3s ease;
+}
+
+.quota-text {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+}
+
+.usage-based-info {
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Quota Exceeded Popup */
+.vibe-quota-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  z-index: 10001;
+  max-width: 300px;
+  animation: popupSlideIn 0.3s ease;
+}
+
+@keyframes popupSlideIn {
+  from {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.quota-popup-content {
+  padding: 20px;
+}
+
+.quota-popup-content h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #333;
+}
+
+.quota-popup-content p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.usage-options {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.usage-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.usage-btn:hover {
+  background: #4285f4;
+  color: white;
+  border-color: #4285f4;
+}
+
+.quota-popup-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.quota-btn {
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quota-btn.primary {
+  background: #4285f4;
+  color: white;
+  flex: 1;
+}
+
+.quota-btn.primary:hover {
+  background: #3367d6;
+}
+
+.quota-btn.secondary {
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.quota-btn.secondary:hover {
+  background: #e8eaed;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .auth-modal-content {
+    margin: 10px;
+    border-radius: 12px;
+  }
+  
+  .auth-modal-header,
+  .auth-form {
+    padding: 24px 20px;
+  }
+  
+  .auth-footer {
+    padding: 0 20px 24px;
+  }
+  
+  .vibe-quota-popup {
+    right: 10px;
+    left: 10px;
+    bottom: 10px;
+    max-width: none;
+  }
+  
+  .user-section {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .user-info {
+    text-align: center;
+  }
+} 

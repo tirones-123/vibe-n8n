@@ -1,5 +1,23 @@
 {
+  "name": "vibe-n8n-chrome-extension",
+  "version": "2.0.0",
+  "description": "Extension Chrome pour génération de workflows n8n avec IA et système de pricing",
+  "scripts": {
+    "build": "echo 'Building extension...'",
+    "test": "echo 'No tests specified'"
+  },
   "dependencies": {
+    "firebase": "^10.0.0",
     "node-fetch": "^3.3.2"
-  }
+  },
+  "keywords": [
+    "n8n",
+    "chrome-extension",
+    "ai",
+    "workflow",
+    "firebase",
+    "pricing"
+  ],
+  "author": "Vibe n8n Team",
+  "license": "MIT"
 }

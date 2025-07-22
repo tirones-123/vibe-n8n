@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import claudeHandler from './api/claude.js';
+import pricingRoutes from './api/pricing.js';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -13,8 +14,14 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+// Special middleware for Stripe webhooks (raw body required)
+app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
+
 // Route principale pour Claude (nouveau système RAG)
 app.use('/api/claude', claudeHandler);
+
+// Routes de pricing (Stripe + Firebase)
+app.use('/api', pricingRoutes);
 
 // Page d'accueil
 app.get('/', async (req, res) => {
@@ -40,14 +47,47 @@ app.get('/api', (req, res) => {
     status: 'ok',
     environment: 'RAG Workflow Backend',
     version: '2.0.0',
-    system: 'Workflow RAG (Pinecone + Claude)',
+    system: 'Workflow RAG (Pinecone + Claude) + Pricing (Firebase + Stripe)',
+    timestamp: new Date().toISOString(),
     configuration: {
       claude_configured: !!process.env.CLAUDE_API_KEY,
       backend_auth_configured: !!process.env.BACKEND_API_KEY,
       openai_configured: !!process.env.OPENAI_API_KEY,
       pinecone_configured: !!process.env.PINECONE_API_KEY,
-      rag_ready: !!process.env.OPENAI_API_KEY && !!process.env.PINECONE_API_KEY && !!process.env.CLAUDE_API_KEY
+      firebase_configured: !!process.env.FIREBASE_PROJECT_ID,
+      stripe_configured: !!process.env.STRIPE_SECRET_KEY,
+      rag_ready: !!process.env.OPENAI_API_KEY && !!process.env.PINECONE_API_KEY && !!process.env.CLAUDE_API_KEY,
+      pricing_ready: !!process.env.FIREBASE_PROJECT_ID && !!process.env.STRIPE_SECRET_KEY
+    },
+    endpoints: {
+      '/api/claude': 'POST - Génération de workflows (SSE)',
+      '/api/create-checkout-session': 'POST - Créer session Stripe',
+      '/api/stripe-webhook': 'POST - Webhooks Stripe',
+      '/api/report-usage': 'POST - Rapporter usage tokens',
+      '/api/me': 'GET - Informations utilisateur',
+      '/api/enable-usage-based': 'POST - Activer usage-based billing',
+      '/api/pricing': 'GET - Plans et tarifs',
+      '/api/status': 'GET - Monitoring système'
     }
+  });
+});
+
+// Route de monitoring système
+app.get('/api/status', (req, res) => {
+  const uptime = process.uptime();
+  const memoryUsage = process.memoryUsage();
+  
+  res.json({
+    status: 'operational',
+    timestamp: new Date().toISOString(),
+    uptime: uptime,
+    memory: {
+      rss: memoryUsage.rss,
+      heapTotal: memoryUsage.heapTotal,
+      heapUsed: memoryUsage.heapUsed,
+      external: memoryUsage.external
+    },
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
@@ -93,28 +133,51 @@ console.log = function(...args) {
 
 // Vérifier la configuration au démarrage
 function checkConfiguration() {
-  const required = {
+  const coreRequired = {
     'CLAUDE_API_KEY': process.env.CLAUDE_API_KEY,
     'OPENAI_API_KEY': process.env.OPENAI_API_KEY,
     'PINECONE_API_KEY': process.env.PINECONE_API_KEY,
     'BACKEND_API_KEY': process.env.BACKEND_API_KEY
   };
+
+  const pricingRequired = {
+    'FIREBASE_PROJECT_ID': process.env.FIREBASE_PROJECT_ID,
+    'FIREBASE_PRIVATE_KEY': process.env.FIREBASE_PRIVATE_KEY,
+    'FIREBASE_CLIENT_EMAIL': process.env.FIREBASE_CLIENT_EMAIL,
+    'STRIPE_SECRET_KEY': process.env.STRIPE_SECRET_KEY,
+    'STRIPE_WEBHOOK_SECRET': process.env.STRIPE_WEBHOOK_SECRET
+  };
   
-  const missing = Object.entries(required)
+  const coreMissing = Object.entries(coreRequired)
+    .filter(([key, value]) => !value)
+    .map(([key]) => key);
+
+  const pricingMissing = Object.entries(pricingRequired)
     .filter(([key, value]) => !value)
     .map(([key]) => key);
   
-  if (missing.length > 0) {
-    console.log('⚠️  Variables d\'environnement manquantes:');
-    missing.forEach(key => console.log(`   - ${key}`));
-    console.log('   Le système RAG pourrait ne pas fonctionner correctement.');
+  console.log('\n🔧 === VÉRIFICATION CONFIGURATION ===');
+  
+  if (coreMissing.length > 0) {
+    console.log('❌ Variables RAG manquantes:');
+    coreMissing.forEach(key => console.log(`   - ${key}`));
+    console.log('   Le système RAG ne fonctionnera pas.');
   } else {
-    console.log('✅ Toutes les variables d\'environnement sont configurées');
+    console.log('✅ Configuration RAG complète');
+  }
+
+  if (pricingMissing.length > 0) {
+    console.log('⚠️  Variables Pricing manquantes:');
+    pricingMissing.forEach(key => console.log(`   - ${key}`));
+    console.log('   Le système de pricing utilisera le mode legacy (API Key seulement).');
+  } else {
+    console.log('✅ Configuration Pricing complète (Firebase + Stripe)');
   }
   
   // Vérifier l'index Pinecone
   const indexName = process.env.PINECONE_WORKFLOW_INDEX || 'n8n-workflows';
-  console.log(`🗄️  Index Pinecone configuré: ${indexName}`);
+  console.log(`🗄️  Index Pinecone: ${indexName}`);
+  console.log('=================================\n');
 }
 
 // Démarrer le serveur 

@@ -1,22 +1,29 @@
 {
   "manifest_version": 3,
-  "name": "n8n AI Assistant - Claude",
-  "version": "1.0.0",
-  "description": "AI-powered workflow assistant for n8n using Claude 4 Sonnet",
+  "name": "n8n AI Assistant - Claude + Pricing",
+  "version": "2.0.0",
+  "description": "AI-powered workflow assistant for n8n with Claude 4 Sonnet, Firebase Auth & Stripe Pricing",
   "permissions": [
     "scripting",
     "activeTab",
     "tabs",
-    "storage"
+    "storage",
+    "identity"
   ],
   "host_permissions": [
     "https://vibe-n8n.vercel.app/*",
+    "https://vibe-n8n-production.up.railway.app/*",
     "https://*.railway.app/*",
     "https://railway.app/*",
     "https://*.n8n.io/*",
     "https://n8n.io/*",
     "https://*.n8n.cloud/*",
-    "https://n8n.cloud/*"
+    "https://n8n.cloud/*",
+    "https://*.firebaseapp.com/*",
+    "https://*.googleapis.com/*",
+    "https://accounts.google.com/*",
+    "https://securetoken.googleapis.com/*",
+    "https://identitytoolkit.googleapis.com/*"
   ],
   "optional_host_permissions": [
     "<all_urls>"
@@ -32,15 +39,26 @@
         "https://*.n8n.cloud/*",
         "https://n8n.cloud/*"
       ],
-      "js": ["src/content.js"],
-      "css": ["styles/panel.css"],
+      "js": [
+        "src/auth.js",
+        "src/auth-ui.js", 
+        "src/content.js"
+      ],
+      "css": [
+        "styles/panel.css",
+        "styles/auth.css"
+      ],
       "run_at": "document_idle",
       "all_frames": false
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/inject.js"],
+      "resources": [
+        "src/inject.js",
+        "src/auth.js",
+        "src/auth-ui.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ],

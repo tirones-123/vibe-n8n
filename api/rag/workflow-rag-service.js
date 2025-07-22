@@ -491,6 +491,14 @@ ${baseWorkflow ?
         ]
       });
 
+      // Extract token usage information
+      const tokensUsed = {
+        input: response.usage?.input_tokens || 0,
+        output: response.usage?.output_tokens || 0
+      };
+
+      console.log(`📊 Tokens utilisés: ${tokensUsed.input} input, ${tokensUsed.output} output`);
+
       if (onProgress) {
         onProgress('parsing', { message: 'Traitement de la réponse...' });
       }
@@ -555,7 +563,8 @@ ${baseWorkflow ?
             workflow: parsedResponse.workflow,
             explanation: parsedResponse.explanation,
             similarWorkflows: similarWorkflows.map(w => w.name),
-            transmissionType: transmission.type
+            transmissionType: transmission.type,
+            tokensUsed
           };
         } else {
           // Ancienne structure - juste le workflow
@@ -589,7 +598,8 @@ ${baseWorkflow ?
             workflow: parsedResponse,
             explanation,
             similarWorkflows: similarWorkflows.map(w => w.name),
-            transmissionType: transmission.type
+            transmissionType: transmission.type,
+            tokensUsed
           };
         }
 

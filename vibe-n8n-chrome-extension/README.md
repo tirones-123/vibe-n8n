@@ -208,7 +208,7 @@ async function validateAndFixWorkflowLikeN8n(workflowData) {
 
 ### Configuration RAG
 ```javascript
-// Paramètres optimisés pour la qualité
+// Paramètres optimisés pour la qualité exemple
 {
   model: "claude-3-5-sonnet-20241022",
   max_tokens: 8192,

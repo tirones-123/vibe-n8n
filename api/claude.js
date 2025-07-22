@@ -1,4 +1,11 @@
 import { createWorkflowRAGService } from './rag/workflow-rag-service.js';
+import firebaseService from './services/firebase-service.js';
+import stripeService from './services/stripe-service.js';
+import { verifyAuth, checkTokenQuota } from './middleware/auth.js';
+
+// Initialize services
+await firebaseService.initialize();
+await stripeService.initialize();
 
 // Monitoring et stats
 let requestStats = {
@@ -7,7 +14,8 @@ let requestStats = {
   errors: 0,
   largeWorkflows: 0,
   compressionUsed: 0,
-  chunkingUsed: 0
+  chunkingUsed: 0,
+  tokenQuotaBlocked: 0
 };
 
 export default async function handler(req, res) {
@@ -24,12 +32,29 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Vérification de l'authentification
-  const authHeader = req.headers.authorization;
-  const expectedAuth = `Bearer ${process.env.BACKEND_API_KEY}`;
-  
-  if (!authHeader || authHeader !== expectedAuth) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  // Authenticate user first
+  try {
+    await new Promise((resolve, reject) => {
+      verifyAuth(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+  } catch (authError) {
+    return; // Response already sent by middleware
+  }
+
+  // Check token quota before processing
+  try {
+    await new Promise((resolve, reject) => {
+      checkTokenQuota(10000)(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+  } catch (quotaError) {
+    requestStats.tokenQuotaBlocked++;
+    return; // Response already sent by middleware
   }
 
   const startTime = Date.now();
@@ -38,6 +63,10 @@ export default async function handler(req, res) {
   console.log(`\n🚀 === WORKFLOW RAG REQUEST ${requestStats.total} ===`);
   console.log('📊 Stats actuelles:', requestStats);
   console.log('⏰ Timestamp:', new Date().toISOString());
+  console.log('👤 User:', req.user.isSystem ? 'SYSTEM' : `${req.user.uid} (${req.user.plan})`);
+  if (!req.user.isSystem) {
+    console.log('🎯 Tokens restants:', req.user.remaining_tokens?.toLocaleString() || 'N/A');
+  }
 
   // 📊 DETAILED LOGGING - Request inspection
   console.log('\n%c📊 BACKEND: Incoming request analysis', 'background: darkred; color: white; padding: 2px 6px;');
@@ -219,6 +248,46 @@ export default async function handler(req, res) {
 
     if (result.success) {
       requestStats.success++;
+
+      // Report token usage for billing
+      if (!req.user.isSystem && result.tokensUsed) {
+        try {
+          sendSSE('reporting_usage', { 
+            message: 'Mise à jour du quota utilisateur...',
+            tokensUsed: result.tokensUsed.input
+          });
+
+          await firebaseService.updateUserTokens(
+            req.user.uid, 
+            result.tokensUsed.input, 
+            result.tokensUsed.output || 0
+          );
+
+          // Report to Stripe if PRO user with usage-based billing
+          if (req.user.plan === 'PRO' && req.user.stripe_customer_id) {
+            const updatedUser = await firebaseService.getOrCreateUser(req.user.uid);
+            
+            if (updatedUser.remaining_tokens === 0 && updatedUser.usage_based_enabled) {
+              await stripeService.reportUsage(req.user.stripe_customer_id, result.tokensUsed.input);
+              console.log(`📊 Reported ${result.tokensUsed.input} tokens to Stripe for ${req.user.uid}`);
+            }
+          }
+
+          // Log usage event for analytics
+          await firebaseService.logUsageEvent(req.user.uid, 'workflow_generation', {
+            input_tokens: result.tokensUsed.input,
+            output_tokens: result.tokensUsed.output || 0,
+            workflow_size: sessionState.workflowSize,
+            mode: sessionState.mode,
+            duration: duration
+          });
+
+          console.log(`📊 [${sessionState.id}] Usage rapporté: ${result.tokensUsed.input} input, ${result.tokensUsed.output || 0} output tokens`);
+        } catch (usageError) {
+          console.error(`❌ Erreur rapport usage:`, usageError.message);
+          // Don't fail the request for usage reporting errors
+        }
+      }
       
       // Log final de succès
       sendSSE('session_complete', {
@@ -227,6 +296,7 @@ export default async function handler(req, res) {
         workflowSize: sessionState.workflowSize,
         transmissionType: result.transmissionType || sessionState.transmissionType,
         mode: sessionState.mode,
+        tokensUsed: result.tokensUsed,
         stats: {
           nodes: result.workflow?.nodes?.length || 0,
           connections: Object.keys(result.workflow?.connections || {}).length
@@ -272,6 +342,7 @@ export default async function handler(req, res) {
     console.log(`Total requêtes: ${requestStats.total}`);
     console.log(`Succès: ${requestStats.success} (${(requestStats.success/requestStats.total*100).toFixed(1)}%)`);
     console.log(`Erreurs: ${requestStats.errors} (${(requestStats.errors/requestStats.total*100).toFixed(1)}%)`);
+    console.log(`Quota bloqués: ${requestStats.tokenQuotaBlocked} (${(requestStats.tokenQuotaBlocked/requestStats.total*100).toFixed(1)}%)`);
     console.log(`Gros workflows: ${requestStats.largeWorkflows}`);
     console.log(`Compression utilisée: ${requestStats.compressionUsed}`);
     console.log(`Chunking utilisé: ${requestStats.chunkingUsed}`);
