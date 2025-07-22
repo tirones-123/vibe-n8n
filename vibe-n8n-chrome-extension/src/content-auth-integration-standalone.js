@@ -35,106 +35,109 @@ class ContentAuthIntegration {
     }
   }
 
-  // Définir les fonctions Firebase Auth globalement - VERSION SIMPLIFIÉE
+  // Définir la fonction Firebase Auth Google selon la doc officielle
   defineGlobalFirebaseAuthFunctions() {
-    console.log('🔧 Définition globale des fonctions Firebase Auth...');
+    console.log('🔧 Définition fonction Firebase Auth Google (doc officielle)...');
     
-    // Sign Up avec email/password
-    window.handleFirebaseSignUp = async () => {
-      console.log('📝 handleFirebaseSignUp appelé');
-      try {
-        const email = document.getElementById('firebase-email')?.value;
-        const password = document.getElementById('firebase-password')?.value;
-        
-        if (!email || !password) {
-          alert('Veuillez remplir tous les champs');
-          return;
-        }
-        
-        if (password.length < 6) {
-          alert('Le mot de passe doit contenir au moins 6 caractères');
-          return;
-        }
-        
-        const result = await chrome.runtime.sendMessage({
-          type: 'firebase-signup-email',
-          data: { email, password }
-        });
-        
-        if (result.success) {
-          document.querySelector('.simple-auth-modal')?.remove();
-          alert(`Compte créé avec succès ! Bienvenue ${email}`);
-          setTimeout(() => location.reload(), 500);
-        } else {
-          alert(`Erreur de création: ${result.error?.message || 'Erreur inconnue'}`);
-        }
-      } catch (error) {
-        console.error('❌ Error in handleFirebaseSignUp:', error);
-        alert(`Erreur de création: ${error.message}`);
-      }
-    };
-    
-    // Sign In avec email/password
-    window.handleFirebaseSignIn = async () => {
-      console.log('🔐 handleFirebaseSignIn appelé');
-      try {
-        const email = document.getElementById('firebase-email')?.value;
-        const password = document.getElementById('firebase-password')?.value;
-        
-        if (!email || !password) {
-          alert('Veuillez remplir tous les champs');
-          return;
-        }
-        
-        const result = await chrome.runtime.sendMessage({
-          type: 'firebase-signin-email',
-          data: { email, password }
-        });
-        
-        if (result.success) {
-          document.querySelector('.simple-auth-modal')?.remove();
-          alert('Connexion réussie !');
-          setTimeout(() => location.reload(), 500);
-        } else {
-          alert(`Erreur de connexion: ${result.error?.message || 'Erreur inconnue'}`);
-        }
-      } catch (error) {
-        console.error('❌ Error in handleFirebaseSignIn:', error);
-        alert(`Erreur de connexion: ${error.message}`);
-      }
-    };
-    
-    // Sign In avec Google
+    // Sign In avec Google - SEULE méthode selon la doc officielle
     window.handleFirebaseGoogleSignIn = async () => {
-      console.log('🔗 handleFirebaseGoogleSignIn appelé');
+      console.log('🔗 handleFirebaseGoogleSignIn appelé (offscreen document)');
       try {
+        // Utiliser la vraie implémentation offscreen selon la doc officielle
         const result = await chrome.runtime.sendMessage({
           type: 'firebase-signin-google'
         });
         
-        if (result.success) {
+        console.log('🔗 Résultat authentification Google:', result);
+        
+        if (result.success || result.user) {
           document.querySelector('.simple-auth-modal')?.remove();
-          alert('Connexion Google réussie !');
-          setTimeout(() => location.reload(), 500);
+          
+          // Affichage du succès
+          const toast = document.createElement('div');
+          toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 100000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          `;
+          toast.textContent = `✅ Connecté avec succès !`;
+          document.body.appendChild(toast);
+          
+          // Supprimer le toast après 3 secondes
+          setTimeout(() => {
+            if (toast.parentElement) {
+              toast.remove();
+            }
+          }, 3000);
+          
+          // Attendre un peu puis recharger pour que l'état auth soit pris en compte
+          setTimeout(() => location.reload(), 1000);
         } else {
-          alert(`Erreur connexion Google: ${result.error?.message || 'Erreur inconnue'}`);
+          const errorMsg = result.error?.message || 'Erreur de connexion Google';
+          console.error('❌ Erreur auth Google:', errorMsg);
+          
+          // Affichage de l'erreur
+          const toast = document.createElement('div');
+          toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 100000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          `;
+          toast.textContent = `❌ ${errorMsg}`;
+          document.body.appendChild(toast);
+          
+          setTimeout(() => {
+            if (toast.parentElement) {
+              toast.remove();
+            }
+          }, 5000);
         }
       } catch (error) {
-        console.error('❌ Error in handleFirebaseGoogleSignIn:', error);
-        alert(`Erreur connexion Google: ${error.message}`);
+        console.error('❌ Erreur handleFirebaseGoogleSignIn:', error);
+        
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #ef4444;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          z-index: 100000;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-size: 14px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        `;
+        toast.textContent = `❌ Erreur de connexion: ${error.message}`;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          if (toast.parentElement) {
+            toast.remove();
+          }
+        }, 5000);
       }
     };
     
-    console.log('✅ Fonctions Firebase Auth définies globalement');
-    
-    // Vérification immédiate
-    const functionsOk = [
-      typeof window.handleFirebaseSignUp === 'function',
-      typeof window.handleFirebaseSignIn === 'function', 
-      typeof window.handleFirebaseGoogleSignIn === 'function'
-    ].every(test => test);
-    
-    console.log(`🔍 Vérification: ${functionsOk ? '✅ Toutes les fonctions définies' : '❌ Fonctions manquantes'}`);
+    console.log('✅ Fonction Firebase Auth Google définie');
+    console.log('🔍 Vérification:', typeof window.handleFirebaseGoogleSignIn === 'function' ? '✅ OK' : '❌ ERREUR');
   }
 
   // Check if user can make a request
@@ -195,11 +198,11 @@ class ContentAuthIntegration {
     }
   }
 
-  // Simple auth modal fallback
+  // Simple auth modal selon la doc officielle Firebase (Google seulement)
   showSimpleAuthModal() {
-    console.log('🔧 Affichage du modal Firebase Auth...');
+    console.log('🔧 Affichage du modal Firebase Auth (Google uniquement)...');
     
-    // S'assurer que les fonctions sont définies
+    // S'assurer que la fonction Google est définie
     this.defineGlobalFirebaseAuthFunctions();
     
     const modal = document.createElement('div');
@@ -220,57 +223,83 @@ class ContentAuthIntegration {
     modal.innerHTML = `
       <div style="
         background: white;
-        padding: 30px;
-        border-radius: 12px;
-        max-width: 450px;
-        min-width: 400px;
+        padding: 40px;
+        border-radius: 16px;
+        max-width: 400px;
+        min-width: 350px;
         text-align: center;
         color: #333;
         box-shadow: 0 8px 32px rgba(0,0,0,0.2);
       ">
-        <h2 style="margin-bottom: 10px; color: #2563eb;">🔐 Firebase Authentication</h2>
-        <p style="margin-bottom: 25px; color: #666;">Connectez-vous pour accéder à l'assistant IA</p>
+        <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
+        <h2 style="margin-bottom: 10px; color: #2563eb; font-size: 24px;">Authentification requise</h2>
+        <p style="margin-bottom: 30px; color: #666; line-height: 1.4;">
+          Connectez-vous avec votre compte Google pour accéder à l'assistant IA n8n
+        </p>
         
-        <div style="text-align: left; margin-bottom: 20px;">
-          <input type="email" id="firebase-email" placeholder="Email" 
-                 style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-          <input type="password" id="firebase-password" placeholder="Mot de passe" 
-                 style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-        </div>
+        <button onclick="window.handleFirebaseGoogleSignIn()" 
+                style="
+                  width: 100%; 
+                  padding: 16px; 
+                  margin-bottom: 20px; 
+                  background: #4285f4; 
+                  color: white; 
+                  border: none; 
+                  border-radius: 8px; 
+                  font-size: 16px; 
+                  font-weight: 500;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  gap: 12px;
+                  transition: background-color 0.2s;
+                " 
+                onmouseover="this.style.backgroundColor='#3367d6'"
+                onmouseout="this.style.backgroundColor='#4285f4'">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path fill="#FFFFFF" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+            <path fill="#FFFFFF" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+            <path fill="#FFFFFF" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/>
+            <path fill="#FFFFFF" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.462.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+          </svg>
+          Se connecter avec Google
+        </button>
         
-        <div style="margin-bottom: 20px;">
-          <button onclick="window.handleFirebaseSignIn()" 
-                  style="width: 100%; padding: 12px; margin-bottom: 10px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">
-            Se connecter
-          </button>
-          <button onclick="window.handleFirebaseSignUp()" 
-                  style="width: 100%; padding: 12px; margin-bottom: 10px; background: #059669; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">
-            Créer un compte
-          </button>
-          <button onclick="window.handleFirebaseGoogleSignIn()" 
-                  style="width: 100%; padding: 12px; margin-bottom: 15px; background: #dc2626; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">
-            🔗 Connexion Google
-          </button>
-        </div>
-        
-        <div style="border-top: 1px solid #eee; padding-top: 15px; text-align: center;">
+        <div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center;">
           <button onclick="this.parentElement.parentElement.parentElement.remove()" 
-                  style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 4px; font-size: 14px; cursor: pointer;">
+                  style="
+                    padding: 12px 24px; 
+                    border: 1px solid #ddd; 
+                    background: white; 
+                    border-radius: 6px; 
+                    font-size: 14px; 
+                    cursor: pointer;
+                    color: #666;
+                    transition: all 0.2s;
+                  "
+                  onmouseover="this.style.backgroundColor='#f5f5f5'"
+                  onmouseout="this.style.backgroundColor='white'">
             Annuler
           </button>
         </div>
+        
+        <p style="margin-top: 20px; font-size: 12px; color: #999; line-height: 1.3;">
+          En vous connectant, vous acceptez nos conditions d'utilisation.<br>
+          Authentification sécurisée via Firebase.
+        </p>
       </div>
     `;
     
     // Ajouter le modal au DOM
     document.body.appendChild(modal);
     
-    // Auto-suppression après 30 secondes
+    // Auto-suppression après 60 secondes
     setTimeout(() => {
       if (modal.parentElement) {
         modal.remove();
       }
-    }, 30000);
+    }, 60000);
   }
 
   // Make authenticated request
