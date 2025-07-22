@@ -63,7 +63,7 @@ class ContentAuthIntegration {
     // Check quota with backend
     try {
       const response = await authService.makeAuthenticatedRequest(
-        `${CONFIG.API_URL}${CONFIG.ENDPOINTS.USER_INFO}`
+        `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.USER_INFO}`
       );
 
       if (!response.ok) {
@@ -123,7 +123,7 @@ class ContentAuthIntegration {
       return null;
     }
 
-    const endpoint = `${CONFIG.API_URL}${CONFIG.ENDPOINTS.CLAUDE}`;
+    const endpoint = CONFIG.API_URL; // Claude endpoint direct pour compatibility
     const payload = { prompt };
     
     if (baseWorkflow) {
@@ -188,7 +188,7 @@ class ContentAuthIntegration {
       
       if (tokensUsed) {
         await authService.makeAuthenticatedRequest(
-          `${CONFIG.API_URL}${CONFIG.ENDPOINTS.REPORT_USAGE}`,
+          `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.REPORT_USAGE}`,
           {
             method: 'POST',
             body: JSON.stringify({

@@ -118,10 +118,12 @@ if (!response) {
 ### URLs de test
 ```javascript
 // Development (local)
-API_URL: 'http://localhost:3000'
+API_URL: 'http://localhost:3000/api/claude'              // Endpoint Claude (compatibility)
+API_BASE_URL: 'http://localhost:3000'                    // Base URL pour nouveaux endpoints
 
 // Production (Railway)
-API_URL: 'https://vibe-n8n-production.up.railway.app'
+API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude'     // Endpoint Claude (compatibility)
+API_BASE_URL: 'https://vibe-n8n-production.up.railway.app'           // Base URL pour nouveaux endpoints
 ```
 
 ## 🔧 Configuration Firebase Frontend

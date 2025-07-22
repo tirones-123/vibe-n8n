@@ -5,11 +5,15 @@
 
 const CONFIG = {
   // ===== BACKEND API =====
-  // URL Railway (production - seule URL maintenant)
-  API_URL: 'https://vibe-n8n-production.up.railway.app',
+  // URL Railway (production - endpoint Claude direct pour compatibility)
+  API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
+  
+  // URL de base pour les nouveaux endpoints
+  API_BASE_URL: 'https://vibe-n8n-production.up.railway.app',
   
   // URL locale (pour développement)
-  API_URL_LOCAL: 'http://localhost:3000',
+  API_URL_LOCAL: 'http://localhost:3000/api/claude',
+  API_BASE_URL_LOCAL: 'http://localhost:3000',
   
   // Legacy API Key (pour compatibilité avec l'ancien système)
   LEGACY_API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2',

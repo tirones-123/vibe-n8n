@@ -320,7 +320,7 @@ class AuthUI {
   async fetchUserInfo() {
     try {
       const response = await authService.makeAuthenticatedRequest(
-        `${CONFIG.API_URL}/api/me`
+        `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.USER_INFO}`
       );
       
       if (response.ok) {
@@ -490,7 +490,7 @@ class AuthUI {
   async handleUpgradeToPro() {
     try {
       const response = await authService.makeAuthenticatedRequest(
-        `${CONFIG.API_URL}/api/create-checkout-session`,
+        `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.CREATE_CHECKOUT}`,
         {
           method: 'POST',
           body: JSON.stringify({
@@ -513,7 +513,7 @@ class AuthUI {
   async handleEnableUsageBased(limitUsd) {
     try {
       const response = await authService.makeAuthenticatedRequest(
-        `${CONFIG.API_URL}/api/enable-usage-based`,
+        `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.ENABLE_USAGE_BASED}`,
         {
           method: 'POST',
           body: JSON.stringify({ limit_usd: limitUsd })
