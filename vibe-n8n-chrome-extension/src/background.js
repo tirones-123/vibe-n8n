@@ -456,7 +456,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.type === 'firebase-signin-google') {
     console.log('🔐 Firebase sign in with Google');
-    firebaseSignInWithGoogle()
+    firebaseAuth()
       .then(response => sendResponse(response))
       .catch(error => sendResponse({ 
         success: false, 
@@ -1176,6 +1176,69 @@ async function executeWorkflowImport(workflow, tabId) {
       error: `Erreur d'injection: ${error.message}`
     });
   }
+}
+
+// Firebase Auth selon la documentation officielle
+// https://firebase.google.com/docs/auth/web/chrome-extension
+
+async function setupOffscreenDocument(path) {
+  // If we do not have a document, we are already setup and can skip
+  if (!(await hasOffscreenDocument())) {
+    // create offscreen document
+    if (creatingOffscreenDocument) {
+      await creatingOffscreenDocument;
+    } else {
+      creatingOffscreenDocument = chrome.offscreen.createDocument({
+        url: path,
+        reasons: [
+            chrome.offscreen.Reason.DOM_SCRAPING
+        ],
+        justification: 'authentication'
+      });
+      await creatingOffscreenDocument;
+      creatingOffscreenDocument = null;
+    }
+  }
+}
+
+async function closeOffscreenDocument() {
+  if (!(await hasOffscreenDocument())) {
+    return;
+  }
+  await chrome.offscreen.closeDocument();
+}
+
+function getAuth() {
+  return new Promise(async (resolve, reject) => {
+    const auth = await chrome.runtime.sendMessage({
+      type: 'firebase-auth',
+      target: 'offscreen'
+    });
+    auth?.name !== 'FirebaseError' ? resolve(auth) : reject(auth);
+  })
+}
+
+async function firebaseAuth() {
+  await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+
+  const auth = await getAuth()
+    .then((auth) => {
+      console.log('User Authenticated', auth);
+      return auth;
+    })
+    .catch(err => {
+      if (err.code === 'auth/operation-not-allowed') {
+        console.error('You must enable an OAuth provider in the Firebase' +
+                      ' console in order to use signInWithPopup. This sample' +
+                      ' uses Google by default.');
+      } else {
+        console.error(err);
+        return err;
+      }
+    })
+    .finally(closeOffscreenDocument)
+
+  return auth;
 }
 
 // Installation de l'extension

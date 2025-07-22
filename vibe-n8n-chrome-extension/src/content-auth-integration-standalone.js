@@ -139,16 +139,60 @@ class ContentAuthIntegration {
 
   // Check if user can make a request
   async canMakeRequest() {
-    // Pour l'instant, permettre toutes les requêtes (simplification)
-    return { 
-      allowed: true,
-      method: 'legacy'
-    };
+    try {
+      console.log('🔍 Vérification de l\'authentification Firebase...');
+      
+      // Vérifier l'état actuel de l'utilisateur Firebase
+      const currentUser = await chrome.runtime.sendMessage({
+        type: 'firebase-get-user'
+      });
+      
+      console.log('👤 Current user check result:', currentUser);
+      
+      if (currentUser.success && currentUser.user) {
+        console.log('✅ Utilisateur authentifié:', currentUser.user.email);
+        return { 
+          allowed: true,
+          method: 'firebase',
+          user: currentUser.user
+        };
+      } else {
+        console.log('❌ Utilisateur non authentifié');
+        return { 
+          allowed: false, 
+          reason: 'NOT_AUTHENTICATED',
+          action: 'show_auth_modal'
+        };
+      }
+    } catch (error) {
+      console.error('❌ Erreur vérification auth:', error);
+      return { 
+        allowed: false, 
+        reason: 'AUTH_ERROR',
+        action: 'show_auth_modal'
+      };
+    }
   }
 
   // Handle quota/auth errors
   handleAccessDenied(checkResult) {
-    this.showSimpleAuthModal();
+    console.log('🚫 Accès refusé:', checkResult.reason);
+    
+    switch (checkResult.action) {
+      case 'show_auth_modal':
+        console.log('🔐 Affichage du modal d\'authentification requis');
+        this.showSimpleAuthModal();
+        break;
+      
+      case 'show_error':
+        this.showErrorMessage('Erreur de connexion. Réessayez plus tard.');
+        break;
+        
+      default:
+        console.log('🔐 Action par défaut: affichage modal auth');
+        this.showSimpleAuthModal();
+        break;
+    }
   }
 
   // Simple auth modal fallback
@@ -297,12 +341,25 @@ class ContentAuthIntegration {
   }
 
   // Get current authentication status
-  getAuthStatus() {
-    return {
-      isRequired: this.authRequired,
-      isAuthenticated: false, // Simplifié pour l'instant
-      currentUser: null
-    };
+  async getAuthStatus() {
+    try {
+      const currentUser = await chrome.runtime.sendMessage({
+        type: 'firebase-get-user'
+      });
+      
+      return {
+        isRequired: true, // Firebase Auth est maintenant requis
+        isAuthenticated: currentUser.success && !!currentUser.user,
+        currentUser: currentUser.user || null
+      };
+    } catch (error) {
+      console.error('❌ Erreur récupération statut auth:', error);
+      return {
+        isRequired: true,
+        isAuthenticated: false,
+        currentUser: null
+      };
+    }
   }
 }
 
