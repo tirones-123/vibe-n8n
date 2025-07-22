@@ -1,45 +1,78 @@
 /**
  * Configuration de l'extension
- * Configuration pour le backend workflow RAG système
+ * Configuration pour le backend workflow RAG + système de pricing Firebase/Stripe
  */
 
 const CONFIG = {
-  // URL Railway (production active)
-  API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
-  
-  // URL Vercel (backup)
-  API_URL_VERCEL: 'https://vibe-n8n.vercel.app/api/claude',
+  // ===== BACKEND API =====
+  // URL Railway (production - seule URL maintenant)
+  API_URL: 'https://vibe-n8n-production.up.railway.app',
   
   // URL locale (pour développement)
-  API_URL_LOCAL: 'http://localhost:3000/api/claude',
+  API_URL_LOCAL: 'http://localhost:3000',
   
-  // Clé d'authentification pour le backend workflow RAG
-  API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2', // Remplacer par votre BACKEND_API_KEY
+  // Legacy API Key (pour compatibilité avec l'ancien système)
+  LEGACY_API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2',
   
+  // ===== FIREBASE CONFIGURATION =====
+  FIREBASE_CONFIG: {
+    apiKey: "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I",
+    authDomain: "vibe-n8n-7e40d.firebaseapp.com",
+    projectId: "vibe-n8n-7e40d",
+    storageBucket: "vibe-n8n-7e40d.firebasestorage.app",
+    messagingSenderId: "247816285693",
+    appId: "1:247816285693:web:1229eea4a52d6d765afd94",
+    measurementId: "G-1CLFCN7KVL"
+  },
+  
+  // ===== CONFIGURATION GÉNÉRALE =====
   // Timeout pour les requêtes API (en millisecondes)
-  // Backend workflow RAG peut prendre plus de temps pour la génération (5-10 min)
   API_TIMEOUT: 900000, // 15 minutes
   
   // Version de l'extension
-  VERSION: '1.0.0',
+  VERSION: '2.0.0',
   
-  // Mode de fonctionnement : workflow RAG (génération complète)
-  MODE: 'workflow_rag',
+  // Mode de fonctionnement : workflow RAG + pricing
+  MODE: 'workflow_rag_with_pricing',
   
-  // Fonctionnalités du backend workflow RAG
+  // ===== FONCTIONNALITÉS =====
   FEATURES: {
+    // Authentification Firebase
+    FIREBASE_AUTH: true,
+    // Système de pricing avec quotas
+    PRICING_SYSTEM: true,
+    // Plans FREE/PRO
+    SUBSCRIPTION_PLANS: true,
+    // Usage-based billing
+    USAGE_BASED_BILLING: true,
     // Génération basée sur RAG avec 2055+ exemples
     RAG_WORKFLOW_GENERATION: true,
     // Streaming SSE
     STREAMING_RESPONSE: true,
-    // Génération de workflows complets (pas de tool calls)
+    // Génération de workflows complets
     COMPLETE_WORKFLOW_GENERATION: true,
     // Système d'explication détaillée
-    WORKFLOW_EXPLANATION: true
+    WORKFLOW_EXPLANATION: true,
+    // Popups de quota intelligents
+    QUOTA_MANAGEMENT: true
+  },
+  
+  // ===== ENDPOINTS API =====
+  ENDPOINTS: {
+    CLAUDE: '/api/claude',
+    USER_INFO: '/api/me',
+    CREATE_CHECKOUT: '/api/create-checkout-session',
+    ENABLE_USAGE_BASED: '/api/enable-usage-based',
+    REPORT_USAGE: '/api/report-usage',
+    PRICING: '/api/pricing',
+    STATUS: '/api/status'
   }
 };
 
 // Export pour utilisation dans d'autres modules
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = CONFIG;
-} 
+}
+
+// Export ES6 pour les modules modernes
+export default CONFIG; 

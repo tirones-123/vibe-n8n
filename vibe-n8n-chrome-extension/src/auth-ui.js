@@ -1,5 +1,6 @@
 // Authentication UI Components for Chrome Extension
 import authService from './auth.js';
+import CONFIG from './config.js';
 
 class AuthUI {
   constructor() {

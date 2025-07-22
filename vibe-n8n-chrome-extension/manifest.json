@@ -11,7 +11,6 @@
     "identity"
   ],
   "host_permissions": [
-    "https://vibe-n8n.vercel.app/*",
     "https://vibe-n8n-production.up.railway.app/*",
     "https://*.railway.app/*",
     "https://railway.app/*",
@@ -23,7 +22,9 @@
     "https://*.googleapis.com/*",
     "https://accounts.google.com/*",
     "https://securetoken.googleapis.com/*",
-    "https://identitytoolkit.googleapis.com/*"
+    "https://identitytoolkit.googleapis.com/*",
+    "https://*.stripe.com/*",
+    "https://checkout.stripe.com/*"
   ],
   "optional_host_permissions": [
     "<all_urls>"
@@ -40,8 +41,10 @@
         "https://n8n.cloud/*"
       ],
       "js": [
+        "src/config.js",
         "src/auth.js",
-        "src/auth-ui.js", 
+        "src/auth-ui.js",
+        "src/content-auth-integration.js",
         "src/content.js"
       ],
       "css": [
@@ -56,8 +59,10 @@
     {
       "resources": [
         "src/inject.js",
+        "src/config.js",
         "src/auth.js",
-        "src/auth-ui.js"
+        "src/auth-ui.js",
+        "src/content-auth-integration.js"
       ],
       "matches": ["<all_urls>"]
     }

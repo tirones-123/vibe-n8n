@@ -10,15 +10,11 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 
-// Firebase Configuration (from extension config)
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  authDomain: "vibe-n8n-production.firebaseapp.com",
-  projectId: "vibe-n8n-production",
-  storageBucket: "vibe-n8n-production.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890"
-};
+// Import configuration from config.js
+import CONFIG from './config.js';
+
+// Firebase Configuration
+const FIREBASE_CONFIG = CONFIG.FIREBASE_CONFIG;
 
 class AuthService {
   constructor() {
