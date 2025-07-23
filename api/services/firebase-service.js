@@ -10,6 +10,13 @@ class FirebaseService {
     if (this.initialized) return;
 
     try {
+      // DEBUG: Logs des variables Firebase
+      console.log('🔍 Firebase Environment Variables Debug:');
+      console.log('  FIREBASE_PROJECT_ID:', JSON.stringify(process.env.FIREBASE_PROJECT_ID));
+      console.log('  FIREBASE_CLIENT_EMAIL:', JSON.stringify(process.env.FIREBASE_CLIENT_EMAIL));
+      console.log('  FIREBASE_PRIVATE_KEY_ID:', JSON.stringify(process.env.FIREBASE_PRIVATE_KEY_ID));
+      console.log('  FIREBASE_SERVICE_ACCOUNT exists:', !!process.env.FIREBASE_SERVICE_ACCOUNT);
+      
       // Initialize Firebase Admin SDK
       if (!admin.apps.length) {
         const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
@@ -26,6 +33,8 @@ class FirebaseService {
               auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
               client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL
             };
+
+        console.log('🔍 ServiceAccount object:', JSON.stringify(serviceAccount, null, 2));
 
         admin.initializeApp({
           credential: admin.credential.cert(serviceAccount),
