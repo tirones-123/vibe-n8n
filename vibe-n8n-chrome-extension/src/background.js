@@ -123,29 +123,11 @@ async function firebaseSignUpWithEmail(email, password) {
 
 async function firebaseSignInWithGoogle() {
   console.log('🔐 firebaseSignInWithGoogle called');
-  // Helper to focus the Google OAuth popup once it appears
-  const focusGooglePopup = () => {
-    chrome.windows.getAll({ populate: true, windowTypes: ['popup'] }, (wins) => {
-      const googleWin = wins.find(w =>
-        (w.tabs || []).some(t => t.url && t.url.includes('accounts.google.com'))
-      );
-      if (googleWin) {
-        chrome.windows.update(googleWin.id, { focused: true });
-      }
-    });
-  };
-
-  // Trigger auth in offscreen
-  const authPromise = sendToOffscreen({
+  
+  return sendToOffscreen({
     type: 'firebase-auth-signin-google',
     target: 'offscreen'
   });
-
-  // Attempt to focus popup after a short delay (gives time for window to open)
-  setTimeout(focusGooglePopup, 500);
-  setTimeout(focusGooglePopup, 1200); // second try if first was too early
-
-  return authPromise;
 }
 
 async function firebaseSignOut() {
@@ -1238,12 +1220,25 @@ function getAuth() {
 
 async function firebaseAuth() {
   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-  const authResult = await chrome.runtime.sendMessage({
-    type: 'firebase-auth-signin-popup',
-    target: 'offscreen'
-  });
-  await closeOffscreenDocument();
-  return authResult;
+
+  const auth = await getAuth()
+    .then((auth) => {
+      console.log('User Authenticated', auth);
+      return auth;
+    })
+    .catch(err => {
+      if (err.code === 'auth/operation-not-allowed') {
+        console.error('You must enable an OAuth provider in the Firebase' +
+                      ' console in order to use signInWithPopup. This sample' +
+                      ' uses Google by default.');
+      } else {
+        console.error(err);
+        return err;
+      }
+    })
+    .finally(closeOffscreenDocument)
+
+  return auth;
 }
 
 // Installation de l'extension
