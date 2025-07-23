@@ -237,7 +237,7 @@ class ContentAuthIntegration {
           Connectez-vous avec votre compte Google pour accéder à l'assistant IA n8n
         </p>
         
-        <button onclick="window.handleFirebaseGoogleSignIn()" 
+        <button id="google-signin-btn" 
                 style="
                   width: 100%; 
                   padding: 16px; 
@@ -291,8 +291,19 @@ class ContentAuthIntegration {
       </div>
     `;
     
-    // Ajouter le modal au DOM
+    // Insert modal then wire up event listener in the extension context
     document.body.appendChild(modal);
+
+    const googleBtn = modal.querySelector('#google-signin-btn');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', () => {
+        if (typeof window.handleFirebaseGoogleSignIn === 'function') {
+          window.handleFirebaseGoogleSignIn();
+        } else {
+          console.warn('handleFirebaseGoogleSignIn not available in page context');
+        }
+      });
+    }
     
     // Auto-suppression après 60 secondes
     setTimeout(() => {
