@@ -123,11 +123,29 @@ async function firebaseSignUpWithEmail(email, password) {
 
 async function firebaseSignInWithGoogle() {
   console.log('🔐 firebaseSignInWithGoogle called');
-  
-  return sendToOffscreen({
+  // Helper to focus the Google OAuth popup once it appears
+  const focusGooglePopup = () => {
+    chrome.windows.getAll({ populate: true, windowTypes: ['popup'] }, (wins) => {
+      const googleWin = wins.find(w =>
+        (w.tabs || []).some(t => t.url && t.url.includes('accounts.google.com'))
+      );
+      if (googleWin) {
+        chrome.windows.update(googleWin.id, { focused: true });
+      }
+    });
+  };
+
+  // Trigger auth in offscreen
+  const authPromise = sendToOffscreen({
     type: 'firebase-auth-signin-google',
     target: 'offscreen'
   });
+
+  // Attempt to focus popup after a short delay (gives time for window to open)
+  setTimeout(focusGooglePopup, 500);
+  setTimeout(focusGooglePopup, 1200); // second try if first was too early
+
+  return authPromise;
 }
 
 async function firebaseSignOut() {
@@ -456,7 +474,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.type === 'firebase-signin-google') {
     console.log('🔐 Firebase sign in with Google');
-    firebaseAuth()
+    firebaseSignInWithGoogle()
       .then(response => sendResponse(response))
       .catch(error => sendResponse({ 
         success: false, 

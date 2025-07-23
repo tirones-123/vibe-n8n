@@ -152,7 +152,7 @@ class ContentAuthIntegration {
       
       console.log('👤 Current user check result:', currentUser);
       
-      if (currentUser.success && currentUser.user) {
+      if (currentUser && currentUser.success && currentUser.user) {
         console.log('✅ Utilisateur authentifié:', currentUser.user.email);
         return { 
           allowed: true,
