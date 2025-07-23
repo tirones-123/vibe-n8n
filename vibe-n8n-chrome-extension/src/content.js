@@ -3620,24 +3620,38 @@ async function checkSavedDomains(currentHostname) {
       console.log('🔐 Traitement avec Firebase Auth...');
       
       try {
-        // Vérifier auth + quotas avant envoi
-        const response = await contentAuthIntegration.makeWorkflowRequest(
-          message, 
-          hasExistingWorkflow ? currentWorkflow : null
-        );
-        
-        if (!response) {
-          // Auth failed ou quota exceeded - popups gérés automatiquement
-          console.warn('❌ Firebase Auth request failed');
+        // === NOUVELLE LOGIQUE ===
+        // 1. Vérifier l'authentification/quotas sans exécuter la requête backend côté page
+        const authCheck = await contentAuthIntegration.canMakeRequest();
+        if (!authCheck.allowed) {
+          console.warn('❌ Auth check failed, raison:', authCheck.reason);
+          contentAuthIntegration.handleAccessDenied(authCheck);
           handleError('Authentification ou quota requis. Veuillez vous connecter.', assistantMessage);
           return;
         }
-        
-        console.log('✅ Firebase Auth request successful, handling streaming response...');
-        
-        // La réponse sera gérée via les handlers de messages existants
+
+        // 2. Construire le payload à envoyer au service-worker
+        const payload = hasExistingWorkflow
+          ? {
+              type: 'IMPROVE_WORKFLOW',
+              currentWorkflow,
+              improvementRequest: message
+            }
+          : {
+              type: 'SEND_TO_CLAUDE',
+              prompt: message
+            };
+
+        console.log('📤 Envoi payload au service-worker:', payload.type);
+
+        chrome.runtime.sendMessage(payload, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('❌ Service worker error:', chrome.runtime.lastError.message);
+            handleError('Service worker error: ' + chrome.runtime.lastError.message, assistantMessage);
+          }
+          // La suite du flux (SSE) sera gérée via onMessage listener
+        });
         return;
-        
       } catch (authError) {
         console.error('❌ Firebase Auth error:', authError);
         handleError('Erreur d\'authentification. Veuillez vous reconnecter.', assistantMessage);

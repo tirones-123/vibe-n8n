@@ -46,7 +46,8 @@ cursor-n8n-backend/
 │       │   ├── background.js
 │       │   ├── config.js
 │       │   ├── content-auth-integration-standalone.js
-│       │   └── [+4 autres fichiers JS]
+│       │   ├── content.js
+│       │   └── [+3 autres fichiers JS]
 │       ├── styles/
 │       │   ├── auth.css
 │       │   ├── panel.css

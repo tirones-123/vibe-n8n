@@ -16,8 +16,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAuthStatus();
   
   // Handler pour la déconnexion
-  signOutBtn.addEventListener('click', handleSignOut);
-  signInBtn.addEventListener('click', handleSignIn);
+  if (signOutBtn) {
+    signOutBtn.addEventListener('click', handleSignOut);
+  }
+  if (signInBtn) {
+    signInBtn.addEventListener('click', handleSignIn);
+  }
   
   // Obtenir l'onglet actuel
   const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
