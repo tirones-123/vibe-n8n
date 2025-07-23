@@ -68,9 +68,11 @@
         "src/config.js",
         "src/content-auth-integration-standalone.js",
         "offscreen.html",
-        "offscreen.js"
+        "offscreen.js",
+        "libs/firebase/firebase-app.js",
+        "libs/firebase/firebase-auth-web-extension.js"
       ],
-      "matches": ["<all_urls>"]
+      "matches": ["chrome-extension://*/*"]
     }
   ],
   "action": {
