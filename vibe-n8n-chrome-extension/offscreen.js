@@ -35,7 +35,7 @@ onAuthStateChanged(extAuth, (user) => {
   }
 });
 // This URL must point to the public site
-const _URL = 'https://vibe-n8n-production.up.railway.app/firebase-auth/';
+const _URL = 'https://vibe-n8n-production.up.railway.app/firebase-auth-site/index.html';
 
 const iframe = document.createElement('iframe');
 iframe.src = _URL;
@@ -80,6 +80,13 @@ function handleChromeMessages(message, sender, sendResponse) {
     return true;
   }
 
+  if (message.type === 'firebase-auth-signin-popup') {
+    // relaie la demande à l’iframe
+    globalThis.addEventListener('message', handleIframeMessage, false);
+    postMessageToIframe({ initAuth: true });
+    return true;
+  }
+
   function handleIframeMessage({data}) {
     try {
       if (data.startsWith('!_{')) {
@@ -102,20 +109,16 @@ function handleChromeMessages(message, sender, sendResponse) {
     }
   }
 
-  globalThis.addEventListener('message', handleIframeMessage, false);
+  return true;
+}
 
-  // Initialize the authentication flow in the iframed document. You must set the
-  // second argument (targetOrigin) of the message in order for it to be successfully
-  // delivered.
-  // Ensure iframe is ready before sending the initAuth signal
+function postMessageToIframe(payload){
   const targetOrigin = new URL(_URL).origin;
   if (iframe.contentWindow) {
-    iframe.contentWindow.postMessage({ initAuth: true }, targetOrigin);
+    iframe.contentWindow.postMessage(payload, targetOrigin);
   } else {
-    // In rare cases iframe isn't ready yet – retry on load
     iframe.addEventListener('load', () => {
-      iframe.contentWindow.postMessage({ initAuth: true }, targetOrigin);
+      iframe.contentWindow.postMessage(payload, targetOrigin);
     }, { once: true });
   }
-  return true;
 } 

@@ -1238,25 +1238,12 @@ function getAuth() {
 
 async function firebaseAuth() {
   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-
-  const auth = await getAuth()
-    .then((auth) => {
-      console.log('User Authenticated', auth);
-      return auth;
-    })
-    .catch(err => {
-      if (err.code === 'auth/operation-not-allowed') {
-        console.error('You must enable an OAuth provider in the Firebase' +
-                      ' console in order to use signInWithPopup. This sample' +
-                      ' uses Google by default.');
-      } else {
-        console.error(err);
-        return err;
-      }
-    })
-    .finally(closeOffscreenDocument)
-
-  return auth;
+  const authResult = await chrome.runtime.sendMessage({
+    type: 'firebase-auth-signin-popup',
+    target: 'offscreen'
+  });
+  await closeOffscreenDocument();
+  return authResult;
 }
 
 // Installation de l'extension
