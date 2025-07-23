@@ -1181,7 +1181,7 @@ async function executeWorkflowImport(workflow, tabId) {
 // Firebase Auth selon la documentation officielle
 // https://firebase.google.com/docs/auth/web/chrome-extension
 
-async function setupOffscreenDocument(path) {
+async function setupOffscreenDocument(path = OFFSCREEN_DOCUMENT_PATH) {
   // If we do not have a document, we are already setup and can skip
   if (!(await hasOffscreenDocument())) {
     // create offscreen document
