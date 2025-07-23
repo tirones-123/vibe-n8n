@@ -199,6 +199,10 @@ class FirebaseService {
 
   // Check if user can make request (has enough tokens)
   async canUserMakeRequest(uid, estimatedTokens = 10000) {
+    // System user bypasses quota checks to éviter appel Firestore
+    if (uid === 'system') {
+      return { allowed: true, userData: { isSystem: true } };
+    }
     try {
       const userRef = this.db.collection('users').doc(uid);
       const userDoc = await userRef.get();
