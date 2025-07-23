@@ -68,6 +68,9 @@ export default async function handler(req, res) {
     console.log('🎯 Tokens restants:', req.user.remaining_tokens?.toLocaleString() || 'N/A');
   }
 
+  // Récupère l'en-tête Authorization pour le logging (évite ReferenceError)
+  const authHeader = req.headers?.authorization || null;
+
   // 📊 DETAILED LOGGING - Request inspection
   console.log('\n%c📊 BACKEND: Incoming request analysis', 'background: darkred; color: white; padding: 2px 6px;');
   console.log('🔍 Method:', req.method);
