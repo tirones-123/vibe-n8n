@@ -71,7 +71,7 @@ export default async function handler(req, res) {
   // 📊 DETAILED LOGGING - Request inspection
   console.log('\n%c📊 BACKEND: Incoming request analysis', 'background: darkred; color: white; padding: 2px 6px;');
   console.log('🔍 Method:', req.method);
-  console.log('🔑 Authorization header present:', !!req.headers.authorization);
+  console.log('🔑 Authorization header present:', !!authHeader);
   console.log('📋 Headers:', JSON.stringify(req.headers, null, 2));
   
   // Analyser le body de la requête
