@@ -10,6 +10,29 @@ iframe.src = _URL;
 document.documentElement.appendChild(iframe);
 chrome.runtime.onMessage.addListener(handleChromeMessages);
 
+const FIREBASE_API_KEY = "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I";
+
+async function firebaseEmailRequest(mode, email, password) {
+  const endpoint = mode === 'signup'
+    ? `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`
+    : `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`;
+  const body = {
+    email,
+    password,
+    returnSecureToken: true
+  };
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'Firebase auth error');
+  }
+  return res.json();
+}
+
 function handleChromeMessages(message, sender, sendResponse) {
   // Extensions may have a number of other reasons to send messages, so you
   // should filter out any that are not meant for the offscreen document.
@@ -19,6 +42,40 @@ function handleChromeMessages(message, sender, sendResponse) {
 
   if (message.type === 'firebase-auth-get-user') {
     sendResponse({ success: true, user: currentUser });
+    return true;
+  }
+
+  // NEW: Sign-out handler – clear cached user & reset iframe
+  if (message.type === 'firebase-auth-signout') {
+    try {
+      currentUser = null;
+      // Reload the iframe to reset Firebase auth state
+      iframe.src = _URL;
+      sendResponse({ success: true });
+    } catch (e) {
+      sendResponse({ success: false, error: { message: e.message } });
+    }
+    return true;
+  }
+
+  // NEW: Email/Password sign-in & sign-up handlers
+  if (message.type === 'firebase-auth-signin-email' || message.type === 'firebase-auth-signup-email') {
+    const mode = message.type.endsWith('signup-email') ? 'signup' : 'signin';
+    const { email, password } = message.data || {};
+    (async () => {
+      try {
+        const result = await firebaseEmailRequest(mode, email, password);
+        currentUser = {
+          uid: result.localId,
+          email: result.email,
+          idToken: result.idToken,
+          refreshToken: result.refreshToken
+        };
+        sendResponse({ success: true, user: currentUser });
+      } catch (e) {
+        sendResponse({ success: false, error: { message: e.message } });
+      }
+    })();
     return true;
   }
 

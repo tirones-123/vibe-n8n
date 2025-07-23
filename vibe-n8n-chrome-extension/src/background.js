@@ -124,6 +124,19 @@ async function firebaseSignUpWithEmail(email, password) {
 async function firebaseSignInWithGoogle() {
   console.log('🔐 firebaseSignInWithGoogle called');
   
+  // --- NEW: ensure the Google authentication popup appears in front ---
+  try {
+    const focusListener = (createdWindow) => {
+      // Bring the newly created window (usually the Google auth popup) to the foreground
+      chrome.windows.update(createdWindow.id, { focused: true });
+      // Remove the listener after the first window to avoid focusing all new windows
+      chrome.windows.onCreated.removeListener(focusListener);
+    };
+    chrome.windows.onCreated.addListener(focusListener);
+  } catch (err) {
+    console.warn('⚠️ Unable to set focus on auth window:', err);
+  }
+  
   return sendToOffscreen({
     type: 'firebase-auth-signin-google',
     target: 'offscreen'

@@ -10,12 +10,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const userSection = document.getElementById('userSection');
   const userEmail = document.getElementById('userEmail');
   const signOutBtn = document.getElementById('signOutBtn');
+  const signInBtn = document.getElementById('signInBtn');
   
   // Vérifier l'état d'authentification
   await checkAuthStatus();
   
   // Handler pour la déconnexion
   signOutBtn.addEventListener('click', handleSignOut);
+  signInBtn.addEventListener('click', handleSignIn);
   
   // Obtenir l'onglet actuel
   const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -142,13 +144,30 @@ async function checkAuthStatus() {
   try {
     console.log('🔍 Popup: Checking user auth status...');
     
-    // Vérifier si un utilisateur est connecté via chrome.storage
+    // D'abord tenter de récupérer directement l'utilisateur Firebase via le background
+    let firebaseUser = null;
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'firebase-get-user' });
+      if (response && (response.user || (response.uid && response.email))) {
+        // Peut être format { success, user } ou user direct
+        firebaseUser = response.user || response;
+      }
+    } catch (e) {
+      console.log('⚠️ Popup: firebase-get-user failed', e);
+    }
+    
+    if (firebaseUser) {
+      console.log('✅ Popup: Firebase user detected:', firebaseUser.email || firebaseUser.uid);
+      displayUserInfo(firebaseUser.email || 'Utilisateur connecté', 'Firebase');
+      return;
+    }
+    
+    // Sinon fallback à l'ancien stockage local
     const stored = await chrome.storage.local.get(['authState']);
     
     if (stored.authState && stored.authState.authenticated) {
-      console.log('✅ Popup: User is authenticated:', stored.authState.method);
-      
-      // Essayer de récupérer l'email depuis chrome.identity
+      console.log('✅ Popup: User is authenticated (storage):', stored.authState.method);
+      // Essayer de récupérer l'email depuis chrome.identity ou storage
       try {
         const userInfo = await getUserInfo();
         displayUserInfo(userInfo.email || 'Utilisateur connecté', stored.authState.method);
@@ -198,6 +217,9 @@ function displayUserInfo(email, method) {
   authMethod.textContent = method === 'chrome-identity' ? 'Chrome Identity' : method;
   userSection.style.display = 'block';
   
+  // Cacher le bouton sign-in et montrer sign-out
+  document.getElementById('signInBtn').style.display = 'none';
+  document.getElementById('signOutBtn').style.display = 'inline-block';
   console.log('👤 Popup: User info displayed:', { email, method });
 }
 
@@ -207,6 +229,49 @@ function displayUserInfo(email, method) {
 function hideUserInfo() {
   const userSection = document.getElementById('userSection');
   userSection.style.display = 'none';
+  // Montrer le bouton sign-in quand non authentifié
+  document.getElementById('signInBtn').style.display = 'inline-block';
+  document.getElementById('signOutBtn').style.display = 'none';
+}
+
+/**
+ * Gérer la connexion (Firebase Google)
+ */
+async function handleSignIn() {
+  try {
+    console.log('🔐 Popup: Sign-in requested');
+    const signInBtn = document.getElementById('signInBtn');
+    const originalText = signInBtn.textContent;
+    signInBtn.textContent = '⏳ Connexion...';
+    signInBtn.disabled = true;
+
+    // Demander au background de lancer le flow Google
+    const response = await chrome.runtime.sendMessage({
+      type: 'firebase-signin-google'
+    });
+
+    if ((response && response.success) || response?.user) {
+      console.log('✅ Popup: Sign-in success');
+      await checkAuthStatus();
+      signInBtn.textContent = '✅ Connecté !';
+      setTimeout(() => window.close(), 1200);
+    } else {
+      console.warn('❌ Popup: Sign-in failed', response);
+      signInBtn.textContent = '❌ Erreur';
+      setTimeout(() => {
+        signInBtn.textContent = originalText;
+        signInBtn.disabled = false;
+      }, 2000);
+    }
+  } catch (err) {
+    console.error('❌ Popup: Sign-in error', err);
+    const signInBtn = document.getElementById('signInBtn');
+    signInBtn.textContent = '❌ Erreur';
+    setTimeout(() => {
+      signInBtn.textContent = '🔐 Se connecter';
+      signInBtn.disabled = false;
+    }, 2000);
+  }
 }
 
 /**
@@ -276,6 +341,14 @@ async function handleSignOut() {
     
     // 4. Mettre à jour l'interface
     hideUserInfo();
+    
+    // 0. Firebase signout (background)
+    try {
+      await chrome.runtime.sendMessage({ type: 'firebase-signout' });
+      console.log('✅ Popup: Firebase signout success');
+    } catch (e) {
+      console.log('⚠️ Popup: Firebase signout error', e);
+    }
     
     // Feedback de succès
     signOutBtn.textContent = '✅ Déconnecté !';

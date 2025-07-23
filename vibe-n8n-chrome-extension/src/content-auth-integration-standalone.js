@@ -136,6 +136,37 @@ class ContentAuthIntegration {
       }
     };
     
+    window.handleFirebaseEmailAuth = async (mode = 'signin') => {
+      const emailInput = document.querySelector('#firebase-auth-email');
+      const passInput = document.querySelector('#firebase-auth-password');
+      if (!emailInput || !passInput) return;
+
+      const email = emailInput.value.trim();
+      const password = passInput.value.trim();
+      if (!email || !password) {
+        alert('Veuillez saisir email et mot de passe');
+        return;
+      }
+
+      const type = mode === 'signup' ? 'firebase-signup-email' : 'firebase-signin-email';
+      console.log('🔗 handleFirebaseEmailAuth appelé:', mode, email);
+      try {
+        const result = await chrome.runtime.sendMessage({
+          type,
+          data: { email, password }
+        });
+
+        if (result.success || result.user) {
+          document.querySelector('.simple-auth-modal')?.remove();
+          setTimeout(() => location.reload(), 800);
+        } else {
+          alert(result.error?.message || 'Erreur d\'auth firebase');
+        }
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    
     console.log('✅ Fonction Firebase Auth Google définie');
     console.log('🔍 Vérification:', typeof window.handleFirebaseGoogleSignIn === 'function' ? '✅ OK' : '❌ ERREUR');
   }
@@ -152,12 +183,28 @@ class ContentAuthIntegration {
       
       console.log('👤 Current user check result:', currentUser);
       
-      if (currentUser && currentUser.success && currentUser.user) {
-        console.log('✅ Utilisateur authentifié:', currentUser.user.email);
+      // --- MODIFICATION ---
+      // Le background peut renvoyer directement l'objet user (sans success)
+      // ou bien un objet { success: true, user: {...} }
+      let user = null;
+      if (currentUser && typeof currentUser === 'object') {
+        if ('success' in currentUser) {
+          // Nouveau format { success, user }
+          if (currentUser.success) {
+            user = currentUser.user || null;
+          }
+        } else {
+          // Ancien format: l'objet utilisateur directement
+          user = currentUser;
+        }
+      }
+
+      if (user) {
+        console.log('✅ Utilisateur authentifié:', user.email || user.uid);
         return { 
           allowed: true,
           method: 'firebase',
-          user: currentUser.user
+          user
         };
       } else {
         console.log('❌ Utilisateur non authentifié');
@@ -265,6 +312,14 @@ class ContentAuthIntegration {
           </svg>
           Se connecter avec Google
         </button>
+
+        <div style="margin: 10px 0; font-weight:600; color:#a3a3a3;">ou</div>
+
+        <input id="firebase-auth-email" type="email" placeholder="Email" style="width:100%;padding:12px;margin-bottom:12px;border:1px solid #ddd;border-radius:6px;font-size:14px;"/>
+        <input id="firebase-auth-password" type="password" placeholder="Mot de passe" style="width:100%;padding:12px;margin-bottom:16px;border:1px solid #ddd;border-radius:6px;font-size:14px;"/>
+
+        <button id="email-signin-btn" style="width:100%;padding:14px;background:#2563eb;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-bottom:10px;">Se connecter</button>
+        <button id="email-signup-btn" style="width:100%;padding:14px;background:#10b981;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;">Créer un compte</button>
         
         <div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center;">
           <button onclick="this.parentElement.parentElement.parentElement.remove()" 
@@ -304,6 +359,13 @@ class ContentAuthIntegration {
         }
       });
     }
+
+    modal.querySelector('#email-signin-btn')?.addEventListener('click', () => {
+      window.handleFirebaseEmailAuth('signin');
+    });
+    modal.querySelector('#email-signup-btn')?.addEventListener('click', () => {
+      window.handleFirebaseEmailAuth('signup');
+    });
     
     // Auto-suppression après 60 secondes
     setTimeout(() => {
