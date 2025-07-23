@@ -142,6 +142,14 @@ export default async function handler(req, res) {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no'); // Pour Nginx
 
+    // Force l'envoi des en-têtes tout de suite (important pour Railway / proxies)
+    if (typeof res.flushHeaders === 'function') {
+      res.flushHeaders();
+    } else {
+      // fallback minimal : envoyer une ligne vide pour déclencher le flush
+      try { res.write('\n'); } catch (_) {}
+    }
+
     // État de la session
     let sessionState = {
       id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
