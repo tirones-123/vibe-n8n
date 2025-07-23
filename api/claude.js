@@ -68,13 +68,10 @@ export default async function handler(req, res) {
     console.log('🎯 Tokens restants:', req.user.remaining_tokens?.toLocaleString() || 'N/A');
   }
 
-  // Récupère l'en-tête Authorization pour le logging (évite ReferenceError)
-  const authHeader = req.headers?.authorization || null;
-
   // 📊 DETAILED LOGGING - Request inspection
   console.log('\n%c📊 BACKEND: Incoming request analysis', 'background: darkred; color: white; padding: 2px 6px;');
   console.log('🔍 Method:', req.method);
-  console.log('🔑 Authorization header present:', !!authHeader);
+  console.log('🔑 Authorization header present:', !!req.headers.authorization);
   console.log('📋 Headers:', JSON.stringify(req.headers, null, 2));
   
   // Analyser le body de la requête
@@ -141,14 +138,6 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no'); // Pour Nginx
-
-    // Force l'envoi des en-têtes tout de suite (important pour Railway / proxies)
-    if (typeof res.flushHeaders === 'function') {
-      res.flushHeaders();
-    } else {
-      // fallback minimal : envoyer une ligne vide pour déclencher le flush
-      try { res.write('\n'); } catch (_) {}
-    }
 
     // État de la session
     let sessionState = {
