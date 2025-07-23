@@ -1,10 +1,12 @@
 // Firebase Auth Offscreen Document - Exactement selon la doc officielle
 // https://firebase.google.com/docs/auth/web/chrome-extension
 
-// --- Firebase (web-extension entry) imported localy ----------------------
-const { initializeApp } = await import(chrome.runtime.getURL('libs/firebase/firebase-app.js'));
+// --- Firebase bundles (100 % locaux) ----------------------
+const { initializeApp } = await import(
+  chrome.runtime.getURL('libs/firebase-app-bundle.js')
+);
 const { getAuth, onAuthStateChanged, signOut } = await import(
-  chrome.runtime.getURL('libs/firebase/firebase-auth-web-extension.js')
+  chrome.runtime.getURL('libs/firebase-auth-webext-bundle.js')
 );
 // Same config as site
 const firebaseConfig = {

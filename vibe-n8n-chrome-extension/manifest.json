@@ -4,9 +4,8 @@
   "version": "2.0.0",
   "description": "AI-powered workflow assistant for n8n with Claude 4 Sonnet, Firebase Auth & Stripe Pricing",
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'",
-    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self'",
-    "offscreen": "script-src 'self' https://www.gstatic.com https://www.googleapis.com https://securetoken.googleapis.com https://apis.google.com https://identitytoolkit.googleapis.com https://vibe-n8n-production.up.railway.app; object-src 'self'; frame-src https://vibe-n8n-production.up.railway.app;"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; frame-src https://vibe-n8n-production.up.railway.app;",
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self'"
   },
   "permissions": [
     "scripting",
@@ -69,8 +68,8 @@
         "src/content-auth-integration-standalone.js",
         "offscreen.html",
         "offscreen.js",
-        "libs/firebase/firebase-app.js",
-        "libs/firebase/firebase-auth-web-extension.js"
+        "libs/firebase-app-bundle.js",
+        "libs/firebase-auth-webext-bundle.js"
       ],
       "matches": ["chrome-extension://*/*"]
     }
