@@ -94,6 +94,7 @@ export default async function handler(req, res) {
 
   // Manual authentication logic to avoid middleware timing issues
   const authHeader = req.headers.authorization;
+  const authMethod = req.headers['x-auth-method'] || 'UNKNOWN';
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
@@ -114,7 +115,7 @@ export default async function handler(req, res) {
       remaining_tokens: 999999999,
       isSystem: true
     };
-    console.log('🔑 Legacy API key authentication successful');
+    console.log(`🔑 Legacy API key authentication successful (method: ${authMethod})`);
   } else {
     // Firebase authentication
     if (!servicesReady.firebase) {
@@ -139,7 +140,7 @@ export default async function handler(req, res) {
         ...user
       };
       
-      console.log('🔥 Firebase authentication successful:', req.user.email);
+      console.log(`🔥 Firebase authentication successful (method: ${authMethod}):`, req.user.email, `- Plan: ${req.user.plan}, Tokens: ${req.user.remaining_tokens?.toLocaleString()}`);
     } catch (error) {
       console.error('❌ Firebase authentication failed:', error);
       return res.status(401).json({

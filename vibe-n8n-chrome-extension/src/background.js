@@ -682,11 +682,29 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   try {
     console.log('🌐 Tentative de fetch vers:', CONFIG.API_URL);
     
+    // Try to get Firebase token first, fallback to legacy API key
+    let authToken = CONFIG.API_KEY; // Default to legacy
+    let authMethod = 'LEGACY';
+    
+    try {
+      const firebaseToken = await firebaseGetIdToken();
+      if (firebaseToken) {
+        authToken = firebaseToken;
+        authMethod = 'FIREBASE';
+        console.log('🔥 Using Firebase authentication token');
+      } else {
+        console.log('🔑 Firebase token not available, using legacy API key');
+      }
+    } catch (firebaseError) {
+      console.log('⚠️ Firebase auth failed, falling back to legacy:', firebaseError.message);
+    }
+    
     const fetchPromise = fetch(CONFIG.API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CONFIG.API_KEY}`
+        'Authorization': `Bearer ${authToken}`,
+        'X-Auth-Method': authMethod // For debugging
       },
       body: JSON.stringify(requestBody)
     });
@@ -846,11 +864,29 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
   console.log('📤 Envoi requête amélioration workflow RAG');
   console.log('📦 Payload size:', JSON.stringify(requestBody).length, 'chars');
 
+  // Try to get Firebase token first, fallback to legacy API key  
+  let authToken = CONFIG.API_KEY; // Default to legacy
+  let authMethod = 'LEGACY';
+  
+  try {
+    const firebaseToken = await firebaseGetIdToken();
+    if (firebaseToken) {
+      authToken = firebaseToken;
+      authMethod = 'FIREBASE';
+      console.log('🔥 Using Firebase authentication token for improvement');
+    } else {
+      console.log('🔑 Firebase token not available for improvement, using legacy API key');
+    }
+  } catch (firebaseError) {
+    console.log('⚠️ Firebase auth failed for improvement, falling back to legacy:', firebaseError.message);
+  }
+
   const response = await fetch(CONFIG.API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${CONFIG.API_KEY}`
+      'Authorization': `Bearer ${authToken}`,
+      'X-Auth-Method': authMethod // For debugging
     },
     body: JSON.stringify(requestBody)
   });

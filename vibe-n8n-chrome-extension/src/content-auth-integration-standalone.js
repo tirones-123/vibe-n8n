@@ -391,12 +391,40 @@ class ContentAuthIntegration {
       payload.baseWorkflow = baseWorkflow;
     }
 
+    // Try to get Firebase token first, fallback to legacy API key
+    let authToken = this.CONFIG.LEGACY_API_KEY; // Default to legacy
+    let authMethod = 'LEGACY';
+    
+    try {
+      const currentUser = await chrome.runtime.sendMessage({ type: 'firebase-get-user' });
+      if (currentUser && currentUser.success !== false) {
+        // Try to get Firebase ID token
+        const tokenResponse = await chrome.runtime.sendMessage({ 
+          type: 'firebase-get-token',
+          data: { forceRefresh: false }
+        });
+        
+        if (tokenResponse && typeof tokenResponse === 'string') {
+          authToken = tokenResponse;
+          authMethod = 'FIREBASE';
+          console.log('🔥 Using Firebase authentication token for content auth request');
+        } else {
+          console.log('🔑 Firebase token not available, using legacy API key');
+        }
+      } else {
+        console.log('🔑 No Firebase user, using legacy API key');
+      }
+    } catch (firebaseError) {
+      console.log('⚠️ Firebase auth failed, falling back to legacy:', firebaseError.message);
+    }
+
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.CONFIG.LEGACY_API_KEY}`
+          'Authorization': `Bearer ${authToken}`,
+          'X-Auth-Method': authMethod // For debugging
         },
         body: JSON.stringify(payload)
       });
