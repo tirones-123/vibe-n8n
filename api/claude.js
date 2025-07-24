@@ -465,7 +465,8 @@ export default async function handler(req, res) {
             output_tokens: result.tokensUsed.output || 0,
             workflow_size: sessionState.workflowSize,
             mode: sessionState.mode,
-            duration: duration
+            duration: duration,
+            similar_workflows: result.similarWorkflows || []
           });
 
           console.log(`📊 [${sessionState.id}] Usage reported for user ${req.user.uid}`);
