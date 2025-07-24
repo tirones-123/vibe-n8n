@@ -99,6 +99,21 @@ class FirebaseService {
     }
   }
 
+  // Check current email verification status with Firebase Admin (server-side truth)
+  async checkEmailVerificationStatus(uid) {
+    try {
+      const userRecord = await admin.auth().getUser(uid);
+      return {
+        emailVerified: userRecord.emailVerified,
+        email: userRecord.email,
+        provider: userRecord.providerData?.[0]?.providerId || 'unknown'
+      };
+    } catch (error) {
+      console.error('Error checking email verification status:', error);
+      return null;
+    }
+  }
+
   // Activate user after email verification
   async activateUserAfterEmailVerification(uid) {
     try {
