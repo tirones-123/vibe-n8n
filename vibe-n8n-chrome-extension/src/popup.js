@@ -515,13 +515,52 @@ async function handleSignUpEmail() {
 
     if ((response && response.success) || response?.user) {
       console.log('✅ Popup: Account created successfully');
+      
+      // Vérifier si l'email de vérification a été envoyé
+      if (response.verificationEmailSent) {
+        console.log('📧 Popup: Email verification sent');
+        
+        // Afficher un message de vérification d'email
+        signUpBtn.textContent = '📧 Vérifiez votre email';
+        signUpBtn.style.backgroundColor = '#f59e0b';
+        
+        // Afficher un message détaillé
+        setTimeout(() => {
+          alert(`✅ Compte créé avec succès !\n\n📧 Un email de vérification a été envoyé à :\n${email}\n\nVeuillez cliquer sur le lien dans l'email pour activer vos 70,000 tokens gratuits.\n\n⚠️ Vous ne pourrez pas utiliser l'assistant IA tant que votre email n'est pas vérifié.`);
+          
+          // Clear les champs
+          document.getElementById('signupEmailInput').value = '';
+          document.getElementById('signupPasswordInput').value = '';
+          document.getElementById('confirmPasswordInput').value = '';
+          
+          // Basculer vers l'onglet de connexion
+          switchTab('email');
+          
+          // Pré-remplir l'email pour faciliter la connexion après vérification
+          document.getElementById('emailInput').value = email;
+          
+          setTimeout(() => window.close(), 2000);
+        }, 500);
+      } else {
+        // Fallback si l'email de vérification n'a pas pu être envoyé
+        signUpBtn.textContent = '⚠️ Vérification manuelle requise';
+        signUpBtn.style.backgroundColor = '#ef4444';
+        
+        setTimeout(() => {
+          alert(`✅ Compte créé avec succès !\n\n⚠️ L'email de vérification n'a pas pu être envoyé automatiquement.\n\nVeuillez vous connecter puis vérifier manuellement votre email depuis votre tableau de bord Firebase.`);
+          
+          // Clear les champs et switch
+          document.getElementById('signupEmailInput').value = '';
+          document.getElementById('signupPasswordInput').value = '';
+          document.getElementById('confirmPasswordInput').value = '';
+          switchTab('email');
+          document.getElementById('emailInput').value = email;
+          
+          setTimeout(() => window.close(), 2000);
+        }, 500);
+      }
+      
       await checkAuthStatus();
-      signUpBtn.textContent = '✅ Compte créé !';
-      // Clear les champs
-      document.getElementById('signupEmailInput').value = '';
-      document.getElementById('signupPasswordInput').value = '';
-      document.getElementById('confirmPasswordInput').value = '';
-      setTimeout(() => window.close(), 1200);
     } else {
       console.warn('❌ Popup: Account creation failed', response);
       signUpBtn.textContent = '❌ Erreur';
@@ -579,86 +618,95 @@ async function handleSignOut() {
     signOutBtn.textContent = '⏳ Déconnexion...';
     signOutBtn.disabled = true;
     
-    // 1. Supprimer le token Chrome Identity
+    // 1. Déconnexion Firebase (toujours nécessaire)
+    try {
+      await chrome.runtime.sendMessage({ type: 'firebase-signout' });
+      console.log('✅ Popup: Firebase signout success');
+    } catch (e) {
+      console.log('⚠️ Popup: Firebase signout error', e);
+    }
+    
+    // 2. Vérifier s'il y a des tokens Chrome Identity (Google uniquement)
+    let hasGoogleTokens = false;
     try {
       const token = await new Promise((resolve) => {
         chrome.identity.getAuthToken({ interactive: false }, resolve);
       });
       
       if (token && !chrome.runtime.lastError) {
+        hasGoogleTokens = true;
+        console.log('🔍 Popup: Google tokens detected - cleaning Chrome Identity');
+        
+        // Supprimer le token principal
         await new Promise((resolve) => {
           chrome.identity.removeCachedAuthToken({ token }, resolve);
         });
         console.log('✅ Popup: Chrome Identity token removed');
-      }
-    } catch (error) {
-      console.log('⚠️ Popup: Could not remove Chrome Identity token:', error);
-    }
-    
-    // 1.5. Déconnexion complète Google (forcée et plus robuste)
-    try {
-      // Nettoyer tous les tokens Chrome Identity pour tous les scopes
-      const scopes = [
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile',
-        'openid',
-        'email',
-        'profile'
-      ];
-      
-      for (const scope of scopes) {
-        try {
-          const token = await new Promise((resolve) => {
-            chrome.identity.getAuthToken({ 
-              interactive: false,
-              scopes: [scope]
-            }, resolve);
-          });
-          
-          if (token && !chrome.runtime.lastError) {
-            await new Promise((resolve) => {
-              chrome.identity.removeCachedAuthToken({ token }, resolve);
+        
+        // Nettoyer tous les tokens Chrome Identity pour tous les scopes
+        const scopes = [
+          'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/userinfo.profile',
+          'openid',
+          'email',
+          'profile'
+        ];
+        
+        for (const scope of scopes) {
+          try {
+            const scopeToken = await new Promise((resolve) => {
+              chrome.identity.getAuthToken({ 
+                interactive: false,
+                scopes: [scope]
+              }, resolve);
             });
-            console.log(`✅ Popup: Removed token for scope: ${scope}`);
+            
+            if (scopeToken && !chrome.runtime.lastError) {
+              await new Promise((resolve) => {
+                chrome.identity.removeCachedAuthToken({ token: scopeToken }, resolve);
+              });
+              console.log(`✅ Popup: Removed token for scope: ${scope}`);
+            }
+          } catch (scopeError) {
+            // Continue même si une scope échoue
+            console.log(`⚠️ Popup: Could not remove token for scope ${scope}:`, scopeError);
           }
-        } catch (scopeError) {
-          // Continue même si une scope échoue
-          console.log(`⚠️ Popup: Could not remove token for scope ${scope}:`, scopeError);
         }
-      }
-      
-      // Forcer la déconnexion de toutes les sessions Google dans Chrome
-      const logoutUrls = [
-        'https://accounts.google.com/logout',
-        'https://accounts.google.com/SignOutOptions'
-      ];
-      
-      for (const url of logoutUrls) {
-        try {
-          const logoutTab = await chrome.tabs.create({
-            url: url,
-            active: false
-          });
-          
-          // Fermer après 3 secondes
-          setTimeout(() => {
-            chrome.tabs.remove(logoutTab.id).catch(() => {});
-          }, 3000);
-        } catch (urlError) {
-          console.log(`⚠️ Popup: Could not open logout URL ${url}:`, urlError);
+        
+        // SEULEMENT pour Google : Forcer la déconnexion des sessions Google dans Chrome
+        console.log('🔐 Popup: Cleaning Google sessions (Google sign-in detected)');
+        const logoutUrls = [
+          'https://accounts.google.com/logout',
+          'https://accounts.google.com/SignOutOptions'
+        ];
+        
+        for (const url of logoutUrls) {
+          try {
+            const logoutTab = await chrome.tabs.create({
+              url: url,
+              active: false
+            });
+            
+            // Fermer après 2 secondes
+            setTimeout(() => {
+              chrome.tabs.remove(logoutTab.id).catch(() => {});
+            }, 2000);
+          } catch (urlError) {
+            console.log(`⚠️ Popup: Could not open logout URL ${url}:`, urlError);
+          }
         }
+      } else {
+        console.log('ℹ️ Popup: No Google tokens found - email/password sign-in');
       }
-      
-      console.log('✅ Popup: Enhanced Google logout initiated');
     } catch (error) {
-      console.log('⚠️ Popup: Could not complete enhanced logout:', error);
+      console.log('⚠️ Popup: Could not check Chrome Identity tokens:', error);
     }
     
-    // 2. Nettoyer le storage local
+    // 3. Nettoyer le storage local
     await chrome.storage.local.remove(['authState']);
     console.log('✅ Popup: Local auth state cleared');
     
-    // 3. Notifier le background script
+    // 4. Notifier le background script
     try {
       await chrome.runtime.sendMessage({
         type: 'auth-signout',
@@ -669,20 +717,15 @@ async function handleSignOut() {
       console.log('⚠️ Popup: Could not notify background script:', error);
     }
     
-    // 4. Mettre à jour l'interface
+    // 5. Mettre à jour l'interface
     hideUserInfo();
     
-    // 0. Firebase signout (background)
-    try {
-      await chrome.runtime.sendMessage({ type: 'firebase-signout' });
-      console.log('✅ Popup: Firebase signout success');
-    } catch (e) {
-      console.log('⚠️ Popup: Firebase signout error', e);
-    }
-    
     // Feedback de succès
+    const method = hasGoogleTokens ? 'Google + Firebase' : 'Firebase';
     signOutBtn.textContent = '✅ Déconnecté !';
     signOutBtn.style.backgroundColor = '#22c55e';
+    
+    console.log(`🎉 Popup: Sign out completed successfully (${method})`);
     
     setTimeout(() => {
       signOutBtn.textContent = originalText;
@@ -690,8 +733,6 @@ async function handleSignOut() {
       signOutBtn.style.backgroundColor = '';
       window.close();
     }, 1500);
-    
-    console.log('🎉 Popup: Sign out completed successfully');
     
   } catch (error) {
     console.error('❌ Popup: Sign out error:', error);

@@ -688,39 +688,62 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   try {
     console.log('🌐 Tentative de fetch vers:', CONFIG.API_URL);
     
-    // Try to get Firebase token first, fallback to legacy API key
-    let authToken = CONFIG.API_KEY; // Default to legacy
-    let authMethod = 'LEGACY';
+    // FIREBASE AUTH OBLIGATOIRE - Pas de fallback legacy pour l'extension Chrome
+    let authToken = null;
+    let authMethod = 'FIREBASE';
     
-    console.log('🔧 Auth token selection process starting...');
+    console.log('🔧 Firebase Auth obligatoire pour extension Chrome...');
     
     try {
-      console.log('🔥 Attempting to get Firebase token...');
+      console.log('🔥 Getting Firebase token (required)...');
       const firebaseToken = await firebaseGetIdToken();
       console.log('🎫 firebaseGetIdToken result:', typeof firebaseToken, firebaseToken ? '✅ Token received' : '❌ No token');
       
       if (firebaseToken && typeof firebaseToken === 'string' && firebaseToken.length > 50) {
         authToken = firebaseToken;
-        authMethod = 'FIREBASE';
         console.log('✅ Using Firebase authentication token (length:', firebaseToken.length, ')');
         console.log('🔤 Token preview:', firebaseToken.substring(0, 50) + '...');
       } else {
-        console.log('❌ Firebase token invalid or empty, using legacy API key');
+        console.error('❌ Firebase token invalid or empty - Extension requires Firebase Auth');
         console.log('🔍 Token details:', { type: typeof firebaseToken, length: firebaseToken?.length });
+        
+        // Envoyer une erreur pour déclencher l'auth modal
+        chrome.tabs.sendMessage(tabId, {
+          type: 'FIREBASE_AUTH_REQUIRED',
+          error: 'Firebase authentication required. Please sign in to continue.'
+        });
+        return;
       }
     } catch (firebaseError) {
-      console.error('❌ Firebase auth failed, falling back to legacy:', firebaseError);
+      console.error('❌ Firebase auth failed - Extension requires authentication:', firebaseError);
       console.log('🔍 Error details:', firebaseError.message, firebaseError.stack);
+      
+      // Envoyer une erreur pour déclencher l'auth modal
+      chrome.tabs.sendMessage(tabId, {
+        type: 'FIREBASE_AUTH_REQUIRED',
+        error: 'Authentication failed: ' + firebaseError.message
+      });
+      return;
     }
     
-    console.log('🏁 Final auth decision:', authMethod, authToken === CONFIG.API_KEY ? 'LEGACY_KEY' : 'FIREBASE_TOKEN');
+    if (!authToken) {
+      console.error('❌ No authentication token available - Extension requires Firebase Auth');
+      chrome.tabs.sendMessage(tabId, {
+        type: 'FIREBASE_AUTH_REQUIRED',
+        error: 'No authentication token available. Please sign in.'
+      });
+      return;
+    }
+    
+    console.log('🏁 Firebase authentication confirmed for extension');
     
     const fetchPromise = fetch(CONFIG.API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`,
-        'X-Auth-Method': authMethod // For debugging
+        'X-Auth-Method': authMethod,
+        'X-Client-Type': 'chrome-extension'
       },
       body: JSON.stringify(requestBody)
     });
@@ -730,6 +753,21 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
 
     console.log('📨 Réponse reçue:', response.status, response.statusText);
     console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
+
+    // Gestion spécifique des erreurs 403 (email non vérifié)
+    if (response.status === 403) {
+      const errorData = await response.json();
+      console.log('📧 Access forbidden:', errorData);
+      
+      if (errorData.code === 'EMAIL_NOT_VERIFIED') {
+        chrome.tabs.sendMessage(tabId, {
+          type: 'EMAIL_NOT_VERIFIED',
+          error: errorData.message,
+          email: errorData.email
+        });
+        return;
+      }
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -875,50 +913,88 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
   console.log('📦 Request body sample (first 1000 chars):', JSON.stringify(requestBody).substring(0, 1000) + '...');
   
   console.log('🌐 Backend endpoint:', CONFIG.API_URL);
-  console.log('🔑 API key (first 20 chars):', CONFIG.API_KEY.substring(0, 20) + '...');
 
   console.log('📤 Envoi requête amélioration workflow RAG');
   console.log('📦 Payload size:', JSON.stringify(requestBody).length, 'chars');
 
-  // Try to get Firebase token first, fallback to legacy API key  
-  let authToken = CONFIG.API_KEY; // Default to legacy
-  let authMethod = 'LEGACY';
+  // FIREBASE AUTH OBLIGATOIRE - Pas de fallback legacy pour l'extension Chrome
+  let authToken = null;
+  let authMethod = 'FIREBASE';
   
-  console.log('🔧 Improvement auth token selection process starting...');
+  console.log('🔧 Firebase Auth obligatoire pour extension Chrome (amélioration)...');
   
   try {
-    console.log('🔥 Attempting to get Firebase token for improvement...');
+    console.log('🔥 Getting Firebase token for improvement (required)...');
     const firebaseToken = await firebaseGetIdToken();
     console.log('🎫 firebaseGetIdToken result (improvement):', typeof firebaseToken, firebaseToken ? '✅ Token received' : '❌ No token');
     
     if (firebaseToken && typeof firebaseToken === 'string' && firebaseToken.length > 50) {
       authToken = firebaseToken;
-      authMethod = 'FIREBASE';
       console.log('✅ Using Firebase authentication token for improvement (length:', firebaseToken.length, ')');
       console.log('🔤 Token preview:', firebaseToken.substring(0, 50) + '...');
     } else {
-      console.log('❌ Firebase token invalid or empty for improvement, using legacy API key');
+      console.error('❌ Firebase token invalid or empty for improvement - Extension requires Firebase Auth');
       console.log('🔍 Token details:', { type: typeof firebaseToken, length: firebaseToken?.length });
+      
+      // Envoyer une erreur pour déclencher l'auth modal
+      chrome.tabs.sendMessage(tabId, {
+        type: 'FIREBASE_AUTH_REQUIRED',
+        error: 'Firebase authentication required for workflow improvement. Please sign in.'
+      });
+      return;
     }
   } catch (firebaseError) {
-    console.error('❌ Firebase auth failed for improvement, falling back to legacy:', firebaseError);
+    console.error('❌ Firebase auth failed for improvement - Extension requires authentication:', firebaseError);
     console.log('🔍 Error details:', firebaseError.message, firebaseError.stack);
+    
+    // Envoyer une erreur pour déclencher l'auth modal
+    chrome.tabs.sendMessage(tabId, {
+      type: 'FIREBASE_AUTH_REQUIRED',
+      error: 'Authentication failed for improvement: ' + firebaseError.message
+    });
+    return;
   }
   
-  console.log('🏁 Final improvement auth decision:', authMethod, authToken === CONFIG.API_KEY ? 'LEGACY_KEY' : 'FIREBASE_TOKEN');
+  if (!authToken) {
+    console.error('❌ No authentication token available for improvement - Extension requires Firebase Auth');
+    chrome.tabs.sendMessage(tabId, {
+      type: 'FIREBASE_AUTH_REQUIRED',
+      error: 'No authentication token available for improvement. Please sign in.'
+    });
+    return;
+  }
+  
+  console.log('🏁 Firebase authentication confirmed for improvement');
 
-  const response = await fetch(CONFIG.API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${authToken}`,
-      'X-Auth-Method': authMethod // For debugging
-    },
-    body: JSON.stringify(requestBody)
-  });
+  try {
+    const response = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+        'X-Auth-Method': authMethod,
+        'X-Client-Type': 'chrome-extension'
+      },
+      body: JSON.stringify(requestBody)
+    });
 
   console.log('📨 Improvement response received:', response.status, response.statusText);
   console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
+
+  // Gestion spécifique des erreurs 403 (email non vérifié) pour amélioration
+  if (response.status === 403) {
+    const errorData = await response.json();
+    console.log('📧 Improvement access forbidden:', errorData);
+    
+    if (errorData.code === 'EMAIL_NOT_VERIFIED') {
+      chrome.tabs.sendMessage(tabId, {
+        type: 'EMAIL_NOT_VERIFIED',
+        error: errorData.message,
+        email: errorData.email
+      });
+      return;
+    }
+  }
 
   if (!response.ok) {
     const error = await response.text();
@@ -953,6 +1029,17 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
 
   // ✅ Finished processing improvement stream – release port
   closeKeepAlivePort(tabId);
+  
+  } catch (error) {
+    console.error('❌ Erreur requête amélioration workflow:', error);
+    chrome.tabs.sendMessage(tabId, {
+      type: 'WORKFLOW_ERROR',
+      error: error.message
+    });
+    
+    // Release port on error
+    closeKeepAlivePort(tabId);
+  }
 }
 
 /**

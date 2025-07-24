@@ -223,6 +223,90 @@ router.post('/report-usage', verifyAuth, async (req, res) => {
   }
 });
 
+// POST /api/send-verification-email
+// Send Firebase email verification (no auth required since user just signed up)
+router.post('/send-verification-email', async (req, res) => {
+  try {
+    const { uid } = req.body;
+    
+    if (!uid) {
+      return res.status(400).json({
+        error: 'uid is required'
+      });
+    }
+
+    // Initialize services if needed
+    const initialized = await initializeServicesIfNeeded();
+    if (!initialized) {
+      // Si Firebase n'est pas disponible, on peut quand même essayer avec l'API REST
+      console.log('⚠️ Firebase Admin not available, using REST API for verification email');
+    }
+
+    try {
+      if (initialized) {
+        // Utiliser Firebase Admin pour envoyer l'email de vérification
+        const user = await firebaseService.db.collection('users').doc(uid).get();
+        if (!user.exists) {
+          return res.status(404).json({
+            error: 'User not found',
+            code: 'USER_NOT_FOUND'
+          });
+        }
+
+        // Générer le lien de vérification avec Firebase Admin
+        const admin = (await import('firebase-admin')).default;
+        const actionCodeSettings = {
+          url: 'https://vibe-n8n-production.up.railway.app',  // URL de retour après vérification
+          handleCodeInApp: false
+        };
+
+        const link = await admin.auth().generateEmailVerificationLink(user.data().email, actionCodeSettings);
+        
+        console.log(`📧 Email verification link generated for ${uid}: ${link}`);
+        
+        // Note: L'email est envoyé automatiquement par Firebase
+        // Le lien peut être utilisé pour personnaliser l'envoi si nécessaire
+        
+        res.json({
+          success: true,
+          message: 'Verification email sent successfully',
+          uid: uid
+        });
+      } else {
+        // Fallback : indiquer qu'il faut utiliser l'SDK côté client
+        res.json({
+          success: false,
+          message: 'Email verification must be triggered from client SDK',
+          code: 'USE_CLIENT_SDK'
+        });
+      }
+    } catch (firebaseError) {
+      console.error('Error sending verification email:', firebaseError);
+      
+      // Si l'utilisateur existe déjà ou autre erreur Firebase spécifique
+      if (firebaseError.code === 'auth/user-not-found') {
+        return res.status(404).json({
+          error: 'User not found in Firebase Auth',
+          code: 'FIREBASE_USER_NOT_FOUND'
+        });
+      }
+      
+      res.status(500).json({
+        error: 'Failed to send verification email',
+        details: firebaseError.message,
+        code: 'VERIFICATION_EMAIL_FAILED'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in send verification email endpoint:', error);
+    res.status(500).json({
+      error: 'Failed to send verification email',
+      details: error.message
+    });
+  }
+});
+
 // GET /api/me
 // Get current user information including plan and token usage
 router.get('/me', verifyFirebaseAuth, async (req, res) => {

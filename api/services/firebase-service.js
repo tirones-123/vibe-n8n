@@ -54,18 +54,20 @@ class FirebaseService {
   }
 
   // Get or create user with default quota
-  async getOrCreateUser(uid, email = null) {
+  async getOrCreateUser(uid, email = null, emailVerified = true) {
     try {
       const userRef = this.db.collection('users').doc(uid);
       const userDoc = await userRef.get();
 
       if (!userDoc.exists) {
-        // Create new user with FREE plan defaults
+        // Create new user - tokens conditionnels selon vérification email
         const newUser = {
           uid,
           email,
           plan: 'FREE',
-          remaining_tokens: 70000, // Free plan: 70k tokens
+          email_verified: emailVerified,
+          // Si email non vérifié, 0 tokens pour bloquer l'usage
+          remaining_tokens: emailVerified ? 70000 : 0,
           this_month_usage_tokens: 0,
           this_month_usage_usd: 0,
           total_tokens_used: 0,
@@ -80,13 +82,61 @@ class FirebaseService {
         };
 
         await userRef.set(newUser);
-        console.log(`📝 Created new FREE user: ${uid}`);
+        
+        if (emailVerified) {
+          console.log(`📝 Created new FREE user with verified email: ${uid}`);
+        } else {
+          console.log(`📝 Created new user pending email verification: ${uid} (0 tokens until verified)`);
+        }
+        
         return { ...newUser, id: uid };
       }
 
       return { id: uid, ...userDoc.data() };
     } catch (error) {
       console.error('Error getting/creating user:', error);
+      throw error;
+    }
+  }
+
+  // Activate user after email verification
+  async activateUserAfterEmailVerification(uid) {
+    try {
+      const userRef = this.db.collection('users').doc(uid);
+      const userDoc = await userRef.get();
+      
+      if (!userDoc.exists) {
+        throw new Error('User not found');
+      }
+
+      const userData = userDoc.data();
+      
+      // Ne pas réactiver si déjà activé
+      if (userData.email_verified) {
+        console.log(`ℹ️ User ${uid} already has verified email`);
+        return userData;
+      }
+
+      // Activer l'utilisateur avec les tokens FREE
+      const updates = {
+        email_verified: true,
+        remaining_tokens: userData.plan === 'PRO' ? 1000000 : 70000,
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      };
+
+      await userRef.update(updates);
+      
+      console.log(`✅ Activated user ${uid} after email verification - granted ${updates.remaining_tokens} tokens`);
+      
+      // Log activation event
+      await this.logUsageEvent(uid, 'email_verified', {
+        email: userData.email,
+        tokens_granted: updates.remaining_tokens
+      });
+
+      return { ...userData, ...updates };
+    } catch (error) {
+      console.error('Error activating user after email verification:', error);
       throw error;
     }
   }

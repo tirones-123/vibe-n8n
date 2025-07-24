@@ -25,13 +25,39 @@ export async function verifyFirebaseAuth(req, res, next) {
     // Verify token with Firebase
     const decodedToken = await firebaseService.verifyIdToken(idToken);
     
+    // NOUVEAU: Vérifier que l'email est vérifié (sauf pour Google qui est auto-vérifié)
+    const isGoogleAuth = decodedToken.firebase?.sign_in_provider === 'google.com';
+    
+    if (!isGoogleAuth && !decodedToken.email_verified) {
+      return res.status(403).json({
+        error: 'Email verification required',
+        code: 'EMAIL_NOT_VERIFIED',
+        message: 'Please verify your email address before using the service. Check your inbox for the verification email.',
+        email: decodedToken.email,
+        action: 'verify_email'
+      });
+    }
+
     // Get or create user in our database
-    const user = await firebaseService.getOrCreateUser(decodedToken.uid, decodedToken.email);
+    const user = await firebaseService.getOrCreateUser(
+      decodedToken.uid, 
+      decodedToken.email,
+      decodedToken.email_verified || isGoogleAuth  // Google est toujours considéré comme vérifié
+    );
+    
+    // Si l'utilisateur était en attente de vérification et vient de vérifier son email
+    if (!user.email_verified && (decodedToken.email_verified || isGoogleAuth)) {
+      console.log(`🔓 Email verified for user ${decodedToken.uid}, activating account...`);
+      const activatedUser = await firebaseService.activateUserAfterEmailVerification(decodedToken.uid);
+      user.email_verified = true;
+      user.remaining_tokens = activatedUser.remaining_tokens;
+    }
     
     // Attach user info to request
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
+      email_verified: decodedToken.email_verified || isGoogleAuth,
       ...user
     };
 

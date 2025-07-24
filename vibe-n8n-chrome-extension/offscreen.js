@@ -30,7 +30,37 @@ async function firebaseEmailRequest(mode, email, password) {
     const err = await res.json();
     throw new Error(err.error?.message || 'Firebase auth error');
   }
-  return res.json();
+  
+  const result = await res.json();
+  
+  // Si c'est un signup, envoyer automatiquement l'email de vérification
+  if (mode === 'signup') {
+    try {
+      console.log('📧 Sending email verification after signup...');
+      
+      const verificationRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${FIREBASE_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestType: 'VERIFY_EMAIL',
+          idToken: result.idToken
+        })
+      });
+      
+      if (verificationRes.ok) {
+        console.log('✅ Email verification sent successfully');
+        result.verificationEmailSent = true;
+      } else {
+        console.warn('⚠️ Failed to send verification email:', verificationRes.status);
+        result.verificationEmailSent = false;
+      }
+    } catch (verificationError) {
+      console.error('❌ Error sending verification email:', verificationError);
+      result.verificationEmailSent = false;
+    }
+  }
+  
+  return result;
 }
 
 function handleChromeMessages(message, sender, sendResponse) {
@@ -52,7 +82,11 @@ function handleChromeMessages(message, sender, sendResponse) {
     console.log('🔍 currentUser type:', typeof currentUser);
     console.log('🔧 currentUser keys:', currentUser ? Object.keys(currentUser) : 'none');
     
-    if (currentUser && typeof currentUser.getIdToken === 'function') {
+    if (currentUser && currentUser.idToken) {
+      // PRIORITÉ 1: Utiliser l'idToken directement (notre objet plat après signup/signin)
+      console.log('✅ Using currentUser.idToken directly:', typeof currentUser.idToken, currentUser.idToken ? currentUser.idToken.substring(0, 50) + '...' : 'null');
+      sendResponse(currentUser.idToken);
+    } else if (currentUser && typeof currentUser.getIdToken === 'function') {
       console.log('🔥 Using Firebase SDK getIdToken() method...');
       
       try {
@@ -76,7 +110,9 @@ function handleChromeMessages(message, sender, sendResponse) {
       console.log('✅ Token from stsTokenManager:', typeof token, token ? token.substring(0, 50) + '...' : 'null');
       sendResponse(token);
     } else {
-      console.log('❌ No valid way to get Firebase token');
+      console.log('❌ No Firebase token available - user must sign in');
+      console.log('  - currentUser exists:', !!currentUser);
+      console.log('  - currentUser.idToken available:', !!(currentUser && currentUser.idToken));
       console.log('  - currentUser.getIdToken available:', !!(currentUser && currentUser.getIdToken));
       console.log('  - currentUser.stsTokenManager available:', !!(currentUser && currentUser.stsTokenManager));
       sendResponse(null);
@@ -145,9 +181,43 @@ function handleChromeMessages(message, sender, sendResponse) {
           uid: result.localId,
           email: result.email,
           idToken: result.idToken,
-          refreshToken: result.refreshToken
+          refreshToken: result.refreshToken,
+          emailVerified: false  // Pour les nouveaux comptes email/password
         };
-        sendResponse({ success: true, user: currentUser });
+        
+        // Si c'est un signup, créer immédiatement l'utilisateur dans la base de données
+        if (mode === 'signup') {
+          try {
+            console.log('👤 Creating user entry in database after signup...');
+            
+            const createUserRes = await fetch('https://vibe-n8n-production.up.railway.app/api/initialize-user', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${result.idToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (createUserRes.ok) {
+              const userCreationResult = await createUserRes.json();
+              console.log('✅ User entry created in database:', userCreationResult.user);
+              currentUser.databaseUserCreated = true;
+            } else {
+              console.warn('⚠️ Failed to create user entry in database:', createUserRes.status);
+              currentUser.databaseUserCreated = false;
+            }
+          } catch (userCreationError) {
+            console.error('❌ Error creating user entry in database:', userCreationError);
+            currentUser.databaseUserCreated = false;
+          }
+        }
+        
+        sendResponse({ 
+          success: true, 
+          user: currentUser,
+          isNewUser: mode === 'signup',
+          verificationEmailSent: result.verificationEmailSent || false
+        });
       } catch (e) {
         sendResponse({ success: false, error: { message: e.message } });
       }

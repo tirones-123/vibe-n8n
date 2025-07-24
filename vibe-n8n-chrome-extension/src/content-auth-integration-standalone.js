@@ -391,31 +391,46 @@ class ContentAuthIntegration {
       payload.baseWorkflow = baseWorkflow;
     }
 
-    // Try to get Firebase token first, fallback to legacy API key
-    let authToken = this.CONFIG.LEGACY_API_KEY; // Default to legacy
-    let authMethod = 'LEGACY';
+    // FIREBASE AUTH OBLIGATOIRE - Pas de fallback legacy pour l'extension Chrome
+    let authToken = null;
+    let authMethod = 'FIREBASE';
     
     try {
       const currentUser = await chrome.runtime.sendMessage({ type: 'firebase-get-user' });
-      if (currentUser && currentUser.success !== false) {
-        // Try to get Firebase ID token
-        const tokenResponse = await chrome.runtime.sendMessage({ 
-          type: 'firebase-get-token',
-          data: { forceRefresh: false }
-        });
-        
-        if (tokenResponse && typeof tokenResponse === 'string') {
-          authToken = tokenResponse;
-          authMethod = 'FIREBASE';
-          console.log('🔥 Using Firebase authentication token for content auth request');
-        } else {
-          console.log('🔑 Firebase token not available, using legacy API key');
-        }
+      if (!currentUser || currentUser.success === false) {
+        throw new Error('No Firebase user available - authentication required');
+      }
+      
+      // Get Firebase ID token (required)
+      const tokenResponse = await chrome.runtime.sendMessage({ 
+        type: 'firebase-get-token',
+        data: { forceRefresh: false }
+      });
+      
+      if (tokenResponse && typeof tokenResponse === 'string' && tokenResponse.length > 50) {
+        authToken = tokenResponse;
+        console.log('🔥 Using Firebase authentication token for content auth request');
       } else {
-        console.log('🔑 No Firebase user, using legacy API key');
+        throw new Error('Firebase token not available or invalid - authentication required');
       }
     } catch (firebaseError) {
-      console.log('⚠️ Firebase auth failed, falling back to legacy:', firebaseError.message);
+      console.error('❌ Firebase auth failed for content request:', firebaseError.message);
+      this.handleAccessDenied({
+        allowed: false,
+        reason: 'FIREBASE_AUTH_REQUIRED',
+        action: 'show_auth_modal'
+      });
+      return null;
+    }
+    
+    if (!authToken) {
+      console.error('❌ No authentication token available - Extension requires Firebase Auth');
+      this.handleAccessDenied({
+        allowed: false,
+        reason: 'FIREBASE_AUTH_REQUIRED',
+        action: 'show_auth_modal'
+      });
+      return null;
     }
 
     try {

@@ -3681,6 +3681,32 @@ async function checkSavedDomains(currentHostname) {
     const lastMessage = document.querySelector('.ai-message-assistant:last-child .ai-message-bubble');
 
     switch (message.type) {
+      case 'FIREBASE_AUTH_REQUIRED':
+        console.log('🔐 Firebase authentication required:', message.error);
+        if (contentAuthIntegration && contentAuthIntegration.showSimpleAuthModal) {
+          contentAuthIntegration.showSimpleAuthModal();
+        } else {
+          alert('Firebase authentication required: ' + (message.error || 'Please sign in to continue.'));
+        }
+        break;
+      
+      case 'EMAIL_NOT_VERIFIED':
+        console.log('📧 Email verification required:', message.error);
+        // Afficher un message spécifique pour la vérification d'email
+        if (lastMessage) {
+          updateChatMessage(lastMessage, 
+            '📧 **Vérification d\'email requise**\n\n' +
+            'Votre email n\'est pas encore vérifié. Pour utiliser l\'assistant IA :\n\n' +
+            '1. 📨 Vérifiez votre boîte email\n' +
+            '2. 🔗 Cliquez sur le lien de vérification\n' +
+            '3. 🔄 Rechargez cette page\n\n' +
+            '*Vous recevrez 70,000 tokens gratuits après vérification !*', 
+            false
+          );
+        }
+        updateCodeStatus('email-verification-required');
+        break;
+        
       case 'WORKFLOW_GENERATION_START':
         if (lastMessage) {
           updateChatMessage(lastMessage, message.message, true);
@@ -4095,6 +4121,6 @@ async function checkSavedDomains(currentHostname) {
         port.onDisconnect.addListener(() => {
         });
       }
-    });
-  }
-})(); // End of initializeExtension function 
+          });
+    }
+  })(); // End of initializeExtension function 
