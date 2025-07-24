@@ -174,6 +174,26 @@ async function firebaseGetIdToken(forceRefresh = false) {
   }
 }
 
+// NEW: Send email verification
+async function firebaseSendEmailVerification() {
+  console.log('📧 firebaseSendEmailVerification called');
+  
+  return sendToOffscreen({
+    type: 'firebase-send-email-verification',
+    target: 'offscreen'
+  });
+}
+
+// NEW: Check email verification status
+async function firebaseCheckEmailVerified() {
+  console.log('🔍 firebaseCheckEmailVerified called');
+  
+  return sendToOffscreen({
+    type: 'firebase-check-email-verified',
+    target: 'offscreen'
+  });
+}
+
 async function firebaseGetCurrentUser() {
   console.log('👤 firebaseGetCurrentUser called');
   
@@ -476,6 +496,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'firebase-signin-google') {
     console.log('🔐 Firebase sign in with Google');
     firebaseSignInWithGoogle()
+      .then(response => sendResponse(response))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: { code: error.code, message: error.message } 
+      }));
+    return true; // Async response
+  }
+
+  // NEW: Send email verification
+  if (request.type === 'firebase-send-email-verification') {
+    console.log('📧 Sending email verification...');
+    firebaseSendEmailVerification()
+      .then(response => sendResponse(response))
+      .catch(error => sendResponse({ 
+        success: false, 
+        error: { code: error.code, message: error.message } 
+      }));
+    return true; // Async response
+  }
+
+  // NEW: Check email verification status
+  if (request.type === 'firebase-check-email-verified') {
+    console.log('🔍 Checking email verification status...');
+    firebaseCheckEmailVerified()
       .then(response => sendResponse(response))
       .catch(error => sendResponse({ 
         success: false, 

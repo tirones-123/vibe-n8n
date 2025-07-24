@@ -157,6 +157,12 @@ class ContentAuthIntegration {
         });
 
         if (result.success || result.user) {
+          // Special handling for signup with email verification
+          if (mode === 'signup' && result.emailVerificationSent) {
+            this.showEmailVerificationMessage(email);
+            return;
+          }
+          
           document.querySelector('.simple-auth-modal')?.remove();
           setTimeout(() => location.reload(), 800);
         } else {
@@ -228,6 +234,13 @@ class ContentAuthIntegration {
   handleAccessDenied(checkResult) {
     console.log('🚫 Accès refusé:', checkResult.reason);
     
+    // NEW: Special handling for email verification errors
+    if (checkResult.code === 'EMAIL_NOT_VERIFIED') {
+      console.log('📧 Email non vérifié détecté');
+      this.showEmailVerificationModal(checkResult.email || 'votre email');
+      return;
+    }
+    
     switch (checkResult.action) {
       case 'show_auth_modal':
         console.log('🔐 Affichage du modal d\'authentification requis');
@@ -243,6 +256,80 @@ class ContentAuthIntegration {
         this.showSimpleAuthModal();
         break;
     }
+  }
+
+  // NEW: Show email verification modal for backend errors
+  showEmailVerificationModal(email) {
+    console.log('📧 Affichage du modal de vérification email pour:', email);
+    
+    const modal = document.createElement('div');
+    modal.className = 'verification-modal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    `;
+    
+    modal.innerHTML = `
+      <div style="
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        text-align: center;
+        max-width: 400px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      ">
+        <div style="font-size: 48px; margin-bottom: 20px;">📧</div>
+        <h3 style="color: #dc2626; margin-bottom: 15px; font-size: 20px;">Email non vérifié</h3>
+        <p style="color: #666; margin-bottom: 20px; line-height: 1.5;">
+          Vous devez vérifier votre adresse email:<br>
+          <strong style="color: #2563eb;">${email}</strong>
+        </p>
+        <p style="color: #666; margin-bottom: 30px; line-height: 1.5;">
+          Vérifiez votre boîte mail et cliquez sur le lien de vérification.
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+          <button onclick="contentAuthIntegration.resendVerificationEmail()" style="
+            padding: 12px 20px; 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+          ">Renvoyer l'email</button>
+          <button onclick="contentAuthIntegration.checkEmailVerification()" style="
+            padding: 12px 20px; 
+            background: #10b981; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+          ">J'ai vérifié</button>
+        </div>
+        <button onclick="document.querySelector('.verification-modal').remove()" style="
+          padding: 8px 16px; 
+          background: #e5e7eb; 
+          color: #374151;
+          border: none; 
+          border-radius: 6px; 
+          cursor: pointer;
+          font-size: 14px;
+        ">Fermer</button>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
   }
 
   // Simple auth modal selon la doc officielle Firebase (Google seulement)
@@ -373,6 +460,92 @@ class ContentAuthIntegration {
         modal.remove();
       }
     }, 60000);
+  }
+
+  // NEW: Show email verification message
+  showEmailVerificationMessage(email) {
+    const modal = document.querySelector('.simple-auth-modal');
+    if (modal) {
+      modal.innerHTML = `
+        <div style="text-align: center; padding: 30px; background: white; border-radius: 12px; max-width: 400px; margin: 50px auto;">
+          <div style="font-size: 48px; margin-bottom: 20px;">📧</div>
+          <h3 style="color: #2563eb; margin-bottom: 15px;">Vérifiez votre email</h3>
+          <p style="color: #666; margin-bottom: 20px;">
+            Un email de vérification a été envoyé à:<br>
+            <strong>${email}</strong>
+          </p>
+          <p style="color: #666; margin-bottom: 30px;">
+            Cliquez sur le lien dans l'email pour activer votre compte et accéder aux services.
+          </p>
+                     <div style="display: flex; gap: 10px; justify-content: center;">
+             <button onclick="contentAuthIntegration.resendVerificationEmail()" style="
+               padding: 12px 24px; 
+               background: #3b82f6; 
+               color: white; 
+               border: none; 
+               border-radius: 8px; 
+               cursor: pointer;
+               font-weight: 500;
+             ">Renvoyer l'email</button>
+             <button onclick="contentAuthIntegration.checkEmailVerification()" style="
+               padding: 12px 24px; 
+               background: #10b981; 
+               color: white; 
+               border: none; 
+               border-radius: 8px; 
+               cursor: pointer;
+               font-weight: 500;
+             ">J'ai vérifié</button>
+           </div>
+          <button onclick="document.querySelector('.simple-auth-modal').remove()" style="
+            position: absolute; 
+            top: 10px; 
+            right: 15px; 
+            background: none; 
+            border: none; 
+            font-size: 24px; 
+            cursor: pointer; 
+            color: #999;
+          ">×</button>
+        </div>
+      `;
+    }
+  }
+
+  // NEW: Resend verification email
+  async resendVerificationEmail() {
+    try {
+      const result = await chrome.runtime.sendMessage({
+        type: 'firebase-send-email-verification'
+      });
+      
+      if (result.success) {
+        alert('📧 Email de vérification renvoyé !');
+      } else {
+        alert('❌ Erreur lors de l\'envoi: ' + result.error?.message);
+      }
+    } catch (error) {
+      alert('❌ Erreur: ' + error.message);
+    }
+  }
+
+  // NEW: Check email verification and refresh
+  async checkEmailVerification() {
+    try {
+      const result = await chrome.runtime.sendMessage({
+        type: 'firebase-check-email-verified'
+      });
+      
+      if (result.success && result.emailVerified) {
+        alert('✅ Email vérifié ! Vous pouvez maintenant utiliser le service.');
+        document.querySelector('.simple-auth-modal')?.remove();
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        alert('⚠️ Email pas encore vérifié. Vérifiez votre boîte mail et cliquez sur le lien.');
+      }
+    } catch (error) {
+      alert('❌ Erreur lors de la vérification: ' + error.message);
+    }
   }
 
   // Make authenticated request

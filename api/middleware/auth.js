@@ -25,6 +25,22 @@ export async function verifyFirebaseAuth(req, res, next) {
     // Verify token with Firebase
     const decodedToken = await firebaseService.verifyIdToken(idToken);
     
+    // NEW: Enforce email verification
+    try {
+      await firebaseService.verifyEmailVerification(decodedToken.uid, decodedToken.email);
+    } catch (verificationError) {
+      if (verificationError.message === 'EMAIL_NOT_VERIFIED') {
+        return res.status(403).json({
+          error: 'Email not verified',
+          code: 'EMAIL_NOT_VERIFIED',
+          message: 'Vous devez vérifier votre adresse email avant d\'utiliser ce service.',
+          action: 'verify_email',
+          email: decodedToken.email
+        });
+      }
+      throw verificationError; // Re-throw other errors
+    }
+    
     // Get or create user in our database
     const user = await firebaseService.getOrCreateUser(decodedToken.uid, decodedToken.email);
     
@@ -32,6 +48,7 @@ export async function verifyFirebaseAuth(req, res, next) {
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
+      emailVerified: true, // We know it's verified at this point
       ...user
     };
 
