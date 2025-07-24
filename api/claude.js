@@ -3,9 +3,43 @@ import firebaseService from './services/firebase-service.js';
 import stripeService from './services/stripe-service.js';
 import { verifyAuth, checkTokenQuota } from './middleware/auth.js';
 
-// Initialize services
-await firebaseService.initialize();
-await stripeService.initialize();
+// Services initialization status
+let servicesInitialized = false;
+let servicesInitializing = false;
+
+// Initialize services safely and conditionally
+async function initializeServicesIfNeeded() {
+  if (servicesInitialized) return true;
+  if (servicesInitializing) return false; // Avoid concurrent initialization
+  
+  servicesInitializing = true;
+  
+  try {
+    // Try to initialize Firebase (optional for RAG-only mode)
+    try {
+      await firebaseService.initialize();
+      console.log('✅ Firebase service initialized');
+    } catch (firebaseError) {
+      console.log('⚠️ Firebase not configured - running in legacy mode:', firebaseError.message);
+    }
+    
+    // Try to initialize Stripe (optional for RAG-only mode)
+    try {
+      await stripeService.initialize();
+      console.log('✅ Stripe service initialized');
+    } catch (stripeError) {
+      console.log('⚠️ Stripe not configured - payment features disabled:', stripeError.message);
+    }
+    
+    servicesInitialized = true;
+    return true;
+  } catch (error) {
+    console.error('❌ Services initialization failed:', error);
+    return false;
+  } finally {
+    servicesInitializing = false;
+  }
+}
 
 // Monitoring et stats
 let requestStats = {
@@ -32,6 +66,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Initialize services on first request
+  await initializeServicesIfNeeded();
+
   // Authenticate user first
   try {
     await new Promise((resolve, reject) => {
@@ -44,17 +81,19 @@ export default async function handler(req, res) {
     return; // Response already sent by middleware
   }
 
-  // Check token quota before processing
-  try {
-    await new Promise((resolve, reject) => {
-      checkTokenQuota(10000)(req, res, (error) => {
-        if (error) reject(error);
-        else resolve();
+  // Check token quota before processing (only if not system user)
+  if (!req.user.isSystem) {
+    try {
+      await new Promise((resolve, reject) => {
+        checkTokenQuota(10000)(req, res, (error) => {
+          if (error) reject(error);
+          else resolve();
+        });
       });
-    });
-  } catch (quotaError) {
-    requestStats.tokenQuotaBlocked++;
-    return; // Response already sent by middleware
+    } catch (quotaError) {
+      requestStats.tokenQuotaBlocked++;
+      return; // Response already sent by middleware
+    }
   }
 
   const startTime = Date.now();
@@ -69,12 +108,9 @@ export default async function handler(req, res) {
   }
 
   // 📊 DETAILED LOGGING - Request inspection
-  // --- Secure logging of authorization header ---
-  const authHeader = req.headers.authorization || req.headers['Authorization'] || null;
-
   console.log('\n%c📊 BACKEND: Incoming request analysis', 'background: darkred; color: white; padding: 2px 6px;');
   console.log('🔍 Method:', req.method);
-  console.log('🔑 Authorization header present:', !!authHeader);
+  console.log('🔑 Authorization header present:', !!req.headers.authorization);
   console.log('📋 Headers:', JSON.stringify(req.headers, null, 2));
   
   // Analyser le body de la requête

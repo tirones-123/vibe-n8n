@@ -5,14 +5,59 @@ import { verifyFirebaseAuth, verifyAuth } from './middleware/auth.js';
 
 const router = express.Router();
 
-// Initialize services
-await firebaseService.initialize();
-await stripeService.initialize();
+// Services initialization status
+let servicesInitialized = false;
+let servicesInitializing = false;
+
+// Initialize services safely and conditionally
+async function initializeServicesIfNeeded() {
+  if (servicesInitialized) return true;
+  if (servicesInitializing) return false; // Avoid concurrent initialization
+  
+  servicesInitializing = true;
+  
+  try {
+    // Try to initialize Firebase (required for pricing features)
+    try {
+      await firebaseService.initialize();
+      console.log('✅ Firebase service initialized (pricing)');
+    } catch (firebaseError) {
+      console.log('⚠️ Firebase not configured - pricing features disabled:', firebaseError.message);
+      throw firebaseError; // Pricing requires Firebase
+    }
+    
+    // Try to initialize Stripe (required for pricing features)
+    try {
+      await stripeService.initialize();
+      console.log('✅ Stripe service initialized (pricing)');
+    } catch (stripeError) {
+      console.log('⚠️ Stripe not configured - payment features disabled:', stripeError.message);
+      throw stripeError; // Pricing requires Stripe
+    }
+    
+    servicesInitialized = true;
+    return true;
+  } catch (error) {
+    console.error('❌ Pricing services initialization failed:', error);
+    return false;
+  } finally {
+    servicesInitializing = false;
+  }
+}
 
 // POST /api/create-checkout-session
 // Create Stripe checkout session for PRO subscription
 router.post('/create-checkout-session', verifyFirebaseAuth, async (req, res) => {
   try {
+    // Initialize services if needed
+    const initialized = await initializeServicesIfNeeded();
+    if (!initialized) {
+      return res.status(503).json({
+        error: 'Payment services not available',
+        code: 'SERVICES_NOT_CONFIGURED'
+      });
+    }
+
     const { success_url, cancel_url } = req.body;
     
     if (!success_url || !cancel_url) {
@@ -57,6 +102,14 @@ router.post('/create-checkout-session', verifyFirebaseAuth, async (req, res) => 
 // Handle Stripe webhook events (raw body required)
 router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
+    // Initialize services if needed
+    const initialized = await initializeServicesIfNeeded();
+    if (!initialized) {
+      return res.status(503).json({
+        error: 'Payment services not available',
+        code: 'SERVICES_NOT_CONFIGURED'
+      });
+    }
     const signature = req.headers['stripe-signature'];
     
     if (!signature) {
@@ -119,6 +172,8 @@ router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async 
 // Report token usage after AI request
 router.post('/report-usage', verifyAuth, async (req, res) => {
   try {
+    // Initialize services if needed (allow partial initialization for legacy mode)
+    await initializeServicesIfNeeded();
     const { input_tokens, output_tokens = 0 } = req.body;
     
     if (!input_tokens || typeof input_tokens !== 'number') {
@@ -172,6 +227,14 @@ router.post('/report-usage', verifyAuth, async (req, res) => {
 // Get current user information including plan and token usage
 router.get('/me', verifyFirebaseAuth, async (req, res) => {
   try {
+    // Initialize services if needed
+    const initialized = await initializeServicesIfNeeded();
+    if (!initialized) {
+      return res.status(503).json({
+        error: 'User services not available',
+        code: 'SERVICES_NOT_CONFIGURED'
+      });
+    }
     // Get fresh user data
     const userData = await firebaseService.getOrCreateUser(req.user.uid);
     
@@ -233,6 +296,14 @@ router.get('/me', verifyFirebaseAuth, async (req, res) => {
 // Enable usage-based billing for PRO users
 router.post('/enable-usage-based', verifyFirebaseAuth, async (req, res) => {
   try {
+    // Initialize services if needed
+    const initialized = await initializeServicesIfNeeded();
+    if (!initialized) {
+      return res.status(503).json({
+        error: 'Billing services not available',
+        code: 'SERVICES_NOT_CONFIGURED'
+      });
+    }
     const { limit_usd } = req.body;
     
     if (!limit_usd || typeof limit_usd !== 'number' || limit_usd <= 0) {

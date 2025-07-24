@@ -3,6 +3,14 @@ import firebaseService from '../services/firebase-service.js';
 // Middleware to verify Firebase authentication token
 export async function verifyFirebaseAuth(req, res, next) {
   try {
+    // Check if Firebase is initialized
+    if (!firebaseService.initialized) {
+      return res.status(503).json({
+        error: 'Authentication service not available',
+        code: 'FIREBASE_NOT_INITIALIZED'
+      });
+    }
+
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -46,6 +54,11 @@ export async function checkTokenQuota(estimatedTokens = 10000) {
           error: 'User not authenticated',
           code: 'NOT_AUTHENTICATED'
         });
+      }
+
+      // Skip quota check for system users or if Firebase is not available
+      if (req.user.isSystem || !firebaseService.initialized) {
+        return next();
       }
 
       const { allowed, reason, userData } = await firebaseService.canUserMakeRequest(
@@ -163,7 +176,15 @@ export async function verifyAuth(req, res, next) {
   if (token === process.env.BACKEND_API_KEY) {
     return verifyLegacyApiKey(req, res, next);
   } else {
-    // Try Firebase authentication
-    return verifyFirebaseAuth(req, res, next);
+    // Try Firebase authentication (only if Firebase is initialized)
+    if (firebaseService.initialized) {
+      return verifyFirebaseAuth(req, res, next);
+    } else {
+      // Firebase not available, reject non-legacy requests
+      return res.status(503).json({
+        error: 'Authentication service not available - use legacy API key',
+        code: 'FIREBASE_NOT_AVAILABLE'
+      });
+    }
   }
 } 
