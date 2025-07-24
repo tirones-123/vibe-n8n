@@ -53,27 +53,6 @@ class FirebaseService {
     }
   }
 
-  // NEW: Check if user email is verified and enforce verification
-  async verifyEmailVerification(uid, email) {
-    try {
-      const userRecord = await admin.auth().getUser(uid);
-      
-      if (!userRecord.emailVerified) {
-        console.log(`🚫 Email not verified for user: ${email}`);
-        throw new Error('EMAIL_NOT_VERIFIED');
-      }
-      
-      console.log(`✅ Email verified for user: ${email}`);
-      return true;
-    } catch (error) {
-      if (error.message === 'EMAIL_NOT_VERIFIED') {
-        throw error;
-      }
-      console.error('Error checking email verification:', error);
-      throw new Error('Error verifying user email status');
-    }
-  }
-
   // Get or create user with default quota
   async getOrCreateUser(uid, email = null) {
     try {
@@ -101,24 +80,8 @@ class FirebaseService {
         };
 
         await userRef.set(newUser);
-        console.log(`📝 Created new FREE user: ${uid} (${email})`);
-        
-        // Log user creation event
-        await this.logUsageEvent(uid, 'USER_CREATED', {
-          email,
-          plan: 'FREE',
-          initial_tokens: 70000,
-          created_via: 'web_extension'
-        });
-        
+        console.log(`📝 Created new FREE user: ${uid}`);
         return { ...newUser, id: uid };
-      } else {
-        // Update last seen for existing users
-        await userRef.update({
-          updated_at: admin.firestore.FieldValue.serverTimestamp()
-        });
-        
-        console.log(`👤 Existing user loaded: ${uid} (${email})`);
       }
 
       return { id: uid, ...userDoc.data() };

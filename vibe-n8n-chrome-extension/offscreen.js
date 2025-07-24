@@ -33,72 +33,6 @@ async function firebaseEmailRequest(mode, email, password) {
   return res.json();
 }
 
-// NEW: Send email verification with improved configuration
-async function sendEmailVerification(idToken) {
-  const endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${FIREBASE_API_KEY}`;
-  
-  // Get current domain for continue URL
-  const currentDomain = window.location.origin;
-  
-  const body = {
-    requestType: 'VERIFY_EMAIL',
-    idToken: idToken,
-    // Add continue URL to improve deliverability
-    continueUrl: `${currentDomain}/email-verified`,
-    // Add iOS and Android package names if needed
-    canHandleCodeInApp: false
-  };
-  
-  console.log('📧 Sending email verification with payload:', {
-    requestType: body.requestType,
-    continueUrl: body.continueUrl,
-    tokenLength: idToken?.length
-  });
-  
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
-  
-  console.log('📧 Email verification response status:', res.status);
-  
-  if (!res.ok) {
-    const err = await res.json();
-    console.error('❌ Email verification error:', err);
-    throw new Error(err.error?.message || `Failed to send verification email (${res.status})`);
-  }
-  
-  const result = await res.json();
-  console.log('✅ Email verification sent successfully:', result);
-  return result;
-}
-
-// NEW: Get user info including email verification status
-async function getUserInfo(idToken) {
-  const endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`;
-  const body = {
-    idToken: idToken
-  };
-  
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error?.message || 'Failed to get user info');
-  }
-  
-  const data = await res.json();
-  return data.users[0]; // Returns user info including emailVerified
-}
-
 function handleChromeMessages(message, sender, sendResponse) {
   // Extensions may have a number of other reasons to send messages, so you
   // should filter out any that are not meant for the offscreen document.
@@ -211,82 +145,9 @@ function handleChromeMessages(message, sender, sendResponse) {
           uid: result.localId,
           email: result.email,
           idToken: result.idToken,
-          refreshToken: result.refreshToken,
-          emailVerified: result.emailVerified || false
+          refreshToken: result.refreshToken
         };
-
-        // For signup, automatically send email verification
-        if (mode === 'signup') {
-          try {
-            await sendEmailVerification(result.idToken);
-            console.log('✅ Email verification sent to:', result.email);
-            sendResponse({ 
-              success: true, 
-              user: currentUser,
-              emailVerificationSent: true,
-              message: 'Compte créé ! Vérifiez votre email avant d\'utiliser le service.'
-            });
-          } catch (verificationError) {
-            console.error('❌ Failed to send verification email:', verificationError);
-            sendResponse({ 
-              success: true, 
-              user: currentUser,
-              emailVerificationSent: false,
-              warning: 'Compte créé mais l\'email de vérification n\'a pas pu être envoyé. Contactez le support.'
-            });
-          }
-        } else {
-          // For signin, just return user info
-          sendResponse({ success: true, user: currentUser });
-        }
-      } catch (e) {
-        sendResponse({ success: false, error: { message: e.message } });
-      }
-    })();
-    return true;
-  }
-
-  // NEW: Send email verification handler
-  if (message.type === 'firebase-send-email-verification') {
-    (async () => {
-      try {
-        if (!currentUser || !currentUser.idToken) {
-          sendResponse({ success: false, error: { message: 'User not authenticated' } });
-          return;
-        }
-        
-        await sendEmailVerification(currentUser.idToken);
-        sendResponse({ 
-          success: true, 
-          message: 'Email de vérification envoyé !' 
-        });
-      } catch (e) {
-        sendResponse({ success: false, error: { message: e.message } });
-      }
-    })();
-    return true;
-  }
-
-  // NEW: Check email verification status
-  if (message.type === 'firebase-check-email-verified') {
-    (async () => {
-      try {
-        if (!currentUser || !currentUser.idToken) {
-          sendResponse({ success: false, error: { message: 'User not authenticated' } });
-          return;
-        }
-        
-        const userInfo = await getUserInfo(currentUser.idToken);
-        const emailVerified = userInfo.emailVerified || false;
-        
-        // Update current user status
-        currentUser.emailVerified = emailVerified;
-        
-        sendResponse({ 
-          success: true, 
-          emailVerified: emailVerified,
-          user: currentUser
-        });
+        sendResponse({ success: true, user: currentUser });
       } catch (e) {
         sendResponse({ success: false, error: { message: e.message } });
       }
