@@ -256,7 +256,7 @@ router.post('/send-verification-email', async (req, res) => {
         // Générer le lien de vérification avec Firebase Admin
         const admin = (await import('firebase-admin')).default;
         const actionCodeSettings = {
-          url: 'https://vibe-n8n-production.up.railway.app',  // URL de retour après vérification
+          url: 'https://vibe-n8n-production.up.railway.app/api/email-verified',  // Notre belle page personnalisée
           handleCodeInApp: false
         };
 
