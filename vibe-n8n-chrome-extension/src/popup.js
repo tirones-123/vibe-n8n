@@ -524,9 +524,9 @@ async function handleSignUpEmail() {
         signUpBtn.textContent = '📧 Vérifiez votre email';
         signUpBtn.style.backgroundColor = '#f59e0b';
         
-        // Afficher un message détaillé
+        // Créer un joli modal au lieu d'une alert
         setTimeout(() => {
-          alert(`✅ Compte créé avec succès !\n\n📧 Un email de vérification a été envoyé à :\n${email}\n\nVeuillez cliquer sur le lien dans l'email pour activer vos 70,000 tokens gratuits.\n\n⚠️ Vous ne pourrez pas utiliser l'assistant IA tant que votre email n'est pas vérifié.`);
+          createEmailVerificationModal(email);
           
           // Clear les champs
           document.getElementById('signupEmailInput').value = '';
@@ -538,8 +538,6 @@ async function handleSignUpEmail() {
           
           // Pré-remplir l'email pour faciliter la connexion après vérification
           document.getElementById('emailInput').value = email;
-          
-          setTimeout(() => window.close(), 2000);
         }, 500);
       } else {
         // Fallback si l'email de vérification n'a pas pu être envoyé
@@ -547,7 +545,7 @@ async function handleSignUpEmail() {
         signUpBtn.style.backgroundColor = '#ef4444';
         
         setTimeout(() => {
-          alert(`✅ Compte créé avec succès !\n\n⚠️ L'email de vérification n'a pas pu être envoyé automatiquement.\n\nVeuillez vous connecter puis vérifier manuellement votre email depuis votre tableau de bord Firebase.`);
+          createEmailVerificationModal(email, false);
           
           // Clear les champs et switch
           document.getElementById('signupEmailInput').value = '';
@@ -555,8 +553,6 @@ async function handleSignUpEmail() {
           document.getElementById('confirmPasswordInput').value = '';
           switchTab('email');
           document.getElementById('emailInput').value = email;
-          
-          setTimeout(() => window.close(), 2000);
         }, 500);
       }
       
@@ -602,6 +598,212 @@ async function handleSignUpEmail() {
       signUpBtn.disabled = false;
     }, 2000);
   }
+}
+
+/**
+ * Créer un joli modal de vérification d'email
+ */
+function createEmailVerificationModal(email, emailSent = true) {
+  // Supprimer tout modal existant
+  const existingModal = document.querySelector('.email-verification-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  const modal = document.createElement('div');
+  modal.className = 'email-verification-modal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  `;
+  
+  const content = document.createElement('div');
+  content.style.cssText = `
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    max-width: 450px;
+    min-width: 400px;
+    text-align: center;
+    color: #333;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+  `;
+  
+  // Ajouter l'animation CSS
+  if (!document.querySelector('#modal-animations')) {
+    const style = document.createElement('style');
+    style.id = 'modal-animations';
+    style.textContent = `
+      @keyframes modalSlideIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9) translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  if (emailSent) {
+    content.innerHTML = `
+      <div style="font-size: 64px; margin-bottom: 20px;">📧</div>
+      <h2 style="margin-bottom: 15px; color: #059669; font-size: 24px; font-weight: 600;">
+        ✅ Compte créé avec succès !
+      </h2>
+      <p style="margin-bottom: 20px; color: #374151; font-size: 16px; line-height: 1.5;">
+        Un email de vérification a été envoyé à :
+      </p>
+      <div style="
+        background: #f3f4f6; 
+        padding: 12px 16px; 
+        border-radius: 8px; 
+        margin-bottom: 25px;
+        font-family: 'Courier New', monospace;
+        color: #1f2937;
+        font-weight: 500;
+        border: 2px solid #e5e7eb;
+      ">
+        ${email}
+      </div>
+      <div style="
+        background: #fef3c7; 
+        border: 1px solid #f59e0b; 
+        border-radius: 8px; 
+        padding: 16px; 
+        margin-bottom: 30px;
+        text-align: left;
+      ">
+        <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">📋 Étapes suivantes :</h4>
+        <ol style="margin: 0; padding-left: 18px; color: #92400e; font-size: 14px; line-height: 1.4;">
+          <li>Vérifiez votre boîte email (y compris les spams)</li>
+          <li>Cliquez sur le lien de vérification</li>
+          <li>Reconnectez-vous pour activer vos <strong>70,000 tokens gratuits</strong></li>
+        </ol>
+      </div>
+      <div style="
+        background: #fef2f2; 
+        border: 1px solid #fca5a5; 
+        border-radius: 8px; 
+        padding: 12px; 
+        margin-bottom: 25px;
+      ">
+        <p style="margin: 0; color: #dc2626; font-size: 13px; font-weight: 500;">
+          ⚠️ Vous ne pourrez pas utiliser l'assistant IA tant que votre email n'est pas vérifié
+        </p>
+      </div>
+      <button id="close-modal-btn" style="
+        width: 100%; 
+        padding: 14px; 
+        background: #059669; 
+        color: white; 
+        border: none; 
+        border-radius: 8px; 
+        font-size: 16px; 
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      " onmouseover="this.style.backgroundColor='#047857'" onmouseout="this.style.backgroundColor='#059669'">
+        J'ai compris
+      </button>
+    `;
+  } else {
+    content.innerHTML = `
+      <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+      <h2 style="margin-bottom: 15px; color: #dc2626; font-size: 24px; font-weight: 600;">
+        Compte créé - Action requise
+      </h2>
+      <p style="margin-bottom: 20px; color: #374151; font-size: 16px; line-height: 1.5;">
+        Votre compte a été créé pour :
+      </p>
+      <div style="
+        background: #f3f4f6; 
+        padding: 12px 16px; 
+        border-radius: 8px; 
+        margin-bottom: 25px;
+        font-family: 'Courier New', monospace;
+        color: #1f2937;
+        font-weight: 500;
+        border: 2px solid #e5e7eb;
+      ">
+        ${email}
+      </div>
+      <div style="
+        background: #fef2f2; 
+        border: 1px solid #fca5a5; 
+        border-radius: 8px; 
+        padding: 16px; 
+        margin-bottom: 25px;
+      ">
+        <p style="margin: 0 0 10px 0; color: #dc2626; font-size: 14px; font-weight: 500;">
+          ⚠️ L'email de vérification n'a pas pu être envoyé automatiquement
+        </p>
+        <p style="margin: 0; color: #7f1d1d; font-size: 13px; line-height: 1.4;">
+          Veuillez vous connecter puis vérifier manuellement votre email depuis votre tableau de bord Firebase.
+        </p>
+      </div>
+      <button id="close-modal-btn" style="
+        width: 100%; 
+        padding: 14px; 
+        background: #dc2626; 
+        color: white; 
+        border: none; 
+        border-radius: 8px; 
+        font-size: 16px; 
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      " onmouseover="this.style.backgroundColor='#b91c1c'" onmouseout="this.style.backgroundColor='#dc2626'">
+        Compris
+      </button>
+    `;
+  }
+  
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  
+  // Gestionnaire de fermeture
+  const closeBtn = modal.querySelector('#close-modal-btn');
+  const closeModal = () => {
+    modal.style.opacity = '0';
+    modal.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+      modal.remove();
+      window.close();
+    }, 200);
+  };
+  
+  closeBtn.addEventListener('click', closeModal);
+  
+  // Fermer en cliquant en dehors
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+  
+  // Fermer avec Escape
+  const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
 }
 
 /**

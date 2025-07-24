@@ -190,7 +190,7 @@ function handleChromeMessages(message, sender, sendResponse) {
           try {
             console.log('👤 Creating user entry in database after signup...');
             
-            const createUserRes = await fetch('https://vibe-n8n-production.up.railway.app/api/initialize-user', {
+            const createUserRes = await fetch('https://vibe-n8n-production.up.railway.app/api/initialize-new-user', {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${result.idToken}`,

@@ -307,6 +307,139 @@ router.post('/send-verification-email', async (req, res) => {
   }
 });
 
+// POST /api/initialize-new-user
+// Initialize user entry in Firestore after Firebase Auth account creation (no email verification required)
+router.post('/initialize-new-user', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        error: 'Missing or invalid authorization header',
+        code: 'MISSING_AUTH'
+      });
+    }
+
+    const idToken = authHeader.substring(7); // Remove 'Bearer ' prefix
+    
+    // Initialize services if needed
+    const initialized = await initializeServicesIfNeeded();
+    if (!initialized) {
+      return res.status(503).json({
+        error: 'User services not available',
+        code: 'SERVICES_NOT_CONFIGURED'
+      });
+    }
+
+    try {
+      // Verify token with Firebase (but don't check email verification for new users)
+      const decodedToken = await firebaseService.verifyIdToken(idToken);
+      
+      // Detect if it's Google auth or email/password
+      const isGoogleAuth = decodedToken.firebase?.sign_in_provider === 'google.com';
+      const emailVerified = decodedToken.email_verified || isGoogleAuth;
+      
+      // Get or create user in Firestore
+      const userData = await firebaseService.getOrCreateUser(
+        decodedToken.uid, 
+        decodedToken.email,
+        emailVerified
+      );
+      
+      // Log user initialization event
+      await firebaseService.logUsageEvent(decodedToken.uid, 'user_initialized', {
+        email: decodedToken.email,
+        plan: userData.plan,
+        email_verified: emailVerified,
+        tokens_granted: userData.remaining_tokens,
+        created_via: 'chrome_extension_new_user'
+      });
+
+      console.log(`👤 New user initialized in Firestore: ${decodedToken.uid} (${decodedToken.email}) - Email verified: ${emailVerified}, Tokens: ${userData.remaining_tokens}`);
+
+      res.json({
+        success: true,
+        user: {
+          uid: userData.uid,
+          email: userData.email,
+          plan: userData.plan,
+          email_verified: emailVerified,
+          remaining_tokens: userData.remaining_tokens,
+          created_at: userData.created_at
+        },
+        message: emailVerified 
+          ? 'User successfully initialized with active tokens'
+          : 'User created - email verification required to activate tokens'
+      });
+
+    } catch (error) {
+      console.error('Error verifying token for new user:', error);
+      return res.status(401).json({
+        error: 'Invalid authentication token',
+        code: 'INVALID_TOKEN'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error initializing new user:', error);
+    res.status(500).json({
+      error: 'Failed to initialize new user',
+      details: error.message
+    });
+  }
+});
+
+// POST /api/initialize-user
+// Initialize user entry in Firestore after Firebase Auth account creation
+router.post('/initialize-user', verifyFirebaseAuth, async (req, res) => {
+  try {
+    // Initialize services if needed
+    const initialized = await initializeServicesIfNeeded();
+    if (!initialized) {
+      return res.status(503).json({
+        error: 'User services not available',
+        code: 'SERVICES_NOT_CONFIGURED'
+      });
+    }
+
+    // Get or create user in Firestore (this will create the entry if it doesn't exist)
+    const userData = await firebaseService.getOrCreateUser(req.user.uid, req.user.email, req.user.email_verified);
+    
+    // Log user initialization event
+    await firebaseService.logUsageEvent(req.user.uid, 'user_initialized', {
+      email: req.user.email,
+      plan: userData.plan,
+      email_verified: userData.email_verified,
+      tokens_granted: userData.remaining_tokens,
+      created_via: 'chrome_extension'
+    });
+
+    console.log(`👤 User initialized in Firestore: ${req.user.uid} (${req.user.email}) - Email verified: ${req.user.email_verified}, Tokens: ${userData.remaining_tokens}`);
+
+    res.json({
+      success: true,
+      user: {
+        uid: userData.uid,
+        email: userData.email,
+        plan: userData.plan,
+        email_verified: userData.email_verified,
+        remaining_tokens: userData.remaining_tokens,
+        created_at: userData.created_at
+      },
+      message: userData.email_verified 
+        ? 'User successfully initialized with active tokens'
+        : 'User created - email verification required to activate tokens'
+    });
+
+  } catch (error) {
+    console.error('Error initializing user:', error);
+    res.status(500).json({
+      error: 'Failed to initialize user',
+      details: error.message
+    });
+  }
+});
+
 // GET /api/me
 // Get current user information including plan and token usage
 router.get('/me', verifyFirebaseAuth, async (req, res) => {

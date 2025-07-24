@@ -158,6 +158,17 @@ class ContentAuthIntegration {
 
         if (result.success || result.user) {
           document.querySelector('.simple-auth-modal')?.remove();
+          
+          // Si c'est un signup avec email de vérification envoyé, afficher le joli modal
+          if (mode === 'signup' && result.verificationEmailSent) {
+            window.contentAuthIntegration.createEmailVerificationModal(email, true);
+            return; // Ne pas recharger la page immédiatement
+          } else if (mode === 'signup') {
+            window.contentAuthIntegration.createEmailVerificationModal(email, false);
+            return; // Ne pas recharger la page immédiatement
+          }
+          
+          // Pour signin normal, recharger après un délai
           setTimeout(() => location.reload(), 800);
         } else {
           alert(result.error?.message || 'Erreur d\'auth firebase');
@@ -169,6 +180,176 @@ class ContentAuthIntegration {
     
     console.log('✅ Fonction Firebase Auth Google définie');
     console.log('🔍 Vérification:', typeof window.handleFirebaseGoogleSignIn === 'function' ? '✅ OK' : '❌ ERREUR');
+  }
+
+  // Create a beautiful email verification modal
+  createEmailVerificationModal(email, emailSent = true) {
+    // Supprimer tout modal existant
+    const existingModal = document.querySelector('.email-verification-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'email-verification-modal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    `;
+
+    const content = `
+      <div style="
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        max-width: 450px;
+        min-width: 400px;
+        text-align: center;
+        color: #333;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        animation: modalSlideIn 0.3s ease-out;
+      ">
+        <div style="font-size: 64px; margin-bottom: 20px;">📧</div>
+        <h2 style="margin-bottom: 15px; color: ${emailSent ? '#059669' : '#dc2626'}; font-size: 24px; font-weight: 600;">
+          ${emailSent ? '✅ Compte créé avec succès !' : '⚠️ Compte créé - Action requise'}
+        </h2>
+        <p style="margin-bottom: 20px; color: #374151; font-size: 16px; line-height: 1.5;">
+          ${emailSent ? 'Un email de vérification a été envoyé à :' : 'Votre compte a été créé pour :'}
+        </p>
+        <div style="
+          background: #f3f4f6; 
+          padding: 12px 16px; 
+          border-radius: 8px; 
+          margin-bottom: 25px;
+          font-family: 'Courier New', monospace;
+          color: #1f2937;
+          font-weight: 500;
+          border: 2px solid #e5e7eb;
+        ">
+          ${email}
+        </div>
+        ${emailSent ? `
+          <div style="
+            background: #fef3c7; 
+            border: 1px solid #f59e0b; 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 30px;
+            text-align: left;
+          ">
+            <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">📋 Étapes suivantes :</h4>
+            <ol style="margin: 0; padding-left: 18px; color: #92400e; font-size: 14px; line-height: 1.4;">
+              <li>Vérifiez votre boîte email (y compris les spams)</li>
+              <li>Cliquez sur le lien de vérification</li>
+              <li>Reconnectez-vous pour activer vos <strong>70,000 tokens gratuits</strong></li>
+            </ol>
+          </div>
+        ` : `
+          <div style="
+            background: #fef2f2; 
+            border: 1px solid #fca5a5; 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 25px;
+          ">
+            <p style="margin: 0 0 10px 0; color: #dc2626; font-size: 14px; font-weight: 500;">
+              ⚠️ L'email de vérification n'a pas pu être envoyé automatiquement
+            </p>
+            <p style="margin: 0; color: #7f1d1d; font-size: 13px; line-height: 1.4;">
+              Veuillez vous connecter puis vérifier manuellement votre email depuis votre tableau de bord Firebase.
+            </p>
+          </div>
+        `}
+        <div style="
+          background: #fef2f2; 
+          border: 1px solid #fca5a5; 
+          border-radius: 8px; 
+          padding: 12px; 
+          margin-bottom: 25px;
+        ">
+          <p style="margin: 0; color: #dc2626; font-size: 13px; font-weight: 500;">
+            ⚠️ Vous ne pourrez pas utiliser l'assistant IA tant que votre email n'est pas vérifié
+          </p>
+        </div>
+        <button id="close-verification-modal" style="
+          width: 100%; 
+          padding: 14px; 
+          background: ${emailSent ? '#059669' : '#dc2626'}; 
+          color: white; 
+          border: none; 
+          border-radius: 8px; 
+          font-size: 16px; 
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        ">
+          J'ai compris
+        </button>
+        
+        <p style="margin-top: 20px; font-size: 12px; color: #999; line-height: 1.3;">
+          En utilisant notre service, vous acceptez nos conditions d'utilisation.<br>
+          Authentification sécurisée via Firebase.
+        </p>
+      </div>
+    `;
+
+    // Ajouter l'animation CSS si elle n'existe pas
+    if (!document.querySelector('#verification-modal-animations')) {
+      const style = document.createElement('style');
+      style.id = 'verification-modal-animations';
+      style.textContent = `
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    modal.innerHTML = content;
+    document.body.appendChild(modal);
+
+    // Gestionnaire de fermeture
+    const closeBtn = modal.querySelector('#close-verification-modal');
+    const closeModal = () => {
+      modal.style.opacity = '0';
+      setTimeout(() => {
+        modal.remove();
+      }, 200);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+
+    // Fermer en cliquant en dehors
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Fermer avec Escape
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
   }
 
   // Check if user can make a request
@@ -506,6 +687,8 @@ class ContentAuthIntegration {
       };
     }
   }
+
+
 }
 
 // Make available globally et initialiser immédiatement
