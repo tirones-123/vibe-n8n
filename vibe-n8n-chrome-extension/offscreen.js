@@ -88,11 +88,47 @@ function handleChromeMessages(message, sender, sendResponse) {
   // NEW: Sign-out handler – clear cached user & reset iframe
   if (message.type === 'firebase-auth-signout') {
     try {
+      console.log('🚪 Offscreen: Sign out requested');
       currentUser = null;
-      // Reload the iframe to reset Firebase auth state
-      iframe.src = _URL;
-      sendResponse({ success: true });
+      
+      // First, try to sign out from the iframe Firebase auth
+      function handleSignOutMessage({data}) {
+        try {
+          if (data.startsWith('!_{')) return;
+          const parsedData = JSON.parse(data);
+          console.log('📨 Sign out response from iframe:', parsedData);
+          
+          // Whether iframe sign out succeeds or fails, we reset everything
+          iframe.src = _URL; // Reload the iframe to reset Firebase auth state
+          sendResponse({ success: true });
+        } catch (e) {
+          console.log('❌ Error parsing sign out response:', e);
+          iframe.src = _URL; // Still reset iframe
+          sendResponse({ success: true });
+        }
+        self.removeEventListener('message', handleSignOutMessage);
+      }
+      
+      globalThis.addEventListener('message', handleSignOutMessage, false);
+      
+      // Request sign out from iframe
+      const targetOrigin = new URL(_URL).origin;
+      if (iframe && iframe.contentWindow) {
+        console.log('📡 Requesting sign out from iframe...');
+        iframe.contentWindow.postMessage({ signOut: true }, targetOrigin);
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+          self.removeEventListener('message', handleSignOutMessage);
+          iframe.src = _URL; // Force reload anyway
+          sendResponse({ success: true });
+        }, 5000);
+      } else {
+        console.log('❌ No iframe available for sign out');
+        sendResponse({ success: true });
+      }
     } catch (e) {
+      console.log('❌ Sign out error:', e);
       sendResponse({ success: false, error: { message: e.message } });
     }
     return true;

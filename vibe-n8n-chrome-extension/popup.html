@@ -44,10 +44,44 @@
                     Ouvrir le panneau IA
                 </button>
 
-                <!-- NEW: Sign-in button (visible uniquement si non connecté) -->
-                <button id="signInBtn" class="btn primary" style="display:none;">
-                    🔐 Se connecter
-                </button>
+                <!-- NEW: Sign-in section with options (visible uniquement si non connecté) -->
+                <div id="signInSection" class="sign-in-section" style="display:none;">
+                    <div class="sign-in-tabs">
+                        <button id="googleTab" class="tab-btn active" data-tab="google">
+                            🔐 Google
+                        </button>
+                        <button id="emailTab" class="tab-btn" data-tab="email">
+                            📧 Email
+                        </button>
+                    </div>
+                    
+                    <!-- Google Sign-in -->
+                    <div id="googleSignIn" class="sign-in-option active">
+                        <p class="option-description">Connexion rapide avec votre compte Google</p>
+                        <button id="signInGoogleBtn" class="btn primary full-width">
+                            🔐 Se connecter avec Google
+                        </button>
+                        <p class="sign-in-note">
+                            Vous pourrez choisir votre compte Google
+                        </p>
+                    </div>
+                    
+                    <!-- Email/Password Sign-in -->
+                    <div id="emailSignIn" class="sign-in-option">
+                        <div class="form-group">
+                            <input type="email" id="emailInput" placeholder="Votre email" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="passwordInput" placeholder="Votre mot de passe" class="form-input">
+                        </div>
+                        <button id="signInEmailBtn" class="btn primary full-width">
+                            📧 Se connecter
+                        </button>
+                        <p class="sign-in-note">
+                            Créez un compte si vous n'en avez pas
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div class="domain-info">

@@ -25,6 +25,16 @@ const PARENT_FRAME = document.location.ancestorOrigins[0];
 // https://console.firebase.google.com/project/_/authentication/providers
 const PROVIDER = new GoogleAuthProvider();
 
+// Force account selection and prevent automatic sign-in
+PROVIDER.setCustomParameters({
+  prompt: 'select_account', // Force user to select account
+  hd: '', // Allow any domain (remove if you want to restrict to specific domains)
+});
+
+// Additional provider settings for better UX
+PROVIDER.addScope('email');
+PROVIDER.addScope('profile');
+
 function sendResponse(result) {
   globalThis.parent.self.postMessage(JSON.stringify(result), PARENT_FRAME);
 }
@@ -38,5 +48,33 @@ globalThis.addEventListener('message', function({data}) {
     signInWithPopup(auth, PROVIDER)
       .then(sendResponse)
       .catch(sendResponse)
+  } else if (data.signOut) {
+    // Handle sign out request
+    console.log('🚪 Firebase iframe: Sign out requested');
+    auth.signOut()
+      .then(() => {
+        console.log('✅ Firebase iframe: Sign out successful');
+        sendResponse({ success: true, signedOut: true });
+      })
+      .catch((error) => {
+        console.error('❌ Firebase iframe: Sign out error:', error);
+        sendResponse({ success: false, error: error.message });
+      });
+  } else if (data.getIdToken) {
+    // Handle token request
+    if (auth.currentUser) {
+      auth.currentUser.getIdToken(true)  // Force refresh
+        .then((idToken) => {
+          console.log('✅ Firebase iframe: Token retrieved');
+          sendResponse({ idToken });
+        })
+        .catch((error) => {
+          console.error('❌ Firebase iframe: Token error:', error);
+          sendResponse({ error: error.message });
+        });
+    } else {
+      console.log('⚠️ Firebase iframe: No current user for token');
+      sendResponse({ error: 'No authenticated user' });
+    }
   }
 }); 

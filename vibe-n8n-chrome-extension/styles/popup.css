@@ -414,4 +414,92 @@ body {
 .btn.secondary:hover {
   background: #e2e8f0;
   color: #334155;
+}
+
+/* Sign-in section styles */
+.sign-in-section {
+  margin-top: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: white;
+}
+
+.sign-in-tabs {
+  display: flex;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.tab-btn.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+  font-weight: 500;
+}
+
+.tab-btn:hover {
+  background: #f8fafc;
+}
+
+.sign-in-option {
+  display: none;
+}
+
+.sign-in-option.active {
+  display: block;
+}
+
+.option-description {
+  margin: 0 0 12px 0;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+}
+
+.btn.full-width {
+  width: 100%;
+}
+
+.sign-in-note {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+  line-height: 1.4;
 } 

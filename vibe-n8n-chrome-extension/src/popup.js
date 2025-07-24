@@ -10,7 +10,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const userSection = document.getElementById('userSection');
   const userEmail = document.getElementById('userEmail');
   const signOutBtn = document.getElementById('signOutBtn');
-  const signInBtn = document.getElementById('signInBtn');
+  const signInSection = document.getElementById('signInSection');
+  const googleTab = document.getElementById('googleTab');
+  const emailTab = document.getElementById('emailTab');
+  const googleSignIn = document.getElementById('googleSignIn');
+  const emailSignIn = document.getElementById('emailSignIn');
+  const signInGoogleBtn = document.getElementById('signInGoogleBtn');
+  const signInEmailBtn = document.getElementById('signInEmailBtn');
+  const emailInput = document.getElementById('emailInput');
+  const passwordInput = document.getElementById('passwordInput');
   
   // Vérifier l'état d'authentification
   await checkAuthStatus();
@@ -19,8 +27,33 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (signOutBtn) {
     signOutBtn.addEventListener('click', handleSignOut);
   }
-  if (signInBtn) {
-    signInBtn.addEventListener('click', handleSignIn);
+  
+  // Handlers pour les onglets de connexion
+  if (googleTab) {
+    googleTab.addEventListener('click', () => switchTab('google'));
+  }
+  if (emailTab) {
+    emailTab.addEventListener('click', () => switchTab('email'));
+  }
+  
+  // Handlers pour les boutons de connexion
+  if (signInGoogleBtn) {
+    signInGoogleBtn.addEventListener('click', handleSignInGoogle);
+  }
+  if (signInEmailBtn) {
+    signInEmailBtn.addEventListener('click', handleSignInEmail);
+  }
+  
+  // Handler pour Enter key dans les champs email/password
+  if (emailInput) {
+    emailInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') passwordInput?.focus();
+    });
+  }
+  if (passwordInput) {
+    passwordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleSignInEmail();
+    });
   }
   
   // Obtenir l'onglet actuel
@@ -221,8 +254,8 @@ function displayUserInfo(email, method) {
   authMethod.textContent = method === 'chrome-identity' ? 'Chrome Identity' : method;
   userSection.style.display = 'block';
   
-  // Cacher le bouton sign-in et montrer sign-out
-  document.getElementById('signInBtn').style.display = 'none';
+  // Cacher la section sign-in et montrer sign-out
+  document.getElementById('signInSection').style.display = 'none';
   document.getElementById('signOutBtn').style.display = 'inline-block';
   console.log('👤 Popup: User info displayed:', { email, method });
 }
@@ -233,18 +266,39 @@ function displayUserInfo(email, method) {
 function hideUserInfo() {
   const userSection = document.getElementById('userSection');
   userSection.style.display = 'none';
-  // Montrer le bouton sign-in quand non authentifié
-  document.getElementById('signInBtn').style.display = 'inline-block';
+  // Montrer la section sign-in quand non authentifié
+  document.getElementById('signInSection').style.display = 'block';
   document.getElementById('signOutBtn').style.display = 'none';
 }
 
 /**
- * Gérer la connexion (Firebase Google)
+ * Basculer entre les onglets de connexion
  */
-async function handleSignIn() {
+function switchTab(tabType) {
+  // Gérer les onglets
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.sign-in-option').forEach(option => option.classList.remove('active'));
+  
+  if (tabType === 'google') {
+    document.getElementById('googleTab').classList.add('active');
+    document.getElementById('googleSignIn').classList.add('active');
+  } else if (tabType === 'email') {
+    document.getElementById('emailTab').classList.add('active');
+    document.getElementById('emailSignIn').classList.add('active');
+    // Focus sur le champ email
+    setTimeout(() => {
+      document.getElementById('emailInput')?.focus();
+    }, 100);
+  }
+}
+
+/**
+ * Gérer la connexion Google (Firebase)
+ */
+async function handleSignInGoogle() {
   try {
-    console.log('🔐 Popup: Sign-in requested');
-    const signInBtn = document.getElementById('signInBtn');
+    console.log('🔐 Popup: Google sign-in requested');
+    const signInBtn = document.getElementById('signInGoogleBtn');
     const originalText = signInBtn.textContent;
     signInBtn.textContent = '⏳ Connexion...';
     signInBtn.disabled = true;
@@ -268,11 +322,108 @@ async function handleSignIn() {
       }, 2000);
     }
   } catch (err) {
-    console.error('❌ Popup: Sign-in error', err);
-    const signInBtn = document.getElementById('signInBtn');
+    console.error('❌ Popup: Google sign-in error', err);
+    const signInBtn = document.getElementById('signInGoogleBtn');
     signInBtn.textContent = '❌ Erreur';
     setTimeout(() => {
-      signInBtn.textContent = '🔐 Se connecter';
+      signInBtn.textContent = '🔐 Se connecter avec Google';
+      signInBtn.disabled = false;
+    }, 2000);
+  }
+}
+
+/**
+ * Gérer la connexion Email/Password (Firebase)
+ */
+async function handleSignInEmail() {
+  try {
+    console.log('📧 Popup: Email sign-in requested');
+    const signInBtn = document.getElementById('signInEmailBtn');
+    const originalText = signInBtn.textContent;
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+    
+    // Validation basique
+    if (!email || !password) {
+      alert('Veuillez remplir tous les champs');
+      return;
+    }
+    
+    if (!email.includes('@')) {
+      alert('Veuillez entrer un email valide');
+      return;
+    }
+    
+    if (password.length < 6) {
+      alert('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+    
+    signInBtn.textContent = '⏳ Connexion...';
+    signInBtn.disabled = true;
+
+    // Demander au background de lancer le flow Email/Password
+    const response = await chrome.runtime.sendMessage({
+      type: 'firebase-signin-email',
+      data: { email, password }
+    });
+
+    if ((response && response.success) || response?.user) {
+      console.log('✅ Popup: Email sign-in success');
+      await checkAuthStatus();
+      signInBtn.textContent = '✅ Connecté !';
+      // Clear les champs
+      document.getElementById('emailInput').value = '';
+      document.getElementById('passwordInput').value = '';
+      setTimeout(() => window.close(), 1200);
+    } else {
+      console.warn('❌ Popup: Email sign-in failed', response);
+      signInBtn.textContent = '❌ Erreur';
+      if (response?.error?.includes('user-not-found')) {
+        // Essayer de créer un compte
+        setTimeout(async () => {
+          signInBtn.textContent = '🔄 Création du compte...';
+          try {
+            const signupResponse = await chrome.runtime.sendMessage({
+              type: 'firebase-signup-email',
+              data: { email, password }
+            });
+            
+            if ((signupResponse && signupResponse.success) || signupResponse?.user) {
+              console.log('✅ Popup: Account created successfully');
+              await checkAuthStatus();
+              signInBtn.textContent = '✅ Compte créé !';
+              document.getElementById('emailInput').value = '';
+              document.getElementById('passwordInput').value = '';
+              setTimeout(() => window.close(), 1200);
+            } else {
+              signInBtn.textContent = '❌ Erreur création';
+              setTimeout(() => {
+                signInBtn.textContent = originalText;
+                signInBtn.disabled = false;
+              }, 2000);
+            }
+          } catch (signupError) {
+            signInBtn.textContent = '❌ Erreur création';
+            setTimeout(() => {
+              signInBtn.textContent = originalText;
+              signInBtn.disabled = false;
+            }, 2000);
+          }
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          signInBtn.textContent = originalText;
+          signInBtn.disabled = false;
+        }, 2000);
+      }
+    }
+  } catch (err) {
+    console.error('❌ Popup: Email sign-in error', err);
+    const signInBtn = document.getElementById('signInEmailBtn');
+    signInBtn.textContent = '❌ Erreur';
+    setTimeout(() => {
+      signInBtn.textContent = '📧 Se connecter';
       signInBtn.disabled = false;
     }, 2000);
   }
@@ -308,24 +459,63 @@ async function handleSignOut() {
       console.log('⚠️ Popup: Could not remove Chrome Identity token:', error);
     }
     
-    // 1.5. Déconnexion complète Google (optionnel mais recommandé)
+    // 1.5. Déconnexion complète Google (forcée et plus robuste)
     try {
-      // Ouvrir la page de déconnexion Google dans un onglet invisible
-      const logoutTab = await chrome.tabs.create({
-        url: 'https://accounts.google.com/logout',
-        active: false // Onglet en arrière-plan
-      });
+      // Nettoyer tous les tokens Chrome Identity pour tous les scopes
+      const scopes = [
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'openid',
+        'email',
+        'profile'
+      ];
       
-      // Fermer l'onglet après 2 secondes
-      setTimeout(() => {
-        chrome.tabs.remove(logoutTab.id).catch(() => {
-          // Ignore si l'onglet n'existe plus
-        });
-      }, 2000);
+      for (const scope of scopes) {
+        try {
+          const token = await new Promise((resolve) => {
+            chrome.identity.getAuthToken({ 
+              interactive: false,
+              scopes: [scope]
+            }, resolve);
+          });
+          
+          if (token && !chrome.runtime.lastError) {
+            await new Promise((resolve) => {
+              chrome.identity.removeCachedAuthToken({ token }, resolve);
+            });
+            console.log(`✅ Popup: Removed token for scope: ${scope}`);
+          }
+        } catch (scopeError) {
+          // Continue même si une scope échoue
+          console.log(`⚠️ Popup: Could not remove token for scope ${scope}:`, scopeError);
+        }
+      }
       
-      console.log('✅ Popup: Google logout initiated');
+      // Forcer la déconnexion de toutes les sessions Google dans Chrome
+      const logoutUrls = [
+        'https://accounts.google.com/logout',
+        'https://accounts.google.com/SignOutOptions'
+      ];
+      
+      for (const url of logoutUrls) {
+        try {
+          const logoutTab = await chrome.tabs.create({
+            url: url,
+            active: false
+          });
+          
+          // Fermer après 3 secondes
+          setTimeout(() => {
+            chrome.tabs.remove(logoutTab.id).catch(() => {});
+          }, 3000);
+        } catch (urlError) {
+          console.log(`⚠️ Popup: Could not open logout URL ${url}:`, urlError);
+        }
+      }
+      
+      console.log('✅ Popup: Enhanced Google logout initiated');
     } catch (error) {
-      console.log('⚠️ Popup: Could not logout from Google:', error);
+      console.log('⚠️ Popup: Could not complete enhanced logout:', error);
     }
     
     // 2. Nettoyer le storage local
