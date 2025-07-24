@@ -3,9 +3,7 @@ import firebaseService from './services/firebase-service.js';
 import stripeService from './services/stripe-service.js';
 import { verifyAuth, checkTokenQuota } from './middleware/auth.js';
 
-// Initialize services
-await firebaseService.initialize();
-await stripeService.initialize();
+// Services will be initialized on first request
 
 // Monitoring et stats
 let requestStats = {
@@ -18,7 +16,25 @@ let requestStats = {
   tokenQuotaBlocked: 0
 };
 
+// Services initialization flag
+let servicesInitialized = false;
+
 export default async function handler(req, res) {
+  // Initialize services on first request
+  if (!servicesInitialized) {
+    try {
+      console.log('🔧 Initializing services...');
+      await firebaseService.initialize();
+      await stripeService.initialize();
+      servicesInitialized = true;
+      console.log('✅ Services initialized successfully');
+    } catch (initError) {
+      console.error('⚠️  Service initialization failed:', initError.message);
+      console.log('🔄 Continuing without services (legacy mode)');
+      servicesInitialized = true; // Set to true to avoid retry on every request
+    }
+  }
+
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');

@@ -669,20 +669,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   
   console.log('🌐 Backend endpoint:', CONFIG.API_URL);
   console.log('🔑 API key (first 20 chars):', CONFIG.API_KEY.substring(0, 20) + '...');
-  // NEW AUTH HANDLING
-  let authHeaderValue;
-  try {
-    const idToken = await firebaseGetIdToken();
-    if (idToken && idToken.length > 0) {
-      authHeaderValue = `Bearer ${idToken}`;
-      console.log('🔑 Using Firebase ID token (first 10 chars):', idToken.substring(0, 10) + '...');
-    } else {
-      throw new Error('Empty ID token');
-    }
-  } catch (tokenErr) {
-    console.warn('⚠️ Unable to get Firebase ID token, falling back to legacy API key:', tokenErr.message);
-    authHeaderValue = `Bearer ${CONFIG.API_KEY}`;
-  }
+
   console.log('📤 Envoi requête workflow RAG');
   console.log('📦 Payload:', JSON.stringify(requestBody));
 
@@ -699,7 +686,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeaderValue
+        'Authorization': `Bearer ${CONFIG.API_KEY}`
       },
       body: JSON.stringify(requestBody)
     });
@@ -855,20 +842,7 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
   
   console.log('🌐 Backend endpoint:', CONFIG.API_URL);
   console.log('🔑 API key (first 20 chars):', CONFIG.API_KEY.substring(0, 20) + '...');
-  // NEW AUTH HANDLING (same as above)
-  let authHeaderValueImp;
-  try {
-    const idToken = await firebaseGetIdToken();
-    if (idToken && idToken.length > 0) {
-      authHeaderValueImp = `Bearer ${idToken}`;
-      console.log('🔑 Using Firebase ID token (first 10 chars):', idToken.substring(0, 10) + '...');
-    } else {
-      throw new Error('Empty ID token');
-    }
-  } catch (tokenErr) {
-    console.warn('⚠️ Unable to get Firebase ID token, falling back to legacy API key:', tokenErr.message);
-    authHeaderValueImp = `Bearer ${CONFIG.API_KEY}`;
-  }
+
   console.log('📤 Envoi requête amélioration workflow RAG');
   console.log('📦 Payload size:', JSON.stringify(requestBody).length, 'chars');
 
@@ -876,7 +850,7 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': authHeaderValueImp
+      'Authorization': `Bearer ${CONFIG.API_KEY}`
     },
     body: JSON.stringify(requestBody)
   });

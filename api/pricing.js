@@ -5,14 +5,30 @@ import { verifyFirebaseAuth, verifyAuth } from './middleware/auth.js';
 
 const router = express.Router();
 
-// Initialize services
-await firebaseService.initialize();
-await stripeService.initialize();
+// Services initialization flag
+let servicesInitialized = false;
+
+// Initialize services helper
+async function ensureServicesInitialized() {
+  if (!servicesInitialized) {
+    try {
+      console.log('🔧 Initializing pricing services...');
+      await firebaseService.initialize();
+      await stripeService.initialize();
+      servicesInitialized = true;
+      console.log('✅ Pricing services initialized successfully');
+    } catch (initError) {
+      console.error('⚠️  Pricing service initialization failed:', initError.message);
+      throw new Error('Services unavailable');
+    }
+  }
+}
 
 // POST /api/create-checkout-session
 // Create Stripe checkout session for PRO subscription
 router.post('/create-checkout-session', verifyFirebaseAuth, async (req, res) => {
   try {
+    await ensureServicesInitialized();
     const { success_url, cancel_url } = req.body;
     
     if (!success_url || !cancel_url) {
@@ -57,6 +73,7 @@ router.post('/create-checkout-session', verifyFirebaseAuth, async (req, res) => 
 // Handle Stripe webhook events (raw body required)
 router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
+    await ensureServicesInitialized();
     const signature = req.headers['stripe-signature'];
     
     if (!signature) {
@@ -119,6 +136,7 @@ router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async 
 // Report token usage after AI request
 router.post('/report-usage', verifyAuth, async (req, res) => {
   try {
+    await ensureServicesInitialized();
     const { input_tokens, output_tokens = 0 } = req.body;
     
     if (!input_tokens || typeof input_tokens !== 'number') {
@@ -172,6 +190,7 @@ router.post('/report-usage', verifyAuth, async (req, res) => {
 // Get current user information including plan and token usage
 router.get('/me', verifyFirebaseAuth, async (req, res) => {
   try {
+    await ensureServicesInitialized();
     // Get fresh user data
     const userData = await firebaseService.getOrCreateUser(req.user.uid);
     

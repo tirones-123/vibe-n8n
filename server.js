@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import claudeRouter from './api/claude-router.js';
+import claudeHandler from './api/claude.js';
 import pricingRoutes from './api/pricing.js';
 
 // Charger les variables d'environnement
@@ -18,7 +18,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
 
 // Route principale pour Claude (nouveau système RAG)
-app.use('/api/claude', claudeRouter);
+app.use('/api/claude', claudeHandler);
 
 // Routes de pricing (Stripe + Firebase)
 app.use('/api', pricingRoutes);
