@@ -563,6 +563,7 @@ ${baseWorkflow ?
             workflow: parsedResponse.workflow,
             explanation: parsedResponse.explanation,
             similarWorkflows: similarWorkflows.map(w => w.name),
+            similarWorkflowFiles: similarWorkflows.map(w => w.filename),
             transmissionType: transmission.type,
             tokensUsed
           };
@@ -643,6 +644,7 @@ ${baseWorkflow ?
               workflow: repairedResponse.workflow,
               explanation: repairedResponse.explanation,
               similarWorkflows: similarWorkflows.map(w => w.name),
+              similarWorkflowFiles: similarWorkflows.map(w => w.filename),
               repaired: true
             };
           }
@@ -679,6 +681,7 @@ ${baseWorkflow ?
               workflow: finalWorkflow,
               explanation: finalExplanation,
               similarWorkflows: similarWorkflows.map(w => w.name),
+              similarWorkflowFiles: similarWorkflows.map(w => w.filename),
               repaired: true,
               unsafe: true,
               transmissionType: transmission.type
@@ -693,7 +696,8 @@ ${baseWorkflow ?
           success: false,
           error: `Failed to parse generated workflow JSON: ${parseError.message}`,
           rawResponse: generatedText,
-          similarWorkflows: similarWorkflows.map(w => w.name)
+          similarWorkflows: similarWorkflows.map(w => w.name),
+          similarWorkflowFiles: similarWorkflows.map(w => w.filename)
         };
       }
 
