@@ -44,6 +44,14 @@ export async function verifyFirebaseAuth(req, res, next) {
     // Get or create user in our database
     const user = await firebaseService.getOrCreateUser(decodedToken.uid, decodedToken.email);
     
+    // Log authentication event
+    await firebaseService.logUsageEvent(decodedToken.uid, 'USER_AUTHENTICATED', {
+      email: decodedToken.email,
+      auth_method: 'firebase_id_token',
+      email_verified: true,
+      timestamp: new Date().toISOString()
+    });
+    
     // Attach user info to request
     req.user = {
       uid: decodedToken.uid,

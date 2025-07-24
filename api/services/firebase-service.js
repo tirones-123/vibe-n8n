@@ -101,8 +101,24 @@ class FirebaseService {
         };
 
         await userRef.set(newUser);
-        console.log(`📝 Created new FREE user: ${uid}`);
+        console.log(`📝 Created new FREE user: ${uid} (${email})`);
+        
+        // Log user creation event
+        await this.logUsageEvent(uid, 'USER_CREATED', {
+          email,
+          plan: 'FREE',
+          initial_tokens: 70000,
+          created_via: 'web_extension'
+        });
+        
         return { ...newUser, id: uid };
+      } else {
+        // Update last seen for existing users
+        await userRef.update({
+          updated_at: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log(`👤 Existing user loaded: ${uid} (${email})`);
       }
 
       return { id: uid, ...userDoc.data() };

@@ -159,14 +159,54 @@ class ContentAuthIntegration {
         if (result.success || result.user) {
           // Special handling for signup with email verification
           if (mode === 'signup' && result.emailVerificationSent) {
+            console.log('📧 Email de vérification envoyé, affichage modal');
             this.showEmailVerificationMessage(email);
             return;
           }
           
           document.querySelector('.simple-auth-modal')?.remove();
-          setTimeout(() => location.reload(), 800);
+          
+          // Affichage du succès
+          const toast = document.createElement('div');
+          toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 100000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          `;
+          toast.textContent = mode === 'signup' ? '✅ Compte créé avec succès !' : '✅ Connecté avec succès !';
+          document.body.appendChild(toast);
+          
+          // Supprimer le toast après 3 secondes
+          setTimeout(() => {
+            if (toast.parentElement) {
+              toast.remove();
+            }
+          }, 3000);
+          
+          setTimeout(() => location.reload(), 1000);
         } else {
-          alert(result.error?.message || 'Erreur d\'auth firebase');
+          console.warn('❌ Échec authentification email:', result);
+          
+          // Gestion des erreurs spécifiques comme dans popup.js
+          if (result?.error?.includes('email-already-in-use')) {
+            alert('📧 Cet email est déjà utilisé. Essayez de vous connecter.');
+          } else if (result?.error?.includes('user-not-found')) {
+            alert('👤 Ce compte n\'existe pas. Créez un compte d\'abord.');
+          } else if (result?.error?.includes('wrong-password')) {
+            alert('🔒 Mot de passe incorrect.');
+          } else if (result?.error?.includes('weak-password')) {
+            alert('🔒 Le mot de passe doit contenir au moins 6 caractères.');
+          } else {
+            alert(result.error?.message || 'Erreur d\'authentification firebase');
+          }
         }
       } catch (e) {
         alert(e.message);
@@ -177,10 +217,10 @@ class ContentAuthIntegration {
     console.log('🔍 Vérification:', typeof window.handleFirebaseGoogleSignIn === 'function' ? '✅ OK' : '❌ ERREUR');
   }
 
-  // Check if user can make a request
+  // Check if user can make a request (with REAL backend verification)
   async canMakeRequest() {
     try {
-      console.log('🔍 Vérification de l\'authentification Firebase...');
+      console.log('🔍 Vérification complète avec le backend...');
       
       // Vérifier l'état actuel de l'utilisateur Firebase
       const currentUser = await chrome.runtime.sendMessage({
@@ -205,21 +245,95 @@ class ContentAuthIntegration {
         }
       }
 
-      if (user) {
-        console.log('✅ Utilisateur authentifié:', user.email || user.uid);
-        return { 
-          allowed: true,
-          method: 'firebase',
-          user
-        };
-      } else {
-        console.log('❌ Utilisateur non authentifié');
+      if (!user) {
+        console.log('❌ Utilisateur non authentifié localement');
         return { 
           allowed: false, 
           reason: 'NOT_AUTHENTICATED',
           action: 'show_auth_modal'
         };
       }
+
+      // NEW: Vérification RÉELLE avec le backend (email vérifié + quotas)
+      try {
+        console.log('🔍 Vérification backend pour:', user.email);
+        
+        // Obtenir le token Firebase
+        const tokenResponse = await chrome.runtime.sendMessage({ 
+          type: 'firebase-get-token',
+          data: { forceRefresh: false }
+        });
+        
+        if (!tokenResponse || typeof tokenResponse !== 'string') {
+          console.log('❌ Token Firebase non disponible');
+          return { 
+            allowed: false, 
+            reason: 'TOKEN_ERROR',
+            action: 'show_auth_modal'
+          };
+        }
+
+        // Faire une requête de vérification au backend
+        const verificationResponse = await fetch(`${this.CONFIG.API_BASE_URL}/api/me`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${tokenResponse}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (verificationResponse.ok) {
+          const userInfo = await verificationResponse.json();
+          console.log('✅ Utilisateur vérifié côté backend:', userInfo.email);
+          return { 
+            allowed: true,
+            method: 'firebase',
+            user: userInfo
+          };
+        } else if (verificationResponse.status === 403) {
+          // Gérer les erreurs 403 spécifiques
+          const errorData = await verificationResponse.json();
+          console.log('🚫 Erreur 403 backend:', errorData);
+          
+          if (errorData.code === 'EMAIL_NOT_VERIFIED') {
+            return {
+              allowed: false,
+              reason: 'EMAIL_NOT_VERIFIED',
+              code: 'EMAIL_NOT_VERIFIED',
+              email: errorData.email || user.email,
+              message: errorData.message,
+              action: 'verify_email'
+            };
+          } else {
+            return {
+              allowed: false,
+              reason: 'QUOTA_EXCEEDED',
+              code: errorData.code,
+              message: errorData.message,
+              action: 'upgrade_or_wait'
+            };
+          }
+        } else {
+          console.log('❌ Erreur backend:', verificationResponse.status);
+          return { 
+            allowed: false, 
+            reason: 'BACKEND_ERROR',
+            action: 'show_error'
+          };
+        }
+
+      } catch (backendError) {
+        console.error('❌ Erreur lors de la vérification backend:', backendError);
+        // Fallback: permettre la requête si le backend n'est pas accessible
+        console.log('⚠️ Backend inaccessible, fallback vers vérification locale');
+        return { 
+          allowed: true,
+          method: 'firebase_fallback',
+          user,
+          warning: 'Backend verification failed'
+        };
+      }
+
     } catch (error) {
       console.error('❌ Erreur vérification auth:', error);
       return { 
@@ -288,13 +402,20 @@ class ContentAuthIntegration {
       ">
         <div style="font-size: 48px; margin-bottom: 20px;">📧</div>
         <h3 style="color: #dc2626; margin-bottom: 15px; font-size: 20px;">Email non vérifié</h3>
-        <p style="color: #666; margin-bottom: 20px; line-height: 1.5;">
-          Vous devez vérifier votre adresse email:<br>
-          <strong style="color: #2563eb;">${email}</strong>
-        </p>
-        <p style="color: #666; margin-bottom: 30px; line-height: 1.5;">
-          Vérifiez votre boîte mail et cliquez sur le lien de vérification.
-        </p>
+                 <p style="color: #666; margin-bottom: 15px; line-height: 1.5;">
+           Vous devez vérifier votre adresse email:<br>
+           <strong style="color: #2563eb;">${email}</strong>
+         </p>
+         
+         <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 12px; margin-bottom: 20px;">
+           <p style="color: #92400e; margin: 0; font-size: 13px; font-weight: 500;">
+             ⚠️ Vérifiez votre dossier SPAM/Indésirables
+           </p>
+         </div>
+         
+         <p style="color: #666; margin-bottom: 30px; line-height: 1.5; font-size: 14px;">
+           Vérifiez votre boîte mail et cliquez sur le lien de vérification.
+         </p>
         <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
           <button onclick="contentAuthIntegration.resendVerificationEmail()" style="
             padding: 12px 20px; 
@@ -467,14 +588,24 @@ class ContentAuthIntegration {
     const modal = document.querySelector('.simple-auth-modal');
     if (modal) {
       modal.innerHTML = `
-        <div style="text-align: center; padding: 30px; background: white; border-radius: 12px; max-width: 400px; margin: 50px auto;">
+        <div style="text-align: center; padding: 30px; background: white; border-radius: 12px; max-width: 450px; margin: 50px auto;">
           <div style="font-size: 48px; margin-bottom: 20px;">📧</div>
           <h3 style="color: #2563eb; margin-bottom: 15px;">Vérifiez votre email</h3>
           <p style="color: #666; margin-bottom: 20px;">
             Un email de vérification a été envoyé à:<br>
             <strong>${email}</strong>
           </p>
-          <p style="color: #666; margin-bottom: 30px;">
+          
+          <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <p style="color: #92400e; margin: 0; font-size: 14px; font-weight: 500;">
+              ⚠️ Vérifiez votre dossier SPAM/Indésirables
+            </p>
+            <p style="color: #92400e; margin: 5px 0 0 0; font-size: 13px;">
+              L'email peut arriver dans les courriers indésirables. Si vous le trouvez, marquez-le comme "Pas spam".
+            </p>
+          </div>
+          
+          <p style="color: #666; margin-bottom: 30px; font-size: 14px;">
             Cliquez sur le lien dans l'email pour activer votre compte et accéder aux services.
           </p>
                      <div style="display: flex; gap: 10px; justify-content: center;">
@@ -603,6 +734,32 @@ class ContentAuthIntegration {
       });
 
       if (!response.ok) {
+        // NEW: Handle EMAIL_NOT_VERIFIED and other backend errors
+        if (response.status === 403) {
+          try {
+            const errorData = await response.json();
+            console.log('🚫 Erreur 403 lors de la requête workflow:', errorData);
+            
+            if (errorData.code === 'EMAIL_NOT_VERIFIED') {
+              // Show email verification modal
+              this.showEmailVerificationModal(errorData.email || 'votre email');
+              return null; // Return null, we've handled the error
+            } else if (errorData.code && errorData.message) {
+              // Other quota/auth errors
+              this.handleAccessDenied({
+                allowed: false,
+                reason: errorData.code,
+                code: errorData.code,
+                message: errorData.message,
+                action: errorData.action || 'upgrade_or_wait'
+              });
+              return null; // Return null, we've handled the error
+            }
+          } catch (parseError) {
+            console.error('❌ Erreur parsing réponse 403:', parseError);
+          }
+        }
+        
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 

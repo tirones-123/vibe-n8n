@@ -33,26 +33,48 @@ async function firebaseEmailRequest(mode, email, password) {
   return res.json();
 }
 
-// NEW: Send email verification
+// NEW: Send email verification with improved configuration
 async function sendEmailVerification(idToken) {
   const endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${FIREBASE_API_KEY}`;
+  
+  // Get current domain for continue URL
+  const currentDomain = window.location.origin;
+  
   const body = {
     requestType: 'VERIFY_EMAIL',
-    idToken: idToken
+    idToken: idToken,
+    // Add continue URL to improve deliverability
+    continueUrl: `${currentDomain}/email-verified`,
+    // Add iOS and Android package names if needed
+    canHandleCodeInApp: false
   };
+  
+  console.log('📧 Sending email verification with payload:', {
+    requestType: body.requestType,
+    continueUrl: body.continueUrl,
+    tokenLength: idToken?.length
+  });
   
   const res = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
     body: JSON.stringify(body)
   });
   
+  console.log('📧 Email verification response status:', res.status);
+  
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.error?.message || 'Failed to send verification email');
+    console.error('❌ Email verification error:', err);
+    throw new Error(err.error?.message || `Failed to send verification email (${res.status})`);
   }
   
-  return res.json();
+  const result = await res.json();
+  console.log('✅ Email verification sent successfully:', result);
+  return result;
 }
 
 // NEW: Get user info including email verification status
