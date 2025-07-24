@@ -198,162 +198,106 @@ class ContentAuthIntegration {
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.7);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 99999;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      backdrop-filter: blur(8px);
     `;
 
     const content = `
       <div style="
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        padding: 32px 28px;
-        border-radius: 20px;
-        max-width: 480px;
-        min-width: 420px;
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        max-width: 450px;
+        min-width: 400px;
         text-align: center;
-        color: #1f2937;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-        animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        border: 1px solid rgba(255,255,255,0.2);
-        max-height: 90vh;
-        overflow-y: auto;
+        color: #333;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        animation: modalSlideIn 0.3s ease-out;
       ">
-        <div style="
-          width: 64px;
-          height: 64px;
-          background: linear-gradient(135deg, ${emailSent ? '#10b981 0%, #059669' : '#f59e0b 0%, #d97706'} 100%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 24px;
-          box-shadow: 0 8px 25px rgba(${emailSent ? '16, 185, 129' : '245, 158, 11'}, 0.3);
-          animation: pulse 2s infinite;
-        ">
-          <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
-            ${emailSent ? 
-              '<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>' :
-              '<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>'
-            }
-          </svg>
-        </div>
-        
-        <h2 style="
-          margin-bottom: 16px;
-          font-size: 28px;
-          font-weight: 700;
-          background: linear-gradient(135deg, ${emailSent ? '#10b981, #059669' : '#f59e0b, #d97706'});
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        ">
-          ${emailSent ? 'Account Created! ✨' : 'Account Created'}
+        <div style="font-size: 64px; margin-bottom: 20px;">📧</div>
+        <h2 style="margin-bottom: 15px; color: ${emailSent ? '#059669' : '#dc2626'}; font-size: 24px; font-weight: 600;">
+          ${emailSent ? '✅ Compte créé avec succès !' : '⚠️ Compte créé - Action requise'}
         </h2>
-        
-        <p style="
-          margin-bottom: 24px;
-          color: #6b7280;
-          font-size: 16px;
-          line-height: 1.5;
-        ">
-          ${emailSent ? 'Verification email sent to:' : 'Account created for:'}
+        <p style="margin-bottom: 20px; color: #374151; font-size: 16px; line-height: 1.5;">
+          ${emailSent ? 'Un email de vérification a été envoyé à :' : 'Votre compte a été créé pour :'}
         </p>
-        
         <div style="
-          background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-          padding: 14px 18px;
-          border-radius: 12px;
-          margin-bottom: 24px;
-          font-family: 'SF Mono', Monaco, monospace;
-          color: #374151;
-          font-weight: 600;
-          font-size: 15px;
-          border: 1px solid #d1d5db;
-          word-break: break-all;
+          background: #f3f4f6; 
+          padding: 12px 16px; 
+          border-radius: 8px; 
+          margin-bottom: 25px;
+          font-family: 'Courier New', monospace;
+          color: #1f2937;
+          font-weight: 500;
+          border: 2px solid #e5e7eb;
         ">
           ${email}
         </div>
-        
         ${emailSent ? `
           <div style="
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border: 1px solid #f59e0b;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
+            background: #fef3c7; 
+            border: 1px solid #f59e0b; 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 30px;
             text-align: left;
           ">
-            <div style="display: flex; align-items: center; margin-bottom: 12px;">
-              <span style="font-size: 20px; margin-right: 10px;">📋</span>
-              <span style="color: #92400e; font-size: 16px; font-weight: 600;">Next steps:</span>
-            </div>
-            <ol style="margin: 0; padding-left: 20px; color: #92400e; font-size: 14px; line-height: 1.7;">
-              <li>Check your email (including spam folder)</li>
-              <li>Click the verification link</li>
-              <li>Return to n8n and enjoy your <strong>70,000 free tokens!</strong></li>
+            <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">📋 Étapes suivantes :</h4>
+            <ol style="margin: 0; padding-left: 18px; color: #92400e; font-size: 14px; line-height: 1.4;">
+              <li>Vérifiez votre boîte email (y compris les spams)</li>
+              <li>Cliquez sur le lien de vérification</li>
+              <li>Reconnectez-vous pour activer vos <strong>70,000 tokens gratuits</strong></li>
             </ol>
           </div>
         ` : `
           <div style="
-            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-            border: 1px solid #fca5a5;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
+            background: #fef2f2; 
+            border: 1px solid #fca5a5; 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 25px;
           ">
-            <p style="margin: 0 0 10px 0; color: #dc2626; font-size: 15px; font-weight: 600;">
-              ⚠️ Verification email failed to send
+            <p style="margin: 0 0 10px 0; color: #dc2626; font-size: 14px; font-weight: 500;">
+              ⚠️ L'email de vérification n'a pas pu être envoyé automatiquement
             </p>
             <p style="margin: 0; color: #7f1d1d; font-size: 13px; line-height: 1.4;">
-              Please sign in and verify your email manually from your Firebase dashboard.
+              Veuillez vous connecter puis vérifier manuellement votre email depuis votre tableau de bord Firebase.
             </p>
           </div>
         `}
-        
         <div style="
-          background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-          border: 1px solid #fca5a5;
-          border-radius: 10px;
-          padding: 14px;
-          margin-bottom: 28px;
+          background: #fef2f2; 
+          border: 1px solid #fca5a5; 
+          border-radius: 8px; 
+          padding: 12px; 
+          margin-bottom: 25px;
         ">
-          <p style="
-            margin: 0;
-            color: #dc2626;
-            font-size: 13px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          ">
-            <span style="margin-right: 8px;">⚠️</span>
-            AI assistant blocked until email verification
+          <p style="margin: 0; color: #dc2626; font-size: 13px; font-weight: 500;">
+            ⚠️ Vous ne pourrez pas utiliser l'assistant IA tant que votre email n'est pas vérifié
           </p>
         </div>
-        
         <button id="close-verification-modal" style="
-          width: 100%;
-          padding: 16px 24px;
-          background: linear-gradient(135deg, ${emailSent ? '#10b981 0%, #059669' : '#dc2626 0%, #b91c1c'} 100%);
-          color: white;
-          border: none;
-          border-radius: 12px;
-          font-size: 16px;
-          font-weight: 600;
+          width: 100%; 
+          padding: 14px; 
+          background: ${emailSent ? '#059669' : '#dc2626'}; 
+          color: white; 
+          border: none; 
+          border-radius: 8px; 
+          font-size: 16px; 
+          font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(${emailSent ? '16, 185, 129' : '220, 38, 38'}, 0.3);
+          transition: background-color 0.2s;
         ">
-          ${emailSent ? 'Got it! 🚀' : 'Understood'}
+          J'ai compris
         </button>
         
-        <p style="margin-top: 24px; font-size: 12px; color: #9ca3af; line-height: 1.4;">
-          Powered by Firebase Auth & Claude 4 Sonnet<br>
-          <em>Your AI workflow assistant is ready to help!</em>
+        <p style="margin-top: 20px; font-size: 12px; color: #999; line-height: 1.3;">
+          En utilisant notre service, vous acceptez nos conditions d'utilisation.<br>
+          Authentification sécurisée via Firebase.
         </p>
       </div>
     `;
@@ -366,16 +310,12 @@ class ContentAuthIntegration {
         @keyframes modalSlideIn {
           from {
             opacity: 0;
-            transform: scale(0.8) translateY(-40px);
+            transform: scale(0.9) translateY(-20px);
           }
           to {
             opacity: 1;
             transform: scale(1) translateY(0);
           }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); }
         }
       `;
       document.head.appendChild(style);

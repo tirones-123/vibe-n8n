@@ -119,14 +119,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Vérifier si c'est déjà supporté nativement
     const isSupported = hostname.includes('n8n.io') || 
-                        hostname.includes('n8n.cloud') ||
-                        hostname.includes('app.n8n.cloud');
+                        hostname.includes('n8n.cloud');
     
     console.log('🔍 Popup: Detection results:', { couldBeN8n, isSupported });
     
     if (couldBeN8n && !isSupported) {
-      // Montrer l'option d'activation manuelle SEULEMENT pour les domaines personnalisés
-      console.log('✅ Popup: Showing manual activation option for custom domain:', hostname);
+      // Montrer l'option d'activation manuelle
+      console.log('✅ Popup: Showing manual activation option');
       customDomainSection.style.display = 'block';
       activateButton.style.display = 'block';
       currentDomainSpan.textContent = hostname;
@@ -619,30 +618,26 @@ function createEmailVerificationModal(email, emailSent = true) {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 100000;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    backdrop-filter: blur(8px);
   `;
   
   const content = document.createElement('div');
   content.style.cssText = `
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    padding: 32px 24px;
-    border-radius: 20px;
-    max-width: 420px;
-    min-width: 380px;
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    max-width: 450px;
+    min-width: 400px;
     text-align: center;
-    color: #1f2937;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    color: #333;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     position: relative;
-    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 1px solid rgba(255,255,255,0.2);
-    max-height: 90vh;
-    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease-out;
   `;
   
   // Ajouter l'animation CSS
@@ -653,19 +648,12 @@ function createEmailVerificationModal(email, emailSent = true) {
       @keyframes modalSlideIn {
         from {
           opacity: 0;
-          transform: scale(0.8) translateY(-40px);
+          transform: scale(0.9) translateY(-20px);
         }
         to {
           opacity: 1;
           transform: scale(1) translateY(0);
         }
-      }
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-      }
-      .pulse-animation {
-        animation: pulse 2s infinite;
       }
     `;
     document.head.appendChild(style);
@@ -673,199 +661,114 @@ function createEmailVerificationModal(email, emailSent = true) {
   
   if (emailSent) {
     content.innerHTML = `
-      <div style="
-        width: 64px;
-        height: 64px;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 20px;
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-      " class="pulse-animation">
-        <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-        </svg>
-      </div>
-      
-      <h2 style="
-        margin-bottom: 12px;
-        font-size: 24px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #10b981, #059669);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      ">
-        Account Created! ✨
+      <div style="font-size: 64px; margin-bottom: 20px;">📧</div>
+      <h2 style="margin-bottom: 15px; color: #059669; font-size: 24px; font-weight: 600;">
+        ✅ Compte créé avec succès !
       </h2>
-      
-      <p style="
-        margin-bottom: 20px;
-        color: #6b7280;
-        font-size: 15px;
-        line-height: 1.4;
-      ">
-        Verification email sent to:
+      <p style="margin-bottom: 20px; color: #374151; font-size: 16px; line-height: 1.5;">
+        Un email de vérification a été envoyé à :
       </p>
-      
       <div style="
-        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-        padding: 12px 16px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        font-family: 'SF Mono', Monaco, monospace;
-        color: #374151;
-        font-weight: 600;
-        font-size: 14px;
-        border: 1px solid #d1d5db;
-        word-break: break-all;
+        background: #f3f4f6; 
+        padding: 12px 16px; 
+        border-radius: 8px; 
+        margin-bottom: 25px;
+        font-family: 'Courier New', monospace;
+        color: #1f2937;
+        font-weight: 500;
+        border: 2px solid #e5e7eb;
       ">
         ${email}
       </div>
-      
       <div style="
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        border: 1px solid #f59e0b;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 20px;
+        background: #fef3c7; 
+        border: 1px solid #f59e0b; 
+        border-radius: 8px; 
+        padding: 16px; 
+        margin-bottom: 30px;
         text-align: left;
       ">
-        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-          <span style="font-size: 18px; margin-right: 8px;">📋</span>
-          <span style="color: #92400e; font-size: 14px; font-weight: 600;">Next steps:</span>
-        </div>
-        <ol style="margin: 0; padding-left: 18px; color: #92400e; font-size: 13px; line-height: 1.6;">
-          <li>Check your email (including spam folder)</li>
-          <li>Click the verification link</li>
-          <li>Return to n8n and enjoy your <strong>70,000 free tokens!</strong></li>
+        <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">📋 Étapes suivantes :</h4>
+        <ol style="margin: 0; padding-left: 18px; color: #92400e; font-size: 14px; line-height: 1.4;">
+          <li>Vérifiez votre boîte email (y compris les spams)</li>
+          <li>Cliquez sur le lien de vérification</li>
+          <li>Reconnectez-vous pour activer vos <strong>70,000 tokens gratuits</strong></li>
         </ol>
       </div>
-      
       <div style="
-        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-        border: 1px solid #fca5a5;
-        border-radius: 10px;
-        padding: 12px;
-        margin-bottom: 24px;
+        background: #fef2f2; 
+        border: 1px solid #fca5a5; 
+        border-radius: 8px; 
+        padding: 12px; 
+        margin-bottom: 25px;
       ">
-        <p style="
-          margin: 0;
-          color: #dc2626;
-          font-size: 12px;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        ">
-          <span style="margin-right: 6px;">⚠️</span>
-          AI assistant blocked until email verification
+        <p style="margin: 0; color: #dc2626; font-size: 13px; font-weight: 500;">
+          ⚠️ Vous ne pourrez pas utiliser l'assistant IA tant que votre email n'est pas vérifié
         </p>
       </div>
-      
       <button id="close-modal-btn" style="
-        width: 100%;
-        padding: 14px 20px;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 600;
+        width: 100%; 
+        padding: 14px; 
+        background: #059669; 
+        color: white; 
+        border: none; 
+        border-radius: 8px; 
+        font-size: 16px; 
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-      " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(16, 185, 129, 0.4)'" 
-         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(16, 185, 129, 0.3)'">
-        Got it! 🚀
+        transition: background-color 0.2s;
+      " onmouseover="this.style.backgroundColor='#047857'" onmouseout="this.style.backgroundColor='#059669'">
+        J'ai compris
       </button>
     `;
   } else {
     content.innerHTML = `
-      <div style="
-        width: 64px;
-        height: 64px;
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 20px;
-        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
-      " class="pulse-animation">
-        <svg width="32" height="32" fill="white" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-        </svg>
-      </div>
-      
-      <h2 style="
-        margin-bottom: 12px;
-        font-size: 24px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      ">
-        Account Created
+      <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+      <h2 style="margin-bottom: 15px; color: #dc2626; font-size: 24px; font-weight: 600;">
+        Compte créé - Action requise
       </h2>
-      
-      <p style="
-        margin-bottom: 20px;
-        color: #6b7280;
-        font-size: 15px;
-        line-height: 1.4;
-      ">
-        Account created for:
+      <p style="margin-bottom: 20px; color: #374151; font-size: 16px; line-height: 1.5;">
+        Votre compte a été créé pour :
       </p>
-      
       <div style="
-        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-        padding: 12px 16px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        font-family: 'SF Mono', Monaco, monospace;
-        color: #374151;
-        font-weight: 600;
-        font-size: 14px;
-        border: 1px solid #d1d5db;
-        word-break: break-all;
+        background: #f3f4f6; 
+        padding: 12px 16px; 
+        border-radius: 8px; 
+        margin-bottom: 25px;
+        font-family: 'Courier New', monospace;
+        color: #1f2937;
+        font-weight: 500;
+        border: 2px solid #e5e7eb;
       ">
         ${email}
       </div>
-      
       <div style="
-        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-        border: 1px solid #fca5a5;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 24px;
+        background: #fef2f2; 
+        border: 1px solid #fca5a5; 
+        border-radius: 8px; 
+        padding: 16px; 
+        margin-bottom: 25px;
       ">
-        <p style="margin: 0 0 8px 0; color: #dc2626; font-size: 14px; font-weight: 600;">
-          ⚠️ Verification email failed to send
+        <p style="margin: 0 0 10px 0; color: #dc2626; font-size: 14px; font-weight: 500;">
+          ⚠️ L'email de vérification n'a pas pu être envoyé automatiquement
         </p>
-        <p style="margin: 0; color: #7f1d1d; font-size: 12px; line-height: 1.4;">
-          Please sign in and verify your email manually from your Firebase dashboard.
+        <p style="margin: 0; color: #7f1d1d; font-size: 13px; line-height: 1.4;">
+          Veuillez vous connecter puis vérifier manuellement votre email depuis votre tableau de bord Firebase.
         </p>
       </div>
-      
       <button id="close-modal-btn" style="
-        width: 100%;
-        padding: 14px 20px;
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 600;
+        width: 100%; 
+        padding: 14px; 
+        background: #dc2626; 
+        color: white; 
+        border: none; 
+        border-radius: 8px; 
+        font-size: 16px; 
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
-      " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(220, 38, 38, 0.4)'" 
-         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(220, 38, 38, 0.3)'">
-        Understood
+        transition: background-color 0.2s;
+      " onmouseover="this.style.backgroundColor='#b91c1c'" onmouseout="this.style.backgroundColor='#dc2626'">
+        Compris
       </button>
     `;
   }

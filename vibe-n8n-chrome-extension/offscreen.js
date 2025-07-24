@@ -33,32 +33,29 @@ async function firebaseEmailRequest(mode, email, password) {
   
   const result = await res.json();
   
-  // Si c'est un signup, demander au backend d'envoyer l'email de vérification avec nos paramètres personnalisés
+  // Si c'est un signup, envoyer automatiquement l'email de vérification
   if (mode === 'signup') {
     try {
-      console.log('📧 Requesting custom email verification from backend...');
+      console.log('📧 Sending email verification after signup...');
       
-      const verificationRes = await fetch('https://vibe-n8n-production.up.railway.app/api/send-verification-email', {
+      const verificationRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${FIREBASE_API_KEY}`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${result.idToken}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          uid: result.localId
+          requestType: 'VERIFY_EMAIL',
+          idToken: result.idToken
         })
       });
       
       if (verificationRes.ok) {
-        const verificationResult = await verificationRes.json();
-        console.log('✅ Custom email verification sent successfully:', verificationResult);
+        console.log('✅ Email verification sent successfully');
         result.verificationEmailSent = true;
       } else {
-        console.warn('⚠️ Failed to send custom verification email:', verificationRes.status);
+        console.warn('⚠️ Failed to send verification email:', verificationRes.status);
         result.verificationEmailSent = false;
       }
     } catch (verificationError) {
-      console.error('❌ Error sending custom verification email:', verificationError);
+      console.error('❌ Error sending verification email:', verificationError);
       result.verificationEmailSent = false;
     }
   }
