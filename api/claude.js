@@ -9,15 +9,26 @@ let servicesInitializing = false;
 
 // Initialize services safely and conditionally
 async function initializeServicesIfNeeded() {
-  if (servicesInitialized) return true;
-  if (servicesInitializing) return false; // Avoid concurrent initialization
+  if (servicesInitialized) return { 
+    success: true, 
+    firebase: firebaseService.initialized, 
+    stripe: stripeService.initialized 
+  };
+  
+  if (servicesInitializing) return { 
+    success: false, 
+    reason: 'ALREADY_INITIALIZING' 
+  };
   
   servicesInitializing = true;
+  let firebaseReady = false;
+  let stripeReady = false;
   
   try {
     // Try to initialize Firebase (optional for RAG-only mode)
     try {
       await firebaseService.initialize();
+      firebaseReady = true;
       console.log('✅ Firebase service initialized');
     } catch (firebaseError) {
       console.log('⚠️ Firebase not configured - running in legacy mode:', firebaseError.message);
@@ -26,16 +37,27 @@ async function initializeServicesIfNeeded() {
     // Try to initialize Stripe (optional for RAG-only mode)
     try {
       await stripeService.initialize();
+      stripeReady = true;
       console.log('✅ Stripe service initialized');
     } catch (stripeError) {
       console.log('⚠️ Stripe not configured - payment features disabled:', stripeError.message);
     }
     
     servicesInitialized = true;
-    return true;
+    
+    return { 
+      success: true, 
+      firebase: firebaseReady, 
+      stripe: stripeReady 
+    };
   } catch (error) {
     console.error('❌ Services initialization failed:', error);
-    return false;
+    return { 
+      success: false, 
+      error: error.message,
+      firebase: firebaseReady, 
+      stripe: stripeReady 
+    };
   } finally {
     servicesInitializing = false;
   }
@@ -67,32 +89,124 @@ export default async function handler(req, res) {
   }
 
   // Initialize services on first request
-  await initializeServicesIfNeeded();
+  const servicesReady = await initializeServicesIfNeeded();
+  console.log('🔧 Services initialization result:', servicesReady);
 
-  // Authenticate user first
-  try {
-    await new Promise((resolve, reject) => {
-      verifyAuth(req, res, (error) => {
-        if (error) reject(error);
-        else resolve();
-      });
+  // Manual authentication logic to avoid middleware timing issues
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      error: 'Missing authorization header',
+      code: 'MISSING_AUTH'
     });
-  } catch (authError) {
-    return; // Response already sent by middleware
+  }
+
+  const token = authHeader.substring(7);
+  
+  // Check if it's the legacy API key
+  if (token === process.env.BACKEND_API_KEY) {
+    // Legacy API key authentication
+    req.user = {
+      uid: 'system',
+      email: 'system@vibe-n8n.com',
+      plan: 'SYSTEM',
+      remaining_tokens: 999999999,
+      isSystem: true
+    };
+    console.log('🔑 Legacy API key authentication successful');
+  } else {
+    // Firebase authentication
+    if (!servicesReady.firebase) {
+      return res.status(503).json({
+        error: 'Firebase authentication not available',
+        code: 'FIREBASE_NOT_READY',
+        details: servicesReady
+      });
+    }
+
+    try {
+      // Verify token with Firebase
+      const decodedToken = await firebaseService.verifyIdToken(token);
+      
+      // Get or create user in our database
+      const user = await firebaseService.getOrCreateUser(decodedToken.uid, decodedToken.email);
+      
+      // Attach user info to request
+      req.user = {
+        uid: decodedToken.uid,
+        email: decodedToken.email,
+        ...user
+      };
+      
+      console.log('🔥 Firebase authentication successful:', req.user.email);
+    } catch (error) {
+      console.error('❌ Firebase authentication failed:', error);
+      return res.status(401).json({
+        error: 'Invalid Firebase token',
+        code: 'INVALID_FIREBASE_TOKEN'
+      });
+    }
   }
 
   // Check token quota before processing (only if not system user)
-  if (!req.user.isSystem) {
+  if (!req.user.isSystem && servicesReady.firebase) {
     try {
-      await new Promise((resolve, reject) => {
-        checkTokenQuota(10000)(req, res, (error) => {
-          if (error) reject(error);
-          else resolve();
-        });
-      });
+      const { allowed, reason, userData } = await firebaseService.canUserMakeRequest(
+        req.user.uid, 
+        10000
+      );
+
+      if (!allowed) {
+        requestStats.tokenQuotaBlocked++;
+        
+        let errorResponse = {
+          error: 'Quota exceeded',
+          code: reason,
+          user: {
+            plan: userData?.plan,
+            remaining_tokens: userData?.remaining_tokens,
+            usage_based_enabled: userData?.usage_based_enabled,
+            usage_limit_usd: userData?.usage_limit_usd,
+            this_month_usage_usd: userData?.this_month_usage_usd
+          }
+        };
+
+        // Customize error message based on reason
+        switch (reason) {
+          case 'FREE_LIMIT_EXCEEDED':
+            errorResponse.message = 'Tu as atteint la limite gratuite. Passe au plan Pro pour continuer.';
+            errorResponse.action = 'upgrade_to_pro';
+            break;
+          
+          case 'PRO_LIMIT_EXCEEDED':
+            errorResponse.message = 'Quota Pro atteint. Activer Usage-Based Spending ?';
+            errorResponse.action = 'enable_usage_based';
+            errorResponse.options = [20, 50, 100]; // USD spending limits
+            break;
+          
+          case 'USAGE_LIMIT_EXCEEDED':
+            errorResponse.message = 'Budget usage-based épuisé. Augmenter la limite ?';
+            errorResponse.action = 'increase_usage_limit';
+            break;
+          
+          default:
+            errorResponse.message = 'Quota insuffisant pour cette requête.';
+        }
+
+        return res.status(429).json(errorResponse);
+      }
+
+      // Attach updated user data to request
+      req.user = { ...req.user, ...userData };
+      console.log('✅ Quota check passed:', req.user.remaining_tokens?.toLocaleString(), 'tokens remaining');
+      
     } catch (quotaError) {
-      requestStats.tokenQuotaBlocked++;
-      return; // Response already sent by middleware
+      console.error('❌ Token quota check error:', quotaError);
+      return res.status(500).json({
+        error: 'Error checking token quota',
+        code: 'QUOTA_CHECK_ERROR'
+      });
     }
   }
 
@@ -288,8 +402,8 @@ export default async function handler(req, res) {
     if (result.success) {
       requestStats.success++;
 
-      // Report token usage for billing
-      if (!req.user.isSystem && result.tokensUsed) {
+      // Report token usage for billing (only if Firebase is available)
+      if (!req.user.isSystem && result.tokensUsed && servicesReady.firebase) {
         try {
           sendSSE('reporting_usage', { 
             message: 'Mise à jour du quota utilisateur...',
@@ -303,7 +417,7 @@ export default async function handler(req, res) {
           );
 
           // Report to Stripe if PRO user with usage-based billing
-          if (req.user.plan === 'PRO' && req.user.stripe_customer_id) {
+          if (servicesReady.stripe && req.user.plan === 'PRO' && req.user.stripe_customer_id) {
             const updatedUser = await firebaseService.getOrCreateUser(req.user.uid);
             
             if (updatedUser.remaining_tokens === 0 && updatedUser.usage_based_enabled) {
@@ -326,6 +440,8 @@ export default async function handler(req, res) {
           console.error(`❌ Erreur rapport usage:`, usageError.message);
           // Don't fail the request for usage reporting errors
         }
+      } else if (!req.user.isSystem && result.tokensUsed && !servicesReady.firebase) {
+        console.log(`⚠️ [${sessionState.id}] Usage non rapporté (Firebase indisponible): ${result.tokensUsed.input} tokens`);
       }
       
       // Log final de succès
