@@ -161,6 +161,9 @@ class FirebaseService {
     try {
       const userRef = this.db.collection('users').doc(uid);
       
+      // Capture the user plan for logging after the transaction
+      let userPlan = 'UNKNOWN';
+      
       await this.db.runTransaction(async (transaction) => {
         const userDoc = await transaction.get(userRef);
         if (!userDoc.exists) {
@@ -168,6 +171,7 @@ class FirebaseService {
         }
 
         const userData = userDoc.data();
+        userPlan = userData.plan || 'UNKNOWN';
         const newRemainingTokens = Math.max(0, userData.remaining_tokens - inputTokens);
         
         const updates = {
@@ -195,7 +199,7 @@ class FirebaseService {
         transaction.update(userRef, updates);
       });
 
-      console.log(`📊 Updated usage for user ${uid} (plan: ${userData.plan})`);
+      console.log(`📊 Updated usage for user ${uid} (plan: ${userPlan})`);
     } catch (error) {
       console.error('Error updating user tokens:', error);
       throw error;
