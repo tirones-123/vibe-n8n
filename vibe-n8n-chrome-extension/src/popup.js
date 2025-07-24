@@ -13,12 +13,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const signInSection = document.getElementById('signInSection');
   const googleTab = document.getElementById('googleTab');
   const emailTab = document.getElementById('emailTab');
+  const signupTab = document.getElementById('signupTab');
   const googleSignIn = document.getElementById('googleSignIn');
   const emailSignIn = document.getElementById('emailSignIn');
+  const emailSignUp = document.getElementById('emailSignUp');
   const signInGoogleBtn = document.getElementById('signInGoogleBtn');
   const signInEmailBtn = document.getElementById('signInEmailBtn');
+  const signUpEmailBtn = document.getElementById('signUpEmailBtn');
   const emailInput = document.getElementById('emailInput');
   const passwordInput = document.getElementById('passwordInput');
+  const signupEmailInput = document.getElementById('signupEmailInput');
+  const signupPasswordInput = document.getElementById('signupPasswordInput');
+  const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+  const switchToSignup = document.getElementById('switchToSignup');
+  const switchToSignin = document.getElementById('switchToSignin');
   
   // Vérifier l'état d'authentification
   await checkAuthStatus();
@@ -35,6 +43,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (emailTab) {
     emailTab.addEventListener('click', () => switchTab('email'));
   }
+  if (signupTab) {
+    signupTab.addEventListener('click', () => switchTab('signup'));
+  }
   
   // Handlers pour les boutons de connexion
   if (signInGoogleBtn) {
@@ -42,6 +53,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   if (signInEmailBtn) {
     signInEmailBtn.addEventListener('click', handleSignInEmail);
+  }
+  if (signUpEmailBtn) {
+    signUpEmailBtn.addEventListener('click', handleSignUpEmail);
+  }
+  
+  // Handlers pour les liens de switch
+  if (switchToSignup) {
+    switchToSignup.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchTab('signup');
+    });
+  }
+  if (switchToSignin) {
+    switchToSignin.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchTab('email');
+    });
   }
   
   // Handler pour Enter key dans les champs email/password
@@ -53,6 +81,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (passwordInput) {
     passwordInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') handleSignInEmail();
+    });
+  }
+  
+  // Handler pour Enter key dans les champs de création de compte
+  if (signupEmailInput) {
+    signupEmailInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') signupPasswordInput?.focus();
+    });
+  }
+  if (signupPasswordInput) {
+    signupPasswordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') confirmPasswordInput?.focus();
+    });
+  }
+  if (confirmPasswordInput) {
+    confirmPasswordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleSignUpEmail();
     });
   }
   
@@ -289,6 +334,13 @@ function switchTab(tabType) {
     setTimeout(() => {
       document.getElementById('emailInput')?.focus();
     }, 100);
+  } else if (tabType === 'signup') {
+    document.getElementById('signupTab').classList.add('active');
+    document.getElementById('emailSignUp').classList.add('active');
+    // Focus sur le champ email de création de compte
+    setTimeout(() => {
+      document.getElementById('signupEmailInput')?.focus();
+    }, 100);
   }
 }
 
@@ -379,38 +431,21 @@ async function handleSignInEmail() {
     } else {
       console.warn('❌ Popup: Email sign-in failed', response);
       signInBtn.textContent = '❌ Erreur';
+      
+      // Suggérer de créer un compte si l'utilisateur n'existe pas
       if (response?.error?.includes('user-not-found')) {
-        // Essayer de créer un compte
-        setTimeout(async () => {
-          signInBtn.textContent = '🔄 Création du compte...';
-          try {
-            const signupResponse = await chrome.runtime.sendMessage({
-              type: 'firebase-signup-email',
-              data: { email, password }
-            });
-            
-            if ((signupResponse && signupResponse.success) || signupResponse?.user) {
-              console.log('✅ Popup: Account created successfully');
-              await checkAuthStatus();
-              signInBtn.textContent = '✅ Compte créé !';
-              document.getElementById('emailInput').value = '';
-              document.getElementById('passwordInput').value = '';
-              setTimeout(() => window.close(), 1200);
-            } else {
-              signInBtn.textContent = '❌ Erreur création';
-              setTimeout(() => {
-                signInBtn.textContent = originalText;
-                signInBtn.disabled = false;
-              }, 2000);
-            }
-          } catch (signupError) {
-            signInBtn.textContent = '❌ Erreur création';
-            setTimeout(() => {
-              signInBtn.textContent = originalText;
-              signInBtn.disabled = false;
-            }, 2000);
+        signInBtn.textContent = '👤 Compte inexistant';
+        setTimeout(() => {
+          signInBtn.textContent = originalText;
+          signInBtn.disabled = false;
+          // Suggérer de créer un compte
+          if (confirm('Ce compte n\'existe pas. Souhaitez-vous créer un compte ?')) {
+            switchTab('signup');
+            // Pré-remplir l'email
+            document.getElementById('signupEmailInput').value = email;
+            document.getElementById('signupPasswordInput').focus();
           }
-        }, 1000);
+        }, 1500);
       } else {
         setTimeout(() => {
           signInBtn.textContent = originalText;
@@ -425,6 +460,107 @@ async function handleSignInEmail() {
     setTimeout(() => {
       signInBtn.textContent = '📧 Se connecter';
       signInBtn.disabled = false;
+    }, 2000);
+  }
+}
+
+/**
+ * Gérer la création de compte Email/Password (Firebase)
+ */
+async function handleSignUpEmail() {
+  try {
+    console.log('✨ Popup: Email sign-up requested');
+    const signUpBtn = document.getElementById('signUpEmailBtn');
+    const originalText = signUpBtn.textContent;
+    const email = document.getElementById('signupEmailInput').value.trim();
+    const password = document.getElementById('signupPasswordInput').value;
+    const confirmPassword = document.getElementById('confirmPasswordInput').value;
+    
+    // Validation avancée
+    if (!email || !password || !confirmPassword) {
+      alert('Veuillez remplir tous les champs');
+      return;
+    }
+    
+    if (!email.includes('@')) {
+      alert('Veuillez entrer un email valide');
+      return;
+    }
+    
+    if (password.length < 6) {
+      alert('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      alert('Les mots de passe ne correspondent pas');
+      document.getElementById('confirmPasswordInput').focus();
+      return;
+    }
+    
+    // Validation supplémentaire du mot de passe
+    if (!/(?=.*[a-z])/.test(password)) {
+      alert('Le mot de passe doit contenir au moins une lettre minuscule');
+      return;
+    }
+    
+    signUpBtn.textContent = '⏳ Création...';
+    signUpBtn.disabled = true;
+
+    // Demander au background de créer le compte
+    const response = await chrome.runtime.sendMessage({
+      type: 'firebase-signup-email',
+      data: { email, password }
+    });
+
+    if ((response && response.success) || response?.user) {
+      console.log('✅ Popup: Account created successfully');
+      await checkAuthStatus();
+      signUpBtn.textContent = '✅ Compte créé !';
+      // Clear les champs
+      document.getElementById('signupEmailInput').value = '';
+      document.getElementById('signupPasswordInput').value = '';
+      document.getElementById('confirmPasswordInput').value = '';
+      setTimeout(() => window.close(), 1200);
+    } else {
+      console.warn('❌ Popup: Account creation failed', response);
+      signUpBtn.textContent = '❌ Erreur';
+      
+      // Gestion des erreurs spécifiques Firebase
+      if (response?.error?.includes('email-already-in-use')) {
+        signUpBtn.textContent = '📧 Email déjà utilisé';
+        setTimeout(() => {
+          signUpBtn.textContent = originalText;
+          signUpBtn.disabled = false;
+          // Suggérer de se connecter
+          if (confirm('Cet email est déjà utilisé. Souhaitez-vous vous connecter ?')) {
+            switchTab('email');
+            // Pré-remplir l'email
+            document.getElementById('emailInput').value = email;
+            document.getElementById('passwordInput').focus();
+          }
+        }, 2000);
+      } else if (response?.error?.includes('weak-password')) {
+        signUpBtn.textContent = '🔒 Mot de passe trop faible';
+        setTimeout(() => {
+          signUpBtn.textContent = originalText;
+          signUpBtn.disabled = false;
+          document.getElementById('signupPasswordInput').focus();
+        }, 2000);
+      } else {
+        setTimeout(() => {
+          signUpBtn.textContent = originalText;
+          signUpBtn.disabled = false;
+        }, 2000);
+      }
+    }
+  } catch (err) {
+    console.error('❌ Popup: Email sign-up error', err);
+    const signUpBtn = document.getElementById('signUpEmailBtn');
+    signUpBtn.textContent = '❌ Erreur';
+    setTimeout(() => {
+      signUpBtn.textContent = '✨ Créer mon compte';
+      signUpBtn.disabled = false;
     }, 2000);
   }
 }

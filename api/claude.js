@@ -7,6 +7,11 @@ import { verifyAuth, checkTokenQuota } from './middleware/auth.js';
 let servicesInitialized = false;
 let servicesInitializing = false;
 
+// IP rate limiting tracking
+const ipRequestTracker = new Map();
+const MAX_REQUESTS_PER_IP_PER_HOUR = 100;
+const IP_TRACKING_DURATION = 60 * 60 * 1000; // 1 hour
+
 // Initialize services safely and conditionally
 async function initializeServicesIfNeeded() {
   if (servicesInitialized) return { 
@@ -63,6 +68,77 @@ async function initializeServicesIfNeeded() {
   }
 }
 
+// Rate limiting by IP address
+function checkIPRateLimit(clientIP) {
+  const now = Date.now();
+  
+  // Clean old entries
+  for (const [ip, data] of ipRequestTracker.entries()) {
+    if (now - data.firstRequest > IP_TRACKING_DURATION) {
+      ipRequestTracker.delete(ip);
+    }
+  }
+  
+  const ipData = ipRequestTracker.get(clientIP);
+  
+  if (!ipData) {
+    // First request from this IP
+    ipRequestTracker.set(clientIP, {
+      count: 1,
+      firstRequest: now,
+      lastRequest: now,
+      users: new Set()
+    });
+    return { allowed: true, remaining: MAX_REQUESTS_PER_IP_PER_HOUR - 1 };
+  }
+  
+  // Check if within rate limit
+  if (ipData.count >= MAX_REQUESTS_PER_IP_PER_HOUR) {
+    return {
+      allowed: false,
+      remaining: 0,
+      resetTime: ipData.firstRequest + IP_TRACKING_DURATION,
+      message: `Trop de requêtes depuis cette adresse IP. Limite: ${MAX_REQUESTS_PER_IP_PER_HOUR}/heure`
+    };
+  }
+  
+  // Update counter
+  ipData.count++;
+  ipData.lastRequest = now;
+  
+  return {
+    allowed: true,
+    remaining: MAX_REQUESTS_PER_IP_PER_HOUR - ipData.count
+  };
+}
+
+// Track user IP for abuse detection
+async function trackUserIP(uid, clientIP) {
+  if (!servicesInitialized || !firebaseService.initialized) return;
+  
+  try {
+    const ipData = ipRequestTracker.get(clientIP);
+    if (ipData) {
+      ipData.users.add(uid);
+      
+      // Alert if many users from same IP (very high threshold for maximum flexibility)
+      if (ipData.users.size > 200) {
+        await firebaseService.logSecurityEvent('multiple_users_same_ip', {
+          ip: clientIP,
+          user_count: ipData.users.size,
+          users: Array.from(ipData.users),
+          requests_count: ipData.count,
+          time_window: '1 hour'
+        });
+        
+        console.log(`🚨 Suspicious IP activity: ${clientIP} - ${ipData.users.size} users, ${ipData.count} requests`);
+      }
+    }
+  } catch (error) {
+    console.error('Error tracking user IP:', error);
+  }
+}
+
 // Monitoring et stats
 let requestStats = {
   total: 0,
@@ -87,6 +163,29 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // Extract client IP (support for various proxy headers)
+  const clientIP = req.headers['x-forwarded-for']?.split(',')[0] || 
+                   req.headers['x-real-ip'] || 
+                   req.connection?.remoteAddress || 
+                   req.socket?.remoteAddress ||
+                   'unknown';
+
+  console.log(`🔍 Request from IP: ${clientIP}`);
+
+  // Rate limit by IP address
+  const ipRateLimit = checkIPRateLimit(clientIP);
+  if (!ipRateLimit.allowed) {
+    console.log(`🚫 IP rate limit exceeded: ${clientIP}`);
+    return res.status(429).json({
+      error: 'Rate limit exceeded',
+      code: 'IP_RATE_LIMIT',
+      message: ipRateLimit.message,
+      resetTime: new Date(ipRateLimit.resetTime).toISOString()
+    });
+  }
+
+  console.log(`✅ IP rate limit OK: ${clientIP} (${ipRateLimit.remaining} remaining)`);
 
   // Initialize services on first request
   const servicesReady = await initializeServicesIfNeeded();
@@ -150,6 +249,11 @@ export default async function handler(req, res) {
     }
   }
 
+  // Track user IP for abuse detection (after authentication)
+  if (!req.user.isSystem) {
+    await trackUserIP(req.user.uid, clientIP);
+  }
+
   // Check token quota before processing (only if not system user)
   if (!req.user.isSystem && servicesReady.firebase) {
     try {
@@ -175,6 +279,12 @@ export default async function handler(req, res) {
 
         // Customize error message based on reason
         switch (reason) {
+          case 'EMAIL_VERIFICATION_REQUIRED':
+            errorResponse.message = 'Vérifiez votre email pour débloquer votre quota complet.';
+            errorResponse.action = 'verify_email';
+            errorResponse.details = 'Consultez votre boîte email pour le lien de vérification.';
+            break;
+            
           case 'FREE_LIMIT_EXCEEDED':
             errorResponse.message = 'Tu as atteint la limite gratuite. Passe au plan Pro pour continuer.';
             errorResponse.action = 'upgrade_to_pro';

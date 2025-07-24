@@ -51,7 +51,10 @@
                             🔐 Google
                         </button>
                         <button id="emailTab" class="tab-btn" data-tab="email">
-                            📧 Email
+                            📧 Connexion
+                        </button>
+                        <button id="signupTab" class="tab-btn" data-tab="signup">
+                            ✨ Créer compte
                         </button>
                     </div>
                     
@@ -78,7 +81,26 @@
                             📧 Se connecter
                         </button>
                         <p class="sign-in-note">
-                            Créez un compte si vous n'en avez pas
+                            Pas de compte ? <a href="#" id="switchToSignup" class="sign-in-link">Créer un compte</a>
+                        </p>
+                    </div>
+                    
+                    <!-- Email/Password Sign-up -->
+                    <div id="emailSignUp" class="sign-in-option">
+                        <div class="form-group">
+                            <input type="email" id="signupEmailInput" placeholder="Votre email" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="signupPasswordInput" placeholder="Mot de passe (min. 6 caractères)" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="confirmPasswordInput" placeholder="Confirmer le mot de passe" class="form-input">
+                        </div>
+                        <button id="signUpEmailBtn" class="btn primary full-width">
+                            ✨ Créer mon compte
+                        </button>
+                        <p class="sign-in-note">
+                            Déjà un compte ? <a href="#" id="switchToSignin" class="sign-in-link">Se connecter</a>
                         </p>
                     </div>
                 </div>

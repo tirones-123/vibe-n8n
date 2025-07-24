@@ -502,4 +502,16 @@ body {
   color: #64748b;
   text-align: center;
   line-height: 1.4;
+}
+
+.sign-in-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sign-in-link:hover {
+  text-decoration: underline;
+  color: #2563eb;
 } 

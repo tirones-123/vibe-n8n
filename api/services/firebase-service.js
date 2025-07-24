@@ -60,12 +60,32 @@ class FirebaseService {
       const userDoc = await userRef.get();
 
       if (!userDoc.exists) {
-        // Create new user with FREE plan defaults
+        // Anti-abuse checks before creating user
+        const abuseCheck = await this.performAbuseChecks(email, uid);
+        
+        let initialTokens = 70000; // Default FREE tokens
+        let accountStatus = 'active';
+        
+        // Reduce tokens for suspicious accounts
+        if (abuseCheck.riskLevel === 'medium') {
+          initialTokens = 30000; // Reduced tokens for medium risk
+          console.log(`⚠️ Medium risk account detected: ${email}, reduced tokens to ${initialTokens}`);
+        } else if (abuseCheck.riskLevel === 'high') {
+          initialTokens = 5000; // Very limited tokens for high risk
+          accountStatus = 'limited';
+          console.log(`🚨 High risk account detected: ${email}, limited to ${initialTokens} tokens`);
+        }
+        
+        // Create new user with anti-abuse data
         const newUser = {
           uid,
           email,
           plan: 'FREE',
-          remaining_tokens: 70000, // Free plan: 70k tokens
+          remaining_tokens: initialTokens,
+          initial_tokens_granted: initialTokens,
+          account_status: accountStatus,
+          risk_level: abuseCheck.riskLevel,
+          email_verified: false, // Start as unverified
           this_month_usage_tokens: 0,
           this_month_usage_usd: 0,
           total_tokens_used: 0,
@@ -76,17 +96,158 @@ class FirebaseService {
           usage_limit_usd: 0,
           created_at: admin.firestore.FieldValue.serverTimestamp(),
           updated_at: admin.firestore.FieldValue.serverTimestamp(),
-          last_reset_at: admin.firestore.FieldValue.serverTimestamp()
+          last_reset_at: admin.firestore.FieldValue.serverTimestamp(),
+          // Anti-abuse metadata
+          signup_metadata: abuseCheck.metadata,
+          verification_sent_at: null,
+          verified_at: null
         };
 
         await userRef.set(newUser);
-        console.log(`📝 Created new FREE user: ${uid}`);
+        
+        // Send verification email (Firebase will handle this)
+        try {
+          await admin.auth().generateEmailVerificationLink(email);
+          await userRef.update({
+            verification_sent_at: admin.firestore.FieldValue.serverTimestamp()
+          });
+          console.log(`📧 Verification email sent to: ${email}`);
+        } catch (emailError) {
+          console.warn(`⚠️ Could not send verification email to ${email}:`, emailError.message);
+        }
+        
+        console.log(`📝 Created new ${abuseCheck.riskLevel.toUpperCase()} risk user: ${uid} (${initialTokens} tokens)`);
         return { ...newUser, id: uid };
       }
 
       return { id: uid, ...userDoc.data() };
     } catch (error) {
       console.error('Error getting/creating user:', error);
+      throw error;
+    }
+  }
+
+  // Perform anti-abuse checks on new account creation
+  async performAbuseChecks(email, uid) {
+    try {
+      let riskLevel = 'low';
+      let riskFactors = [];
+      let metadata = {
+        check_timestamp: new Date().toISOString(),
+        email_domain: email ? email.split('@')[1] : null,
+        checks_performed: []
+      };
+
+      // Check 1: Email domain analysis
+      if (email) {
+        const domain = email.split('@')[1];
+        const suspiciousDomains = [
+          'tempmail.org', '10minutemail.com', 'guerrillamail.com', 
+          'mailinator.com', 'temp-mail.org', 'throwaway.email',
+          'maildrop.cc', 'mailnesia.com', 'yopmail.com'
+        ];
+        
+        if (suspiciousDomains.includes(domain.toLowerCase())) {
+          riskFactors.push('temporary_email_domain');
+          riskLevel = 'high';
+        }
+        
+        metadata.checks_performed.push('email_domain_check');
+      }
+
+      // Check 2: Recent account creation rate from same email domain
+      if (email) {
+        const domain = email.split('@')[1];
+        const recentAccountsQuery = await this.db.collection('users')
+          .where('signup_metadata.email_domain', '==', domain)
+          .where('created_at', '>', new Date(Date.now() - 24 * 60 * 60 * 1000)) // Last 24h
+          .get();
+        
+        if (recentAccountsQuery.size > 500) {
+          riskFactors.push('domain_signup_burst');
+          riskLevel = riskLevel === 'high' ? 'high' : 'medium';
+        }
+        
+        metadata.domain_recent_signups = recentAccountsQuery.size;
+        metadata.checks_performed.push('domain_rate_check');
+      }
+
+      // Check 3: Email pattern analysis (suspicious patterns)
+      if (email) {
+        const emailPatterns = [
+          /^[a-z]+\d{3,}@/, // letters followed by many numbers
+          /^test\d*@/, // test emails
+          /^user\d*@/, // generic user emails
+          /^\w+\+\w+@/ // plus addressing (often used for multiple accounts)
+        ];
+        
+        const isSuspiciousPattern = emailPatterns.some(pattern => pattern.test(email.toLowerCase()));
+        if (isSuspiciousPattern) {
+          riskFactors.push('suspicious_email_pattern');
+          riskLevel = riskLevel === 'high' ? 'high' : 'medium';
+        }
+        
+        metadata.checks_performed.push('email_pattern_check');
+      }
+
+      metadata.risk_factors = riskFactors;
+      metadata.final_risk_level = riskLevel;
+
+      // Log the risk assessment
+      await this.logSecurityEvent('account_creation_risk_assessment', {
+        email,
+        uid,
+        risk_level: riskLevel,
+        risk_factors: riskFactors,
+        metadata
+      });
+
+      return { riskLevel, riskFactors, metadata };
+    } catch (error) {
+      console.error('Error performing abuse checks:', error);
+      // Default to medium risk if checks fail
+      return { 
+        riskLevel: 'medium', 
+        riskFactors: ['check_failed'], 
+        metadata: { error: error.message } 
+      };
+    }
+  }
+
+  // Verify email and unlock full quota
+  async verifyEmailAndUnlockQuota(uid) {
+    try {
+      const userRef = this.db.collection('users').doc(uid);
+      const userDoc = await userRef.get();
+      
+      if (!userDoc.exists) {
+        throw new Error('User not found');
+      }
+
+      const userData = userDoc.data();
+      
+      // Only upgrade if not already verified and account is limited
+      if (!userData.email_verified && userData.initial_tokens_granted < 70000) {
+        const fullTokens = 70000;
+        
+        await userRef.update({
+          email_verified: true,
+          remaining_tokens: admin.firestore.FieldValue.increment(fullTokens - userData.initial_tokens_granted),
+          account_status: 'active',
+          verified_at: admin.firestore.FieldValue.serverTimestamp(),
+          updated_at: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        console.log(`✅ Email verified for ${uid}, upgraded to ${fullTokens} tokens`);
+        
+        await this.logSecurityEvent('email_verification_completed', {
+          uid,
+          email: userData.email,
+          tokens_granted: fullTokens - userData.initial_tokens_granted
+        });
+      }
+    } catch (error) {
+      console.error('Error verifying email and unlocking quota:', error);
       throw error;
     }
   }
@@ -197,7 +358,7 @@ class FirebaseService {
     }
   }
 
-  // Check if user can make request (has enough tokens)
+  // Check if user can make request (enhanced with email verification)
   async canUserMakeRequest(uid, estimatedTokens = 10000) {
     try {
       const userRef = this.db.collection('users').doc(uid);
@@ -208,6 +369,16 @@ class FirebaseService {
       }
 
       const userData = userDoc.data();
+      
+      // Block if account is in limited status and email not verified
+      if (userData.account_status === 'limited' && !userData.email_verified) {
+        return { 
+          allowed: false, 
+          reason: 'EMAIL_VERIFICATION_REQUIRED',
+          userData,
+          message: 'Vérifiez votre email pour débloquer votre quota complet'
+        };
+      }
       
       // Check basic token quota
       if (userData.remaining_tokens >= estimatedTokens) {
@@ -254,6 +425,23 @@ class FirebaseService {
     } catch (error) {
       console.error('Error logging usage event:', error);
       // Don't throw - analytics shouldn't break user experience
+    }
+  }
+
+  // Log security events for monitoring
+  async logSecurityEvent(eventType, metadata = {}) {
+    try {
+      const eventRef = this.db.collection('security_events').doc();
+      
+      await eventRef.set({
+        event_type: eventType,
+        metadata,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        source: 'firebase_service'
+      });
+    } catch (error) {
+      console.error('Error logging security event:', error);
+      // Don't throw - security logging shouldn't break user experience
     }
   }
 }
