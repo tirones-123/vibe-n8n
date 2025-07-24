@@ -352,7 +352,7 @@ class ContentAuthIntegration {
     document.addEventListener('keydown', handleEscape);
   }
 
-  // Check if user can make a request
+  // Check if user can make a request with quota verification
   async canMakeRequest() {
     try {
       console.log('🔍 Vérification de l\'authentification Firebase...');
@@ -380,14 +380,7 @@ class ContentAuthIntegration {
         }
       }
 
-      if (user) {
-        console.log('✅ Utilisateur authentifié:', user.email || user.uid);
-        return { 
-          allowed: true,
-          method: 'firebase',
-          user
-        };
-      } else {
+      if (!user) {
         console.log('❌ Utilisateur non authentifié');
         return { 
           allowed: false, 
@@ -395,6 +388,127 @@ class ContentAuthIntegration {
           action: 'show_auth_modal'
         };
       }
+
+      console.log('✅ Utilisateur authentifié:', user.email || user.uid);
+      
+      // Check quota with backend
+      try {
+        const token = await this.getFirebaseIdToken();
+        if (!token) {
+          return {
+            allowed: false,
+            reason: 'NO_TOKEN',
+            action: 'show_auth_modal'
+          };
+        }
+        
+        console.log('🔍 Vérification des quotas avec le backend...');
+        
+        // Get fresh user info to check quota
+        const response = await fetch(`${CONFIG.API_BASE_URL}/api/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          console.warn('Failed to check user quota:', response.status);
+          return {
+            allowed: true, // Allow by default if quota check fails
+            reason: 'QUOTA_CHECK_FAILED',
+            method: 'firebase',
+            user
+          };
+        }
+        
+        const userData = await response.json();
+        const freshUser = userData.user;
+        
+                 console.log('📊 Quota check - plan:', freshUser.plan, 'usage_based:', freshUser.usage_based_enabled);
+        
+        // Check if user has enough quota
+        if (freshUser.remaining_tokens <= 0) {
+          console.log('⚠️ Quota limit reached for plan:', freshUser.plan);
+          
+          // For FREE users
+          if (freshUser.plan === 'FREE') {
+            return {
+              allowed: false,
+              reason: 'FREE_LIMIT_EXCEEDED',
+              action: 'show_quota_card',
+              quotaInfo: {
+                code: 'FREE_LIMIT_EXCEEDED',
+                user: freshUser,
+                action: 'upgrade_to_pro',
+                message: 'Free plan limit reached. Upgrade to PRO to continue.'
+              }
+            };
+          }
+          
+          // For PRO users
+          if (freshUser.plan === 'PRO') {
+            // Check if usage-based billing is enabled
+            if (freshUser.usage_based_enabled) {
+              const remainingBudget = freshUser.usage_limit_usd - (freshUser.this_month_usage_usd || 0);
+              
+              if (remainingBudget <= 0) {
+                return {
+                  allowed: false,
+                  reason: 'USAGE_LIMIT_EXCEEDED',
+                  action: 'show_quota_card',
+                  quotaInfo: {
+                    code: 'USAGE_LIMIT_EXCEEDED',
+                    user: freshUser,
+                    action: 'increase_usage_limit',
+                    message: 'Spending limit reached. Increase to continue.'
+                  }
+                };
+              }
+              
+              // User has usage-based enabled and budget remaining
+              console.log('✅ Quota check passed (usage-based billing)');
+              return { 
+                allowed: true, 
+                reason: 'USAGE_BASED_OK',
+                method: 'firebase',
+                user: freshUser
+              };
+            } else {
+              // PRO user without usage-based billing
+              return {
+                allowed: false,
+                reason: 'PRO_LIMIT_EXCEEDED',
+                action: 'show_quota_card',
+                quotaInfo: {
+                  code: 'PRO_LIMIT_EXCEEDED',
+                  user: freshUser,
+                  action: 'enable_usage_based',
+                  message: 'PRO plan limit reached. Enable pay-as-you-go to continue.',
+                  options: [20, 50, 100]
+                }
+              };
+            }
+          }
+        }
+        
+        console.log('✅ Quota check passed - user has remaining quota');
+        return {
+          allowed: true,
+          reason: 'OK',
+          method: 'firebase',
+          user: freshUser
+        };
+        
+      } catch (quotaError) {
+        console.error('Error checking quota:', quotaError);
+        return {
+          allowed: true, // Allow by default if quota check fails
+          reason: 'QUOTA_CHECK_ERROR',
+          method: 'firebase',
+          user
+        };
+      }
+      
     } catch (error) {
       console.error('❌ Erreur vérification auth:', error);
       return { 
@@ -413,6 +527,15 @@ class ContentAuthIntegration {
       case 'show_auth_modal':
         console.log('🔐 Affichage du modal d\'authentification requis');
         this.showSimpleAuthModal();
+        break;
+      
+      case 'show_quota_card':
+        console.log('💳 Affichage de l\'encadré de quota');
+        // Dispatch event to content script to show quota card
+        window.postMessage({
+          type: 'SHOW_QUOTA_CARD',
+          quotaInfo: checkResult.quotaInfo
+        }, '*');
         break;
       
       case 'show_error':
@@ -636,6 +759,72 @@ class ContentAuthIntegration {
       this.showErrorMessage('Erreur lors de la génération. Réessayez.');
       return null;
     }
+  }
+
+  // Create Stripe checkout session
+  async createStripeCheckout() {
+    try {
+      const token = await this.getFirebaseIdToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+      
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          success_url: window.location.href + '?upgrade=success',
+          cancel_url: window.location.href + '?upgrade=cancelled'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+      
+      const { checkout_url } = await response.json();
+      
+      // Open Stripe checkout in new tab
+      window.open(checkout_url, '_blank');
+      
+      // Show success message
+      this.showSuccessMessage('Redirection vers Stripe en cours...');
+      
+    } catch (error) {
+      console.error('Error creating Stripe checkout:', error);
+      this.showErrorMessage('Erreur lors de la création de la session de paiement');
+    }
+  }
+
+  // Show success message
+  showSuccessMessage(message) {
+    const toast = document.createElement('div');
+    toast.className = 'auth-success-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #16a34a;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      z-index: 10002;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      if (toast.parentElement) {
+        toast.remove();
+      }
+    }, 3000);
   }
 
   // Show error message

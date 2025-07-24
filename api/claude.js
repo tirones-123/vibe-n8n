@@ -232,7 +232,7 @@ export default async function handler(req, res) {
 
       // Attach updated user data to request
       req.user = { ...req.user, ...userData };
-      console.log('✅ Quota check passed:', req.user.remaining_tokens?.toLocaleString(), 'tokens remaining');
+      console.log('✅ Quota check passed for user plan:', req.user.plan);
       
     } catch (quotaError) {
       console.error('❌ Token quota check error:', quotaError);
@@ -455,7 +455,7 @@ export default async function handler(req, res) {
             
             if (updatedUser.remaining_tokens === 0 && updatedUser.usage_based_enabled) {
               await stripeService.reportUsage(req.user.stripe_customer_id, result.tokensUsed.input);
-              console.log(`📊 Reported ${result.tokensUsed.input} tokens to Stripe for ${req.user.uid}`);
+              console.log(`📊 Reported usage to Stripe for user ${req.user.uid}`);
             }
           }
 
@@ -468,13 +468,13 @@ export default async function handler(req, res) {
             duration: duration
           });
 
-          console.log(`📊 [${sessionState.id}] Usage rapporté: ${result.tokensUsed.input} input, ${result.tokensUsed.output || 0} output tokens`);
+          console.log(`📊 [${sessionState.id}] Usage reported for user ${req.user.uid}`);
         } catch (usageError) {
           console.error(`❌ Erreur rapport usage:`, usageError.message);
           // Don't fail the request for usage reporting errors
         }
       } else if (!req.user.isSystem && result.tokensUsed && !servicesReady.firebase) {
-        console.log(`⚠️ [${sessionState.id}] Usage non rapporté (Firebase indisponible): ${result.tokensUsed.input} tokens`);
+        console.log(`⚠️ [${sessionState.id}] Usage not reported (Firebase unavailable)`);
       }
       
       // Log final de succès

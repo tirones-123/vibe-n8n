@@ -770,6 +770,23 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     }
 
     if (!response.ok) {
+      // Handle quota exceeded errors specifically
+      if (response.status === 429) {
+        try {
+          const quotaError = await response.json();
+          console.error('❌ Quota exceeded:', quotaError);
+          
+          // Send quota exceeded message to content script
+          chrome.tabs.sendMessage(tabId, {
+            type: 'QUOTA_EXCEEDED',
+            quotaInfo: quotaError
+          });
+          return; // Stop here, don't throw generic error
+        } catch (parseError) {
+          console.error('Failed to parse quota error:', parseError);
+        }
+      }
+      
       const errorText = await response.text();
       console.error('❌ Erreur HTTP:', response.status, errorText);
       throw new Error(`Erreur API workflow RAG (${response.status}): ${errorText}`);
@@ -997,6 +1014,23 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
   }
 
   if (!response.ok) {
+    // Handle quota exceeded errors specifically for improvement requests
+    if (response.status === 429) {
+      try {
+        const quotaError = await response.json();
+        console.error('❌ Quota exceeded during improvement:', quotaError);
+        
+        // Send quota exceeded message to content script
+        chrome.tabs.sendMessage(tabId, {
+          type: 'QUOTA_EXCEEDED',
+          quotaInfo: quotaError
+        });
+        return; // Stop here, don't throw generic error
+      } catch (parseError) {
+        console.error('Failed to parse quota error during improvement:', parseError);
+      }
+    }
+    
     const error = await response.text();
     console.error('❌ Improvement API error:', response.status, error);
     throw new Error(`Erreur API amélioration workflow: ${error}`);

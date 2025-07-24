@@ -86,7 +86,7 @@ class FirebaseService {
         if (emailVerified) {
           console.log(`📝 Created new FREE user with verified email: ${uid}`);
         } else {
-          console.log(`📝 Created new user pending email verification: ${uid} (0 tokens until verified)`);
+          console.log(`📝 Created new user pending email verification: ${uid}`);
         }
         
         return { ...newUser, id: uid };
@@ -135,19 +135,19 @@ class FirebaseService {
       // Activer l'utilisateur avec les tokens FREE
       const updates = {
         email_verified: true,
-        remaining_tokens: userData.plan === 'PRO' ? 1000000 : 70000,
+        remaining_tokens: userData.plan === 'PRO' ? 1500000 : 70000,
         updated_at: admin.firestore.FieldValue.serverTimestamp()
       };
 
       await userRef.update(updates);
       
-      console.log(`✅ Activated user ${uid} after email verification - granted ${updates.remaining_tokens} tokens`);
+      console.log(`✅ Activated user ${uid} after email verification`);
       
-      // Log activation event
-      await this.logUsageEvent(uid, 'email_verified', {
-        email: userData.email,
-        tokens_granted: updates.remaining_tokens
-      });
+              // Log activation event
+        await this.logUsageEvent(uid, 'email_verified', {
+          email: userData.email,
+          plan: userData.plan
+        });
 
       return { ...userData, ...updates };
     } catch (error) {
@@ -178,17 +178,24 @@ class FirebaseService {
           updated_at: admin.firestore.FieldValue.serverTimestamp()
         };
 
-        // Calculate usage cost for PRO users who go over quota
-        if (userData.plan === 'PRO' && newRemainingTokens === 0 && userData.remaining_tokens > 0) {
-          const overageTokens = inputTokens - userData.remaining_tokens;
-          const overageCost = overageTokens * 0.00002; // $0.00002 per token
-          updates.this_month_usage_usd = (userData.this_month_usage_usd || 0) + overageCost;
+        // Calculate usage cost for PRO users with usage-based billing enabled
+        if (userData.plan === 'PRO' && userData.usage_based_enabled) {
+          if (userData.remaining_tokens > 0 && newRemainingTokens <= 0) {
+            // User just went over their quota this request
+            const overageTokens = inputTokens - userData.remaining_tokens;
+            const overageCost = overageTokens * 0.00002; // $0.00002 per token
+            updates.this_month_usage_usd = (userData.this_month_usage_usd || 0) + overageCost;
+          } else if (userData.remaining_tokens <= 0) {
+            // User was already over quota, all tokens are billable
+            const overageCost = inputTokens * 0.00002; // $0.00002 per token
+            updates.this_month_usage_usd = (userData.this_month_usage_usd || 0) + overageCost;
+          }
         }
 
         transaction.update(userRef, updates);
       });
 
-      console.log(`📊 Updated tokens for ${uid}: -${inputTokens} input, +${outputTokens} output`);
+      console.log(`📊 Updated usage for user ${uid} (plan: ${userData.plan})`);
     } catch (error) {
       console.error('Error updating user tokens:', error);
       throw error;
@@ -202,7 +209,7 @@ class FirebaseService {
       
       await userRef.update({
         plan: 'PRO',
-        remaining_tokens: 1000000, // PRO plan: 1M tokens
+        remaining_tokens: 1500000, // PRO plan: 1.5M tokens
         stripe_customer_id: stripeCustomerId,
         stripe_subscription_id: subscriptionId,
         updated_at: admin.firestore.FieldValue.serverTimestamp(),
@@ -227,7 +234,7 @@ class FirebaseService {
       }
 
       const userData = userDoc.data();
-      const baseTokens = userData.plan === 'PRO' ? 1000000 : 70000;
+      const baseTokens = userData.plan === 'PRO' ? 1500000 : 70000;
 
       await userRef.update({
         remaining_tokens: baseTokens,

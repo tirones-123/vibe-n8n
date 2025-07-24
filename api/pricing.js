@@ -206,7 +206,7 @@ router.post('/report-usage', verifyAuth, async (req, res) => {
       cost_usd: input_tokens * 0.00002 // For tracking
     });
 
-    console.log(`📊 Usage reported for ${req.user.uid}: ${input_tokens} input, ${output_tokens} output tokens`);
+    console.log(`📊 Usage reported for user ${req.user.uid} (plan: ${req.user.plan})`);
 
     res.json({
       success: true,
@@ -456,7 +456,7 @@ router.get('/me', verifyFirebaseAuth, async (req, res) => {
     const userData = await firebaseService.getOrCreateUser(req.user.uid);
     
     // Calculate usage percentage
-    const maxTokens = userData.plan === 'PRO' ? 1000000 : 70000;
+    const maxTokens = userData.plan === 'PRO' ? 1500000 : 70000;
     const usagePercentage = Math.round(((maxTokens - userData.remaining_tokens) / maxTokens) * 100);
 
     // Get Stripe subscription info if PRO
@@ -567,6 +567,7 @@ router.post('/enable-usage-based', verifyFirebaseAuth, async (req, res) => {
   }
 });
 
+
 // GET /api/pricing
 // Get pricing information and plans
 router.get('/pricing', async (req, res) => {
@@ -590,11 +591,11 @@ router.get('/pricing', async (req, res) => {
           name: 'Pro',
           price_usd: 20,
           price_display: '20 US$',
-          tokens_included: 1000000,
+          tokens_included: 1500000,
           overage_rate: 0.00002,
           overage_display: '0,20 US$ / 10,000 tokens',
           features: [
-            '1,000,000 tokens input / mois',
+            '1,500,000 tokens input / mois',
             'Dépassement usage-based optionnel',
             'Génération de workflows IA',
             'Extension Chrome',

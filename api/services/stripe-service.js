@@ -101,7 +101,7 @@ class StripeService {
         timestamp: Math.floor(Date.now() / 1000)
       });
 
-      console.log(`📊 Reported ${inputTokens} tokens usage for customer ${customerId}`);
+      console.log(`📊 Reported usage for customer ${customerId}`);
     } catch (error) {
       console.error('Error reporting usage to Stripe:', error);
       // Don't throw - usage reporting shouldn't break user experience

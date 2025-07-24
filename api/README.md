@@ -324,7 +324,7 @@ Le système adapte automatiquement la méthode de transmission selon la taille :
 - Toutes les fonctionnalités de base
 
 #### PRO ($20/mois) 
-- **1,000,000 tokens** input par mois
+- **1,500,000 tokens** input par mois
 - Usage-based billing optionnel après quota épuisé
 - Statistiques avancées et support prioritaire
 

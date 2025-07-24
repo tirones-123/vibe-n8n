@@ -181,7 +181,7 @@ Authorization: Bearer FIREBASE_ID_TOKEN
 - Support communautaire
 
 #### PRO ($20/mois)
-- **1,000,000 tokens** input par mois
+- **1,500,000 tokens** input par mois
 - Usage-based billing optionnel après quota
 - Support prioritaire
 - Statistiques avancées

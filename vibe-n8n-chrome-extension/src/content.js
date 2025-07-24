@@ -2105,6 +2105,8 @@ async function checkSavedDomains(currentHostname) {
       button.style.pointerEvents = 'none';
       button.style.transform = 'scale(0.8)';
       
+
+      
       // Focus input after layout settles
       setTimeout(() => {
         const input = document.getElementById('ai-input');
@@ -3621,7 +3623,7 @@ async function checkSavedDomains(currentHostname) {
       
       try {
         // === NOUVELLE LOGIQUE ===
-        // 1. Vérifier l'authentification/quotas sans exécuter la requête backend côté page
+        // 1. Vérifier l'authentification/quotas sans exécuter la requête backend côté page  
         const authCheck = await contentAuthIntegration.canMakeRequest();
         if (!authCheck.allowed) {
           console.warn('❌ Auth check failed, raison:', authCheck.reason);
@@ -3673,6 +3675,419 @@ async function checkSavedDomains(currentHostname) {
     } else {
       addChatMessage(`❌ Error: ${error}`, false);
     }
+  }
+
+  // Get adaptive spending limits based on current limit
+  function getAdaptiveLimits(currentLimit) {
+    // Base limits: 20, 50, 100
+    // If user is at 20, offer 50, 100, 200
+    // If user is at 50, offer 100, 200, 500
+    // If user is at 100, offer 200, 500, 1000
+    // etc.
+    
+    if (currentLimit <= 20) {
+      return [50, 100, 200];
+    } else if (currentLimit <= 50) {
+      return [100, 200, 500];
+    } else if (currentLimit <= 100) {
+      return [200, 500, 1000];
+    } else if (currentLimit <= 200) {
+      return [500, 1000, 2000];
+    } else if (currentLimit <= 500) {
+      return [1000, 2000, 5000];
+    } else {
+      // For very high limits, increase by factors
+      const factor = Math.ceil(currentLimit / 1000) * 1000;
+      return [factor * 2, factor * 5, factor * 10];
+    }
+  }
+
+  // Create quota exceeded card
+  function createQuotaExceededCard(quotaInfo) {
+    const { code, user, action, message: errorMessage, options } = quotaInfo;
+    
+    let cardHTML = '';
+    
+    if (code === 'FREE_LIMIT_EXCEEDED') {
+      cardHTML = `
+        <div style="
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 12px;
+          padding: 20px;
+          margin: 16px 0;
+          color: white;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+        ">
+          <div style="
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            z-index: 0;
+          "></div>
+          <div style="position: relative; z-index: 1;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="
+                width: 48px;
+                height: 48px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+              ">
+                🚀
+              </div>
+              <div>
+                               <h3 style="margin: 0; font-size: 18px; font-weight: 600;">
+                 Free Plan Limit Reached
+               </h3>
+                             <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">
+               Your free quota has been reached
+             </p>
+              </div>
+            </div>
+                         <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.5; opacity: 0.95;">
+               Upgrade to <strong>PRO</strong> to continue generating workflows with unlimited usage
+             </p>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button id="upgrade-to-pro-btn" style="
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+                flex: 1;
+                min-width: 140px;
+              " 
+                             onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'; this.style.borderColor='rgba(255, 255, 255, 0.5)';"
+               onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.borderColor='rgba(255, 255, 255, 0.3)';">
+                 Upgrade to PRO - $20/month
+               </button>
+              <button id="dismiss-quota-btn" style="
+                background: transparent;
+                color: rgba(255, 255, 255, 0.8);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                padding: 12px 16px;
+                border-radius: 8px;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.color='white';"
+              onmouseout="this.style.background='transparent'; this.style.color='rgba(255, 255, 255, 0.8)';">
+                Later
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (code === 'PRO_LIMIT_EXCEEDED') {
+      cardHTML = `
+        <div style="
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          border-radius: 12px;
+          padding: 20px;
+          margin: 16px 0;
+          color: white;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 8px 32px rgba(240, 147, 251, 0.3);
+        ">
+          <div style="
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            z-index: 0;
+          "></div>
+          <div style="position: relative; z-index: 1;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="
+                width: 48px;
+                height: 48px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+              ">
+                💎
+              </div>
+              <div>
+                               <h3 style="margin: 0; font-size: 18px; font-weight: 600;">
+                 PRO Plan Limit Reached
+               </h3>
+               <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">
+                 Enable pay-as-you-go to continue
+               </p>
+              </div>
+            </div>
+                         <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.5; opacity: 0.95;">
+               Set a monthly spending limit to continue generating workflows beyond your plan
+             </p>
+            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+              ${(options || [20, 50, 100]).map(limit => `
+                <button class="enable-usage-btn" data-limit="${limit}" style="
+                  background: rgba(255, 255, 255, 0.2);
+                  color: white;
+                  border: 2px solid rgba(255, 255, 255, 0.3);
+                  padding: 8px 12px;
+                  border-radius: 6px;
+                  font-size: 13px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                  backdrop-filter: blur(10px);
+                  flex: 1;
+                "
+                               onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'; this.style.borderColor='rgba(255, 255, 255, 0.5)';"
+               onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.borderColor='rgba(255, 255, 255, 0.3)';">
+                 $${limit} limit
+               </button>
+              `).join('')}
+            </div>
+            <button id="dismiss-quota-btn" style="
+              background: transparent;
+              color: rgba(255, 255, 255, 0.8);
+              border: 1px solid rgba(255, 255, 255, 0.3);
+              padding: 10px 16px;
+              border-radius: 8px;
+              font-size: 14px;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              width: 100%;
+            "
+            onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.color='white';"
+            onmouseout="this.style.background='transparent'; this.style.color='rgba(255, 255, 255, 0.8)';">
+              Later
+            </button>
+          </div>
+        </div>
+      `;
+    } else if (code === 'USAGE_LIMIT_EXCEEDED') {
+      cardHTML = `
+        <div style="
+          background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+          border-radius: 12px;
+          padding: 20px;
+          margin: 16px 0;
+          color: #7c2d12;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 8px 32px rgba(255, 154, 158, 0.3);
+        ">
+          <div style="
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            z-index: 0;
+          "></div>
+          <div style="position: relative; z-index: 1;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="
+                width: 48px;
+                height: 48px;
+                background: rgba(124, 45, 18, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+              ">
+                💳
+              </div>
+                             <div>
+                                <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #7c2d12;">
+                 Spending Limit Reached
+               </h3>
+               <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.8; color: #7c2d12;">
+                 Increase your monthly limit to continue
+               </p>
+               </div>
+            </div>
+                         <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.5; opacity: 0.9; color: #7c2d12;">
+               Choose a new monthly spending limit to continue generating workflows
+             </p>
+            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                             ${getAdaptiveLimits(user?.usage_limit_usd || 20).map(limit => `
+                 <button class="increase-limit-btn" data-limit="${limit}" style="
+                   background: rgba(124, 45, 18, 0.1);
+                   color: #7c2d12;
+                   border: 2px solid rgba(124, 45, 18, 0.3);
+                   padding: 8px 12px;
+                   border-radius: 6px;
+                   font-size: 13px;
+                   font-weight: 600;
+                   cursor: pointer;
+                   transition: all 0.3s ease;
+                   flex: 1;
+                 "
+                 onmouseover="this.style.background='rgba(124, 45, 18, 0.2)'; this.style.borderColor='rgba(124, 45, 18, 0.5)';"
+                 onmouseout="this.style.background='rgba(124, 45, 18, 0.1)'; this.style.borderColor='rgba(124, 45, 18, 0.3)';">
+                   $${limit} limit
+                 </button>
+               `).join('')}
+            </div>
+            <button id="dismiss-quota-btn" style="
+              background: transparent;
+              color: rgba(124, 45, 18, 0.7);
+              border: 1px solid rgba(124, 45, 18, 0.3);
+              padding: 10px 16px;
+              border-radius: 8px;
+              font-size: 14px;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              width: 100%;
+            "
+            onmouseover="this.style.background='rgba(124, 45, 18, 0.1)'; this.style.color='#7c2d12';"
+            onmouseout="this.style.background='transparent'; this.style.color='rgba(124, 45, 18, 0.7)';">
+              Later
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    return cardHTML;
+  }
+
+  // Handle quota exceeded errors with custom cards
+  function handleQuotaExceeded(quotaInfo) {
+    const chatMessages = document.getElementById('ai-chat-messages');
+    if (!chatMessages) return;
+    
+    // Create quota card message
+    const messageElement = document.createElement('div');
+    messageElement.className = 'ai-message ai-message-system';
+    messageElement.innerHTML = createQuotaExceededCard(quotaInfo);
+    
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Add event listeners for buttons
+    const upgradeBtn = messageElement.querySelector('#upgrade-to-pro-btn');
+    if (upgradeBtn) {
+      upgradeBtn.addEventListener('click', () => {
+        // Call Firebase auth service to create Stripe checkout
+        if (contentAuthIntegration && contentAuthIntegration.createStripeCheckout) {
+          contentAuthIntegration.createStripeCheckout();
+        } else {
+          window.open('https://billing.stripe.com', '_blank');
+        }
+      });
+    }
+    
+    const enableUsageBtns = messageElement.querySelectorAll('.enable-usage-btn');
+    enableUsageBtns.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const limit = parseInt(btn.dataset.limit);
+        try {
+          const response = await fetch(`${CONFIG.API_BASE_URL}/api/enable-usage-based`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${await contentAuthIntegration.getFirebaseIdToken()}`
+            },
+            body: JSON.stringify({ limit_usd: limit })
+          });
+          
+          if (response.ok) {
+            messageElement.innerHTML = `
+              <div style="
+                background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+                border-radius: 12px;
+                padding: 20px;
+                margin: 16px 0;
+                color: #065f46;
+                text-align: center;
+              ">
+                <div style="font-size: 24px; margin-bottom: 12px;">✅</div>
+                                 <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">
+                   Pay-as-you-go Enabled!
+                 </h3>
+                 <p style="margin: 0; font-size: 14px; opacity: 0.9;">
+                   $${limit} monthly limit set. You can now continue generating workflows.
+                 </p>
+              </div>
+            `;
+          } else {
+            throw new Error('Failed to enable usage-based billing');
+          }
+        } catch (error) {
+          console.error('Error enabling usage-based billing:', error);
+        }
+      });
+    });
+    
+    const increaseLimitBtns = messageElement.querySelectorAll('.increase-limit-btn');
+    increaseLimitBtns.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const limit = parseInt(btn.dataset.limit);
+        try {
+          const response = await fetch(`${CONFIG.API_BASE_URL}/api/enable-usage-based`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${await contentAuthIntegration.getFirebaseIdToken()}`
+            },
+            body: JSON.stringify({ limit_usd: limit })
+          });
+          
+          if (response.ok) {
+            messageElement.innerHTML = `
+              <div style="
+                background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+                border-radius: 12px;
+                padding: 20px;
+                margin: 16px 0;
+                color: #065f46;
+                text-align: center;
+              ">
+                <div style="font-size: 24px; margin-bottom: 12px;">💰</div>
+                                 <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">
+                   Limit Increased!
+                 </h3>
+                 <p style="margin: 0; font-size: 14px; opacity: 0.9;">
+                   New $${limit} monthly limit set.
+                 </p>
+              </div>
+            `;
+          } else {
+            throw new Error('Failed to increase usage limit');
+          }
+        } catch (error) {
+          console.error('Error increasing usage limit:', error);
+        }
+      });
+    });
+    
+    const dismissBtns = messageElement.querySelectorAll('#dismiss-quota-btn');
+    dismissBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        messageElement.style.opacity = '0.5';
+        messageElement.style.pointerEvents = 'none';
+      });
+    });
   }
 
   // Handle background messages
@@ -3826,6 +4241,12 @@ async function checkSavedDomains(currentHostname) {
         handleDecompressionFallback(message.compressedData, message.originalSize, lastMessage);
         break;
 
+      case 'QUOTA_EXCEEDED':
+        console.log('🚫 Quota exceeded:', message.quotaInfo);
+        resetUIState();
+        handleQuotaExceeded(message.quotaInfo);
+        break;
+        
       case 'CLAUDE_ERROR':
         handleError(message.error, lastMessage);
         break;
@@ -3838,6 +4259,18 @@ async function checkSavedDomains(currentHostname) {
         }
     }
   }
+
+
+
+  // Listen for quota card messages from auth service
+  window.addEventListener('message', (event) => {
+    if (event.source !== window) return;
+    
+    if (event.data.type === 'SHOW_QUOTA_CARD') {
+      console.log('📧 Received quota card message:', event.data.quotaInfo);
+      handleQuotaExceeded(event.data.quotaInfo);
+    }
+  });
 
   // Import workflow
   function importWorkflow(workflowData, isImprovement = false) {
