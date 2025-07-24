@@ -161,10 +161,16 @@ async function firebaseGetIdToken(forceRefresh = false) {
     data: { forceRefresh }
   });
   
-  if (response.success) {
+  // Handle direct token response (string) or object response
+  if (typeof response === 'string' && response.length > 50) {
+    console.log('✅ Firebase ID token received directly (length:', response.length, ')');
+    return response;
+  } else if (response && response.success && response.token) {
+    console.log('✅ Firebase ID token received via object (length:', response.token.length, ')');
     return response.token;
   } else {
-    throw new Error(response.error.message);
+    console.log('❌ No valid Firebase ID token received:', typeof response, response);
+    return null;
   }
 }
 
@@ -686,18 +692,28 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     let authToken = CONFIG.API_KEY; // Default to legacy
     let authMethod = 'LEGACY';
     
+    console.log('🔧 Auth token selection process starting...');
+    
     try {
+      console.log('🔥 Attempting to get Firebase token...');
       const firebaseToken = await firebaseGetIdToken();
-      if (firebaseToken) {
+      console.log('🎫 firebaseGetIdToken result:', typeof firebaseToken, firebaseToken ? '✅ Token received' : '❌ No token');
+      
+      if (firebaseToken && typeof firebaseToken === 'string' && firebaseToken.length > 50) {
         authToken = firebaseToken;
         authMethod = 'FIREBASE';
-        console.log('🔥 Using Firebase authentication token');
+        console.log('✅ Using Firebase authentication token (length:', firebaseToken.length, ')');
+        console.log('🔤 Token preview:', firebaseToken.substring(0, 50) + '...');
       } else {
-        console.log('🔑 Firebase token not available, using legacy API key');
+        console.log('❌ Firebase token invalid or empty, using legacy API key');
+        console.log('🔍 Token details:', { type: typeof firebaseToken, length: firebaseToken?.length });
       }
     } catch (firebaseError) {
-      console.log('⚠️ Firebase auth failed, falling back to legacy:', firebaseError.message);
+      console.error('❌ Firebase auth failed, falling back to legacy:', firebaseError);
+      console.log('🔍 Error details:', firebaseError.message, firebaseError.stack);
     }
+    
+    console.log('🏁 Final auth decision:', authMethod, authToken === CONFIG.API_KEY ? 'LEGACY_KEY' : 'FIREBASE_TOKEN');
     
     const fetchPromise = fetch(CONFIG.API_URL, {
       method: 'POST',
@@ -868,18 +884,28 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
   let authToken = CONFIG.API_KEY; // Default to legacy
   let authMethod = 'LEGACY';
   
+  console.log('🔧 Improvement auth token selection process starting...');
+  
   try {
+    console.log('🔥 Attempting to get Firebase token for improvement...');
     const firebaseToken = await firebaseGetIdToken();
-    if (firebaseToken) {
+    console.log('🎫 firebaseGetIdToken result (improvement):', typeof firebaseToken, firebaseToken ? '✅ Token received' : '❌ No token');
+    
+    if (firebaseToken && typeof firebaseToken === 'string' && firebaseToken.length > 50) {
       authToken = firebaseToken;
       authMethod = 'FIREBASE';
-      console.log('🔥 Using Firebase authentication token for improvement');
+      console.log('✅ Using Firebase authentication token for improvement (length:', firebaseToken.length, ')');
+      console.log('🔤 Token preview:', firebaseToken.substring(0, 50) + '...');
     } else {
-      console.log('🔑 Firebase token not available for improvement, using legacy API key');
+      console.log('❌ Firebase token invalid or empty for improvement, using legacy API key');
+      console.log('🔍 Token details:', { type: typeof firebaseToken, length: firebaseToken?.length });
     }
   } catch (firebaseError) {
-    console.log('⚠️ Firebase auth failed for improvement, falling back to legacy:', firebaseError.message);
+    console.error('❌ Firebase auth failed for improvement, falling back to legacy:', firebaseError);
+    console.log('🔍 Error details:', firebaseError.message, firebaseError.stack);
   }
+  
+  console.log('🏁 Final improvement auth decision:', authMethod, authToken === CONFIG.API_KEY ? 'LEGACY_KEY' : 'FIREBASE_TOKEN');
 
   const response = await fetch(CONFIG.API_URL, {
     method: 'POST',

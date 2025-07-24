@@ -45,6 +45,46 @@ function handleChromeMessages(message, sender, sendResponse) {
     return true;
   }
 
+  // NEW: Get Firebase ID token
+  if (message.type === 'firebase-auth-get-token') {
+    console.log('🎫 Token request received in offscreen');
+    console.log('👤 currentUser available:', !!currentUser);
+    console.log('🔍 currentUser type:', typeof currentUser);
+    console.log('🔧 currentUser keys:', currentUser ? Object.keys(currentUser) : 'none');
+    
+    if (currentUser && typeof currentUser.getIdToken === 'function') {
+      console.log('🔥 Using Firebase SDK getIdToken() method...');
+      
+      try {
+        // Use Firebase SDK method to get fresh token
+        currentUser.getIdToken(true) // Force refresh
+          .then(token => {
+            console.log('✅ Firebase getIdToken SUCCESS:', typeof token, token ? token.substring(0, 50) + '...' : 'null');
+            sendResponse(token);
+          })
+          .catch(error => {
+            console.log('❌ Firebase getIdToken ERROR:', error);
+            sendResponse(null);
+          });
+      } catch (syncError) {
+        console.log('❌ Error calling getIdToken synchronously:', syncError);
+        sendResponse(null);
+      }
+    } else if (currentUser && currentUser.stsTokenManager && currentUser.stsTokenManager.accessToken) {
+      console.log('🔑 Using stsTokenManager.accessToken...');
+      const token = currentUser.stsTokenManager.accessToken;
+      console.log('✅ Token from stsTokenManager:', typeof token, token ? token.substring(0, 50) + '...' : 'null');
+      sendResponse(token);
+    } else {
+      console.log('❌ No valid way to get Firebase token');
+      console.log('  - currentUser.getIdToken available:', !!(currentUser && currentUser.getIdToken));
+      console.log('  - currentUser.stsTokenManager available:', !!(currentUser && currentUser.stsTokenManager));
+      sendResponse(null);
+    }
+    
+    return true;
+  }
+
   // NEW: Sign-out handler – clear cached user & reset iframe
   if (message.type === 'firebase-auth-signout') {
     try {
