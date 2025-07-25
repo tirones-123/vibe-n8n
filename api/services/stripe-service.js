@@ -296,21 +296,23 @@ class StripeService {
       const amountCents = Math.round(amountUsd * 100);
       if (amountCents <= 0) return null;
 
-      // 1. create invoice item
+      // 1. create draft invoice (auto_advance false for now)
+      const draft = await this.stripe.invoices.create({
+        customer: customerId,
+        collection_method: 'charge_automatically',
+        auto_advance: false
+      });
+
+      // 2. attach the invoice item to the draft invoice
       await this.stripe.invoiceItems.create({
         customer: customerId,
         amount: amountCents,
         currency: 'usd',
-        description
+        description,
+        invoice: draft.id
       });
 
-      // Create draft invoice
-      const draft = await this.stripe.invoices.create({
-        customer: customerId,
-        collection_method: 'charge_automatically'
-      });
-
-      // Finalize (and attempt immediate payment)
+      // 3. finalize and immediately pay
       const invoice = await this.stripe.invoices.finalizeInvoice(draft.id, { auto_advance: true });
 
       console.log(`💳 Immediate usage invoice ${invoice.id} for $${amountUsd.toFixed(2)} (status: ${invoice.status})`);
