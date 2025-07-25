@@ -449,6 +449,18 @@ export default async function handler(req, res) {
             result.tokensUsed.output || 0
           );
 
+          // ---------- NEW: immediate charge if spending limit reached ----------
+          if (req.user.usage_based_enabled && req.user.plan === 'PRO') {
+            const freshUser = await firebaseService.getOrCreateUser(req.user.uid);
+            const limit = freshUser.usage_limit_usd || 0;
+            const usageUsd = freshUser.this_month_usage_usd || 0;
+            if (limit > 0 && usageUsd >= limit) {
+              console.log(`💳 User ${req.user.uid} reached spending limit $${limit}. Charging now...`);
+              await stripeService.chargeUsageNow(freshUser.stripe_customer_id, usageUsd, 'Pay-as-you-go usage');
+              await firebaseService.resetUsageBudget(req.user.uid);
+            }
+          }
+
           // Report to Stripe if PRO user with usage-based billing
           if (servicesReady.stripe && req.user.plan === 'PRO' && req.user.stripe_customer_id) {
             const updatedUser = await firebaseService.getOrCreateUser(req.user.uid);

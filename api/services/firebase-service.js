@@ -332,6 +332,20 @@ class FirebaseService {
       // Don't throw - analytics shouldn't break user experience
     }
   }
+
+  // Reset usage budget (set this_month_usage_usd to 0)
+  async resetUsageBudget(uid) {
+    try {
+      const userRef = this.db.collection('users').doc(uid);
+      await userRef.update({
+        this_month_usage_usd: 0,
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      });
+      console.log(`🔄 Reset this_month_usage_usd for ${uid}`);
+    } catch (err) {
+      console.error('Error resetting usage budget:', err);
+    }
+  }
 }
 
 export default new FirebaseService(); 

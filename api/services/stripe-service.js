@@ -290,6 +290,35 @@ class StripeService {
       throw error;
     }
   }
+
+  async chargeUsageNow(customerId, amountUsd, description = 'Over-limit usage') {
+    try {
+      const amountCents = Math.round(amountUsd * 100);
+      if (amountCents <= 0) return null;
+
+      // 1. create invoice item
+      await this.stripe.invoiceItems.create({
+        customer: customerId,
+        amount: amountCents,
+        currency: 'usd',
+        description
+      });
+
+      // 2. create and finalize invoice => will immediately attempt payment
+      const invoice = await this.stripe.invoices.create({
+        customer: customerId,
+        collection_method: 'charge_automatically',
+        auto_advance: true // finalize & pay
+      });
+
+      console.log(`💳 Immediate usage invoice ${invoice.id} for $${amountUsd.toFixed(2)}`);
+      return invoice;
+    } catch (err) {
+      console.error('Error creating immediate usage invoice:', err);
+      // do not throw to avoid breaking user flow
+      return null;
+    }
+  }
 }
 
 export default new StripeService(); 
