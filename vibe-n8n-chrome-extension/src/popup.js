@@ -205,11 +205,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
           }
           
-          // Et les styles
-          await chrome.scripting.insertCSS({
-            target: { tabId: currentTab.id },
-            files: ['styles/panel.css']
-          });
+          // Inject required CSS files (panel & auth)
+          const cssFiles = ['styles/panel.css', 'styles/auth.css'];
+          for (const cssFile of cssFiles) {
+            try {
+              await chrome.scripting.insertCSS({
+                target: { tabId: currentTab.id },
+                files: [cssFile]
+              });
+            } catch (cssErr) {
+              console.warn('⚠️ CSS injection failed for', cssFile, cssErr);
+            }
+          }
           
           // Feedback visuel
           activateButton.textContent = '✅ Activé !';

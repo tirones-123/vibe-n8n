@@ -4577,7 +4577,7 @@ async function checkSavedDomains(currentHostname) {
   }
 
   // After variable declarations near top
-  +let firebaseAuthReady = false;
+  let firebaseAuthReady = false;
 
   // Listener for auth ready broadcast from background
   if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
