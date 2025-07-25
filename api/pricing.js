@@ -549,7 +549,7 @@ router.post('/enable-usage-based', verifyFirebaseAuth, async (req, res) => {
 
     // Setup usage billing in Stripe (optional)
     try {
-      await stripeService.setupUsageBilling(req.user.stripe_customer_id, limit_usd);
+    await stripeService.setupUsageBilling(req.user.stripe_customer_id, limit_usd);
     } catch (stripeErr) {
       console.warn('⚠️ Stripe setupUsageBilling failed:', stripeErr.message);
       // Do not fail the request if Stripe metadata update fails

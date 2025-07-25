@@ -1243,10 +1243,10 @@ async function processWorkflowRAGResponse(data, tabId) {
         if (typeof friendly === 'string' && friendly.toLowerCase().includes('overloaded')) {
           friendly = 'Service IA saturé. Réessayez dans quelques instants.';
         }
-        send({
-          type: 'WORKFLOW_ERROR',
+      send({
+        type: 'WORKFLOW_ERROR',
           error: friendly
-        });
+      });
       }
       break;
 

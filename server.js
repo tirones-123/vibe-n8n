@@ -40,8 +40,8 @@ app.get('/', (req, res) => {
   res.sendFile(indexPath, (err) => {
     if (err) {
       res.status(500).send('Server Error');
-    }
-  });
+      }
+    });
 });
 
 // Route de statut pour vérifier la configuration

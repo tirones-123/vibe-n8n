@@ -64,9 +64,6 @@ class StripeService {
         subscription_data: {
           metadata: {
             firebase_uid: userId
-          },
-          payment_settings: {
-            save_default_payment_method: 'on_subscription'
           }
         },
         metadata: {
