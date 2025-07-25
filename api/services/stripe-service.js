@@ -312,8 +312,15 @@ class StripeService {
         invoice: draft.id
       });
 
-      // 3. finalize and immediately pay
-      const invoice = await this.stripe.invoices.finalizeInvoice(draft.id, { auto_advance: true });
+      // 3. finalize
+      let invoice = await this.stripe.invoices.finalizeInvoice(draft.id, { auto_advance: false });
+
+      // 4. attempt immediate payment
+      try {
+        invoice = await this.stripe.invoices.pay(invoice.id);
+      } catch (payErr) {
+        console.warn('⚠️ Immediate pay attempt failed:', payErr.message);
+      }
 
       console.log(`💳 Immediate usage invoice ${invoice.id} for $${amountUsd.toFixed(2)} (status: ${invoice.status})`);
       return invoice;
