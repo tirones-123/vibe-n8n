@@ -16,9 +16,8 @@ if (typeof window.__n8nAIPopupLogsPatched === 'undefined') {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const openN8nButton = document.getElementById('open-n8n');
-  const activateButton = document.getElementById('activate-here');
-  const customDomainSection = document.getElementById('custom-domain-section');
-  const currentDomainSpan = document.getElementById('current-domain');
+  const activateButton = document.getElementById('activateBtn');
+  const currentDomainSpan = document.getElementById('currentDomain');
   const userSection = document.getElementById('userSection');
   const userEmail = document.getElementById('userEmail');
   const signOutBtn = document.getElementById('signOutBtn');
@@ -138,15 +137,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (couldBeN8n && !isSupported) {
       // Montrer l'option d'activation manuelle
       console.log('✅ Popup: Showing manual activation option');
-      customDomainSection.style.display = 'block';
-      activateButton.style.display = 'block';
+      if (activateButton) activateButton.style.display = 'block';
       currentDomainSpan.textContent = hostname;
       
       activateButton.addEventListener('click', async () => {
         try {
           console.log('🚀 Popup: Manual activation started for', hostname);
           
-          // FIRST: Sauvegarder ce domaine pour la prochaine fois
+          // FIRST: Demander la permission d'accès à ce domaine
+          const originPattern = `${url.origin}/*`;
+          const granted = await chrome.permissions.request({ origins: [originPattern] });
+          if (!granted) {
+            console.warn('⚠️ Permission denied for', originPattern);
+            return;
+          }
+
+          // SECOND: Sauvegarder ce domaine pour la prochaine fois
           console.log('💾 Popup: Starting domain save process for:', hostname);
           try {
             const { customDomains = [] } = await chrome.storage.sync.get(['customDomains']);
@@ -181,17 +187,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
           });
           
-          // FINALLY: Injecter le content script manuellement
-          await chrome.scripting.executeScript({
-            target: { tabId: currentTab.id },
-            files: ['src/content.js']
-          });
+          // FINALLY: Injecter les scripts nécessaires manuellement
+          const filesToInject = [
+            'src/config.js',
+            'src/content-auth-integration-standalone.js',
+            'src/content.js'
+          ];
+
+          for (const file of filesToInject) {
+            try {
+              await chrome.scripting.executeScript({
+                target: { tabId: currentTab.id },
+                files: [file]
+              });
+            } catch (injErr) {
+              console.warn('⚠️ Injection failed for', file, injErr);
+            }
+          }
           
-          // Et les styles
-          await chrome.scripting.insertCSS({
-            target: { tabId: currentTab.id },
-            files: ['styles/panel.css']
-          });
+          // Inject styles
+          const cssFiles = ['styles/panel.css', 'styles/auth.css'];
+          for (const css of cssFiles) {
+            try {
+              await chrome.scripting.insertCSS({ target: { tabId: currentTab.id }, files: [css] });
+            } catch (cssErr) {
+              console.warn('⚠️ CSS inject failed for', css, cssErr);
+            }
+          }
           
           // Feedback visuel
           activateButton.textContent = '✅ Activé !';

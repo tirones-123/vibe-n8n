@@ -34,7 +34,7 @@ const CONFIG = {
   API_TIMEOUT: 900000, // 15 minutes
   
   // Version de l'extension
-  VERSION: '2.0.0',
+  VERSION: '1.0.0',
   
   // Mode de fonctionnement : workflow RAG + pricing
   MODE: 'workflow_rag_with_pricing',

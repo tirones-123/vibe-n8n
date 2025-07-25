@@ -250,22 +250,43 @@ function safeSendMessage(tabId, payload) {
   }
 }
 
-// Log du démarrage du service worker
-console.log('🚀 Service Worker started at:', new Date().toISOString());
-console.log('🆔 Extension ID:', chrome.runtime.id);
-console.log('');
-console.log('🔥 ===================== FIREBASE SETUP REQUIRED =====================');
-console.log('🔗 Add this domain to Firebase Console:');
-console.log(`   chrome-extension://${chrome.runtime.id}`);
-console.log('');
-console.log('📋 Steps:');
-console.log('   1. Go to Firebase Console > Authentication > Settings');
-console.log('   2. Scroll to "Authorized domains"');
-console.log('   3. Click "Add domain"');
-console.log(`   4. Enter: chrome-extension://${chrome.runtime.id}`);
-console.log('   5. Save');
-console.log('🔥 ================================================================');
-console.log('');
+// == Logging control ==
+const DEBUG_LOGS_ENABLED = false;
+// Preserve original console
+const __bgOriginalConsoleLog = console.log.bind(console);
+console.log = (...args) => {
+  if (DEBUG_LOGS_ENABLED) {
+    __bgOriginalConsoleLog('[n8n-AI]', ...args);
+  }
+};
+if (DEBUG_LOGS_ENABLED) {
+  // Log du démarrage du service worker (affiché uniquement en mode debug)
+  console.log('🚀 Service Worker started at:', new Date().toISOString());
+  console.log('🆔 Extension ID:', chrome.runtime.id);
+  console.log('');
+  console.log('🔥 ===================== FIREBASE SETUP REQUIRED =====================');
+  console.log('🔗 Add this domain to Firebase Console:');
+  console.log(`   chrome-extension://${chrome.runtime.id}`);
+  console.log('');
+  console.log('📋 Steps:');
+  console.log('   1. Go to Firebase Console > Authentication > Settings');
+  console.log('   2. Scroll to "Authorized domains"');
+  console.log('   3. Click "Add domain"');
+  console.log(`   4. Enter: chrome-extension://${chrome.runtime.id}`);
+  console.log('   5. Save');
+  console.log('🔥 ================================================================');
+  console.log('');
+}
+
+function broadcastAuthReady() {
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach((t) => {
+      try {
+        chrome.tabs.sendMessage(t.id, { type: 'FIREBASE_AUTH_READY' });
+      } catch (_) {}
+    });
+  });
+}
 
 // 🎯 INJECTION AUTOMATIQUE DES DOMAINES PERSONNALISÉS
 // Écoute la navigation pour injecter automatiquement sur les domaines sauvegardés
@@ -455,7 +476,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'firebase-signin-email') {
     console.log('🔐 Firebase sign in with email:', request.data?.email);
     firebaseSignInWithEmail(request.data.email, request.data.password)
-      .then(response => sendResponse(response))
+      .then(response => {
+        sendResponse(response);
+        if (response && (response.success || response.user)) broadcastAuthReady();
+      })
       .catch(error => sendResponse({ 
         success: false, 
         error: { code: error.code, message: error.message } 
@@ -466,7 +490,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'firebase-signup-email') {
     console.log('📝 Firebase sign up with email:', request.data?.email);
     firebaseSignUpWithEmail(request.data.email, request.data.password)
-      .then(response => sendResponse(response))
+      .then(response => {
+        sendResponse(response);
+        if (response && (response.success || response.user)) broadcastAuthReady();
+      })
       .catch(error => sendResponse({ 
         success: false, 
         error: { code: error.code, message: error.message } 
@@ -477,7 +504,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'firebase-signin-google') {
     console.log('🔐 Firebase sign in with Google');
     firebaseSignInWithGoogle()
-      .then(response => sendResponse(response))
+      .then(response => {
+        sendResponse(response);
+        if (response && (response.success || response.user)) broadcastAuthReady();
+      })
       .catch(error => sendResponse({ 
         success: false, 
         error: { code: error.code, message: error.message } 
@@ -1451,12 +1481,3 @@ async function firebaseAuth() {
 chrome.runtime.onInstalled.addListener(() => {
   console.log('n8n AI Assistant (Workflow RAG) installé avec succès');
 }); 
-
-// == Logging control ==
-const DEBUG_LOGS_ENABLED = false;
-const __bgOriginalConsoleLog = console.log.bind(console);
-console.log = (...args) => {
-  if (DEBUG_LOGS_ENABLED) {
-    __bgOriginalConsoleLog('[n8n-AI]', ...args);
-  }
-}; 

@@ -34,7 +34,8 @@
     "https://checkout.stripe.com/*"
   ],
   "optional_host_permissions": [
-    "<all_urls>"
+    "https://*/*",
+    "http://*/*"
   ],
   "background": {
     "service_worker": "src/background.js"

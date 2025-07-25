@@ -3633,7 +3633,7 @@ async function checkSavedDomains(currentHostname) {
       // ===== FIREBASE AUTH =====
       if (!contentAuthIntegration) {
         console.error('💀 ERREUR CRITIQUE: contentAuthIntegration non disponible');
-        handleError('Système d\'authentification non disponible. Veuillez recharger la page.', assistantMessage);
+        handleError('Authentication system unavailable. Please reload the page.', assistantMessage);
         return;
       }
 
@@ -4574,4 +4574,26 @@ async function checkSavedDomains(currentHostname) {
       }
           });
     }
-  })(); // End of initializeExtension function 
+  }
+
+  // Track Firebase readiness
+  let firebaseAuthReady = false;
+
+  // Listen for notification from background once user has signed in
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg && msg.type === 'FIREBASE_AUTH_READY' && !firebaseAuthReady) {
+        initializeFirebaseAuth().then((success) => {
+          if (success) {
+            firebaseAuthReady = true;
+            const statusEl = document.getElementById('ai-status');
+            if (statusEl) {
+              statusEl.textContent = 'firebase';
+              statusEl.classList.remove('legacy-mode', 'auth-error');
+              statusEl.classList.add('auth-ready');
+            }
+          }
+        });
+      }
+    });
+  }
