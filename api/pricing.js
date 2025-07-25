@@ -555,6 +555,20 @@ router.post('/enable-usage-based', verifyFirebaseAuth, async (req, res) => {
       // Do not fail the request if Stripe metadata update fails
     }
 
+    // -------- NEW: immediate charge of current outstanding usage --------
+    try {
+      const freshUser = await firebaseService.getOrCreateUser(req.user.uid);
+      const currentUsage = freshUser.this_month_usage_usd || 0;
+      if (currentUsage > 0) {
+        console.log(`💳 Charging outstanding usage $${currentUsage.toFixed(2)} before new limit applies`);
+        await stripeService.chargeUsageNow(freshUser.stripe_customer_id, currentUsage, 'Pay-as-you-go usage prior to limit increase');
+        await firebaseService.resetUsageBudget(req.user.uid);
+      }
+    } catch (chargeErr) {
+      console.error('Error charging outstanding usage:', chargeErr);
+      // We still return success; user will be charged later via invoice if this fails
+    }
+
     console.log(`💳 Enabled usage-based billing for ${req.user.uid}: $${limit_usd} limit`);
 
     res.json({

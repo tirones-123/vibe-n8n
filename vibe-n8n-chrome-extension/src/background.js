@@ -867,7 +867,10 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     console.error('❌ Error stack:', error.stack);
     
     let errorMessage = error.message;
-    if (error.message.includes('Timeout')) {
+    const lowerMsg = (error.message || '').toLowerCase();
+    if (lowerMsg.includes('overloaded')) {
+      errorMessage = 'Service IA saturé. Réessayez dans quelques instants.';
+    } else if (error.message.includes('Timeout')) {
       errorMessage = error.message + ' Essayez un prompt plus simple ou réessayez plus tard.';
     } else if (error.message.includes('Failed to fetch')) {
       errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';
@@ -1235,10 +1238,16 @@ async function processWorkflowRAGResponse(data, tabId) {
       break;
 
     case 'error':
-      send({
-        type: 'WORKFLOW_ERROR',
-        error: data.data.error || data.data.message
-      });
+      {
+        let friendly = data.data.error || data.data.message;
+        if (typeof friendly === 'string' && friendly.toLowerCase().includes('overloaded')) {
+          friendly = 'Service IA saturé. Réessayez dans quelques instants.';
+        }
+        send({
+          type: 'WORKFLOW_ERROR',
+          error: friendly
+        });
+      }
       break;
 
     default:
