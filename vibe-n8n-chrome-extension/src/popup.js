@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const switchToSignin = document.getElementById('switchToSignin');
   
   // Vérifier l'état d'authentification
-  await checkAuthStatus();
+  let isAuthenticated = false;
+  isAuthenticated = await checkAuthStatus();
   
   // Handler pour la déconnexion
   if (signOutBtn) {
@@ -141,6 +142,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentDomainSpan.textContent = hostname;
       
       activateButton.addEventListener('click', async () => {
+        // Si l'utilisateur n'est pas connecté, afficher d'abord la section sign-in
+        if (!isAuthenticated) {
+          // rendre la section login visible
+          document.getElementById('signInSection').style.display = 'block';
+          switchTab('google');
+          // petit feedback
+          activateButton.textContent = '🔑 Connect first';
+          setTimeout(()=>{activateButton.textContent='Enable on this domain';},1500);
+          return;
+        }
         try {
           console.log('🚀 Popup: Manual activation started for', hostname);
           
@@ -205,21 +216,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
           }
           
-          // Inject required CSS files (panel & auth)
-          const cssFiles = ['styles/panel.css', 'styles/auth.css'];
-          for (const cssFile of cssFiles) {
-            try {
-              await chrome.scripting.insertCSS({
-                target: { tabId: currentTab.id },
-                files: [cssFile]
-              });
-            } catch (cssErr) {
-              console.warn('⚠️ CSS injection failed for', cssFile, cssErr);
-            }
-          }
+          // Et les styles
+          await chrome.scripting.insertCSS({
+            target: { tabId: currentTab.id },
+            files: ['styles/panel.css']
+          });
           
           // Feedback visuel
-          activateButton.textContent = '✅ Activé !';
+          activateButton.textContent = '✅ Enabled!';
           activateButton.disabled = true;
           activateButton.style.backgroundColor = '#22c55e';
           
@@ -227,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           
         } catch (error) {
           console.error('❌ Popup: Activation error:', error);
-          activateButton.textContent = '❌ Erreur';
+          activateButton.textContent = '❌ Error';
           activateButton.style.backgroundColor = '#ef4444';
         }
       });
@@ -277,8 +281,8 @@ async function checkAuthStatus() {
     
     if (firebaseUser) {
       console.log('✅ Popup: Firebase user detected:', firebaseUser.email || firebaseUser.uid);
-      displayUserInfo(firebaseUser.email || 'Utilisateur connecté', 'Firebase');
-      return;
+      displayUserInfo(firebaseUser.email || 'Connected User', 'Firebase');
+      return true;
     }
     
     // Sinon fallback à l'ancien stockage local
@@ -289,18 +293,21 @@ async function checkAuthStatus() {
       // Essayer de récupérer l'email depuis chrome.identity ou storage
       try {
         const userInfo = await getUserInfo();
-        displayUserInfo(userInfo.email || 'Utilisateur connecté', stored.authState.method);
+        displayUserInfo(userInfo.email || 'Connected User', stored.authState.method);
       } catch (error) {
         console.log('⚠️ Popup: Could not get user email, using stored info');
-        displayUserInfo('Utilisateur connecté', stored.authState.method);
+        displayUserInfo('Connected User', stored.authState.method);
       }
+      return true;
     } else {
       console.log('ℹ️ Popup: No authenticated user found');
       hideUserInfo();
+      return false;
     }
   } catch (error) {
     console.error('❌ Popup: Error checking auth status:', error);
     hideUserInfo();
+    return false;
   }
 }
 
@@ -389,7 +396,7 @@ async function handleSignInGoogle() {
     console.log('🔐 Popup: Google sign-in requested');
     const signInBtn = document.getElementById('signInGoogleBtn');
     const originalText = signInBtn.textContent;
-    signInBtn.textContent = '⏳ Connexion...';
+    signInBtn.textContent = '⏳ Signing in...';
     signInBtn.disabled = true;
 
     // Demander au background de lancer le flow Google
@@ -415,7 +422,7 @@ async function handleSignInGoogle() {
     const signInBtn = document.getElementById('signInGoogleBtn');
     signInBtn.textContent = '❌ Erreur';
     setTimeout(() => {
-      signInBtn.textContent = '🔐 Se connecter avec Google';
+      signInBtn.textContent = '🔐 Sign in with Google';
       signInBtn.disabled = false;
     }, 2000);
   }
@@ -434,21 +441,21 @@ async function handleSignInEmail() {
     
     // Validation basique
     if (!email || !password) {
-      alert('Veuillez remplir tous les champs');
+      alert('Please fill in all fields');
       return;
     }
     
     if (!email.includes('@')) {
-      alert('Veuillez entrer un email valide');
+      alert('Please enter a valid email');
       return;
     }
     
     if (password.length < 6) {
-      alert('Le mot de passe doit contenir au moins 6 caractères');
+      alert('Password must be at least 6 characters');
       return;
     }
     
-    signInBtn.textContent = '⏳ Connexion...';
+    signInBtn.textContent = '⏳ Signing in...';
     signInBtn.disabled = true;
 
     // Demander au background de lancer le flow Email/Password
@@ -471,12 +478,12 @@ async function handleSignInEmail() {
       
       // Suggérer de créer un compte si l'utilisateur n'existe pas
       if (response?.error?.includes('user-not-found')) {
-        signInBtn.textContent = '👤 Compte inexistant';
+        signInBtn.textContent = '👤 Account not found';
         setTimeout(() => {
           signInBtn.textContent = originalText;
           signInBtn.disabled = false;
           // Suggérer de créer un compte
-          if (confirm('Ce compte n\'existe pas. Souhaitez-vous créer un compte ?')) {
+          if (confirm('This account does not exist. Would you like to create an account?')) {
             switchTab('signup');
             // Pré-remplir l'email
             document.getElementById('signupEmailInput').value = email;
@@ -495,7 +502,7 @@ async function handleSignInEmail() {
     const signInBtn = document.getElementById('signInEmailBtn');
     signInBtn.textContent = '❌ Erreur';
     setTimeout(() => {
-      signInBtn.textContent = '📧 Se connecter';
+      signInBtn.textContent = '📧 Sign in';
       signInBtn.disabled = false;
     }, 2000);
   }
@@ -515,33 +522,33 @@ async function handleSignUpEmail() {
     
     // Validation avancée
     if (!email || !password || !confirmPassword) {
-      alert('Veuillez remplir tous les champs');
+      alert('Please fill in all fields');
       return;
     }
     
     if (!email.includes('@')) {
-      alert('Veuillez entrer un email valide');
+      alert('Please enter a valid email');
       return;
     }
     
     if (password.length < 6) {
-      alert('Le mot de passe doit contenir au moins 6 caractères');
+      alert('Password must be at least 6 characters');
       return;
     }
     
     if (password !== confirmPassword) {
-      alert('Les mots de passe ne correspondent pas');
+      alert('Passwords do not match');
       document.getElementById('confirmPasswordInput').focus();
       return;
     }
     
     // Validation supplémentaire du mot de passe
     if (!/(?=.*[a-z])/.test(password)) {
-      alert('Le mot de passe doit contenir au moins une lettre minuscule');
+      alert('Password must contain at least one lowercase letter');
       return;
     }
     
-    signUpBtn.textContent = '⏳ Création...';
+    signUpBtn.textContent = '⏳ Creating...';
     signUpBtn.disabled = true;
 
     // Demander au background de créer le compte
@@ -558,7 +565,7 @@ async function handleSignUpEmail() {
         console.log('📧 Popup: Email verification sent');
         
         // Afficher un message de vérification d'email
-        signUpBtn.textContent = '📧 Vérifiez votre email';
+        signUpBtn.textContent = '📧 Check your email';
         signUpBtn.style.backgroundColor = '#f59e0b';
         
         // Créer un joli modal au lieu d'une alert
@@ -600,12 +607,12 @@ async function handleSignUpEmail() {
       
       // Gestion des erreurs spécifiques Firebase
       if (response?.error?.includes('email-already-in-use')) {
-        signUpBtn.textContent = '📧 Email déjà utilisé';
+        signUpBtn.textContent = '📧 Email already in use';
         setTimeout(() => {
           signUpBtn.textContent = originalText;
           signUpBtn.disabled = false;
           // Suggérer de se connecter
-          if (confirm('Cet email est déjà utilisé. Souhaitez-vous vous connecter ?')) {
+          if (confirm('This email is already in use. Would you like to sign in instead?')) {
             switchTab('email');
             // Pré-remplir l'email
             document.getElementById('emailInput').value = email;
@@ -613,7 +620,7 @@ async function handleSignUpEmail() {
           }
         }, 2000);
       } else if (response?.error?.includes('weak-password')) {
-        signUpBtn.textContent = '🔒 Mot de passe trop faible';
+        signUpBtn.textContent = '🔒 Password too weak';
         setTimeout(() => {
           signUpBtn.textContent = originalText;
           signUpBtn.disabled = false;
@@ -631,7 +638,7 @@ async function handleSignUpEmail() {
     const signUpBtn = document.getElementById('signUpEmailBtn');
     signUpBtn.textContent = '❌ Erreur';
     setTimeout(() => {
-      signUpBtn.textContent = '✨ Créer mon compte';
+      signUpBtn.textContent = '✨ Create account';
       signUpBtn.disabled = false;
     }, 2000);
   }
@@ -725,11 +732,11 @@ function createEmailVerificationModal(email, emailSent = true) {
         margin-bottom: 30px;
         text-align: left;
       ">
-        <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">📋 Étapes suivantes :</h4>
+        <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">📋 Next steps:</h4>
         <ol style="margin: 0; padding-left: 18px; color: #92400e; font-size: 14px; line-height: 1.4;">
-          <li>Vérifiez votre boîte email (y compris les spams)</li>
-          <li>Cliquez sur le lien de vérification</li>
-          <li>Reconnectez-vous pour activer vos <strong>70,000 tokens gratuits</strong></li>
+                      <li>Check your email inbox (including spam folder)</li>
+            <li>Click on the verification link</li>
+          <li>Sign in again to activate your <strong>full access</strong></li>
         </ol>
       </div>
       <div style="
@@ -854,7 +861,7 @@ async function handleSignOut() {
     const originalText = signOutBtn.textContent;
     
     // Feedback visuel
-    signOutBtn.textContent = '⏳ Déconnexion...';
+    signOutBtn.textContent = '⏳ Signing out...';
     signOutBtn.disabled = true;
     
     // 1. Déconnexion Firebase (toujours nécessaire)
@@ -961,7 +968,7 @@ async function handleSignOut() {
     
     // Feedback de succès
     const method = hasGoogleTokens ? 'Google + Firebase' : 'Firebase';
-    signOutBtn.textContent = '✅ Déconnecté !';
+    signOutBtn.textContent = '✅ Signed out!';
     signOutBtn.style.backgroundColor = '#22c55e';
     
     console.log(`🎉 Popup: Sign out completed successfully (${method})`);
@@ -981,7 +988,7 @@ async function handleSignOut() {
     signOutBtn.style.backgroundColor = '#ef4444';
     
     setTimeout(() => {
-      signOutBtn.textContent = '🚪 Se déconnecter';
+      signOutBtn.textContent = '🚪 Sign out';
       signOutBtn.disabled = false;
       signOutBtn.style.backgroundColor = '';
     }, 2000);

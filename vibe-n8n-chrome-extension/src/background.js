@@ -278,16 +278,6 @@ if (DEBUG_LOGS_ENABLED) {
   console.log('');
 }
 
-function broadcastAuthReady() {
-  chrome.tabs.query({}, (tabs) => {
-    tabs.forEach((t) => {
-      try {
-        chrome.tabs.sendMessage(t.id, { type: 'FIREBASE_AUTH_READY' });
-      } catch (_) {}
-    });
-  });
-}
-
 // 🎯 INJECTION AUTOMATIQUE DES DOMAINES PERSONNALISÉS
 // Écoute la navigation pour injecter automatiquement sur les domaines sauvegardés
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -476,10 +466,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'firebase-signin-email') {
     console.log('🔐 Firebase sign in with email:', request.data?.email);
     firebaseSignInWithEmail(request.data.email, request.data.password)
-      .then(response => {
-        sendResponse(response);
-        if (response && (response.success || response.user)) broadcastAuthReady();
-      })
+      .then(response => sendResponse(response))
       .catch(error => sendResponse({ 
         success: false, 
         error: { code: error.code, message: error.message } 
@@ -490,10 +477,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'firebase-signup-email') {
     console.log('📝 Firebase sign up with email:', request.data?.email);
     firebaseSignUpWithEmail(request.data.email, request.data.password)
-      .then(response => {
-        sendResponse(response);
-        if (response && (response.success || response.user)) broadcastAuthReady();
-      })
+      .then(response => sendResponse(response))
       .catch(error => sendResponse({ 
         success: false, 
         error: { code: error.code, message: error.message } 
@@ -504,10 +488,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'firebase-signin-google') {
     console.log('🔐 Firebase sign in with Google');
     firebaseSignInWithGoogle()
-      .then(response => {
-        sendResponse(response);
-        if (response && (response.success || response.user)) broadcastAuthReady();
-      })
+      .then(response => sendResponse(response))
       .catch(error => sendResponse({ 
         success: false, 
         error: { code: error.code, message: error.message } 

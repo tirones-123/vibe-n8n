@@ -88,7 +88,7 @@
 }
 
 .n8n-ai-message.user .n8n-ai-message-content {
-  background: #3b82f6;
+  background: #f36c3d;
   color: white;
   border-bottom-right-radius: 4px;
 }
@@ -160,11 +160,11 @@
 }
 
 .n8n-ai-input:focus {
-  border-color: #3b82f6;
+  border-color: #f36c3d;
 }
 
 .n8n-ai-send {
-  background: #3b82f6;
+  background: #f36c3d;
   color: white;
   border: none;
   border-radius: 8px;
@@ -178,7 +178,7 @@
 }
 
 .n8n-ai-send:hover {
-  background: #2563eb;
+  background: #e55a2b;
   transform: scale(1.05);
 }
 
@@ -201,7 +201,7 @@
 }
 
 .n8n-ai-status.loading {
-  color: #3b82f6;
+  color: #f36c3d;
 }
 
 .n8n-ai-status.error {
@@ -221,11 +221,11 @@
   right: 24px;
   width: 56px;
   height: 56px;
-  background: #3b82f6;
+  background: #f36c3d;
   color: white;
   border: none;
   border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 12px rgba(243, 108, 61, 0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -235,9 +235,9 @@
 }
 
 .n8n-ai-toggle:hover {
-  background: #2563eb;
+  background: #e55a2b;
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 6px 20px rgba(243, 108, 61, 0.5);
 }
 
 .n8n-ai-toggle.active {
@@ -275,7 +275,7 @@
 }
 
 .n8n-ai-toast.info {
-  background: #3b82f6;
+  background: #f36c3d;
 }
 
 /* Configuration API */
@@ -309,7 +309,7 @@
 }
 
 .n8n-ai-button {
-  background: #3b82f6;
+  background: #f36c3d;
   color: white;
   border: none;
   padding: 10px 24px;
@@ -321,7 +321,7 @@
 }
 
 .n8n-ai-button:hover {
-  background: #2563eb;
+  background: #e55a2b;
 }
 
 .n8n-ai-hint {
@@ -331,7 +331,7 @@
 }
 
 .n8n-ai-hint a {
-  color: #3b82f6;
+  color: #f36c3d;
   text-decoration: none;
 }
 
@@ -407,7 +407,7 @@
   }
 
   .n8n-ai-input:focus {
-    border-color: #3b82f6;
+    border-color: #f36c3d;
   }
 
   .n8n-ai-status {

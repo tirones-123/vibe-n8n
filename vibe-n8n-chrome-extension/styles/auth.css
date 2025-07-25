@@ -93,12 +93,12 @@
 }
 
 .auth-tab:hover {
-  color: #4285f4;
-  background: #f8f9ff;
+  color: #f36c3d;
+  background: #fef5f0;
 }
 
 .auth-tab.active {
-  color: #4285f4;
+  color: #f36c3d;
 }
 
 .auth-tab.active::after {
@@ -108,7 +108,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: #4285f4;
+  background: #f36c3d;
 }
 
 /* Auth Forms */
@@ -145,8 +145,8 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #4285f4;
-  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+  border-color: #f36c3d;
+  box-shadow: 0 0 0 3px rgba(243, 108, 61, 0.1);
 }
 
 /* Auth Buttons */
@@ -168,12 +168,12 @@
 }
 
 .auth-btn.primary {
-  background: #4285f4;
+  background: #f36c3d;
   color: white;
 }
 
 .auth-btn.primary:hover {
-  background: #3367d6;
+  background: #e55a2b;
   transform: translateY(-1px);
 }
 
@@ -186,7 +186,7 @@
 
 .auth-btn.google:hover {
   background: #f8f9fa;
-  border-color: #4285f4;
+  border-color: #f36c3d;
 }
 
 .auth-btn.secondary {
@@ -239,7 +239,7 @@
 }
 
 .auth-terms a {
-  color: #4285f4;
+  color: #f36c3d;
   text-decoration: none;
 }
 
@@ -280,7 +280,7 @@
   width: 16px;
   height: 16px;
   border: 2px solid #f0f0f0;
-  border-top: 2px solid #4285f4;
+  border-top: 2px solid #f36c3d;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -310,7 +310,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #4285f4;
+  background: #f36c3d;
 }
 
 .user-avatar img {
@@ -340,7 +340,7 @@
 .user-plan {
   font-size: 10px;
   color: #666;
-  background: #e8f0fe;
+  background: #fef5f0;
   padding: 2px 6px;
   border-radius: 4px;
   text-transform: uppercase;
@@ -463,9 +463,9 @@
 }
 
 .usage-btn:hover {
-  background: #4285f4;
+  background: #f36c3d;
   color: white;
-  border-color: #4285f4;
+  border-color: #f36c3d;
 }
 
 .quota-popup-actions {
@@ -484,13 +484,13 @@
 }
 
 .quota-btn.primary {
-  background: #4285f4;
+  background: #f36c3d;
   color: white;
   flex: 1;
 }
 
 .quota-btn.primary:hover {
-  background: #3367d6;
+  background: #e55a2b;
 }
 
 .quota-btn.secondary {

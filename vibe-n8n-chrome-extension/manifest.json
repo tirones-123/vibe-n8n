@@ -68,7 +68,8 @@
         "src/config.js",
         "src/content-auth-integration-standalone.js",
         "offscreen.html",
-        "offscreen.js"
+        "offscreen.js",
+        "assets/logo-blanc.png"
       ],
       "matches": ["<all_urls>"]
     }

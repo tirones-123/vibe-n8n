@@ -406,8 +406,8 @@ async function checkSavedDomains(currentHostname) {
         --ai-text-error: #dc3545;
         --ai-accent: #ff6d5a;
         --ai-accent-hover: #ff5a47;
-        --ai-accent-blue: #007acc;
-        --ai-accent-blue-hover: #0066b3;
+        --ai-accent-orange: #f36c3d;
+        --ai-accent-orange-hover: #e55a2b;
         --ai-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         --ai-shadow-strong: 0 4px 12px rgba(0, 0, 0, 0.15);
         --ai-font-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -564,7 +564,7 @@ async function checkSavedDomains(currentHostname) {
       }
 
       .ai-message-bubble-user {
-        background: var(--ai-accent-blue);
+        background: var(--ai-accent-orange);
         color: white;
         border-radius: 16px;
         box-shadow: var(--ai-shadow);
@@ -599,12 +599,12 @@ async function checkSavedDomains(currentHostname) {
 
       .ai-resize-handle:hover .ai-resize-indicator {
         opacity: 0.8 !important;
-        background: var(--ai-accent-blue) !important;
+        background: var(--ai-accent-orange) !important;
       }
 
       .ai-resize-handle.active .ai-resize-indicator {
         opacity: 1 !important;
-        background: var(--ai-accent-blue) !important;
+        background: var(--ai-accent-orange) !important;
         transform: translateX(-50%) scaleX(1.2) !important;
       }
 
@@ -693,12 +693,12 @@ async function checkSavedDomains(currentHostname) {
 
       .ai-resize-handle-horizontal:hover .ai-resize-indicator-horizontal {
         opacity: 0.8 !important;
-        background: var(--ai-accent-blue) !important;
+        background: var(--ai-accent-orange) !important;
       }
 
       .ai-resize-handle-horizontal.active .ai-resize-indicator-horizontal {
         opacity: 1 !important;
-        background: var(--ai-accent-blue) !important;
+        background: var(--ai-accent-orange) !important;
         transform: translateY(-50%) scaleY(1.2) !important;
       }
 
@@ -754,7 +754,7 @@ async function checkSavedDomains(currentHostname) {
 
         /* n8n-style input focus states */
         #ai-input:focus {
-          border-color: var(--ai-accent-blue) !important;
+          border-color: var(--ai-accent-orange) !important;
           box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 2px rgba(0, 122, 204, 0.1) !important;
         }
 
@@ -765,12 +765,12 @@ async function checkSavedDomains(currentHostname) {
         /* n8n-style button hover effects */
         #ai-insert-code:hover {
           background: var(--ai-bg-tertiary) !important;
-          border-color: var(--ai-accent-blue) !important;
+          border-color: var(--ai-accent-orange) !important;
         }
 
         #ai-insert-replace-code:hover {
-          background: var(--ai-accent-blue-hover) !important;
-          border-color: var(--ai-accent-blue-hover) !important;
+                  background: var(--ai-accent-orange-hover) !important;
+        border-color: var(--ai-accent-orange-hover) !important;
           transform: translateY(-1px) !important;
           box-shadow: 0 4px 12px rgba(0, 122, 204, 0.2) !important;
         }
@@ -817,7 +817,7 @@ async function checkSavedDomains(currentHostname) {
         }
 
         .ai-message-bubble-user {
-          background: var(--ai-accent-blue);
+          background: var(--ai-accent-orange);
           color: white;
           border-radius: 12px;
           box-shadow: var(--ai-shadow);
@@ -850,7 +850,7 @@ async function checkSavedDomains(currentHostname) {
 
       /* Send button hover and loading states - n8n style */
       #ai-send:hover {
-        background: var(--ai-accent-blue-hover) !important;
+        background: var(--ai-accent-orange-hover) !important;
         transform: scale(1.1) !important;
         box-shadow: var(--ai-shadow-strong) !important;
       }
@@ -1397,7 +1397,7 @@ async function checkSavedDomains(currentHostname) {
               gap: 6px;
               opacity: 0.8;
             ">
-              <span style="font-size: 12px;">🤖</span><span>AI</span>
+              <img src="${chrome.runtime.getURL('assets/logo-blanc.png')}" style="width: 16px; height: 16px; margin-right: 6px;"><span>AI</span>
             </span>
                         <span style="color: var(--ai-text-primary); line-height: 1.6;">
               Hello! I'm your n8n workflow assistant. I can help you create or modify complete, functional workflows from simple descriptions.
@@ -1488,9 +1488,9 @@ async function checkSavedDomains(currentHostname) {
               font-size: 11px;
               border-radius: 4px;
               cursor: pointer;
-              background: var(--ai-accent-blue);
+              background: var(--ai-accent-orange);
               color: white;
-              border: 1px solid var(--ai-accent-blue);
+              border: 1px solid var(--ai-accent-orange);
               font-weight: 500;
               transition: all 0.15s ease;
               box-shadow: var(--ai-shadow);
@@ -1512,7 +1512,7 @@ async function checkSavedDomains(currentHostname) {
                 cursor: pointer;
                 width: 12px;
                 height: 12px;
-                accent-color: var(--ai-accent-blue);
+                accent-color: var(--ai-accent-orange);
               ">
               <span>Auto</span>
             </label>
@@ -1626,7 +1626,7 @@ async function checkSavedDomains(currentHostname) {
               width: 24px;
               height: 24px;
               padding: 0;
-              background: var(--ai-accent-blue);
+              background: var(--ai-accent-orange);
               color: white;
               border: none;
               border-radius: 50%;
@@ -1780,9 +1780,9 @@ async function checkSavedDomains(currentHostname) {
       right: 24px;
       width: 56px;
       height: 56px;
-      background: var(--ai-accent-blue);
+      background: var(--ai-accent-orange);
       color: white;
-      border: 1px solid var(--ai-accent-blue);
+      border: 1px solid var(--ai-accent-orange);
       border-radius: 16px;
       cursor: pointer;
       font-size: 20px;
@@ -1796,15 +1796,15 @@ async function checkSavedDomains(currentHostname) {
       font-weight: 500;
     `;
     
-    button.innerHTML = '🤖';
+          button.innerHTML = `<img src="${chrome.runtime.getURL('assets/logo-blanc.png')}" style="width: 24px; height: 24px;">`;
     button.title = 'Open AI Assistant (Ctrl+Shift+A)';
     
     button.addEventListener('mouseenter', () => {
       if (!isOpen) {
         button.style.transform = 'scale(1.05) translateY(-2px)';
         button.style.boxShadow = '0 8px 25px rgba(0, 122, 204, 0.3)';
-        button.style.background = 'var(--ai-accent-blue-hover)';
-        button.style.borderColor = 'var(--ai-accent-blue-hover)';
+        button.style.background = 'var(--ai-accent-orange-hover)';
+        button.style.borderColor = 'var(--ai-accent-orange-hover)';
       }
     });
     
@@ -1812,8 +1812,8 @@ async function checkSavedDomains(currentHostname) {
       if (!isOpen) {
         button.style.transform = 'scale(1) translateY(0px)';
         button.style.boxShadow = 'var(--ai-shadow-strong)';
-        button.style.background = 'var(--ai-accent-blue)';
-        button.style.borderColor = 'var(--ai-accent-blue)';
+        button.style.background = 'var(--ai-accent-orange)';
+        button.style.borderColor = 'var(--ai-accent-orange)';
       }
     });
     
@@ -2921,8 +2921,8 @@ async function checkSavedDomains(currentHostname) {
       updateCSSVariable('--ai-text-muted', '#9e9e9e');    // Muted text
       updateCSSVariable('--ai-border', '#424242');        // Borders
       updateCSSVariable('--ai-border-light', '#303030');  // Light borders
-      updateCSSVariable('--ai-accent-blue', '#4a9eff');   // Brighter blue for dark theme
-      updateCSSVariable('--ai-accent-blue-hover', '#3d8bdb'); // Hover state
+      updateCSSVariable('--ai-accent-orange', '#f7855a');   // Brighter blue for dark theme
+      updateCSSVariable('--ai-accent-orange-hover', '#e55a2b'); // Hover state
       updateCSSVariable('--ai-text-success', '#4caf50');  // Success green
       updateCSSVariable('--ai-text-warning', '#ff9800');  // Warning orange
       updateCSSVariable('--ai-text-error', '#f44336');    // Error red
@@ -2948,8 +2948,8 @@ async function checkSavedDomains(currentHostname) {
       updateCSSVariable('--ai-text-muted', '#9ca3af');
       updateCSSVariable('--ai-border', '#e5e7eb');
       updateCSSVariable('--ai-border-light', '#f3f4f6');
-      updateCSSVariable('--ai-accent-blue', '#3b82f6');
-      updateCSSVariable('--ai-accent-blue-hover', '#2563eb');
+      updateCSSVariable('--ai-accent-orange', '#f36c3d');
+      updateCSSVariable('--ai-accent-orange-hover', '#e55a2b');
       updateCSSVariable('--ai-text-success', '#10b981');
       updateCSSVariable('--ai-text-warning', '#f59e0b');
       updateCSSVariable('--ai-text-error', '#ef4444');
@@ -3241,7 +3241,7 @@ async function checkSavedDomains(currentHostname) {
                      // Remplacer spécifiquement le contenu HTML problématique dans le message email
            manualCleanJSON = manualCleanJSON.replace(
              /"message":\s*"[^"]*UTF-8[^"]*"([^}]*)/,
-             '"message": "<!DOCTYPE html><html><head><meta charset=\\"UTF-8\\"></head><body><div style=\\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f9fa; padding: 20px;\\"><div style=\\"background: white; padding: 30px; border-radius: 8px;\\"><h1 style=\\"color: #2563eb;\\">🌤️ Météo Paris</h1><p>Rapport quotidien du {{ new Date().toLocaleDateString(\'fr-FR\') }}</p><h2>📊 Données météorologiques</h2><p>🌡️ Température maximale: {{ $json.daily.temperature_2m_max[0] }}{{ $json.daily_units.temperature_2m_max }}</p><p>🕐 Fuseau horaire: {{ $json.timezone }}</p><p>📅 Date: {{ new Date().toLocaleString(\'fr-FR\') }}</p></div></div></body></html>"'
+             '"message": "<!DOCTYPE html><html><head><meta charset=\\"UTF-8\\"></head><body><div style=\\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f9fa; padding: 20px;\\"><div style=\\"background: white; padding: 30px; border-radius: 8px;\\"><h1 style=\\"color: #e55a2b;\\">🌤️ Météo Paris</h1><p>Rapport quotidien du {{ new Date().toLocaleDateString(\'fr-FR\') }}</p><h2>📊 Données météorologiques</h2><p>🌡️ Température maximale: {{ $json.daily.temperature_2m_max[0] }}{{ $json.daily_units.temperature_2m_max }}</p><p>🕐 Fuseau horaire: {{ $json.timezone }}</p><p>📅 Date: {{ new Date().toLocaleString(\'fr-FR\') }}</p></div></div></body></html>"'
            );
           
           const manualParsed = JSON.parse(manualCleanJSON);
@@ -3295,7 +3295,7 @@ async function checkSavedDomains(currentHostname) {
         gap: 6px;
         opacity: 0.8;
       `;
-      prefixSpan.innerHTML = '<span style="font-size: 12px;">🤖</span><span>AI</span>';
+              prefixSpan.innerHTML = `<img src="${chrome.runtime.getURL('assets/logo-blanc.png')}" style="width: 16px; height: 16px; margin-right: 6px;"><span>AI</span>`;
       
             const contentSpan = document.createElement('div');
       contentSpan.style.cssText = `
@@ -3646,7 +3646,7 @@ async function checkSavedDomains(currentHostname) {
         if (!authCheck.allowed) {
           console.warn('❌ Auth check failed, raison:', authCheck.reason);
           contentAuthIntegration.handleAccessDenied(authCheck);
-          handleError('Authentification ou quota requis. Veuillez vous connecter.', assistantMessage);
+          handleError('Authentication or quota required. Please sign in.', assistantMessage);
           return;
         }
 
@@ -3674,7 +3674,7 @@ async function checkSavedDomains(currentHostname) {
         return;
       } catch (authError) {
         console.error('❌ Firebase Auth error:', authError);
-        handleError('Erreur d\'authentification. Veuillez vous reconnecter.', assistantMessage);
+        handleError('Authentication error. Please sign in again.', assistantMessage);
         return;
       }
     } catch (err) {
@@ -3767,7 +3767,7 @@ async function checkSavedDomains(currentHostname) {
                  Free Plan Limit Reached
                </h3>
                              <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">
-               Your free quota has been reached
+               Your free plan quota has been reached
              </p>
               </div>
             </div>
@@ -4133,7 +4133,7 @@ async function checkSavedDomains(currentHostname) {
             '1. 📨 Check your inbox\n' +
             '2. 🔗 Click the verification link\n' +
             '3. 🔄 Reload this page\n\n' +
-            '*You will receive 70,000 free tokens after verification!*', 
+            '*You will receive full access after verification!*', 
             false
           );
         }
@@ -4444,7 +4444,7 @@ async function checkSavedDomains(currentHostname) {
         if (statusEl) {
           statusEl.textContent = 'auth failed';
           statusEl.className = 'auth-error';
-          statusEl.title = 'ERREUR CRITIQUE: Système d\'authentification requis non disponible';
+          statusEl.title = 'CRITICAL ERROR: Required authentication system unavailable';
         }
       });
       
@@ -4574,47 +4574,4 @@ async function checkSavedDomains(currentHostname) {
       }
           });
     }
-  }
-
-  // After variable declarations near top
-  let firebaseAuthReady = false;
-
-  // Listener for auth ready broadcast from background
-  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
-    chrome.runtime.onMessage.addListener((msg) => {
-      if (msg && msg.type === 'FIREBASE_AUTH_READY' && !firebaseAuthReady) {
-        initializeFirebaseAuth().then((success) => {
-          if (success) {
-            firebaseAuthReady = true;
-            const statusEl = document.getElementById('ai-status');
-            if (statusEl) {
-              statusEl.textContent = 'firebase';
-              statusEl.className = 'auth-ready';
-            }
-          }
-        });
-      }
-    });
-  }
-
-  // Track Firebase readiness
-  let firebaseAuthReady = false;
-
-  // Listen for notification from background once user has signed in
-  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
-    chrome.runtime.onMessage.addListener((msg) => {
-      if (msg && msg.type === 'FIREBASE_AUTH_READY' && !firebaseAuthReady) {
-        initializeFirebaseAuth().then((success) => {
-          if (success) {
-            firebaseAuthReady = true;
-            const statusEl = document.getElementById('ai-status');
-            if (statusEl) {
-              statusEl.textContent = 'firebase';
-              statusEl.classList.remove('legacy-mode', 'auth-error');
-              statusEl.classList.add('auth-ready');
-            }
-          }
-        });
-      }
-    });
-  }
+  })(); // End of initializeExtension function 

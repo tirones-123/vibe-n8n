@@ -7,117 +7,200 @@
     <link rel="stylesheet" href="styles/popup.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🤖 n8n AI Assistant</h1>
-            <p>Extension Chrome pour génération de workflows IA</p>
+    <div class="popup-container">
+        <div class="popup-header">
+            <div class="header-logo">
+                <img src="assets/logo-blanc.png" alt="Vibe n8n" class="logo-img">
+            </div>
+            <div class="header-content">
+                <h1>n8n AI Assistant</h1>
+                <p class="header-subtitle">Intelligent workflow generation powered by AI</p>
+            </div>
         </div>
         
-        <div class="content">
-            <div class="status-section">
-                <div id="statusIndicator" class="status unknown">
-                    <span class="status-dot"></span>
-                    <span id="statusText">Vérification...</span>
-                </div>
-            </div>
-
+        <div class="popup-content">
             <!-- Section utilisateur connecté -->
             <div id="userSection" class="user-section" style="display: none;">
-                <div class="user-info">
-                    <div class="user-avatar">👤</div>
+                <div class="user-card">
+                    <div class="user-avatar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
                     <div class="user-details">
                         <div id="userEmail" class="user-email">-</div>
                         <div id="authMethod" class="auth-method">Chrome Identity</div>
                     </div>
+                    <button id="signOutBtn" class="btn-icon btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="16,17 21,12 16,7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
                 </div>
-                <button id="signOutBtn" class="btn secondary small">
-                    🚪 Se déconnecter
-                </button>
             </div>
 
             <div class="actions">
-                <button id="activateBtn" class="btn primary">
-                    Activer sur ce domaine
-                </button>
-                
-                <button id="openPanelBtn" class="btn secondary">
-                    Ouvrir le panneau IA
+                <button id="activateBtn" class="btn btn-primary btn-hero">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="btn-icon-left">
+                        <polyline points="9,11 12,14 22,4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Enable on this domain
                 </button>
 
-                <!-- NEW: Sign-in section with options (visible uniquement si non connecté) -->
+                <!-- Section de connexion améliorée -->
                 <div id="signInSection" class="sign-in-section" style="display:none;">
+                    <div class="sign-in-header">
+                        <h3>Connect to get started</h3>
+                        <p>Unlock the power of AI workflow generation</p>
+                    </div>
+                    
                     <div class="sign-in-tabs">
                         <button id="googleTab" class="tab-btn active" data-tab="google">
-                            🔐 Google
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="9" y1="9" x2="9.01" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="15" y1="9" x2="15.01" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Google
                         </button>
                         <button id="emailTab" class="tab-btn" data-tab="email">
-                            📧 Connexion
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/>
+                                <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Sign in
                         </button>
                         <button id="signupTab" class="tab-btn" data-tab="signup">
-                            ✨ Créer compte
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                                <line x1="20" y1="8" x2="20" y2="14" stroke="currentColor" stroke-width="2"/>
+                                <line x1="23" y1="11" x2="17" y2="11" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Sign up
                         </button>
                     </div>
                     
                     <!-- Google Sign-in -->
                     <div id="googleSignIn" class="sign-in-option active">
-                        <p class="option-description">Connexion rapide avec votre compte Google</p>
-                        <button id="signInGoogleBtn" class="btn primary full-width">
-                            🔐 Se connecter avec Google
-                        </button>
-                        <p class="sign-in-note">
-                            Vous pourrez choisir votre compte Google
-                        </p>
+                        <div class="option-card">
+                            <div class="google-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                </svg>
+                            </div>
+                            <p class="option-description">Quick & secure authentication with your Google account</p>
+                            <button id="signInGoogleBtn" class="btn btn-google full-width">
+                                Continue with Google
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- Email/Password Sign-in -->
                     <div id="emailSignIn" class="sign-in-option">
-                        <div class="form-group">
-                            <input type="email" id="emailInput" placeholder="Votre email" class="form-input">
+                        <div class="option-card">
+                            <div class="form-group">
+                                <input type="email" id="emailInput" placeholder="Enter your email" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <input type="password" id="passwordInput" placeholder="Enter your password" class="form-input">
+                            </div>
+                            <button id="signInEmailBtn" class="btn btn-secondary full-width">
+                                Sign in
+                            </button>
+                            <p class="sign-in-note">
+                                Don't have an account? <a href="#" id="switchToSignup" class="sign-in-link">Create one</a>
+                            </p>
                         </div>
-                        <div class="form-group">
-                            <input type="password" id="passwordInput" placeholder="Votre mot de passe" class="form-input">
-                        </div>
-                        <button id="signInEmailBtn" class="btn primary full-width">
-                            📧 Se connecter
-                        </button>
-                        <p class="sign-in-note">
-                            Pas de compte ? <a href="#" id="switchToSignup" class="sign-in-link">Créer un compte</a>
-                        </p>
                     </div>
                     
                     <!-- Email/Password Sign-up -->
                     <div id="emailSignUp" class="sign-in-option">
-                        <div class="form-group">
-                            <input type="email" id="signupEmailInput" placeholder="Votre email" class="form-input">
+                        <div class="option-card">
+                            <div class="form-group">
+                                <input type="email" id="signupEmailInput" placeholder="Enter your email" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <input type="password" id="signupPasswordInput" placeholder="Create password (min. 6 chars)" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <input type="password" id="confirmPasswordInput" placeholder="Confirm password" class="form-input">
+                            </div>
+                            <button id="signUpEmailBtn" class="btn btn-secondary full-width">
+                                Create account
+                            </button>
+                            <p class="sign-in-note">
+                                Already have an account? <a href="#" id="switchToSignin" class="sign-in-link">Sign in</a>
+                            </p>
                         </div>
-                        <div class="form-group">
-                            <input type="password" id="signupPasswordInput" placeholder="Mot de passe (min. 6 caractères)" class="form-input">
-                        </div>
-                        <div class="form-group">
-                            <input type="password" id="confirmPasswordInput" placeholder="Confirmer le mot de passe" class="form-input">
-                        </div>
-                        <button id="signUpEmailBtn" class="btn primary full-width">
-                            ✨ Créer mon compte
-                        </button>
-                        <p class="sign-in-note">
-                            Déjà un compte ? <a href="#" id="switchToSignin" class="sign-in-link">Se connecter</a>
-                        </p>
+                    </div>
+
+                    <div class="features-preview">
+                        <h4>What you'll get:</h4>
+                        <ul class="features-list">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <polyline points="9,11 12,14 22,4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>AI workflow generation</span>
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <polyline points="9,11 12,14 22,4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Real-time streaming responses</span>
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <polyline points="9,11 12,14 22,4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Advanced workflow optimization</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
 
             <div class="domain-info">
-                <p><strong>Domaine actuel :</strong></p>
-                <p id="currentDomain" class="domain">Chargement...</p>
+                <div class="info-card">
+                    <div class="info-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <p class="info-label">Current domain:</p>
+                        <p id="currentDomain" class="domain-name">Loading...</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="help">
-                <p>💡 <strong>Astuce :</strong> Une fois activé, utilisez le bouton 🤖 sur la page n8n pour ouvrir l'assistant IA.</p>
+            <div class="help-section">
+                <div class="help-card">
+                    <div class="help-icon">💡</div>
+                    <div class="help-content">
+                        <h4>Quick tip</h4>
+                        <p>Once enabled, look for the AI assistant button on your n8n workflow page to start generating workflows with natural language.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="footer">
-            <small>Version 2.0.0 - Workflow RAG + Firebase Auth</small>
+        <div class="popup-footer">
+            <div class="footer-content">
+                <span class="version">v2.0.0</span>
+                <span class="separator">•</span>
+                <span class="tech-stack">Claude 4 Sonnet + Firebase Auth</span>
+            </div>
         </div>
     </div>
 

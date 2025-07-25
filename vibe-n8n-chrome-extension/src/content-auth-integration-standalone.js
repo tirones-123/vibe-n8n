@@ -174,7 +174,7 @@ class ContentAuthIntegration {
       const email = emailInput.value.trim();
       const password = passInput.value.trim();
       if (!email || !password) {
-        alert('Veuillez saisir email et mot de passe');
+        alert('Please enter email and password');
         return;
       }
 
@@ -276,11 +276,11 @@ class ContentAuthIntegration {
             margin-bottom: 30px;
             text-align: left;
           ">
-            <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">📋 Étapes suivantes :</h4>
+                          <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">📋 Next steps:</h4>
             <ol style="margin: 0; padding-left: 18px; color: #92400e; font-size: 14px; line-height: 1.4;">
-              <li>Vérifiez votre boîte email (y compris les spams)</li>
-              <li>Cliquez sur le lien de vérification</li>
-              <li>Reconnectez-vous pour activer vos <strong>70,000 tokens gratuits</strong></li>
+                              <li>Check your email inbox (including spam folder)</li>
+                <li>Click on the verification link</li>
+              <li>Sign in again to activate your <strong>full access</strong></li>
             </ol>
           </div>
         ` : `
@@ -292,10 +292,10 @@ class ContentAuthIntegration {
             margin-bottom: 25px;
           ">
             <p style="margin: 0 0 10px 0; color: #dc2626; font-size: 14px; font-weight: 500;">
-              ⚠️ L'email de vérification n'a pas pu être envoyé automatiquement
+                              ⚠️ The verification email could not be sent automatically
             </p>
             <p style="margin: 0; color: #7f1d1d; font-size: 13px; line-height: 1.4;">
-              Veuillez vous connecter puis vérifier manuellement votre email depuis votre tableau de bord Firebase.
+                              Please sign in and manually verify your email from your Firebase dashboard.
             </p>
           </div>
         `}
@@ -307,7 +307,7 @@ class ContentAuthIntegration {
           margin-bottom: 25px;
         ">
           <p style="margin: 0; color: #dc2626; font-size: 13px; font-weight: 500;">
-            ⚠️ Vous ne pourrez pas utiliser l'assistant IA tant que votre email n'est pas vérifié
+            ⚠️ You cannot use the AI assistant until your email is verified
           </p>
         </div>
         <button id="close-verification-modal" style="
@@ -470,7 +470,7 @@ class ContentAuthIntegration {
                 code: 'FREE_LIMIT_EXCEEDED',
                 user: freshUser,
                 action: 'upgrade_to_pro',
-                message: 'Free plan limit reached. Upgrade to PRO to continue.'
+                message: 'Free plan limit reached. Please upgrade to continue.'
               }
             };
           }
@@ -614,9 +614,9 @@ class ContentAuthIntegration {
         box-shadow: 0 8px 32px rgba(0,0,0,0.2);
       ">
         <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
-        <h2 style="margin-bottom: 10px; color: #2563eb; font-size: 24px;">Authentification requise</h2>
+        <h2 style="margin-bottom: 10px; color: #f36c3d; font-size: 24px;">Authentication Required</h2>
         <p style="margin-bottom: 30px; color: #666; line-height: 1.4;">
-          Connectez-vous avec votre compte Google pour accéder à l'assistant IA n8n
+                      Sign in with your Google account to access the n8n AI assistant
         </p>
         
         <button id="google-signin-btn" 
@@ -624,7 +624,7 @@ class ContentAuthIntegration {
                   width: 100%; 
                   padding: 16px; 
                   margin-bottom: 20px; 
-                  background: #4285f4; 
+                  background: #f36c3d; 
                   color: white; 
                   border: none; 
                   border-radius: 8px; 
@@ -637,24 +637,24 @@ class ContentAuthIntegration {
                   gap: 12px;
                   transition: background-color 0.2s;
                 " 
-                onmouseover="this.style.backgroundColor='#3367d6'"
-                onmouseout="this.style.backgroundColor='#4285f4'">
+                onmouseover="this.style.backgroundColor='#e55a2b'"
+                onmouseout="this.style.backgroundColor='#f36c3d'">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path fill="#FFFFFF" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
             <path fill="#FFFFFF" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
             <path fill="#FFFFFF" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/>
             <path fill="#FFFFFF" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.462.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
           </svg>
-          Se connecter avec Google
+                      Sign in with Google
         </button>
 
         <div style="margin: 10px 0; font-weight:600; color:#a3a3a3;">ou</div>
 
         <input id="firebase-auth-email" type="email" placeholder="Email" style="width:100%;padding:12px;margin-bottom:12px;border:1px solid #ddd;border-radius:6px;font-size:14px;"/>
-        <input id="firebase-auth-password" type="password" placeholder="Mot de passe" style="width:100%;padding:12px;margin-bottom:16px;border:1px solid #ddd;border-radius:6px;font-size:14px;"/>
+        <input id="firebase-auth-password" type="password" placeholder="Password" style="width:100%;padding:12px;margin-bottom:16px;border:1px solid #ddd;border-radius:6px;font-size:14px;"/>
 
-        <button id="email-signin-btn" style="width:100%;padding:14px;background:#2563eb;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-bottom:10px;">Se connecter</button>
-        <button id="email-signup-btn" style="width:100%;padding:14px;background:#10b981;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;">Créer un compte</button>
+        <button id="email-signin-btn" style="width:100%;padding:14px;background:#f36c3d;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-bottom:10px;">Sign in</button>
+        <button id="email-signup-btn" style="width:100%;padding:14px;background:#10b981;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;">Create account</button>
         
         <div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center;">
           <button onclick="this.parentElement.parentElement.parentElement.remove()" 
