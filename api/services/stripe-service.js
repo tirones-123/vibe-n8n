@@ -304,14 +304,16 @@ class StripeService {
         description
       });
 
-      // 2. create and finalize invoice => will immediately attempt payment
-      const invoice = await this.stripe.invoices.create({
+      // Create draft invoice
+      const draft = await this.stripe.invoices.create({
         customer: customerId,
-        collection_method: 'charge_automatically',
-        auto_advance: true // finalize & pay
+        collection_method: 'charge_automatically'
       });
 
-      console.log(`💳 Immediate usage invoice ${invoice.id} for $${amountUsd.toFixed(2)}`);
+      // Finalize (and attempt immediate payment)
+      const invoice = await this.stripe.invoices.finalizeInvoice(draft.id, { auto_advance: true });
+
+      console.log(`💳 Immediate usage invoice ${invoice.id} for $${amountUsd.toFixed(2)} (status: ${invoice.status})`);
       return invoice;
     } catch (err) {
       console.error('Error creating immediate usage invoice:', err);
