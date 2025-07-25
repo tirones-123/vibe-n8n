@@ -547,8 +547,13 @@ router.post('/enable-usage-based', verifyFirebaseAuth, async (req, res) => {
     // Enable usage-based billing in Firebase
     await firebaseService.enableUsageBased(req.user.uid, limit_usd);
 
-    // Setup usage billing in Stripe
-    await stripeService.setupUsageBilling(req.user.stripe_customer_id, limit_usd);
+    // Setup usage billing in Stripe (optional)
+    try {
+      await stripeService.setupUsageBilling(req.user.stripe_customer_id, limit_usd);
+    } catch (stripeErr) {
+      console.warn('⚠️ Stripe setupUsageBilling failed:', stripeErr.message);
+      // Do not fail the request if Stripe metadata update fails
+    }
 
     console.log(`💳 Enabled usage-based billing for ${req.user.uid}: $${limit_usd} limit`);
 
