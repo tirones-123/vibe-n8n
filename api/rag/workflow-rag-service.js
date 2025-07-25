@@ -120,7 +120,7 @@ export class WorkflowRAGService {
         // Envoi direct - petit workflow
         if (onProgress) {
           onProgress('complete', {
-            message: 'Workflow généré avec succès !',
+            message: 'Workflow generated successfully!',
             success: true,
             workflow: transmission.chunks[0].workflow,
             explanation: transmission.chunks[0].explanation
@@ -132,7 +132,7 @@ export class WorkflowRAGService {
         // Envoi compressé - workflow moyen
         if (onProgress) {
           onProgress('compressed_complete', {
-            message: 'Workflow compressé généré avec succès !',
+            message: 'Compressed workflow generated successfully!',
             success: true,
             compressed: true,
             data: transmission.chunks[0].data,
@@ -148,7 +148,7 @@ export class WorkflowRAGService {
         // Envoyer l'info de début de chunking
         if (onProgress) {
           onProgress('chunking_start', {
-            message: `Envoi du workflow en ${chunks.length} parties...`,
+            message: `Sending large workflow in ${chunks.length} parts...`,
             totalChunks: chunks.length
           });
         }
@@ -157,7 +157,7 @@ export class WorkflowRAGService {
         for (const chunk of chunks) {
           if (onProgress) {
             onProgress('chunk', {
-              message: `Partie ${chunk.index + 1}/${chunk.total}`,
+              message: `Part ${chunk.index + 1}/${chunk.total}`,
               index: chunk.index,
               total: chunk.total,
               data: chunk.data,
@@ -174,14 +174,14 @@ export class WorkflowRAGService {
         // Signal de fin
         if (onProgress) {
           onProgress('chunking_complete', {
-            message: 'Workflow volumineux transmis avec succès !',
+            message: 'Large workflow transmitted successfully!',
             totalChunks: chunks.length
           });
         }
         break;
 
       default:
-        console.error('❌ Type de transmission inconnu:', transmission.type);
+        console.error('❌ Unknown transmission type:', transmission.type);
     }
   }
 
@@ -220,15 +220,9 @@ export class WorkflowRAGService {
       // Transformer les résultats
       const workflows = [];
       
-      console.log(`🔍 Pinecone found ${searchResults.matches?.length || 0} matches for "${description.substring(0, 100)}..."`);
-      console.log(`📊 Recherche basée sur descriptions GPT-4:`);
-      if (searchResults.matches) {
-        searchResults.matches.forEach((match, i) => {
-          console.log(`  ${i + 1}. Score: ${match.score.toFixed(3)} - "${match.metadata?.name || 'Unknown'}" (${match.metadata?.filename})`);
-          if (match.metadata?.descriptionSnippet) {
-            console.log(`      📝 "${match.metadata.descriptionSnippet.substring(0, 120)}..."`);
-          }
-        });
+      console.log(`🔍 Pinecone search completed: ${searchResults.matches?.length || 0} matches found`);
+      if (searchResults.matches && searchResults.matches.length > 0) {
+        console.log(`📊 Top results: ${searchResults.matches.slice(0, 3).map(m => `${m.metadata?.filename} (${m.score.toFixed(3)})`).join(', ')}`);
       }
       
       for (const match of searchResults.matches || []) {
@@ -243,43 +237,34 @@ export class WorkflowRAGService {
           relevanceScore: match.score || 0
         };
         
-              console.log(`📝 Match ${workflows.length + 1}: "${workflow.name}" (score: ${workflow.relevanceScore.toFixed(3)}) → file: "${workflow.filename}"`);
-      console.log(`    📊 ${workflow.nodeCount} nœuds: ${workflow.nodeTypes.slice(0, 3).join(', ')}${workflow.nodeTypes.length > 3 ? '...' : ''}`);
-      
-      // Charger le contenu JSON complet du workflow depuis workflows-rag-optimized
-      try {
-        const optimizedFilePath = path.join(this.optimizedWorkflowsDir, workflow.filename);
-        console.log(`🔍 Loading RAG workflow file: "${workflow.filename}"`);
-        workflow.workflowContent = await fs.readFile(optimizedFilePath, 'utf-8');
-        console.log(`✅ Successfully loaded RAG file: "${workflow.filename}" → "${workflow.name}" - ${workflow.workflowContent.length} chars`);
+        console.log(`📝 Loading workflow ${workflows.length + 1}: "${workflow.filename}"`);
+        
+        // Charger le contenu JSON complet du workflow depuis workflows-rag-optimized
+        try {
+          const optimizedFilePath = path.join(this.optimizedWorkflowsDir, workflow.filename);
+          workflow.workflowContent = await fs.readFile(optimizedFilePath, 'utf-8');
           
           // Valider que c'est du JSON valide
           try {
             const parsedWorkflow = JSON.parse(workflow.workflowContent);
             if (!parsedWorkflow.nodes || !Array.isArray(parsedWorkflow.nodes)) {
-              throw new Error('Structure workflow invalide');
+              throw new Error('Invalid workflow structure');
             }
-            console.log(`    ✅ JSON valide avec ${parsedWorkflow.nodes.length} nœuds`);
+            console.log(`    ✅ Loaded: ${parsedWorkflow.nodes.length} nodes`);
           } catch (jsonError) {
-            console.error(`❌ JSON invalide pour ${workflow.filename}:`, jsonError.message);
+            console.error(`❌ Invalid JSON for ${workflow.filename}: ${jsonError.message}`);
             continue;
           }
           
         } catch (error) {
-          console.log(`❌ Failed to load workflow JSON "${workflow.filename}": ${error.message}`);
-          console.log(`⏭️  Skipping workflow: "${workflow.name}" (${workflow.filename})`);
-          // Skip this workflow - will use next one from Pinecone results
+          console.log(`❌ Failed to load "${workflow.filename}": ${error.message}`);
           continue;
         }
         
         workflows.push(workflow);
       }
 
-      console.log(`\n📊 FINAL RESULT: ${workflows.length} workflows successfully loaded with GPT-4 descriptions:`);
-      workflows.forEach((w, i) => {
-        console.log(`  ${i + 1}. "${w.name}" (${w.filename}) - score: ${w.relevanceScore.toFixed(3)}`);
-        console.log(`      📝 ${w.descriptionSnippet.substring(0, 100)}...`);
-      });
+      console.log(`\n📊 Successfully loaded ${workflows.length} RAG workflows: ${workflows.map(w => w.filename).join(', ')}`);
 
       return workflows;
 
@@ -297,7 +282,7 @@ export class WorkflowRAGService {
 
     try {
       if (onProgress) {
-        onProgress('search', { message: 'Recherche de workflows similaires...' });
+        onProgress('search', { message: 'Analyzing your request...' });
       }
       
       // Trouver des workflows similaires
@@ -306,14 +291,13 @@ export class WorkflowRAGService {
       if (similarWorkflows.length === 0) {
         return {
           success: false,
-          error: 'No similar workflows found in the database'
+          error: 'Unable to process your request - please try a different description'
         };
       }
 
       if (onProgress) {
         onProgress('context_building', { 
-          message: 'Construction du contexte pour IA...',
-          workflows: similarWorkflows.map(w => w.name)
+          message: 'Preparing AI context...'
         });
       }
 
@@ -422,35 +406,25 @@ ${baseWorkflow ?
 
       if (onProgress) {
         onProgress('claude_call', { 
-          message: baseWorkflow ? 'Amélioration du workflow avec AI...' : 'Envoi de la requête à AI...',
+          message: baseWorkflow ? 'Improving workflow with AI... This may take a few minutes.' : 'Generating workflow with AI... This may take a few minutes.',
           promptLength: systemPrompt.length + userPrompt.length
         });
       }
 
       // LOGS DÉTAILLÉS DES PROMPTS
-      console.log(`\n🤖 === CLAUDE PROMPTS ===`);
-      console.log(`📝 System Prompt (${systemPrompt.length} chars):`);
-      console.log(systemPrompt);
-      console.log(`\n📋 User Prompt (${userPrompt.length} chars):`);
-      console.log(userPrompt);
-      console.log(`\n🔢 Total prompt length: ${systemPrompt.length + userPrompt.length} chars`);
-      console.log(`📊 RAG workflows used in prompt: ${similarWorkflows.length}`);
-      console.log(`📂 RAG filenames: ${similarWorkflows.map(w => w.filename).join(', ')}`);
-      console.log(`📁 === RAG FILES INCLUDED IN PROMPT ===`);
+      console.log(`\n🤖 === CLAUDE REQUEST SUMMARY ===`);
+      console.log(`📊 Total prompt length: ${systemPrompt.length + userPrompt.length} chars`);
+      console.log(`📂 RAG workflows used: ${similarWorkflows.length}`);
+      console.log(`📁 RAG files: ${similarWorkflows.map(w => w.filename).join(', ')}`);
       similarWorkflows.forEach((w, i) => {
-        console.log(`  📄 ${i + 1}. FILE: "${w.filename}" → WORKFLOW: "${w.name}"`);
-        console.log(`       ├─ Score: ${w.relevanceScore.toFixed(3)}`);
-        console.log(`       ├─ Content: ${w.workflowContent.length} chars`);
-        console.log(`       └─ Nodes: ${w.nodeCount} (${w.nodeTypes.slice(0, 3).join(', ')}${w.nodeTypes.length > 3 ? '...' : ''})`);
+        console.log(`  📄 ${i + 1}. "${w.filename}" → "${w.name}" (score: ${w.relevanceScore.toFixed(3)})`);
       });
-      console.log(`🤖 === END PROMPTS ===\n`);
+      console.log(`🤖 === END SUMMARY ===\n`);
 
       // LOGGING TEMPORAIRE : Sauvegarder le prompt complet pour debug
       const debugData = {
         timestamp: new Date().toISOString(),
         description,
-        systemPrompt,
-        userPrompt,
         similarWorkflows: similarWorkflows.map(w => ({
           name: w.name,
           filename: w.filename,
@@ -472,9 +446,9 @@ ${baseWorkflow ?
         await fs.writeFile(path.join(debugDir, 'claude-prompt-streaming.json'), JSON.stringify(debugData, null, 2));
         await fs.writeFile(path.join(debugDir, 'system-prompt-streaming.txt'), systemPrompt);
         await fs.writeFile(path.join(debugDir, 'user-prompt-streaming.txt'), userPrompt);
-        console.log('💾 Debug: Prompts streaming sauvegardés dans debug/');
+        console.log('💾 Debug: Full prompts saved to debug/ (not logged for brevity)');
       } catch (e) {
-        console.log('⚠️  Debug: Impossible de sauvegarder les prompts streaming:', e.message);
+        console.log('⚠️  Debug: Cannot save prompts:', e.message);
       }
 
       // Appeler Claude
@@ -500,17 +474,21 @@ ${baseWorkflow ?
       console.log(`📊 Tokens utilisés: ${tokensUsed.input} input, ${tokensUsed.output} output`);
 
       if (onProgress) {
-        onProgress('parsing', { message: 'Traitement de la réponse...' });
+        onProgress('parsing', { message: 'Processing AI response...' });
       }
 
       const generatedText = response.content[0]?.type === 'text' ? response.content[0].text : '';
-      console.log('✅ AI response received');
+      console.log(`✅ Claude response received (${generatedText.length} chars, ${tokensUsed.input} input tokens, ${tokensUsed.output} output tokens)`);
       
-      // LOGS DÉTAILLÉS DE LA RÉPONSE
-      console.log(`\n🤖 === CLAUDE RESPONSE ===`);
-      console.log(`📜 Raw response (${generatedText.length} chars):`);
-      console.log(generatedText);
-      console.log(`🤖 === END RESPONSE ===\n`);
+      // Save response for debugging (not logged to avoid overwhelming Railway)
+      try {
+        const debugDir = path.join(process.cwd(), 'debug');
+        await fs.mkdir(debugDir, { recursive: true });
+        await fs.writeFile(path.join(debugDir, 'claude-raw-response.txt'), generatedText);
+        console.log('💾 Debug: Full response saved to debug/claude-raw-response.txt');
+      } catch (e) {
+        console.log('⚠️ Debug: Cannot save response:', e.message);
+      }
 
       // Parser le JSON avec amélioration robustesse
       try {
@@ -524,11 +502,10 @@ ${baseWorkflow ?
           const debugDir = path.join(process.cwd(), 'debug');
           await fs.mkdir(debugDir, { recursive: true });
           
-          await fs.writeFile(path.join(debugDir, 'claude-raw-response.txt'), generatedText);
           await fs.writeFile(path.join(debugDir, 'claude-extracted-json.txt'), jsonText);
-          console.log('💾 Debug: Réponse brute sauvegardée dans debug/');
+          console.log('💾 Debug: Extracted JSON saved to debug/claude-extracted-json.txt');
         } catch (e) {
-          console.log('⚠️  Debug: Impossible de sauvegarder la réponse:', e.message);
+          console.log('⚠️ Debug: Cannot save extracted JSON:', e.message);
         }
         
         // Nettoyer le JSON en supprimant les éventuels caractères parasites
@@ -544,7 +521,7 @@ ${baseWorkflow ?
           
           if (onProgress) {
             onProgress('compression', { 
-              message: 'Préparation du workflow pour transmission...',
+              message: 'Preparing workflow for transmission...',
               nodesCount: parsedResponse.workflow.nodes?.length || 0
             });
           }
@@ -572,15 +549,15 @@ ${baseWorkflow ?
           parsedResponse.name = workflowName;
           
           const explanation = {
-            summary: "Workflow généré automatiquement",
-            flow: "Flux de données selon les spécifications demandées",
-            nodes: "Nodes sélectionnés en fonction des exemples similaires",
-            notes: "Configurez les credentials nécessaires avant utilisation"
+            summary: "Automatically generated workflow",
+            flow: "Data flow according to requested specifications",
+            nodes: "Nodes selection",
+            notes: "Configure necessary credentials before use"
           };
           
           if (onProgress) {
             onProgress('compression', { 
-              message: 'Préparation du workflow pour transmission...',
+              message: 'Preparing workflow for transmission...',
               nodesCount: parsedResponse.nodes?.length || 0
             });
           }
@@ -609,7 +586,7 @@ ${baseWorkflow ?
         console.error('📍 Error position:', parseError.message);
         
         if (onProgress) {
-          onProgress('error', { message: 'Erreur lors du parsing de la réponse JSON' });
+          onProgress('error', { message: 'Error parsing JSON response' });
         }
         
         // Essayer de réparer le JSON automatiquement
@@ -634,7 +611,7 @@ ${baseWorkflow ?
             
             if (onProgress) {
               onProgress('success', { 
-                message: 'Workflow généré avec succès (après réparation JSON) !',
+                message: 'Workflow generated successfully (after JSON repair)!',
                 nodesCount: repairedResponse.workflow.nodes?.length || 0
               });
             }
@@ -662,14 +639,14 @@ ${baseWorkflow ?
             // Déterminer la structure obtenue
             const finalWorkflow = unsafeParsed.workflow ? unsafeParsed.workflow : unsafeParsed;
             const finalExplanation = unsafeParsed.explanation || {
-              summary: 'Workflow généré (parsing unsafe)',
-              notes: 'Ce workflow a été parsé avec une méthode tolérante ; vérifiez-le avant usage.'
+              summary: 'Generated workflow (unsafe parsing)',
+              notes: 'This workflow was parsed with a tolerant method; please verify before use.'
             };
 
             finalWorkflow.name = workflowName;
 
             if (onProgress) {
-              onProgress('warning', { message: 'Workflow parsé via fallback unsafe – peut contenir des erreurs.' });
+              onProgress('warning', { message: 'Workflow parsed with fallback method – please verify before use.' });
             }
 
             // Préparer la transmission
@@ -705,7 +682,7 @@ ${baseWorkflow ?
       console.error('Error in generateWorkflowFromExamplesWithStreaming:', error);
       
       if (onProgress) {
-        onProgress('error', { message: 'Erreur lors de la génération', error: error.message });
+        onProgress('error', { message: 'Error during generation', error: error.message });
       }
       
       return {

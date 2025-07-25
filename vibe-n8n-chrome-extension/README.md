@@ -1,390 +1,277 @@
-# n8n AI Assistant - Extension Chrome
+# n8n AI Assistant – Chrome Extension
 
-Extension Chrome intelligente qui intègre le système de génération de workflows RAG directement dans l'interface n8n. Générez des workflows complets en langage naturel basés sur 2055+ exemples réels avec authentification Firebase et système de quotas.
+Smart Chrome extension that embeds a full RAG workflow-generation system directly inside the n8n UI. Create complete, production-ready workflows from plain-language descriptions, powered by 2,000+ real examples, Firebase Auth, and built-in quota management.
 
-## 🚀 Fonctionnalités
+## 🚀 Features
 
-### 🤖 Génération IA avancée
-- **Assistant RAG intégré** : Génération basée sur 2055+ workflows réels
-- **Claude 4 Sonnet** : IA de dernière génération d'Anthropic
-- **Streaming temps réel** : Suivi de la génération avec feedback de progression
-- **Mode amélioration** : Modifier des workflows existants
+### 🤖 Advanced AI Generation
+- **Integrated RAG assistant** – generates workflows based on 2,000+ real examples
+- **Anthropic Claude 4 Sonnet** – latest-generation LLM
+- **Real-time streaming** – watch generation progress live
+- **“Improve” mode** – refine or extend existing workflows
 
-### 🔐 Authentification moderne  
-- **Firebase Auth** : Connexion sécurisée avec Google
-- **Plans FREE/PRO** : Gestion des quotas automatique
-- **Suivi d'usage** : Visualisation des tokens consommés
+### 🔐 Modern Authentication  
+- **Firebase Auth** – secure Google sign-in
+- **FREE / PRO plans** – automatic quota management
+- **Usage tracking** – live token counter
 
-### 💫 Interface native n8n
-- **Import automatique** : Simulation du copier-coller natif n8n
-- **Support multi-domaines** : Fonctionne sur n8n.io, n8n.cloud, et instances personnelles
-- **Design moderne** : Interface inspirée VS Code avec thèmes adaptatifs
-- **Validation complète** : Workflows générés entièrement compatibles n8n
+### 💫 Native n8n UI
+- **Automatic import** – mimics n8n’s native copy-paste
+- **Multi-domain support** – works on n8n.io, n8n.cloud, and self-hosted instances
+- **Modern design** – VS Code-inspired panel with adaptive themes
+- **Full validation** – generated workflows are 100 % n8n-compatible
 
-## 📋 Plans et Quotas
+## 📋 Plans & Quotas
 
-### Plan FREE
-- **70,000 tokens** input par mois
-- Génération de workflows IA
-- Extension Chrome complète
-- Support communautaire
+### FREE Plan
+- **70 000 input tokens** per month
+- AI workflow generation
+- Full Chrome extension
+- Community support
 
-### Plan PRO ($20/mois)
-- **1,500,000 tokens** input par mois  
-- Usage-based billing optionnel après quota
-- Support prioritaire
-- Statistiques d'usage avancées
+### PRO Plan ($20 / month)
+- **1 500 000 input tokens** per month  
+- Optional pay-as-you-go after quota
+- Priority support
+- Advanced usage stats
 
-**Estimation** : 1 workflow simple ≈ 8,000-15,000 tokens
+*Rule of thumb :* 1 simple workflow ≈ 8 000–15 000 tokens
 
 ## 🛠️ Installation
 
-### 1. Installation de l'extension
+### 1. Load the extension
 
-1. **Télécharger** : Clonez ou téléchargez ce repository
-2. **Chrome** : Accédez à `chrome://extensions/`
-3. **Mode développeur** : Activez le toggle en haut à droite
-4. **Charger l'extension** : Cliquez "Charger l'extension non empaquetée"
-5. **Sélectionner** : Choisissez le dossier `vibe-n8n-chrome-extension/`
-6. **Confirmé** : L'icône 🤖 apparaît dans votre barre d'extensions
+1. **Download**: clone or download this repo
+2. **Open Chrome** ➡ `chrome://extensions/`
+3. **Enable Developer mode** (top-right toggle)
+4. **Load unpacked** ➜ select **vibe-n8n-chrome-extension/**
+5. **Done!**  🤖 icon appears in the toolbar
 
-### 2. Premier usage
+### 2. First run
 
-1. **Ouvrez n8n** dans votre navigateur (n8n.io, n8n.cloud, ou votre instance)
-2. **Naviguez** vers un workflow (nouveau ou existant)
-3. **Cliquez** sur le bouton bleu 🤖 en bas à droite
-4. **Connectez-vous** via Google (Firebase Auth)
-5. **Commencez** à décrire vos workflows !
+1. **Open n8n** (n8n.io, n8n.cloud or your own instance)
+2. **Navigate** to any workflow (new or existing)
+3. **Click** the blue 🤖 button (bottom-right)
+4. **Sign in** with Google (Firebase Auth)
+5. **Start describing** your workflow!
 
-## 🎯 Utilisation
+## 🎯 Usage
 
-### Génération de nouveaux workflows
+### Generate a new workflow
+1. **Create** a new workflow in n8n
+2. **Click** 🤖
+3. **Describe** the workflow in plain English
+4. **Watch** the real-time stream
+5. **Done** – the workflow is auto-imported
 
-1. **Ouvrez** n8n et créez un nouveau workflow
-2. **Cliquez** sur le bouton 🤖 
-3. **Décrivez** votre workflow en langage naturel
-4. **Attendez** la génération (streaming en temps réel)
-5. **Le workflow** est automatiquement importé via simulation copier-coller
+### Improve an existing workflow
+1. **Open** an existing workflow
+2. **Click** 🤖
+3. **Describe** what to change or add
+4. **The new version** replaces the original automatically
 
-### Amélioration de workflows existants
+### Prompt examples
 
-1. **Ouvrez** un workflow existant dans n8n
-2. **Cliquez** sur le bouton 🤖
-3. **Décrivez** les améliorations souhaitées
-4. **Le workflow** modifié remplace automatiquement l'original
-
-### Exemples de descriptions
-
-#### Workflows simples
-```
-"Crée un workflow qui envoie un email toutes les heures"
-"Webhook trigger qui notifie Slack quand on reçoit des données"
-"Automatisation qui sauvegarde des nouvelles dans Google Sheets"
+#### Simple workflows
+```text
+"Create a workflow that sends an email every hour"
+"Webhook trigger that notifies Slack when data arrives"
+"Save new RSS articles to Google Sheets"
 ```
 
-#### Workflows complexes
-```
-"Pipeline e-commerce complet : 
-- Trigger sur nouveaux produits Shopify
-- Mise à jour automatique dans HubSpot  
-- Notification équipe via Slack
-- Email de confirmation client via Gmail
-- Gestion d'erreurs avec alertes Discord"
+#### Complex workflows
+```text
+"Full e-commerce pipeline: \n- Trigger on new Shopify products\n- Auto-update HubSpot\n- Notify team via Slack\n- Send customer confirmation via Gmail\n- Error alerts in Discord"
 ```
 
-#### Mode amélioration
-```
-"Ajoute une notification par email en cas d'erreur"
-"Intègre une validation des données avant traitement"
-"Ajoute un délai de 5 minutes entre chaque étape"
+#### Improve mode
+```text
+"Add an email notification if any step fails"
+"Validate input data before processing"
+"Insert a 5-minute delay between each step"
 ```
 
 ## 🔧 Configuration
 
-### Backend (Production)
+### Production backend
+The extension is pre-configured for the production backend:
 
-L'extension est préconfigurée pour fonctionner avec le backend production :
-
-```javascript
+```js
 // vibe-n8n-chrome-extension/src/config.js
 const CONFIG = {
-  // Backend production Railway
+  // Railway production backend
   API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
   API_BASE_URL: 'https://vibe-n8n-production.up.railway.app',
-  
-  // Firebase configuration
+
+  // Firebase
   FIREBASE_CONFIG: {
-    apiKey: "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I",
-    authDomain: "vibe-n8n-7e40d.firebaseapp.com",
-    projectId: "vibe-n8n-7e40d",
-    // ... autres paramètres Firebase
+    apiKey: '***',
+    authDomain: 'vibe-n8n-7e40d.firebaseapp.com',
+    projectId: 'vibe-n8n-7e40d',
+    // …other params
   },
-  
-  // Fonctionnalités activées
+
+  // Feature flags
   FEATURES: {
     FIREBASE_AUTH: true,
     PRICING_SYSTEM: true,
     SUBSCRIPTION_PLANS: true,
     RAG_WORKFLOW_GENERATION: true,
-    STREAMING_RESPONSE: true
-  }
+    STREAMING_RESPONSE: true,
+  },
 };
 ```
 
-### Domaines personnalisés
+### Custom domains
+To enable the extension on your own n8n instance:
 
-Pour activer l'extension sur votre instance n8n personnelle :
+1. **Open** your n8n domain
+2. **Click** the 🤖 icon in Chrome
+3. **Press** “Enable on this domain”
+4. Domain is saved – reload and you’re good
 
-1. **Naviguez** vers votre instance n8n
-2. **Cliquez** sur l'icône 🤖 dans la barre d'outils Chrome
-3. **Cliquez** "Activer sur ce domaine"
-4. **Le domaine** est automatiquement sauvegardé
+## 🏗️ Technical overview
 
-## 🏗️ Architecture technique
-
-### Structure des fichiers
-
-```
+### File structure
+```text
 vibe-n8n-chrome-extension/
-├── manifest.json                    # Manifest V3 - Configuration extension
-├── popup.html                       # Interface popup activation domaines
-├── offscreen.html                   # Container Firebase Auth
+├── manifest.json              # Manifest V3
+├── popup.html                 # Domain-activation UI
+├── offscreen.html             # Firebase Auth container
 ├── src/
-│   ├── background.js               # Service Worker - Communication backend
-│   ├── content.js                  # Interface utilisateur principale
-│   ├── inject.js                   # Accès Pinia n8n + import natif
-│   ├── popup.js                    # Popup activation domaines
-│   ├── config.js                   # Configuration centralisée
+│   ├── background.js          # Service Worker ↔ backend
+│   ├── content.js             # Main in-page UI (3 600+ LoC)
+│   ├── inject.js              # Pinia access + native import
+│   ├── popup.js               # Popup logic
+│   ├── config.js              # Central config
 │   └── content-auth-integration-standalone.js
 ├── styles/
-│   ├── panel.css                   # Interface principale
-│   ├── popup.css                   # Styles popup
-│   └── auth.css                    # Styles authentification
+│   ├── panel.css
+│   ├── popup.css
+│   └── auth.css
 └── assets/
-    └── icon*.png                   # Icônes extension (16, 48, 128px)
+    └── icon*.png
 ```
 
-### Workflow de génération
+### Generation flow
 
 ```mermaid
 graph TD
-    A[👤 Description utilisateur] --> B[🤖 Extension Chrome]
-    B --> C[🔐 Authentification Firebase]
-    C --> D[📡 Backend Railway RAG]
-    D --> E[🔍 Recherche Pinecone]
-    E --> F[📚 Top 3 workflows similaires]
-    F --> G[🤖 Génération Claude 4 Sonnet]
-    G --> H[✅ Validation workflow n8n]
-    H --> I[📋 Simulation copier-coller natif]
-    I --> J[📥 Import automatique dans n8n]
+    A[User prompt] --> B[Chrome extension]
+    B --> C[Firebase Auth]
+    C --> D[Railway RAG backend]
+    D --> E[Pinecone similarity search]
+    E --> F[Top 3 similar workflows]
+    F --> G[Claude 4 Sonnet generation]
+    G --> H[n8n workflow validation]
+    H --> I[Native copy-paste simulation]
+    I --> J[Auto-import into n8n editor]
 ```
 
-### Authentification Firebase
+### Firebase Auth
+Uses the official Manifest V3 off-screen-document pattern for Google sign-in. Tokens are refreshed automatically; quotas sync in real time.
 
-L'extension utilise le pattern officiel Manifest V3 pour l'authentification :
+## 💻 Advanced features
 
-```javascript
-// Offscreen document pour Firebase Auth
-// src/background.js gère la communication
-// Firebase Auth avec Google Sign-In
-// Tokens gérés automatiquement
-// Quotas synchronisés en temps réel
-```
-
-## 💻 Fonctionnalités avancées
-
-### 🎯 Import natif (Simulation copier-coller)
-
-L'extension simule exactement le comportement natif de n8n :
-
-```javascript
-// 1. Met le workflow JSON dans le clipboard
+### 🎯 Native import (copy-paste simulation)
+```js
+// 1. Put the workflow JSON on the clipboard
 await navigator.clipboard.writeText(workflowJSON);
 
-// 2. Focus sur l'éditeur n8n
-const editorCanvas = document.querySelector('[data-test-id="canvas"]');
-editorCanvas.focus();
+// 2. Focus the n8n editor
+const canvas = document.querySelector('[data-test-id="canvas"]');
+canvas.focus();
 
-// 3. Simule Ctrl+V natif
-const pasteEvent = new ClipboardEvent('paste', {
-  clipboardData: new DataTransfer()
-});
-editorCanvas.dispatchEvent(pasteEvent);
+// 3. Simulate Ctrl+V
+const pasteEvt = new ClipboardEvent('paste', { clipboardData: new DataTransfer() });
+canvas.dispatchEvent(pasteEvt);
 ```
 
-### 🔄 Streaming avec feedback
-
-```javascript
-// Écoute des événements SSE du backend
-eventSource.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  
+### 🔄 Streaming with live feedback
+```js
+// Listen to SSE events from the backend
+source.onmessage = (e) => {
+  const data = JSON.parse(e.data);
   switch (data.type) {
-    case 'setup':
-      updateUI('Initialisation du service RAG...');
-      break;
-    case 'search':
-      updateUI('Recherche de workflows similaires...');
-      break;
-    case 'claude_call':
-      updateUI('Génération avec Claude 4 Sonnet...');
-      break;
-    case 'complete':
-      importWorkflow(data.data.workflow);
-      break;
+    case 'setup':      updateUI('Initializing RAG service…'); break;
+    case 'search':     updateUI('Searching similar workflows…'); break;
+    case 'claude_call':updateUI('Generating with Claude 4 Sonnet…'); break;
+    case 'complete':   importWorkflow(data.data.workflow); break;
   }
 };
 ```
 
-### ✅ Validation complète
-
-L'extension valide les workflows comme n8n :
-
-```javascript
-// Validation de la structure
+### ✅ Full validation
+Ensures the workflow is structurally sound before import:
+```js
 validateWorkflowStructure(workflow);
-
-// Validation des nœuds
-workflow.nodes.forEach(node => validateNode(node));
-
-// Validation des connexions
+workflow.nodes.forEach(validateNode);
 validateConnections(workflow.connections);
-
-// Correction automatique si nécessaire
 fixCommonIssues(workflow);
 ```
 
-## 📊 Interface utilisateur
+## 📊 UI Highlights
+- Modern chat panel with streaming feedback
+- Quota bar and plan information
+- History of recent generations
+- Quick-action buttons
 
-### Panel principal
+## 🔍 Troubleshooting
 
-- **Chat interface** moderne avec messages
-- **Indicateurs de progression** temps réel
-- **Historique** des dernières générations
-- **Informations quotas** (tokens restants, plan)
-- **Boutons d'action** rapides
+| Issue | Possible fixes |
+|-------|----------------|
+| 🤖 button missing | 1) Ensure you’re on an n8n workflow page 2) Reload (Ctrl + R) 3) Check `chrome://extensions` |
+| Auth errors | 1) Sign out in the panel, then sign in again 2) Allow pop-ups 3) Grant clipboard permission |
+| Workflow not imported | 1) Check n8n edit permissions 2) Ensure you’re in the editor view 3) Open DevTools for errors |
+| Quota exceeded | 1) Wait for monthly reset (FREE) 2) Upgrade to PRO 3) Check usage stats |
 
-### Authentification
-
-- **Modal Firebase** intégrée
-- **Connexion Google** en un clic
-- **Gestion d'erreurs** avec feedback utilisateur
-- **État de connexion** persistant
-
-### Gestion des quotas
-
-- **Barre de progression** tokens utilisés
-- **Notifications** quand quota bas
-- **Lien upgrade** vers plan PRO
-- **Statistiques d'usage** détaillées
-
-## 🔍 Dépannage
-
-### L'extension ne se charge pas
-
-**Symptômes** : Bouton 🤖 n'apparaît pas
-**Solutions** :
-1. Vérifiez que vous êtes sur une page de workflow n8n
-2. Rechargez la page (Ctrl+R)
-3. Vérifiez l'extension dans `chrome://extensions/`
-4. Pour domaines personnalisés, utilisez la popup d'activation
-
-### Problèmes d'authentification
-
-**Symptômes** : "Connexion échouée" ou "Token expiré"
-**Solutions** :
-1. Cliquez "Se déconnecter" puis reconnectez-vous
-2. Vérifiez que les popups ne sont pas bloquées
-3. Autorisez l'accès clipboard dans Chrome
-4. Videz le cache de l'extension
-
-### Les workflows ne s'importent pas
-
-**Symptômes** : Génération réussie mais rien ne se passe
-**Solutions** :
-1. Vérifiez les permissions d'édition n8n
-2. Assurez-vous d'être sur une page d'édition de workflow
-3. Regardez la console Chrome (F12) pour les erreurs
-4. Réessayez avec un workflow plus simple
-
-### Quota épuisé
-
-**Symptômes** : "Quota exceeded" ou génération bloquée
-**Solutions** :
-1. Attendez le reset mensuel (plan FREE)
-2. Passez au plan PRO pour plus de tokens
-3. Vérifiez vos statistiques d'usage dans l'interface
-
-### Debug avancé
-
-Pour activer les logs détaillés :
-
-```javascript
-// Dans la console Chrome (F12)
+### Enable verbose logs
+```js
+// DevTools console
 localStorage.setItem('n8n-ai-debug', 'true');
-// Rechargez la page
+location.reload();
 ```
 
-## 🚀 Développement
+## 🚀 Development
 
-### Configuration locale
-
-Pour développer avec un backend local :
-
-```javascript
+### Local backend
+```js
 // src/config.js
 const CONFIG = {
   API_URL: 'http://localhost:3000/api/claude',
   API_BASE_URL: 'http://localhost:3000',
-  // ... autres paramètres inchangés
+  // …other params stay the same
 };
 ```
 
-### Tests
-
+### Quick test
 ```bash
-# Démarrer le backend local
-cd ../
+# Start local backend
 npm run dev
 
-# Recharger l'extension dans chrome://extensions/
-# Tester sur n8n.io ou instance locale
+# Reload extension in chrome://extensions
+# Test on n8n.io or your local instance
 ```
 
-### Structure de développement
+## 🔒 Security & Privacy
+- **No server-side storage** of generated workflows
+- **Short-lived Firebase tokens**; data sent over HTTPS only
+- **No ads or analytics tracking**
 
-- **background.js** : Service Worker principal (communication backend)
-- **content.js** : Interface utilisateur intégrée dans n8n (3600+ lignes)
-- **inject.js** : Accès au store Pinia de n8n (1500+ lignes)
-- **popup.js** : Interface d'activation domaines personnalisés
-
-## 🔒 Sécurité et confidentialité
-
-### Données utilisateur
-- **Aucune sauvegarde** des workflows générés côté serveur
-- **Authentification Firebase** sécurisée avec tokens courts
-- **Communications HTTPS** exclusivement
-- **Pas de tracking** publicitaire ou analytique
-
-### Permissions
-- **activeTab** : Interaction avec l'onglet n8n actuel uniquement
-- **scripting** : Injection de scripts dans n8n
-- **storage** : Sauvegarde préférences utilisateur localement
-- **offscreen** : Firebase Auth dans document isolé
+Permissions required:
+- `activeTab` – interact with the current n8n tab only
+- `scripting` – inject scripts into n8n
+- `storage` – save local preferences
+- `offscreen` – handle Firebase Auth in an isolated document
 
 ## 📄 License
-
-MIT License - Compatible avec l'écosystème n8n open source.
+MIT License – fully compatible with the n8n open-source ecosystem.
 
 ## 🙏 Support
-
-- **Documentation** : Ce README et documentation API
-- **Issues** : GitHub Issues pour bugs et suggestions
-- **Community** : Discord n8n pour support communautaire
-- **Pro Support** : Support prioritaire pour utilisateurs PRO
+- **Docs** – this README & API docs
+- **Issues** – GitHub for bugs & feature requests
+- **Community** – n8n Discord server
+- **PRO users** – priority email support
 
 ---
-
-**Développé avec ❤️ pour la communauté n8n**
-
-*Extension Chrome intelligente alimentée par Claude 4 Sonnet, Firebase Auth et plus de 2055 workflows réels* 
+Built with ❤️ for the n8n community – powered by Claude 4 Sonnet, Firebase Auth, and 2 000+ real-world workflows. 

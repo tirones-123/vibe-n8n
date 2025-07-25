@@ -7,6 +7,18 @@
 // ⚠️ NOTE: Ceci nécessite l'installation du SDK Firebase dans l'extension
 // npm install firebase (version 10.8.0+)
 
+// == Logging control ==
+var DEBUG_LOGS_ENABLED = typeof DEBUG_LOGS_ENABLED !== 'undefined' ? DEBUG_LOGS_ENABLED : false;
+if (typeof self.__n8nAIFALogsPatched === 'undefined') {
+  self.__n8nAIFALogsPatched = true;
+  const __faOriginalLog = console.log.bind(console);
+  console.log = (...args) => {
+    if (DEBUG_LOGS_ENABLED) {
+      __faOriginalLog('[n8n-AI]', ...args);
+    }
+  };
+}
+
 // Configuration Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I",

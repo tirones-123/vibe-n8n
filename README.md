@@ -1,124 +1,124 @@
 # 🚀 n8n Workflow RAG Backend
 
-Backend intelligent pour la génération de workflows n8n basé sur l'IA et RAG (Retrieval-Augmented Generation). Ce système utilise Claude 4 Sonnet et une base vectorielle de 2055+ workflows réels pour créer des workflows personnalisés en langage naturel.
+Intelligent backend for generating n8n workflows based on AI and RAG (Retrieval-Augmented Generation). This system uses Claude 4 Sonnet and a vector database of 2055+ real workflows to create custom workflows from natural language descriptions.
 
-## 🎯 Qu'est-ce que c'est ?
+## 🎯 What is this?
 
-Ce backend permet de :
-- **Décrire en langage naturel** le workflow n8n que vous voulez créer
-- **Rechercher automatiquement** des workflows similaires dans une base vectorielle (Pinecone)  
-- **Générer un nouveau workflow** adapté à vos besoins avec Claude 4 Sonnet
-- **Utiliser directement** le workflow généré dans n8n
-- **Gérer l'authentification** via Firebase avec plans FREE/PRO
-- **Système de quotas** avec facturation Stripe pour usage dépassé
+This backend allows you to:
+- **Describe in natural language** the n8n workflow you want to create
+- **Automatically search** similar workflows in a vector database (Pinecone)  
+- **Generate a new workflow** adapted to your needs with Claude 4 Sonnet
+- **Use directly** the generated workflow in n8n
+- **Manage authentication** via Firebase with FREE/PRO plans
+- **Quota system** with Stripe billing for usage beyond limits
 
 ## 🏗️ Architecture
 
 ```
 cursor-n8n-backend/
-├── server.js                   # Serveur Express principal
+├── server.js                   # Main Express server
 ├── api/
-│   ├── claude.js              # API génération workflows (RAG + SSE)
-│   ├── pricing.js             # API pricing et facturation Stripe  
+│   ├── claude.js              # Workflow generation API (RAG + SSE)
+│   ├── pricing.js             # Pricing and Stripe billing API  
 │   ├── rag/
-│   │   └── workflow-rag-service.js  # Service RAG principal
+│   │   └── workflow-rag-service.js  # Main RAG service
 │   ├── services/
-│   │   ├── firebase-service.js      # Service authentification Firebase
-│   │   └── stripe-service.js        # Service facturation Stripe
+│   │   ├── firebase-service.js      # Firebase authentication service
+│   │   └── stripe-service.js        # Stripe billing service
 │   └── middleware/
-│       └── auth.js            # Middleware authentification combiné
-├── workflows-rag-optimized/    # 2055+ workflows optimisés pour RAG
-└── vibe-n8n-chrome-extension/ # Extension Chrome avec Firebase auth
+│       └── auth.js            # Combined authentication middleware
+├── workflows-rag-optimized/    # 2055+ workflows optimized for RAG
+└── vibe-n8n-chrome-extension/ # Chrome extension with Firebase auth
 ```
 
 ## 🔧 Installation
 
-### Prérequis
+### Prerequisites
 
 - Node.js (v18+)  
-- Clés API requises :
-  - **Anthropic (Claude)** : Pour la génération de workflows
-  - **Pinecone** : Pour la base de données vectorielle  
-  - **OpenAI** : Pour les embeddings text-embedding-3-small
-  - **Firebase** : Pour l'authentification utilisateur (optionnel)
-  - **Stripe** : Pour la facturation (optionnel)
+- Required API keys:
+  - **Anthropic (Claude)** : For workflow generation
+  - **Pinecone** : For vector database  
+  - **OpenAI** : For text-embedding-3-small embeddings
+  - **Firebase** : For user authentication (optional)
+  - **Stripe** : For billing (optional)
 
 ### Configuration
 
-1. **Créer un fichier `.env`** à la racine :
+1. **Create a `.env` file** at the root:
 ```env
-# Obligatoire pour le système RAG
+# Required for RAG system
 CLAUDE_API_KEY=sk-ant-api03-...
-PINECONE_API_KEY=votre_clé_pinecone  
+PINECONE_API_KEY=your_pinecone_key  
 OPENAI_API_KEY=sk-...
 PINECONE_WORKFLOW_INDEX=n8n-workflows
 
-# Authentification backend legacy (requis)
-BACKEND_API_KEY=votre-token-securise
+# Legacy backend authentication (required)
+BACKEND_API_KEY=your-secure-token
 
-# Firebase (optionnel - pour auth utilisateur)
-FIREBASE_PROJECT_ID=votre-project-id
+# Firebase (optional - for user auth)
+FIREBASE_PROJECT_ID=your-project-id
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-...@votre-project.iam.gserviceaccount.com
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-...@your-project.iam.gserviceaccount.com
 
-# Stripe (optionnel - pour facturation)  
+# Stripe (optional - for billing)  
 STRIPE_SECRET_KEY=sk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRICE_ID=price_...
 
-# Environnement
+# Environment
 NODE_ENV=production
 ```
 
-2. **Installer les dépendances** :
+2. **Install dependencies**:
 ```bash
 npm install
 ```
 
-3. **Vérifier que l'index Pinecone existe** avec vos 2055+ workflows indexés
+3. **Verify that the Pinecone index exists** with your 2055+ indexed workflows
 
-## 🚀 Utilisation
+## 🚀 Usage
 
-### Démarrer le backend
+### Start the backend
 
 ```bash
 npm start
-# ou pour le développement
+# or for development
 npm run dev
 ```
 
-Le backend démarre sur http://localhost:3000  
-**Production** : https://vibe-n8n-production.up.railway.app
+The backend starts on http://localhost:3000  
+**Production**: https://vibe-n8n-production.up.railway.app
 
-### API Endpoints Principaux
+### Main API Endpoints
 
-#### 🤖 Génération de workflows avec streaming SSE
+#### 🤖 Workflow generation with streaming SSE
 ```
 POST /api/claude
-Authorization: Bearer YOUR_API_KEY (legacy) ou Firebase ID Token
+Authorization: Bearer YOUR_API_KEY (legacy) or Firebase ID Token
 Content-Type: application/json
 
 {
-  "prompt": "Créer un workflow qui synchronise Slack avec Notion toutes les heures"
+  "prompt": "Create a workflow that syncs Slack with Notion every hour"
 }
 ```
 
-**Réponse streaming (SSE)** avec événements de progression :
-- `setup` : Initialisation
-- `search` : Recherche dans Pinecone  
-- `context_building` : Construction du contexte
-- `claude_call` : Génération avec Claude
-- `complete` : Workflow terminé
+**Streaming response (SSE)** with progress events:
+- `setup` : Initialization
+- `search` : Searching in Pinecone  
+- `context_building` : Building context
+- `claude_call` : Generation with Claude
+- `complete` : Workflow finished
 
-#### 🔐 Authentification et profil utilisateur
+#### 🔐 Authentication and user profile
 ```
 GET /api/me
 Authorization: Bearer FIREBASE_ID_TOKEN
 
-# Réponse avec plan, quotas, usage
+# Response with plan, quotas, usage
 ```
 
-#### 💳 Création session checkout Stripe
+#### 💳 Create Stripe checkout session
 ```  
 POST /api/create-checkout-session
 Authorization: Bearer FIREBASE_ID_TOKEN
@@ -129,96 +129,96 @@ Authorization: Bearer FIREBASE_ID_TOKEN
 }
 ```
 
-### Exemples de prompts
+### Example prompts
 
-#### Workflows simples
-- "Créer un workflow qui envoie un email toutes les heures"
-- "Workflow simple avec un trigger webhook et notification Slack"
-- "Automatisation qui sauvegarde des données dans Google Sheets"
+#### Simple workflows
+- "Create a workflow that sends an email every hour"
+- "Simple workflow with a webhook trigger and Slack notification"
+- "Automation that saves data to Google Sheets"
 
-#### Workflows complexes  
-- "Synchroniser Slack avec Notion : récupérer messages, créer pages, notification Discord si erreur"
-- "Pipeline e-commerce : trigger Shopify → HubSpot → notification Slack → email client Gmail"
-- "Bot Discord avec OpenAI qui répond aux questions et sauvegarde dans base de données"
+#### Complex workflows  
+- "Sync Slack with Notion: get messages, create pages, Discord notification if error"
+- "E-commerce pipeline: Shopify trigger → HubSpot → Slack notification → Gmail client email"
+- "Discord bot with OpenAI that answers questions and saves to database"
 
-#### Mode amélioration  
+#### Improvement mode  
 ```json
 {
-  "prompt": "Ajoute une notification par email en cas d'erreur",
+  "prompt": "Add email notification on error",
   "baseWorkflow": {
-    "name": "Mon workflow existant", 
+    "name": "My existing workflow", 
     "nodes": [...],
     "connections": {...}
   }
 }
 ```
 
-## 🧠 Système RAG
+## 🧠 RAG System
 
-### Pipeline de génération
+### Generation pipeline
 
-1. **Embedding** : Votre prompt → vecteur OpenAI `text-embedding-3-small`
-2. **Recherche** : Top 3 workflows similaires dans Pinecone (score > 0.3)
-3. **Contexte** : Chargement des workflows complets depuis `workflows-rag-optimized/`  
-4. **Génération** : Claude 4 Sonnet avec contexte RAG (température 0.3)
-5. **Validation** : Structure workflow n8n complète et fonctionnelle
-6. **Streaming** : Transmission progressive via SSE avec chunking si nécessaire
+1. **Embedding** : Your prompt → OpenAI `text-embedding-3-small` vector
+2. **Search** : Top 3 similar workflows in Pinecone (score > 0.3)
+3. **Context** : Load complete workflows from `workflows-rag-optimized/`  
+4. **Generation** : Claude 4 Sonnet with RAG context (temperature 0.3)
+5. **Validation** : Complete and functional n8n workflow structure
+6. **Streaming** : Progressive transmission via SSE with chunking if necessary
 
-### Base de connaissances
-- **2055+ workflows** réels optimisés pour RAG
-- **Descriptions GPT-4** pour améliorer la recherche sémantique  
-- **Métadonnées** : types de nœuds, complexité, catégories
-- **Index Pinecone** : Recherche vectorielle ultra-rapide
+### Knowledge base
+- **2055+ real workflows** optimized for RAG
+- **GPT-4 descriptions** to improve semantic search  
+- **Metadata** : node types, complexity, categories
+- **Pinecone index** : Ultra-fast vector search
 
-## 🔐 Authentification & Pricing
+## 🔐 Authentication & Pricing
 
-### Plans disponibles
+### Available plans
 
 #### FREE
-- **70,000 tokens** input par mois
-- Génération workflows IA  
-- Extension Chrome
-- Support communautaire
+- **70,000 tokens** input per month
+- AI workflow generation  
+- Chrome extension
+- Community support
 
-#### PRO ($20/mois)
-- **1,500,000 tokens** input par mois
-- Usage-based billing optionnel après quota
-- Support prioritaire
-- Statistiques avancées
+#### PRO ($20/month)
+- **1,500,000 tokens** input per month
+- Optional usage-based billing after quota
+- Priority support
+- Advanced statistics
 
-### Authentification combinée
-- **Firebase Auth** : Nouveau système avec plans et quotas
-- **Legacy API Key** : Compatibilité avec ancien système (tokens illimités)
+### Combined authentication
+- **Firebase Auth** : New system with plans and quotas
+- **Legacy API Key** : Compatibility with old system (unlimited tokens)
 
-## 🚀 Déploiement
+## 🚀 Deployment
 
 ### Railway (Production)
 
-Le backend est déployé sur Railway avec auto-scaling :
+The backend is deployed on Railway with auto-scaling:
 
 ```bash
-# URL de production  
+# Production URL  
 https://vibe-n8n-production.up.railway.app
 
 # Monitoring
-Railway Dashboard avec logs temps réel
+Railway Dashboard with real-time logs
 ```
 
-### Configuration Railway
-1. **Connecter le repo** GitHub à Railway
-2. **Variables d'environnement** : Copier toutes les variables de `.env`
-3. **Auto-deploy** : Push sur `main` déclenche le déploiement
+### Railway Configuration
+1. **Connect GitHub repo** to Railway
+2. **Environment variables** : Copy all variables from `.env`
+3. **Auto-deploy** : Push to `main` triggers deployment
 
-### Local (Développement)
+### Local (Development)
 ```bash
 # Installation
 npm install
 
 # Configuration  
 cp .env.example .env
-# Compléter .env avec vos clés API
+# Complete .env with your API keys
 
-# Démarrage avec hot-reload
+# Start with hot-reload
 npm run dev
 
 # Tests
@@ -226,66 +226,66 @@ npm run test
 npm run test:quick
 ```
 
-## 🔧 Extension Chrome
+## 🔧 Chrome Extension
 
-L'extension Chrome (`vibe-n8n-chrome-extension/`) s'intègre directement dans n8n avec :
+The Chrome extension (`vibe-n8n-chrome-extension/`) integrates directly into n8n with:
 
-- **Authentification Firebase** complète
-- **Gestion des quotas** en temps réel  
-- **Interface moderne** inspirée VS Code
-- **Import natif** via simulation copier-coller
-- **Support domaines personnalisés** n8n
+- **Complete Firebase authentication**
+- **Real-time quota management**  
+- **Modern interface** inspired by VS Code
+- **Native import** via copy-paste simulation
+- **Custom domain support** for n8n
 
-### Installation extension
+### Extension installation
 1. Chrome → `chrome://extensions/`
-2. Mode développeur → "Charger extension non empaquetée"  
-3. Sélectionner `vibe-n8n-chrome-extension/`
-4. Utiliser sur n8n.io ou votre instance personnelle
+2. Developer mode → "Load unpacked extension"  
+3. Select `vibe-n8n-chrome-extension/`
+4. Use on n8n.io or your personal instance
 
 ## 📊 Monitoring
 
 ### Health checks
 ```bash
-# Statut global
+# Global status
 curl https://vibe-n8n-production.up.railway.app/api
 
-# Monitoring détaillé  
+# Detailed monitoring  
 curl https://vibe-n8n-production.up.railway.app/api/status
 ```
 
-### Métriques performance
-- **Recherche Pinecone** : 0.2-0.8s
-- **Génération Claude** : 5-30s  
-- **Workflow complet** : 8-45s selon complexité
-- **Compression** : Réduction 60-80% pour workflows > 10KB
+### Performance metrics
+- **Pinecone search** : 0.2-0.8s
+- **Claude generation** : 5-30s  
+- **Complete workflow** : 8-45s depending on complexity
+- **Compression** : 60-80% reduction for workflows > 10KB
 
 ## 🔍 Troubleshooting
 
-### Erreur "No similar workflows found"
-- Vérifier l'index Pinecone et les 2055+ workflows indexés
-- Variables `PINECONE_API_KEY` et `PINECONE_WORKFLOW_INDEX`
+### Error "No similar workflows found"
+- Check Pinecone index and 2055+ indexed workflows
+- Variables `PINECONE_API_KEY` and `PINECONE_WORKFLOW_INDEX`
 
-### Authentification échoue
-- **Firebase** : Vérifier la configuration Firebase Admin SDK
-- **Legacy** : Vérifier `BACKEND_API_KEY` dans headers Authorization
+### Authentication fails
+- **Firebase** : Check Firebase Admin SDK configuration
+- **Legacy** : Check `BACKEND_API_KEY` in Authorization headers
 
-### Génération Claude échoue  
-- Vérifier `CLAUDE_API_KEY` et quotas Anthropic
-- Logs détaillés dans Railway Dashboard
+### Claude generation fails  
+- Check `CLAUDE_API_KEY` and Anthropic quotas
+- Detailed logs in Railway Dashboard
 
-### Workflows introuvables
-- Vérifier dossier `workflows-rag-optimized/` (2055 fichiers JSON)
-- Permissions de lecture sur le système de fichiers
+### Workflows not found
+- Check `workflows-rag-optimized/` folder (2055 JSON files)
+- File system read permissions
 
-## 🎯 Structure d'un workflow n8n
+## 🎯 n8n workflow structure
 
 ```json
 {
-  "name": "Mon Workflow",
+  "name": "My Workflow",
   "nodes": [
     {
       "id": "unique-id", 
-      "name": "Nom du nœud",
+      "name": "Node name",
       "type": "n8n-nodes-base.webhook",
       "position": [x, y],
       "parameters": { ... },
@@ -293,8 +293,8 @@ curl https://vibe-n8n-production.up.railway.app/api/status
     }
   ],
   "connections": {
-    "Nom du nœud": {
-      "main": [[{ "node": "Autre nœud", "type": "main", "index": 0 }]]
+    "Node name": {
+      "main": [[{ "node": "Other node", "type": "main", "index": 0 }]]
     }
   }
 }
@@ -302,20 +302,20 @@ curl https://vibe-n8n-production.up.railway.app/api/status
 
 ## 📄 License
 
-MIT License - Voir LICENSE pour plus de détails
+MIT License - See LICENSE for more details
 
 ---
 
-## 🚀 Migration depuis l'ancien système
+## 🚀 Migration from old system
 
-Ce backend (v2.0) remplace entièrement l'ancien système avec :
+This backend (v2.0) completely replaces the old system with:
 
-- ✅ **RAG optimisé** : 2055+ workflows réels vs anciens node-types
-- ✅ **Claude 4 Sonnet** : Modèle le plus avancé  
-- ✅ **Firebase Auth** : Gestion utilisateurs et quotas
-- ✅ **Stripe billing** : Plans FREE/PRO avec usage-based
-- ✅ **Performance** : Recherche vectorielle + streaming SSE
-- ✅ **Extension moderne** : Interface intégrée avec authentification
+- ✅ **Optimized RAG** : 2055+ real workflows vs old node-types
+- ✅ **Claude 4 Sonnet** : Most advanced model  
+- ✅ **Firebase Auth** : User and quota management
+- ✅ **Stripe billing** : FREE/PRO plans with usage-based
+- ✅ **Performance** : Vector search + SSE streaming
+- ✅ **Modern extension** : Integrated interface with authentication
 
-**Développé avec ❤️ pour la communauté n8n** 
-*Backend RAG intelligent alimenté par Claude 4 Sonnet, Pinecone et 2055+ workflows réels* 
+**Developed with ❤️ for the n8n community** 
+*Intelligent RAG backend powered by Claude 4 Sonnet, Pinecone and 2055+ real workflows* 

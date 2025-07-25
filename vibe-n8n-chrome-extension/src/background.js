@@ -1450,3 +1450,12 @@ async function firebaseAuth() {
 chrome.runtime.onInstalled.addListener(() => {
   console.log('n8n AI Assistant (Workflow RAG) installé avec succès');
 }); 
+
+// == Logging control ==
+const DEBUG_LOGS_ENABLED = false;
+const __bgOriginalConsoleLog = console.log.bind(console);
+console.log = (...args) => {
+  if (DEBUG_LOGS_ENABLED) {
+    __bgOriginalConsoleLog('[n8n-AI]', ...args);
+  }
+}; 

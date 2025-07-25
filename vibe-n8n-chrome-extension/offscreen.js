@@ -1,3 +1,14 @@
+// == Logging control ==
+var DEBUG_LOGS_ENABLED = typeof DEBUG_LOGS_ENABLED !== 'undefined' ? DEBUG_LOGS_ENABLED : false;
+if (typeof self.__n8nAIOffscreenLogsPatched === 'undefined') {
+  self.__n8nAIOffscreenLogsPatched = true;
+  const __offOriginalLog = console.log.bind(console);
+  console.log = (...args) => {
+    if (DEBUG_LOGS_ENABLED) {
+      __offOriginalLog('[n8n-AI]', ...args);
+    }
+  };
+}
 // Firebase Auth Offscreen Document - Exactement selon la doc officielle
 // https://firebase.google.com/docs/auth/web/chrome-extension
 

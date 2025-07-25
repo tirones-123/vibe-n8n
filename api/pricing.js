@@ -597,36 +597,36 @@ router.get('/pricing', async (req, res) => {
         free: {
           name: 'Free',
           price_usd: 0,
-          price_display: 'Gratuit',
+          price_display: 'Free',
           tokens_included: 70000,
           overage_rate: null,
           features: [
-            '70,000 tokens input / mois',
-            'Génération de workflows IA',
-            'Extension Chrome',
-            'Support communautaire'
+            '70,000 input tokens / month',
+            'AI workflow generation',
+            'Chrome extension',
+            'Community support'
           ]
         },
         pro: {
           name: 'Pro',
           price_usd: 20,
-          price_display: '20 US$',
+          price_display: '$20 USD',
           tokens_included: 1500000,
           overage_rate: 0.00002,
-          overage_display: '0,20 US$ / 10,000 tokens',
+          overage_display: '$0.20 USD / 10,000 tokens',
           features: [
-            '1,500,000 tokens input / mois',
-            'Dépassement usage-based optionnel',
-            'Génération de workflows IA',
-            'Extension Chrome',
-            'Support prioritaire',
-            'Statistiques avancées'
+            '1,500,000 input tokens / month',
+            'Optional usage-based overage',
+            'AI workflow generation',
+            'Chrome extension',
+            'Priority support',
+            'Advanced statistics'
           ]
         }
       },
       token_info: {
-        estimation: '1 workflow simple ≈ 8,000-15,000 tokens',
-        complex_estimation: '1 workflow complexe ≈ 15,000-30,000 tokens'
+        estimation: '1 simple workflow ≈ 8,000-15,000 tokens',
+        complex_estimation: '1 complex workflow ≈ 15,000-30,000 tokens'
       }
     };
 

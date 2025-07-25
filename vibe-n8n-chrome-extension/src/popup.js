@@ -2,6 +2,18 @@
  * Script pour la popup
  */
 
+// == Logging control ==
+var DEBUG_LOGS_ENABLED = typeof DEBUG_LOGS_ENABLED !== 'undefined' ? DEBUG_LOGS_ENABLED : false;
+if (typeof window.__n8nAIPopupLogsPatched === 'undefined') {
+  window.__n8nAIPopupLogsPatched = true;
+  const __popupOriginalLog = console.log.bind(console);
+  console.log = (...args) => {
+    if (DEBUG_LOGS_ENABLED) {
+      __popupOriginalLog('[n8n-AI]', ...args);
+    }
+  };
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const openN8nButton = document.getElementById('open-n8n');
   const activateButton = document.getElementById('activate-here');

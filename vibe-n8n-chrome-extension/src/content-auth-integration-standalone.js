@@ -1,6 +1,18 @@
 // Content Auth Integration - STANDALONE VERSION
 // Compatible with Chrome Extension content scripts
 
+// == Logging control ==
+var DEBUG_LOGS_ENABLED = typeof DEBUG_LOGS_ENABLED !== 'undefined' ? DEBUG_LOGS_ENABLED : false;
+if (typeof window.__n8nAICALogsPatched === 'undefined') {
+  window.__n8nAICALogsPatched = true;
+  const __caOriginalLog = console.log.bind(console);
+  console.log = (...args) => {
+    if (DEBUG_LOGS_ENABLED) {
+      __caOriginalLog('[n8n-AI]', ...args);
+    }
+  };
+}
+
 class ContentAuthIntegration {
   constructor() {
     this.initialized = false;

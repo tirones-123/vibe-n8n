@@ -4,6 +4,24 @@
  */
 
 // ===== NOUVEAU SYSTÈME AUTH (STANDALONE) =====
+// =============================================================
+// Logging control: disable verbose logs for end-users
+// Set DEBUG_LOGS_ENABLED to true when actively debugging.
+// Use var so repeated injections don't throw; keep existing value if already set
+var DEBUG_LOGS_ENABLED = typeof DEBUG_LOGS_ENABLED !== 'undefined' ? DEBUG_LOGS_ENABLED : false;
+
+// Patch console.log only once
+if (typeof window.__n8nAILogsPatched === 'undefined') {
+  window.__n8nAILogsPatched = true;
+  const __n8nOriginalConsoleLog = console.log.bind(console);
+  console.log = (...args) => {
+    if (DEBUG_LOGS_ENABLED) {
+      __n8nOriginalConsoleLog('[n8n-AI]', ...args);
+    }
+  };
+}
+
+// =============================================================
 // Utilisation des services globaux (pas d'imports ES6)
 let contentAuthIntegration = null;
 
@@ -98,7 +116,7 @@ function exposeTestFunctions() {
           <p>authService: ${!!window.authService ? '✅' : '❌'}</p>
           <button onclick="this.parentElement.parentElement.remove()" 
                   style="padding: 8px 16px; background: #007acc; color: white; border: none; border-radius: 4px;">
-            Fermer
+            Close
           </button>
         </div>
       `;
@@ -4110,12 +4128,12 @@ async function checkSavedDomains(currentHostname) {
         // Afficher un message spécifique pour la vérification d'email
         if (lastMessage) {
           updateChatMessage(lastMessage, 
-            '📧 **Vérification d\'email requise**\n\n' +
-            'Votre email n\'est pas encore vérifié. Pour utiliser l\'assistant IA :\n\n' +
-            '1. 📨 Vérifiez votre boîte email\n' +
-            '2. 🔗 Cliquez sur le lien de vérification\n' +
-            '3. 🔄 Rechargez cette page\n\n' +
-            '*Vous recevrez 70,000 tokens gratuits après vérification !*', 
+            '📧 **Email verification required**\n\n' +
+            'Your email address must be verified before you can use the AI assistant:\n\n' +
+            '1. 📨 Check your inbox\n' +
+            '2. 🔗 Click the verification link\n' +
+            '3. 🔄 Reload this page\n\n' +
+            '*You will receive 70,000 free tokens after verification!*', 
             false
           );
         }

@@ -3,6 +3,18 @@
  * Accès direct au store Pinia pour importer des workflows complets générés par le système RAG
  */
 
+// == Logging control ==
+var DEBUG_LOGS_ENABLED = typeof DEBUG_LOGS_ENABLED !== 'undefined' ? DEBUG_LOGS_ENABLED : false;
+if (typeof window.__n8nAIInjectLogsPatched === 'undefined') {
+  window.__n8nAIInjectLogsPatched = true;
+  const __injectOriginalLog = console.log.bind(console);
+  console.log = (...args) => {
+    if (DEBUG_LOGS_ENABLED) {
+      __injectOriginalLog('[n8n-AI]', ...args);
+    }
+  };
+}
+
 (function() {
   'use strict';
 

@@ -208,23 +208,23 @@ export default async function handler(req, res) {
         // Customize error message based on reason
         switch (reason) {
           case 'FREE_LIMIT_EXCEEDED':
-            errorResponse.message = 'Tu as atteint la limite gratuite. Passe au plan Pro pour continuer.';
+            errorResponse.message = 'You have reached the free limit. Upgrade to Pro to continue.';
             errorResponse.action = 'upgrade_to_pro';
             break;
           
           case 'PRO_LIMIT_EXCEEDED':
-            errorResponse.message = 'Quota Pro atteint. Activer Usage-Based Spending ?';
+            errorResponse.message = 'Pro quota reached. Enable Usage-Based Spending?';
             errorResponse.action = 'enable_usage_based';
             errorResponse.options = [20, 50, 100]; // USD spending limits
             break;
           
           case 'USAGE_LIMIT_EXCEEDED':
-            errorResponse.message = 'Budget usage-based épuisé. Augmenter la limite ?';
+            errorResponse.message = 'Usage-based budget exhausted. Increase the limit?';
             errorResponse.action = 'increase_usage_limit';
             break;
           
           default:
-            errorResponse.message = 'Quota insuffisant pour cette requête.';
+            errorResponse.message = 'Insufficient quota for this request.';
         }
 
         return res.status(429).json(errorResponse);
@@ -247,11 +247,11 @@ export default async function handler(req, res) {
   requestStats.total++;
   
   console.log(`\n🚀 === WORKFLOW RAG REQUEST ${requestStats.total} ===`);
-  console.log('📊 Stats actuelles:', requestStats);
+  console.log('📊 Current stats:', requestStats);
   console.log('⏰ Timestamp:', new Date().toISOString());
   console.log('👤 User:', req.user.isSystem ? 'SYSTEM' : `${req.user.uid} (${req.user.plan})`);
   if (!req.user.isSystem) {
-    console.log('🎯 Tokens restants:', req.user.remaining_tokens?.toLocaleString() || 'N/A');
+    console.log('🎯 Remaining tokens:', req.user.remaining_tokens?.toLocaleString() || 'N/A');
   }
 
   // 📊 DETAILED LOGGING - Request inspection
@@ -310,13 +310,13 @@ export default async function handler(req, res) {
     console.log('  - Final decision:', isImprovementMode ? 'Will improve existing workflow' : 'Will generate new workflow');
 
     if (!prompt || typeof prompt !== 'string') {
-      console.log('❌ Prompt manquant ou invalide');
+      console.log('❌ Missing or invalid prompt');
       return res.status(400).json({ error: 'Prompt is required and must be a string' });
     }
 
-    console.log('📝 Prompt reçu:', prompt.substring(0, 100) + (prompt.length > 100 ? '...' : ''));
+    console.log('📝 Received prompt:', prompt.substring(0, 100) + (prompt.length > 100 ? '...' : ''));
     if (baseWorkflow) {
-      console.log('🔄 Mode amélioration détecté, workflow existant:', baseWorkflow.nodes?.length || 0, 'nœuds');
+      console.log('🔄 Improvement mode detected, existing workflow:', baseWorkflow.nodes?.length || 0, 'nodes');
     }
 
     // Configuration SSE
@@ -335,7 +335,7 @@ export default async function handler(req, res) {
       mode: isImprovementMode ? 'improvement' : 'generation'
     };
 
-    console.log(`🔑 Session créée: ${sessionState.id} (mode: ${sessionState.mode})`);
+    console.log(`🔑 Session created: ${sessionState.id} (mode: ${sessionState.mode})`);
 
     // Fonction helper pour envoyer les événements SSE
     const sendSSE = (type, data) => {
@@ -357,29 +357,29 @@ export default async function handler(req, res) {
       // Logging détaillé selon le stage
       switch (stage) {
         case 'search':
-          console.log(`🔍 [${sessionState.id}] Recherche: ${data.message}`);
+          console.log(`🔍 [${sessionState.id}] Search: ${data.message}`);
           break;
         case 'context_building':
-          console.log(`🏗️ [${sessionState.id}] Contexte: ${data.workflows?.length || 0} workflows`);
+          console.log(`🏗️ [${sessionState.id}] Context: ${data.workflows?.length || 0} workflows`);
           break;
         case 'claude_call':
           console.log(`🤖 [${sessionState.id}] Claude: ${data.promptLength} chars`);
           break;
         case 'compression':
-          console.log(`🗜️ [${sessionState.id}] Compression: ${data.nodesCount} nœuds`);
+          console.log(`🗜️ [${sessionState.id}] Compression: ${data.nodesCount} nodes`);
           break;
         case 'chunking_start':
-          console.log(`📦 [${sessionState.id}] Chunking: ${data.totalChunks} parties`);
+          console.log(`📦 [${sessionState.id}] Chunking: ${data.totalChunks} parts`);
           requestStats.chunkingUsed++;
           sessionState.transmissionType = 'chunked';
           break;
         case 'compressed_complete':
-          console.log(`✅ [${sessionState.id}] Compressé envoyé`);
+          console.log(`✅ [${sessionState.id}] Compressed sent`);
           requestStats.compressionUsed++;
           sessionState.transmissionType = 'compressed';
           break;
         case 'error':
-          console.error(`❌ [${sessionState.id}] Erreur:`, data.message || data.error);
+          console.error(`❌ [${sessionState.id}] Error:`, data.message || data.error);
           break;
       }
       
@@ -387,11 +387,11 @@ export default async function handler(req, res) {
     };
 
     // Initialiser le service RAG
-    sendSSE('setup', { message: 'Initialisation du service RAG...' });
+    sendSSE('setup', { message: 'Initializing AI workflow generator... This may take several minutes.' });
     sessionState.stage = 'setup';
 
     const ragService = createWorkflowRAGService();
-    console.log(`✅ [${sessionState.id}] Service RAG initialisé`);
+    console.log(`✅ [${sessionState.id}] Service RAG initialized`);
 
     // 📊 DETAILED LOGGING - RAG service call preparation
     console.log('\n%c🤖 BACKEND: RAG service call preparation', 'background: darkviolet; color: white; padding: 2px 6px;');
@@ -425,11 +425,11 @@ export default async function handler(req, res) {
     }
 
     console.log(`\n📈 === SESSION COMPLETE ${sessionState.id} ===`);
-    console.log(`⏱️ Durée: ${(duration / 1000).toFixed(1)}s`);
-    console.log(`📏 Taille workflow: ${(sessionState.workflowSize / 1024).toFixed(1)}KB`);
-    console.log(`🔄 Type transmission: ${sessionState.transmissionType}`);
-    console.log(`🎯 Succès: ${result.success}`);
-    console.log(`📊 Nœuds: ${result.workflow?.nodes?.length || 0}`);
+    console.log(`⏱️ Duration: ${(duration / 1000).toFixed(1)}s`);
+    console.log(`📏 Workflow size: ${(sessionState.workflowSize / 1024).toFixed(1)}KB`);
+    console.log(`🔄 Transmission type: ${sessionState.transmissionType}`);
+    console.log(`🎯 Success: ${result.success}`);
+    console.log(`📊 Nodes: ${result.workflow?.nodes?.length || 0}`);
     console.log(`🔧 Mode: ${sessionState.mode}`);
 
     if (result.success) {
@@ -439,7 +439,7 @@ export default async function handler(req, res) {
       if (!req.user.isSystem && result.tokensUsed && servicesReady.firebase) {
         try {
           sendSSE('reporting_usage', { 
-            message: 'Mise à jour du quota utilisateur...',
+            message: 'Updating user quota...',
             tokensUsed: result.tokensUsed.input
           });
 
@@ -479,13 +479,13 @@ export default async function handler(req, res) {
             workflow_size: sessionState.workflowSize,
             mode: sessionState.mode,
             duration: duration,
-            similar_workflows: result.similarWorkflows || [],
-            similar_workflow_files: result.similarWorkflowFiles || []
+            ai_context_sources: result.similarWorkflows || [],
+            ai_context_files: result.similarWorkflowFiles || []
           });
 
           console.log(`📊 [${sessionState.id}] Usage reported for user ${req.user.uid}`);
         } catch (usageError) {
-          console.error(`❌ Erreur rapport usage:`, usageError.message);
+          console.error(`❌ Usage reporting error:`, usageError.message);
           // Don't fail the request for usage reporting errors
         }
       } else if (!req.user.isSystem && result.tokensUsed && !servicesReady.firebase) {
@@ -494,7 +494,7 @@ export default async function handler(req, res) {
       
       // Log final de succès
       sendSSE('session_complete', {
-        message: 'Session terminée avec succès',
+        message: 'Workflow generation completed successfully',
         duration: duration,
         workflowSize: sessionState.workflowSize,
         transmissionType: result.transmissionType || sessionState.transmissionType,
@@ -507,7 +507,7 @@ export default async function handler(req, res) {
       });
     } else {
       requestStats.errors++;
-      console.error(`❌ [${sessionState.id}] Échec:`, result.error);
+      console.error(`❌ [${sessionState.id}] Failed:`, result.error);
       
       sendSSE('error', {
         error: result.error,
@@ -517,7 +517,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     requestStats.errors++;
-    console.error('\n❌ === ERREUR CRITIQUE ===');
+    console.error('\n❌ === CRITICAL ERROR ===');
     console.error('Message:', error.message);
     console.error('Stack:', error.stack);
     console.error('Timestamp:', new Date().toISOString());
@@ -526,28 +526,28 @@ export default async function handler(req, res) {
       res.write(`data: ${JSON.stringify({
         type: 'error',
         data: {
-          error: `Erreur serveur: ${error.message}`,
+          error: `Server error: ${error.message}`,
           timestamp: new Date().toISOString(),
           code: 'INTERNAL_ERROR'
         }
       })}\n\n`);
     } catch (writeError) {
-      console.error('❌ Impossible d\'envoyer l\'erreur SSE:', writeError.message);
+      console.error('❌ Unable to send SSE error:', writeError.message);
     }
   } finally {
     try {
       res.end();
     } catch (endError) {
-      console.error('❌ Erreur fermeture connexion:', endError.message);
+      console.error('❌ Connection close error:', endError.message);
     }
     
-    console.log(`\n📊 === STATS GLOBALES ===`);
-    console.log(`Total requêtes: ${requestStats.total}`);
-    console.log(`Succès: ${requestStats.success} (${(requestStats.success/requestStats.total*100).toFixed(1)}%)`);
-    console.log(`Erreurs: ${requestStats.errors} (${(requestStats.errors/requestStats.total*100).toFixed(1)}%)`);
-    console.log(`Quota bloqués: ${requestStats.tokenQuotaBlocked} (${(requestStats.tokenQuotaBlocked/requestStats.total*100).toFixed(1)}%)`);
-    console.log(`Gros workflows: ${requestStats.largeWorkflows}`);
-    console.log(`Compression utilisée: ${requestStats.compressionUsed}`);
-    console.log(`Chunking utilisé: ${requestStats.chunkingUsed}`);
+    console.log(`\n📊 === GLOBAL STATS ===`);
+    console.log(`Total requests: ${requestStats.total}`);
+    console.log(`Success: ${requestStats.success} (${(requestStats.success/requestStats.total*100).toFixed(1)}%)`);
+    console.log(`Errors: ${requestStats.errors} (${(requestStats.errors/requestStats.total*100).toFixed(1)}%)`);
+    console.log(`Quota blocked: ${requestStats.tokenQuotaBlocked} (${(requestStats.tokenQuotaBlocked/requestStats.total*100).toFixed(1)}%)`);
+    console.log(`Large workflows: ${requestStats.largeWorkflows}`);
+    console.log(`Compression used: ${requestStats.compressionUsed}`);
+    console.log(`Chunking used: ${requestStats.chunkingUsed}`);
   }
 } 

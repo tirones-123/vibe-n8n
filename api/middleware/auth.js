@@ -52,7 +52,7 @@ export async function verifyFirebaseAuth(req, res, next) {
       return res.status(403).json({
         error: 'Email verification required',
         code: 'EMAIL_NOT_VERIFIED',
-        message: 'Please verify your email address before using the service. Check your inbox for the verification email.',
+        message: 'Please verify your email address before using the AI assistant. Check your inbox for the verification email.',
         email: decodedToken.email,
         action: 'verify_email'
       });
