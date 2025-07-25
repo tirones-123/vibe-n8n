@@ -139,7 +139,8 @@ function handleChromeMessages(message, sender, sendResponse) {
       currentUser = null;
       
       // First, try to sign out from the iframe Firebase auth
-      function handleSignOutMessage({data}) {
+      function handleSignOutMessage({data, origin}) {
+        if (origin !== allowedOrigin) return;
         try {
           if (data.startsWith('!_{')) return;
           const parsedData = JSON.parse(data);
@@ -236,7 +237,9 @@ function handleChromeMessages(message, sender, sendResponse) {
     return true;
   }
 
-  function handleIframeMessage({data}) {
+  const allowedOrigin = new URL(_URL).origin;
+  function handleIframeMessage({data, origin}) {
+    if (origin !== allowedOrigin) return;
     try {
       if (data.startsWith('!_{')) {
         // Other parts of the Firebase library send messages using postMessage.

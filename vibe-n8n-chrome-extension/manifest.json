@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "n8n AI Assistant - Claude + Pricing",
+  "name": "Vibe-n8n - AI assistant for n8n ",
   "version": "2.0.0",
-  "description": "AI-powered workflow assistant for n8n with Claude 4 Sonnet, Firebase Auth & Stripe Pricing",
+  "description": "AI workflow creator for n8n",
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'",
-    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self'",
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline'; child-src 'self'",
     "offscreen": "script-src 'self' https://www.gstatic.com https://www.googleapis.com https://securetoken.googleapis.com https://apis.google.com https://identitytoolkit.googleapis.com https://vibe-n8n-production.up.railway.app; object-src 'self'; frame-src https://vibe-n8n-production.up.railway.app;"
   },
   "permissions": [
@@ -13,7 +13,6 @@
     "activeTab",
     "tabs",
     "storage",
-    "identity",
     "offscreen"
   ],
   "host_permissions": [

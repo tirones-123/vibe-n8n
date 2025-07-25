@@ -41,9 +41,11 @@ class FirebaseAuthDirect {
 
         try {
             // Import dynamique pour éviter les erreurs si Firebase n'est pas disponible
-            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
+            const firebaseAppUrl = chrome.runtime.getURL('libs/firebase/firebase-app.js');
+            const firebaseAuthExtUrl = chrome.runtime.getURL('libs/firebase/firebase-auth-web-extension.js');
+            const { initializeApp } = await import(firebaseAppUrl);
             const { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } = 
-                await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+                await import(firebaseAuthExtUrl);
 
             console.log('🔥 Initializing Firebase Auth Direct (web-extension approach)');
             
@@ -71,8 +73,9 @@ class FirebaseAuthDirect {
         try {
             console.log('🔐 Direct sign in with email:', email);
             
+            const firebaseAuthExtUrl = chrome.runtime.getURL('libs/firebase/firebase-auth-web-extension.js');
             const { signInWithEmailAndPassword } = 
-                await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+                await import(firebaseAuthExtUrl);
             
             const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
             const user = userCredential.user;
@@ -107,8 +110,9 @@ class FirebaseAuthDirect {
         try {
             console.log('📝 Direct sign up with email:', email);
             
+            const firebaseAuthExtUrl = chrome.runtime.getURL('libs/firebase/firebase-auth-web-extension.js');
             const { createUserWithEmailAndPassword } = 
-                await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+                await import(firebaseAuthExtUrl);
             
             const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
             const user = userCredential.user;
@@ -143,8 +147,9 @@ class FirebaseAuthDirect {
         try {
             console.log('🚪 Direct sign out');
             
+            const firebaseAuthExtUrl = chrome.runtime.getURL('libs/firebase/firebase-auth-web-extension.js');
             const { signOut } = 
-                await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+                await import(firebaseAuthExtUrl);
             
             await signOut(this.auth);
             console.log('✅ Direct sign out successful');

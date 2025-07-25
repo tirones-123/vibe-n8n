@@ -193,8 +193,9 @@ async function firebaseGetCurrentUser() {
 const CONFIG = {
   API_URL: 'https://vibe-n8n.com/api/claude',
   API_BASE_URL: 'https://vibe-n8n.com',
-  API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2', // Pour backward compatibility
-  LEGACY_API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2',
+  // Removed legacy API keys – authentication is now exclusively Firebase
+  API_KEY: '',
+  LEGACY_API_KEY: '',
   API_TIMEOUT: 900000
 };
 
@@ -674,7 +675,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   console.log('📦 Full request body:', JSON.stringify(requestBody));
   
   console.log('🌐 Backend endpoint:', CONFIG.API_URL);
-  console.log('🔑 API key (first 20 chars):', CONFIG.API_KEY.substring(0, 20) + '...');
+  if (CONFIG.API_KEY) console.log('🔑 API key (first 20 chars):', CONFIG.API_KEY.substring(0, 20) + '...');
 
   console.log('📤 Envoi requête workflow RAG');
   console.log('📦 Payload:', JSON.stringify(requestBody));
