@@ -4576,6 +4576,27 @@ async function checkSavedDomains(currentHostname) {
     }
   }
 
+  // After variable declarations near top
+  +let firebaseAuthReady = false;
+
+  // Listener for auth ready broadcast from background
+  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg && msg.type === 'FIREBASE_AUTH_READY' && !firebaseAuthReady) {
+        initializeFirebaseAuth().then((success) => {
+          if (success) {
+            firebaseAuthReady = true;
+            const statusEl = document.getElementById('ai-status');
+            if (statusEl) {
+              statusEl.textContent = 'firebase';
+              statusEl.className = 'auth-ready';
+            }
+          }
+        });
+      }
+    });
+  }
+
   // Track Firebase readiness
   let firebaseAuthReady = false;
 
