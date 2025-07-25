@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vibe n8n – AI Workflow Generator</title>
+  <style>
+    body { margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#0f172a;color:#f8fafc;display:flex;flex-direction:column;min-height:100vh;}
+    header {padding:40px 20px;text-align:center;background:#1e293b;}
+    h1 {margin:0;font-size:2.5rem;}
+    main {flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;}
+    p {max-width:640px;line-height:1.6;font-size:1.125rem;}
+    a.btn{margin-top:30px;padding:14px 28px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;transition:background 0.2s;}
+    a.btn:hover{background:#2563eb;}
+    footer{text-align:center;padding:20px;background:#1e293b;font-size:0.875rem;}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Vibe n8n</h1>
+    <p>Generate complete n8n workflows with AI &amp; RAG in seconds.</p>
+  </header>
+  <main>
+    <p>
+      Describe what you need in plain language and let our Retrieval-Augmented AI build
+      a ready-to-use n8n workflow from 2,000+ real examples. Upgrade your automation flow today.
+    </p>
+    <a href="https://chrome.google.com/webstore" class="btn">Get the Chrome Extension</a>
+  </main>
+  <footer>
+    © <span id="year"></span> Vibe n8n – Built with ❤️ for the community
+  </footer>
+  <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+</body>
+</html> 

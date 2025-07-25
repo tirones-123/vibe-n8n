@@ -2808,7 +2808,7 @@ async function checkSavedDomains(currentHostname) {
       // Test 3: Connexion backend
       console.log('🌐 Test 3: Connexion backend...');
       try {
-        const response = await fetch('https://vibe-n8n-production.up.railway.app/api');
+        const response = await fetch('https://vibe-n8n.com/api');
         const data = await response.json();
         console.log('✅ Backend opérationnel:', data.status);
         results.backendConnection = data.status === 'ok';
@@ -2819,7 +2819,7 @@ async function checkSavedDomains(currentHostname) {
       // Test 4: Pricing endpoints
       console.log('💳 Test 4: Endpoints de pricing...');
       try {
-        const pricingResponse = await fetch('https://vibe-n8n-production.up.railway.app/api/status');
+        const pricingResponse = await fetch('https://vibe-n8n.com/api/status');
         if (pricingResponse.ok) {
           console.log('✅ Endpoints pricing disponibles');
           results.pricing = true;

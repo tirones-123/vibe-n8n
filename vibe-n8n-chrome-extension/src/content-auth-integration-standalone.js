@@ -8,8 +8,8 @@ class ContentAuthIntegration {
     
     // Configuration from global window.CONFIG or fallback
     this.CONFIG = window.CONFIG || {
-      API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
-      API_BASE_URL: 'https://vibe-n8n-production.up.railway.app',
+      API_URL: 'https://vibe-n8n.com/api/claude',
+      API_BASE_URL: 'https://vibe-n8n.com',
       LEGACY_API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2',
       ENDPOINTS: {
         USER_INFO: '/api/me',
@@ -20,6 +20,24 @@ class ContentAuthIntegration {
     
     // Définir immédiatement les fonctions globales
     this.defineGlobalFirebaseAuthFunctions();
+  }
+
+  // --- NEW: get Firebase ID token via background script ---
+  async getFirebaseIdToken(forceRefresh = false) {
+    try {
+      const token = await chrome.runtime.sendMessage({
+        type: 'firebase-get-token',
+        data: { forceRefresh }
+      });
+      if (token && typeof token === 'string' && token.length > 50) {
+        return token;
+      }
+      console.warn('getFirebaseIdToken: invalid token received', token);
+      return null;
+    } catch (err) {
+      console.error('getFirebaseIdToken error:', err);
+      return null;
+    }
   }
 
   // Initialize authentication system

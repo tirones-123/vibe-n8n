@@ -191,8 +191,8 @@ async function firebaseGetCurrentUser() {
 
 // Configuration intégrée pour éviter les problèmes d'import ES6
 const CONFIG = {
-  API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
-  API_BASE_URL: 'https://vibe-n8n-production.up.railway.app',
+  API_URL: 'https://vibe-n8n.com/api/claude',
+  API_BASE_URL: 'https://vibe-n8n.com',
   API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2', // Pour backward compatibility
   LEGACY_API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2',
   API_TIMEOUT: 900000

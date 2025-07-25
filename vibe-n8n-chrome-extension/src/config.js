@@ -6,10 +6,10 @@
 const CONFIG = {
   // ===== BACKEND API =====
   // URL Railway (production - endpoint Claude direct pour compatibility)
-  API_URL: 'https://vibe-n8n-production.up.railway.app/api/claude',
+  API_URL: 'https://vibe-n8n.com/api/claude',
   
   // URL de base pour les nouveaux endpoints
-  API_BASE_URL: 'https://vibe-n8n-production.up.railway.app',
+  API_BASE_URL: 'https://vibe-n8n.com',
   
   // URL locale (pour développement)
   API_URL_LOCAL: 'http://localhost:3000/api/claude',

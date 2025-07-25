@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import claudeHandler from './api/claude.js';
 import pricingRoutes from './api/pricing.js';
 
@@ -14,6 +16,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+// Serve static landing assets
+app.use(express.static('public'));
+
 // Special middleware for Stripe webhooks (raw body required)
 app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
 
@@ -26,22 +31,15 @@ app.use('/api', pricingRoutes);
 // Servir le mini-site Firebase Auth pour l'extension Chrome
 app.use('/firebase-auth', express.static('firebase-auth-site'));
 
-// Page d'accueil
-app.get('/', async (req, res) => {
-  try {
-    const { default: indexHandler } = await import('./api/index.js');
-    indexHandler(req, res);
-  } catch (error) {
-    res.json({ 
-      message: 'n8n Workflow RAG Backend',
-      status: 'running',
-      version: '2.0.0',
-      endpoints: {
-        claude: '/api/claude (POST)',
-        api: '/api (GET)'
-      }
-    });
-  }
+// Landing page - serve index.html if present
+app.get('/', (req, res) => {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      res.status(500).send('Server Error');
+    }
+  });
 });
 
 // Route de statut pour vérifier la configuration

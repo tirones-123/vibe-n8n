@@ -2,7 +2,7 @@
 // https://firebase.google.com/docs/auth/web/chrome-extension
 
 // This URL must point to the public site
-const _URL = 'https://vibe-n8n-production.up.railway.app/firebase-auth/';
+const _URL = 'https://vibe-n8n.com/firebase-auth/';
 let currentUser = null; // cache authenticated user
 
 const iframe = document.createElement('iframe');
@@ -190,7 +190,7 @@ function handleChromeMessages(message, sender, sendResponse) {
           try {
             console.log('👤 Creating user entry in database after signup...');
             
-            const createUserRes = await fetch('https://vibe-n8n-production.up.railway.app/api/initialize-new-user', {
+            const createUserRes = await fetch('https://vibe-n8n.com/api/initialize-new-user', {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${result.idToken}`,
