@@ -379,7 +379,7 @@ async function checkSavedDomains(currentHostname) {
   
   // Resize state
   let isResizing = false;
-  let currentPanelHeight = 300; // Default expanded height
+  let currentPanelHeight = 200; // Default expanded height
   let minPanelHeight = 120;     // Minimum usable height
   let maxPanelHeight = 600;     // Maximum height (about 60% of screen)
 
@@ -930,7 +930,7 @@ async function checkSavedDomains(currentHostname) {
       label[title="auto insert & replace"]:hover::after {
         content: attr(title);
         position: absolute;
-        bottom: 130%;
+        top: 130%;
         left: 50%;
         transform: translateX(-50%);
         background: var(--ai-text-primary);
@@ -941,7 +941,7 @@ async function checkSavedDomains(currentHostname) {
         white-space: nowrap;
         z-index: 99999;
         opacity: 0;
-        animation: tooltip-fade-in 0.2s ease-out forwards;
+        animation: tooltip-fade-in-bottom 0.2s ease-out forwards;
         pointer-events: none;
         box-shadow: var(--ai-shadow);
         border: 1px solid var(--ai-border);
@@ -950,22 +950,41 @@ async function checkSavedDomains(currentHostname) {
       label[title="auto insert & replace"]:hover::before {
         content: '';
         position: absolute;
-        bottom: 122%;
+        top: 122%;
         left: 50%;
         transform: translateX(-50%);
         width: 0;
         height: 0;
         border-left: 4px solid transparent;
         border-right: 4px solid transparent;
-        border-top: 4px solid var(--ai-text-primary);
+        border-bottom: 4px solid var(--ai-text-primary);
         z-index: 99999;
         opacity: 0;
-        animation: tooltip-fade-in 0.2s ease-out forwards;
+        animation: tooltip-fade-in-bottom 0.2s ease-out forwards;
       }
 
       @keyframes tooltip-fade-in {
         from { opacity: 0; transform: translateX(-50%) translateY(4px); }
         to { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
+
+      @keyframes tooltip-fade-in-bottom {
+        from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
+
+      /* Suggestion cards styling */
+      .suggestion-card:hover {
+        background: var(--ai-bg-primary) !important;
+        border-color: var(--ai-accent-orange) !important;
+        transform: translateY(-2px);
+        box-shadow: var(--ai-shadow) !important;
+        color: var(--ai-text-primary) !important;
+      }
+
+      .suggestion-card:active {
+        transform: translateY(0);
+        box-shadow: var(--ai-shadow-strong) !important;
       }
 
       /* Responsive adjustments - ensure editor remains usable */
@@ -1402,6 +1421,70 @@ async function checkSavedDomains(currentHostname) {
                         <span style="color: var(--ai-text-primary); line-height: 1.6;">
               Hello! I'm your n8n workflow assistant. I can help you create or modify complete, functional workflows from simple descriptions.
             </span>
+          </div>
+        </div>
+
+        <!-- Quick Suggestions (only visible initially) -->
+        <div id="ai-quick-suggestions" style="
+          padding: 0 16px 24px 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        ">
+          <div style="
+            color: var(--ai-text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            opacity: 0.8;
+          ">Try one of these examples:</div>
+          
+          <div class="suggestion-grid" style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+          ">
+            <div class="suggestion-card" data-prompt="Make an n8n workflow that reads new emails from gmail, uses OpenAI to write a reply, and sends it back automatically." style="
+              background: var(--ai-bg-tertiary);
+              border: 1px solid var(--ai-border);
+              border-radius: 12px;
+              padding: 16px;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              font-size: 13px;
+              color: var(--ai-text-secondary);
+              line-height: 1.4;
+            ">
+              automate email reply
+            </div>
+            
+            <div class="suggestion-card" data-prompt="Create an n8n workflow that takes content from a Google Sheet and posts it to Twitter, LinkedIn, and Facebook at the same time." style="
+              background: var(--ai-bg-tertiary);
+              border: 1px solid var(--ai-border);
+              border-radius: 12px;
+              padding: 16px;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              font-size: 13px;
+              color: var(--ai-text-secondary);
+              line-height: 1.4;
+            ">
+              post on socials
+            </div>
+            
+            <div class="suggestion-card" data-prompt="Make an n8n workflow that takes a topic, searches Perplexity AI, then writes a full SEO blog post using OpenAI." style="
+              background: var(--ai-bg-tertiary);
+              border: 1px solid var(--ai-border);
+              border-radius: 12px;
+              padding: 16px;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              font-size: 13px;
+              color: var(--ai-text-secondary);
+              line-height: 1.4;
+            ">
+              SEO blog post creation
+            </div>
           </div>
         </div>
       </div>
@@ -2012,6 +2095,30 @@ async function checkSavedDomains(currentHostname) {
     } else {
     }
     
+    // Setup suggestion cards event listeners
+    const suggestionCards = document.querySelectorAll('.suggestion-card');
+    suggestionCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        const prompt = card.getAttribute('data-prompt');
+        
+        // Set the prompt in the input field
+        if (inputField) {
+          inputField.value = prompt;
+          inputField.focus();
+          
+          // Trigger input event to update UI
+          const inputEvent = new Event('input', { bubbles: true });
+          inputField.dispatchEvent(inputEvent);
+          
+          // Send the message
+          setTimeout(() => {
+            sendMessage();
+          }, 100);
+        }
+      });
+    });
+
     // Input focus effects (only if inputField exists)
     if (inputField) {
     inputField.addEventListener('focus', (e) => {
@@ -3264,9 +3371,15 @@ async function checkSavedDomains(currentHostname) {
   function addChatMessage(content, isUser = false, isLoading = false) {
     const chatMessages = document.getElementById('ai-chat-messages');
     
-    // Clear welcome message on first real message
+    // Clear welcome message and suggestions on first real message
     if (chatMessages.children.length === 1 && chatMessages.children[0].style.textAlign === 'center') {
       chatMessages.innerHTML = '';
+    }
+    
+    // Hide quick suggestions after first message
+    const quickSuggestions = document.getElementById('ai-quick-suggestions');
+    if (quickSuggestions) {
+      quickSuggestions.style.display = 'none';
     }
     
     const messageDiv = document.createElement('div');

@@ -616,7 +616,7 @@ class ContentAuthIntegration {
         <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
         <h2 style="margin-bottom: 10px; color: #f36c3d; font-size: 24px;">Authentication Required</h2>
         <p style="margin-bottom: 30px; color: #666; line-height: 1.4;">
-                      Sign in with your Google account to access the n8n AI assistant
+                      Sign in with your account to access the n8n AI assistant
         </p>
         
         <button id="google-signin-btn" 
@@ -653,8 +653,8 @@ class ContentAuthIntegration {
         <input id="firebase-auth-email" type="email" placeholder="Email" style="width:100%;padding:12px;margin-bottom:12px;border:1px solid #ddd;border-radius:6px;font-size:14px;"/>
         <input id="firebase-auth-password" type="password" placeholder="Password" style="width:100%;padding:12px;margin-bottom:16px;border:1px solid #ddd;border-radius:6px;font-size:14px;"/>
 
-        <button id="email-signin-btn" style="width:100%;padding:14px;background:#f36c3d;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-bottom:10px;">Sign in</button>
-        <button id="email-signup-btn" style="width:100%;padding:14px;background:#6366f1;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;">Create account</button>
+        <button id="email-signin-btn" style="width:100%;padding:14px;background:#f7855a;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-bottom:10px;">Sign in</button>
+        <button id="email-signup-btn" style="width:100%;padding:14px;background:#f36c3d;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;">Create account</button>
         
         <div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center;">
           <button onclick="this.parentElement.parentElement.parentElement.remove()" 
