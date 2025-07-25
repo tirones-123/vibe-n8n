@@ -21,7 +21,7 @@ Ce guide explique comment configurer le système de pricing avec Firebase (authe
 | Plan | Prix | Tokens inclus/mois | Dépassement |
 |------|------|-------------------|-------------|
 | **FREE** | 0 US$ | 70,000 tokens input | ❌ Bloqué |
-| **PRO** | 20 US$ | 1,000,000 tokens input | 0,20 US$ / 10,000 tokens |
+| **PRO** | 20 US$ | 1,500,000 tokens input | 0,20 US$ / 10,000 tokens |
 
 ## 🔥 Configuration Firebase
 

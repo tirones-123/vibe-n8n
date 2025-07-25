@@ -59,14 +59,14 @@ class StripeService {
           },
         ],
         mode: 'subscription',
-        payment_intent_data: {
-          setup_future_usage: 'off_session' // save card for future usage
-        },
         success_url: successUrl,
         cancel_url: cancelUrl,
         subscription_data: {
           metadata: {
             firebase_uid: userId
+          },
+          payment_settings: {
+            save_default_payment_method: 'on_subscription'
           }
         },
         metadata: {
