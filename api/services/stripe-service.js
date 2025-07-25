@@ -59,6 +59,9 @@ class StripeService {
           },
         ],
         mode: 'subscription',
+        payment_intent_data: {
+          setup_future_usage: 'off_session' // save card for future usage
+        },
         success_url: successUrl,
         cancel_url: cancelUrl,
         subscription_data: {
@@ -192,6 +195,19 @@ class StripeService {
 
       // Get the subscription
       const subscription = await this.stripe.subscriptions.retrieve(session.subscription);
+
+      // Ensure the payment method used becomes default for future invoices
+      if (subscription.default_payment_method) {
+        try {
+          await this.stripe.customers.update(session.customer, {
+            invoice_settings: {
+              default_payment_method: subscription.default_payment_method
+            }
+          });
+        } catch (pmErr) {
+          console.warn('⚠️ Unable to set default payment method:', pmErr.message);
+        }
+      }
       
       return {
         handled: true,
