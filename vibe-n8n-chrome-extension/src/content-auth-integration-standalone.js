@@ -624,7 +624,7 @@ class ContentAuthIntegration {
                   width: 100%; 
                   padding: 16px; 
                   margin-bottom: 20px; 
-                  background: #f36c3d; 
+                  background: #4285f4; 
                   color: white; 
                   border: none; 
                   border-radius: 8px; 
@@ -637,8 +637,8 @@ class ContentAuthIntegration {
                   gap: 12px;
                   transition: background-color 0.2s;
                 " 
-                onmouseover="this.style.backgroundColor='#e55a2b'"
-                onmouseout="this.style.backgroundColor='#f36c3d'">
+                onmouseover="this.style.backgroundColor='#3367d6'"
+                onmouseout="this.style.backgroundColor='#4285f4'">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path fill="#FFFFFF" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
             <path fill="#FFFFFF" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
@@ -654,7 +654,7 @@ class ContentAuthIntegration {
         <input id="firebase-auth-password" type="password" placeholder="Password" style="width:100%;padding:12px;margin-bottom:16px;border:1px solid #ddd;border-radius:6px;font-size:14px;"/>
 
         <button id="email-signin-btn" style="width:100%;padding:14px;background:#f36c3d;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-bottom:10px;">Sign in</button>
-        <button id="email-signup-btn" style="width:100%;padding:14px;background:#10b981;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;">Create account</button>
+        <button id="email-signup-btn" style="width:100%;padding:14px;background:#6366f1;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;">Create account</button>
         
         <div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center;">
           <button onclick="this.parentElement.parentElement.parentElement.remove()" 
