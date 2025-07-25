@@ -309,7 +309,8 @@ class FirebaseService {
 
       // For PRO users, check usage-based allowance
       if (userData.plan === 'PRO' && userData.usage_based_enabled) {
-        const remainingUsageBudget = userData.usage_limit_usd - (userData.this_month_usage_usd || 0);
+        const totalSpentUsd = (userData.this_month_usage_usd || 0) + (userData.paid_usage_usd || 0);
+        const remainingUsageBudget = userData.usage_limit_usd - totalSpentUsd;
         const estimatedCost = estimatedTokens * 0.00002;
         
         if (remainingUsageBudget >= estimatedCost) {
