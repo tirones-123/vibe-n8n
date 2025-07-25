@@ -14,13 +14,15 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
+
+// Raw body ONLY for Stripe Webhooks – must be registered BEFORE express.json
+app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
+
+// General JSON parser for all other routes
 app.use(express.json({ limit: '50mb' }));
 
 // Serve static landing assets
 app.use(express.static('public'));
-
-// Special middleware for Stripe webhooks (raw body required)
-app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
 
 // Route principale pour Claude (nouveau système RAG)
 app.use('/api/claude', claudeHandler);
