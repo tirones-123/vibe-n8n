@@ -457,6 +457,7 @@ export default async function handler(req, res) {
             if (limit > 0 && usageUsd >= limit) {
               console.log(`💳 User ${req.user.uid} reached spending limit $${limit}. Charging now...`);
               await stripeService.chargeUsageNow(freshUser.stripe_customer_id, usageUsd, 'Pay-as-you-go usage');
+              await firebaseService.incrementPaidUsage(req.user.uid, usageUsd);
               await firebaseService.resetUsageBudget(req.user.uid);
             }
           }

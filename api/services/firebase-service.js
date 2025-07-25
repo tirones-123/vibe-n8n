@@ -72,6 +72,7 @@ class FirebaseService {
           this_month_usage_usd: 0,
           total_tokens_used: 0,
           total_output_tokens: 0,
+          paid_usage_usd: 0,
           stripe_customer_id: null,
           stripe_subscription_id: null,
           usage_based_enabled: false,
@@ -206,6 +207,21 @@ class FirebaseService {
     }
   }
 
+  // Increment paid usage USD after immediate invoice
+  async incrementPaidUsage(uid, amountUsd) {
+    try {
+      if (!amountUsd || amountUsd <= 0) return;
+      const userRef = this.db.collection('users').doc(uid);
+      await userRef.update({
+        paid_usage_usd: admin.firestore.FieldValue.increment(amountUsd),
+        updated_at: admin.firestore.FieldValue.serverTimestamp()
+      });
+      console.log(`💰 Incremented paid_usage_usd for ${uid} by $${amountUsd.toFixed(2)}`);
+    } catch (err) {
+      console.error('Error incrementing paid usage:', err);
+    }
+  }
+
   // Upgrade user to PRO plan
   async upgradeUserToPro(uid, stripeCustomerId, subscriptionId) {
     try {
@@ -244,6 +260,7 @@ class FirebaseService {
         remaining_tokens: baseTokens,
         this_month_usage_tokens: 0,
         this_month_usage_usd: 0,
+        paid_usage_usd: 0,
         updated_at: admin.firestore.FieldValue.serverTimestamp(),
         last_reset_at: admin.firestore.FieldValue.serverTimestamp()
       });

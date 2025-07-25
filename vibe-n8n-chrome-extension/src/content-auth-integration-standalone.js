@@ -467,7 +467,8 @@ class ContentAuthIntegration {
           if (freshUser.plan === 'PRO') {
             // Check if usage-based billing is enabled
             if (freshUser.usage_based_enabled) {
-              const remainingBudget = freshUser.usage_limit_usd - (freshUser.this_month_usage_usd || 0);
+              const totalSpent = (freshUser.this_month_usage_usd || 0) + (freshUser.paid_usage_usd || 0);
+              const remainingBudget = freshUser.usage_limit_usd - totalSpent;
               
               if (remainingBudget <= 0) {
                 return {

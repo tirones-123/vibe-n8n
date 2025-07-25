@@ -562,6 +562,7 @@ router.post('/enable-usage-based', verifyFirebaseAuth, async (req, res) => {
       if (currentUsage > 0) {
         console.log(`💳 Charging outstanding usage $${currentUsage.toFixed(2)} before new limit applies`);
         await stripeService.chargeUsageNow(freshUser.stripe_customer_id, currentUsage, 'Pay-as-you-go usage prior to limit increase');
+        await firebaseService.incrementPaidUsage(req.user.uid, currentUsage);
         await firebaseService.resetUsageBudget(req.user.uid);
       }
     } catch (chargeErr) {
