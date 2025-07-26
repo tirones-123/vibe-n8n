@@ -1,0 +1,78 @@
+🤖 AI Workflow Assistant for n8n - Generate Complete Automations Instantly
+
+Transform your n8n workflow creation with the power of artificial intelligence. This intelligent assistant helps you build complex automations in seconds, not hours.
+
+⚡ What it does
+
+Instant Workflow Generation: Simply describe what you want to automate in plain English, and watch as complete, production-ready n8n workflows appear before your eyes. No more starting from scratch or copying templates.
+
+Smart Workflow Enhancement: Already have a workflow? Describe what you'd like to improve or add, and the AI will intelligently modify your existing automation while preserving what already works.
+
+Universal Compatibility: Works seamlessly with n8n.io, n8n.cloud, and your self-hosted n8n instances. Just activate it on any domain with one click.
+
+🎯 Perfect for
+
+🚀 Automation Beginners: Skip the learning curve and start building powerful workflows immediately
+🔧 Experienced Users: Speed up development and explore new automation patterns
+👥 Teams: Standardize workflow creation and share automation knowledge instantly
+💼 Consultants: Deliver client solutions faster with AI-powered automation generation
+
+✨ Key Features
+
+🧠 Intelligent Understanding: Describe complex business processes in natural language and get functional workflows that actually work
+
+🔧 Real-world Examples: Built on thousands of proven automation patterns from the n8n community
+
+🎨 Beautiful Interface: Modern, intuitive design that integrates seamlessly into your n8n workspace
+
+⚡ Instant Import: Generated workflows import directly into n8n with one click - no copy-pasting required
+
+🔄 Improvement Mode: Enhance existing workflows by describing what you want to change or add
+
+🌐 Multi-domain Support: Works on any n8n instance - cloud or self-hosted
+
+💼 Pricing Plans
+
+Free Plan: Perfect for getting started with AI-powered workflow generation
+Pro Plan: Advanced features for power users and teams with higher usage needs
+
+🚀 Getting Started
+
+For n8n.io and n8n.cloud users:
+1. Install the extension
+2. Navigate to any n8n workflow editor
+3. Click the AI assistant button
+4. Sign in with Google or email
+5. Describe your automation needs
+6. Watch your workflow come to life!
+
+For self-hosted n8n users:
+1. Install the extension
+2. Navigate to your n8n instance
+3. Click the extension icon in Chrome toolbar
+4. Sign in with Google or email first
+5. Click "Enable on this domain" to activate the assistant
+6. Navigate to any workflow editor
+7. Click the AI assistant button
+8. Describe your automation needs
+9. Watch your workflow come to life!
+
+💡 Example Use Cases
+
+"Create a Slack notification workflow when new emails arrive in Gmail"
+"Build an e-commerce order processing pipeline with inventory updates"
+"Set up customer support ticket routing based on priority and category"
+"Generate a social media content scheduler with approval workflow"
+"Create a data backup automation that runs weekly"
+
+🔒 Privacy & Security
+
+Your data stays secure with enterprise-grade authentication and no storage of generated workflows on our servers. Everything happens in real-time and gets delivered directly to your n8n instance.
+
+🎉 Join Thousands of Happy Users
+
+Stop spending hours building workflows from scratch. Let AI handle the heavy lifting while you focus on growing your business and solving real problems.
+
+Download now and experience the future of workflow automation!
+
+Built with ❤️ for the n8n community 

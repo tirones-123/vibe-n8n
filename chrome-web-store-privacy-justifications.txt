@@ -1,0 +1,55 @@
+CHROME WEB STORE PRIVACY JUSTIFICATIONS
+AI Workflow Assistant for n8n Extension
+
+=== SINGLE PURPOSE DESCRIPTION ===
+This extension provides AI-powered workflow generation specifically for n8n automation platform users. It allows users to describe automation requirements in natural language and generates complete, functional n8n workflows that can be directly imported into their n8n instances.
+
+=== PERMISSION JUSTIFICATIONS ===
+
+activeTab Permission:
+The extension needs to access the currently active tab to detect when users are on n8n workflow editor pages and inject the AI assistant interface. This permission is essential to provide seamless integration with n8n's web interface and ensure the assistant only appears on relevant pages.
+
+Host Permission Use:
+The extension requires host permissions for n8n.io, n8n.cloud, and user-specified custom domains to inject the AI assistant interface into n8n workflow editors. These permissions are necessary to provide the core functionality of generating workflows directly within the n8n environment. The extension also needs access to the backend API server to communicate with AI services for workflow generation.
+
+Offscreen Permission:
+The offscreen permission is used exclusively for Firebase authentication implementation following Google's official Chrome Extension Manifest V3 guidelines. This creates an isolated document for secure user authentication without exposing authentication tokens to the main page content, ensuring secure sign-in functionality.
+
+Remote Code Use:
+The extension does not execute any remote code. All JavaScript code is bundled within the extension package. The extension communicates with backend APIs via secure HTTPS requests to generate workflows, but no remote code is downloaded or executed. All AI processing happens server-side and only JSON workflow data is returned.
+
+Scripting Permission:
+The scripting permission is required to inject the AI assistant interface into n8n workflow editor pages. This allows the extension to add the AI assistant button and panel to the n8n interface, enabling users to generate workflows without leaving their workflow editor. The scripts only modify the visual interface and do not access sensitive page data.
+
+Storage Permission:
+The storage permission is used to save user preferences such as panel width, enabled domains for custom n8n instances, and authentication state. This enhances user experience by remembering settings across browser sessions. No sensitive workflow data or personal information is stored locally.
+
+Tabs Permission:
+The tabs permission is used to detect when users navigate to n8n pages and to provide the "Open n8n" functionality in the extension popup. This allows the extension to activate only on relevant pages and helps users quickly navigate to their n8n instances.
+
+=== DATA USAGE COMPLIANCE ===
+
+User Data Collection:
+- Email address (for authentication and account management)
+- Firebase authentication tokens (temporary, for secure API access)
+- User preferences (panel settings, domain configurations)
+
+Data Usage:
+- Email addresses are used solely for user authentication and account management
+- Authentication tokens are used to secure API communications and are not stored permanently
+- User preferences are stored locally to enhance user experience
+- No workflow content or business data is collected or stored by the extension
+
+Data Sharing:
+- No user data is shared with third parties
+- Authentication is handled through Firebase (Google) following industry security standards
+- Generated workflows are transmitted directly to the user's browser and not stored on our servers
+
+Security Measures:
+- All API communications use HTTPS encryption
+- Authentication tokens are handled securely following Firebase best practices
+- No sensitive data is stored in local storage
+- User data is processed in compliance with privacy regulations
+
+CERTIFICATION STATEMENT:
+I certify that this extension's data usage complies with the Chrome Web Store Developer Program Policies. The extension collects only necessary data for core functionality, uses secure authentication methods, and does not share user data with unauthorized third parties. 

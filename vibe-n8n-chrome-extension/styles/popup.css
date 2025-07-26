@@ -397,7 +397,6 @@ body {
 .form-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(243, 108, 61, 0.1);
 }
 
 .form-input::placeholder {
@@ -658,6 +657,5 @@ body {
 }
 
 .form-input:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
+  outline: none; /* Prevent double focus border */
 } 

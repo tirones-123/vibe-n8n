@@ -124,16 +124,16 @@ function exposeTestFunctions() {
     }
   };
   
-  // createTestUser - Créer utilisateur de test
+  // createTestUser - Create test user
   window.createTestUser = async () => {
-    console.log('👤 Création utilisateur test...');
+    console.log('👤 Creating test user...');
     if (window.authService) {
       try {
         const user = await window.authService.signUpWithEmail('test@vibe-n8n.com', 'test123456');
-        console.log('✅ Utilisateur test créé:', user);
+        console.log('✅ Test user created:', user);
         return user;
       } catch (error) {
-        console.error('❌ Erreur création utilisateur:', error);
+        console.error('❌ Error creating test user:', error);
         return null;
       }
     } else {

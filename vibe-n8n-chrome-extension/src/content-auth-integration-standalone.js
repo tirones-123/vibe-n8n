@@ -22,7 +22,6 @@ class ContentAuthIntegration {
     this.CONFIG = window.CONFIG || {
       API_URL: 'https://vibe-n8n.com/api/claude',
       API_BASE_URL: 'https://vibe-n8n.com',
-      // LEGACY_API_KEY: '', // Removed - Firebase Auth required
       ENDPOINTS: {
         USER_INFO: '/api/me',
         CREATE_CHECKOUT: '/api/create-checkout-session',
@@ -249,11 +248,11 @@ class ContentAuthIntegration {
         animation: modalSlideIn 0.3s ease-out;
       ">
         <div style="font-size: 64px; margin-bottom: 20px;">📧</div>
-        <h2 style="margin-bottom: 15px; color: ${emailSent ? '#059669' : '#dc2626'}; font-size: 24px; font-weight: 600;">
-          ${emailSent ? '✅ Compte créé avec succès !' : '⚠️ Compte créé - Action requise'}
+                <h2 style="margin-bottom: 15px; color: ${emailSent ? '#059669' : '#dc2626'}; font-size: 24px; font-weight: 600;">
+        ${emailSent ? '✅ Account created successfully!' : '⚠️ Account created - Action required'}
         </h2>
         <p style="margin-bottom: 20px; color: #374151; font-size: 16px; line-height: 1.5;">
-          ${emailSent ? 'Un email de vérification a été envoyé à :' : 'Votre compte a été créé pour :'}
+        ${emailSent ? 'A verification email has been sent to:' : 'Your account has been created for:'}
         </p>
         <div style="
           background: #f3f4f6; 
@@ -322,12 +321,12 @@ class ContentAuthIntegration {
           cursor: pointer;
           transition: background-color 0.2s;
         ">
-          J'ai compris
+          I understand
         </button>
         
         <p style="margin-top: 20px; font-size: 12px; color: #999; line-height: 1.3;">
-          En utilisant notre service, vous acceptez nos conditions d'utilisation.<br>
-          Authentification sécurisée via Firebase.
+          By using our service, you accept our terms of use.<br>
+          Secure authentication via Firebase.
         </p>
       </div>
     `;

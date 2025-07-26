@@ -707,10 +707,10 @@ function createEmailVerificationModal(email, emailSent = true) {
     content.innerHTML = `
       <div style="font-size: 64px; margin-bottom: 20px;">📧</div>
       <h2 style="margin-bottom: 15px; color: #059669; font-size: 24px; font-weight: 600;">
-        ✅ Compte créé avec succès !
+        ✅ Account created successfully!
       </h2>
       <p style="margin-bottom: 20px; color: #374151; font-size: 16px; line-height: 1.5;">
-        Un email de vérification a été envoyé à :
+        A verification email has been sent to:
       </p>
       <div style="
         background: #f3f4f6; 
@@ -747,7 +747,7 @@ function createEmailVerificationModal(email, emailSent = true) {
         margin-bottom: 25px;
       ">
         <p style="margin: 0; color: #dc2626; font-size: 13px; font-weight: 500;">
-          ⚠️ Vous ne pourrez pas utiliser l'assistant IA tant que votre email n'est pas vérifié
+          ⚠️ You cannot use the AI assistant until your email is verified
         </p>
       </div>
       <button id="close-modal-btn" style="
@@ -762,17 +762,17 @@ function createEmailVerificationModal(email, emailSent = true) {
         cursor: pointer;
         transition: background-color 0.2s;
       " onmouseover="this.style.backgroundColor='#047857'" onmouseout="this.style.backgroundColor='#059669'">
-        J'ai compris
+        I understand
       </button>
     `;
   } else {
     content.innerHTML = `
       <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
       <h2 style="margin-bottom: 15px; color: #dc2626; font-size: 24px; font-weight: 600;">
-        Compte créé - Action requise
+        Account created - Action required
       </h2>
       <p style="margin-bottom: 20px; color: #374151; font-size: 16px; line-height: 1.5;">
-        Votre compte a été créé pour :
+        Your account has been created for:
       </p>
       <div style="
         background: #f3f4f6; 
@@ -794,10 +794,10 @@ function createEmailVerificationModal(email, emailSent = true) {
         margin-bottom: 25px;
       ">
         <p style="margin: 0 0 10px 0; color: #dc2626; font-size: 14px; font-weight: 500;">
-          ⚠️ L'email de vérification n'a pas pu être envoyé automatiquement
+          ⚠️ The verification email could not be sent automatically
         </p>
         <p style="margin: 0; color: #7f1d1d; font-size: 13px; line-height: 1.4;">
-          Veuillez vous connecter puis vérifier manuellement votre email depuis votre tableau de bord Firebase.
+          Please sign in and manually verify your email from your Firebase dashboard.
         </p>
       </div>
       <button id="close-modal-btn" style="
@@ -812,7 +812,7 @@ function createEmailVerificationModal(email, emailSent = true) {
         cursor: pointer;
         transition: background-color 0.2s;
       " onmouseover="this.style.backgroundColor='#b91c1c'" onmouseout="this.style.backgroundColor='#dc2626'">
-        Compris
+        I understand
       </button>
     `;
   }

@@ -1,0 +1,101 @@
+CHROME WEB STORE PRIVACY JUSTIFICATIONS - FINAL AUDIT COMPLETE
+AI Workflow Assistant for n8n Extension
+
+=== SINGLE PURPOSE DESCRIPTION ===
+This extension provides AI-powered workflow generation specifically for n8n automation platform users. It allows users to describe automation requirements in natural language and generates complete, functional n8n workflows that can be directly imported into their n8n instances.
+
+=== PERMISSION JUSTIFICATIONS ===
+
+activeTab Permission:
+The extension needs to access the currently active tab to detect when users are on n8n workflow editor pages and inject the AI assistant interface. This is essential to provide seamless integration with n8n's web interface and ensure the assistant only appears on relevant pages.
+
+Host Permission Use:
+The extension requires host permissions for the following domains to provide full functionality:
+- n8n.io and n8n.cloud: To inject the AI assistant interface into official n8n instances
+- vibe-n8n.com: Main backend API for AI workflow generation and user management
+- Firebase domains (firebaseapp.com, googleapis.com, securetoken.googleapis.com, identitytoolkit.googleapis.com): For secure Firebase authentication
+- Google domains (accounts.google.com, apis.google.com, gstatic.com): For Google Sign-In functionality and user profile access
+- Stripe domains (stripe.com, checkout.stripe.com): For payment processing and subscription management
+- Optional permissions for all HTTPS/HTTP sites: To support custom self-hosted n8n instances on any domain when manually enabled by users
+
+Offscreen Permission:
+The offscreen permission is used exclusively for Firebase authentication implementation following Google's official Chrome Extension Manifest V3 guidelines. This creates an isolated document for secure user authentication without exposing authentication tokens to the main page content.
+
+Remote Code Use:
+The extension does not execute any remote code. All JavaScript code is bundled within the extension package. The extension communicates with backend APIs via secure HTTPS requests to generate workflows, but no remote code is downloaded or executed. The extension only injects local scripts (src/inject.js) that are part of the extension package.
+
+Scripting Permission:
+The scripting permission is required to:
+- Inject the AI assistant interface into n8n workflow editor pages
+- Enable the extension on custom domains when manually activated by users
+- Import generated workflows directly into the n8n editor via DOM manipulation
+- Modify n8n page layout for optimal assistant display
+The scripts only modify the visual interface and workflow data, and do not access sensitive page data.
+
+Storage Permission:
+The storage permission is used to save:
+- customDomains array: List of user-enabled custom n8n domains for self-hosted instances (chrome.storage.sync)
+- authState: User authentication status and method (chrome.storage.local)
+- User interface preferences: Panel width settings (localStorage - minimal usage)
+No sensitive workflow data, passwords, or permanent authentication tokens are stored locally.
+
+Tabs Permission:
+The tabs permission is used to:
+- Detect when users navigate to n8n pages to automatically activate the assistant
+- Provide the "Open n8n" functionality in the extension popup
+- Send messages to content scripts for workflow generation coordination
+- Focus and manage tab windows during Google authentication flow
+- Inject scripts into manually activated custom domains
+
+=== ADDITIONAL API USAGE (NOT IN MANIFEST) ===
+
+Chrome Identity API:
+The extension uses chrome.identity API (accessed without explicit permission) for:
+- Retrieving Google user profile information during authentication
+- Managing Google OAuth tokens for sign-out functionality
+- Cleaning up authentication sessions when users sign out
+This is used only as a fallback for legacy authentication cleanup and does not store sensitive data.
+
+=== DATA USAGE COMPLIANCE ===
+
+User Data Collection:
+- Email address (for authentication and account management)
+- Firebase authentication tokens (temporary, for secure API access)
+- Custom domain list (for self-hosted n8n instances)
+- Authentication state (login status)
+- User interface preferences (panel width)
+
+Data Usage:
+- Email addresses are used solely for user authentication and account management
+- Authentication tokens are used to secure API communications and are not stored permanently
+- Custom domains are stored to remember user-enabled n8n instances
+- Authentication state is stored to maintain login sessions
+- User preferences are stored locally to enhance user experience
+- No workflow content or business data is collected or stored by the extension
+
+Data Sharing:
+- No user data is shared with third parties except for essential services:
+  * Firebase (Google) for authentication and user management
+  * Stripe for payment processing (PRO plan users only)
+  * Google APIs for user profile information during authentication
+- Generated workflows are transmitted directly to the user's browser and not stored on our servers
+- Authentication is handled through Firebase following industry security standards
+
+External Communications:
+The extension communicates with:
+- vibe-n8n.com: Main backend for AI workflow generation
+- Firebase/Google services: For authentication and user management  
+- Stripe services: For payment processing
+- fonts.googleapis.com: For loading fonts (CSS import only)
+- User's n8n instances: For workflow import functionality
+
+Security Measures:
+- All API communications use HTTPS encryption
+- Authentication tokens are handled securely following Firebase best practices
+- Minimal local storage usage with automatic cleanup
+- User data is processed in compliance with privacy regulations
+- Extension code is bundled locally with no remote code execution
+- Scripts are only injected into n8n-related pages
+
+CERTIFICATION STATEMENT:
+I certify that this extension's data usage complies with the Chrome Web Store Developer Program Policies. The extension collects only necessary data for core functionality, uses secure authentication methods, and does not share user data with unauthorized third parties except for essential service providers (Firebase for authentication, Stripe for payments, Google APIs for user profiles). 

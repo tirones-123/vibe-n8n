@@ -15,9 +15,6 @@ const CONFIG = {
   API_URL_LOCAL: 'http://localhost:3000/api/claude',
   API_BASE_URL_LOCAL: 'http://localhost:3000',
   
-  // Legacy API Key supprimée - Firebase Auth obligatoire pour l'extension Chrome
-  // LEGACY_API_KEY: '', // Removed for security
-  
   // ===== FIREBASE CONFIGURATION =====
   FIREBASE_CONFIG: {
     apiKey: "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I",
