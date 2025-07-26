@@ -22,7 +22,7 @@ class ContentAuthIntegration {
     this.CONFIG = window.CONFIG || {
       API_URL: 'https://vibe-n8n.com/api/claude',
       API_BASE_URL: 'https://vibe-n8n.com',
-      LEGACY_API_KEY: 'd5783369f695dfe8517a0c02d9b8cddf11036fec2831e04da5084e894bca7ea2',
+      // LEGACY_API_KEY: '', // Removed - Firebase Auth required
       ENDPOINTS: {
         USER_INFO: '/api/me',
         CREATE_CHECKOUT: '/api/create-checkout-session',

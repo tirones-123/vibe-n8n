@@ -1437,7 +1437,7 @@ async function checkSavedDomains(currentHostname) {
             font-weight: 600;
             margin-bottom: 8px;
             opacity: 0.8;
-          ">Try one of these examples:</div>
+          ">Try one of these examples or chat directly:</div>
           
           <div class="suggestion-grid" style="
             display: grid;
@@ -1455,7 +1455,7 @@ async function checkSavedDomains(currentHostname) {
               color: var(--ai-text-secondary);
               line-height: 1.4;
             ">
-              automate email reply
+              Automate email reply
             </div>
             
             <div class="suggestion-card" data-prompt="Create an n8n workflow that takes content from a Google Sheet and posts it to Twitter, LinkedIn, and Facebook at the same time." style="
@@ -1469,7 +1469,7 @@ async function checkSavedDomains(currentHostname) {
               color: var(--ai-text-secondary);
               line-height: 1.4;
             ">
-              post on socials
+              Post on socials
             </div>
             
             <div class="suggestion-card" data-prompt="Make an n8n workflow that takes a topic, searches Perplexity AI, then writes a full SEO blog post using OpenAI." style="
@@ -3419,7 +3419,10 @@ async function checkSavedDomains(currentHostname) {
       `;
       
       if (isLoading) {
-        contentSpan.innerHTML = content + ' <span class="ai-typing-dots"></span>';
+        contentSpan.textContent = content + ' ';
+        const dots = document.createElement('span');
+        dots.className = 'ai-typing-dots';
+        contentSpan.appendChild(dots);
       } else {
         // Better formatting for AI responses
         const formattedContent = content
@@ -3451,7 +3454,10 @@ async function checkSavedDomains(currentHostname) {
     if (contentDiv) {
       // Assistant message with prefix structure
       if (isLoading) {
-        contentDiv.innerHTML = content + ' <span class="ai-typing-dots"></span>';
+        contentDiv.textContent = content + ' ';
+        const dots = document.createElement('span');
+        dots.className = 'ai-typing-dots';
+        contentDiv.appendChild(dots);
       } else {
         // Better formatting for AI responses
         const formattedContent = content
@@ -3465,7 +3471,10 @@ async function checkSavedDomains(currentHostname) {
     } else {
       // User message (bubble structure)
       if (isLoading) {
-        messageElement.innerHTML = content + ' <span class="ai-typing-dots"></span>';
+        messageElement.textContent = content + ' ';
+        const dots = document.createElement('span');
+        dots.className = 'ai-typing-dots';
+        messageElement.appendChild(dots);
       } else {
         messageElement.textContent = content;
       }
@@ -4688,3 +4697,14 @@ async function checkSavedDomains(currentHostname) {
           });
     }
   })(); // End of initializeExtension function 
+
+  // ADD BELOW: helper to escape HTML entities (prevents XSS)
+  function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
