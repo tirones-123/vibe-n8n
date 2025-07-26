@@ -667,7 +667,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   // Notifier le début de traitement
   safeSendMessage(tabId, {
     type: 'WORKFLOW_GENERATION_START',
-    message: 'Démarrage de la génération de workflow...'
+    message: 'Starting workflow generation...'
   });
 
   const requestBody = {
