@@ -342,7 +342,15 @@ When you output JSON it must ALWAYS be strictly valid:
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
   • Escape special characters properly (e.g. newlines \n).
-  • The final answer MUST be a single JSON object, nothing before or after.`;
+  • The final answer MUST be a single JSON object, nothing before or after.
+
+  VALID JSON CHECKLIST (MANDATORY BEFORE SENDING ANSWER):
+  1. Parse your answer with JSON.parse; if it fails, fix and re-validate.
+  2. Never include ';' inside JSON or after any value.
+  3. Escape every newline inside string values with \\n.
+  4. Do not split property names across lines.
+  5. Ensure no trailing commas.
+`;
       } else {
         // Mode création d'un nouveau workflow
         systemPrompt = `You are an n8n workflow expert.
@@ -374,7 +382,15 @@ When you output JSON it must ALWAYS be strictly valid:
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
   • Escape special characters properly (e.g. newlines \n).
-  • The final answer MUST be a single JSON object, nothing before or after.`;
+  • The final answer MUST be a single JSON object, nothing before or after.
+
+  VALID JSON CHECKLIST (MANDATORY BEFORE SENDING ANSWER):
+  1. Parse your answer with JSON.parse; if it fails, fix and re-validate.
+  2. Never include ';' inside JSON or after any value.
+  3. Escape every newline inside string values with \\n.
+  4. Do not split property names across lines.
+  5. Ensure no trailing commas.
+`;
       }
 
       // Construire le contexte enrichi avec les workflows d'exemple
