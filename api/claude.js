@@ -131,13 +131,16 @@ export default async function handler(req, res) {
       const decodedToken = await firebaseService.verifyIdToken(token);
       
       // Detect auth method
-      const isGoogleAuth = decodedToken.firebase?.sign_in_provider === 'google.com';
+      const signInProvider = decodedToken.firebase?.sign_in_provider || null;
+      const isGoogleAuth = signInProvider === 'google.com';
+      const isAnonymousAuth = signInProvider === 'anonymous';
       
       // Get or create user in our database FIRST
       const user = await firebaseService.getOrCreateUser(
         decodedToken.uid, 
         decodedToken.email,
-        decodedToken.email_verified || isGoogleAuth  // Google est toujours considéré comme vérifié
+        decodedToken.email_verified || isGoogleAuth,  // Google est toujours considéré comme vérifié
+        signInProvider
       );
       
       // 🔄 ACTIVATION AUTOMATIQUE : Vérifier le VRAI statut email avec Firebase Admin
@@ -153,7 +156,7 @@ export default async function handler(req, res) {
       }
       
       // MAINTENANT vérifier que l'email est vérifié (utiliser le statut serveur, pas le token client)
-      if (!isGoogleAuth && !serverEmailVerified) {
+      if (!isGoogleAuth && !isAnonymousAuth && !serverEmailVerified) {
         return res.status(403).json({
           error: 'Email verification required',
           code: 'EMAIL_NOT_VERIFIED',
@@ -221,6 +224,11 @@ export default async function handler(req, res) {
           case 'USAGE_LIMIT_EXCEEDED':
             errorResponse.message = 'Usage-based budget exhausted. Increase the limit?';
             errorResponse.action = 'increase_usage_limit';
+            break;
+
+          case 'TRIAL_EXPIRED':
+            errorResponse.message = 'Please create an account to continue.';
+            errorResponse.action = 'create_account';
             break;
           
           default:
