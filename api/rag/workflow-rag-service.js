@@ -341,11 +341,11 @@ When you output JSON it must ALWAYS be strictly valid:
   • Use double quotes ("") for all keys and string values.
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
-  • Escape special characters properly (e.g. newlines \n).
-  • The final answer MUST be a single JSON object, nothing before or after.
-  • BEFORE you reply, validate the exact JSON with JSON.parse; if it fails, correct it and re-validate.
-  • Output ONLY the JSON, without \`\`\` fences or additional text. The first character must be "{" and the last must be "}".
-  • Ensure no trailing commas, no comments, and all keys and string values use double quotes.`;
+  • Escape special characters properly (e.g. newlines \\n, quotes \\", backslashes \\\\).
+  • For JavaScript code in nodes: escape ALL quotes and newlines. Use \\n for line breaks, \\" for quotes.
+  • For HTTP request bodies: ensure proper JSON string escaping.
+  • Test your JSON mentality: each property must end with comma (except last) or closing brace.
+  • The final answer MUST be a single JSON object, nothing before or after.`;
       } else {
         // Mode création d'un nouveau workflow
         systemPrompt = `You are an n8n workflow expert.
@@ -376,11 +376,11 @@ When you output JSON it must ALWAYS be strictly valid:
   • Use double quotes ("") for all keys and string values.
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
-  • Escape special characters properly (e.g. newlines \n).
-  • The final answer MUST be a single JSON object, nothing before or after.
-  • BEFORE you reply, validate the exact JSON with JSON.parse; if it fails, correct it and re-validate.
-  • Output ONLY the JSON, without \`\`\` fences or additional text. The first character must be "{" and the last must be "}".
-  • Ensure no trailing commas, no comments, and all keys and string values use double quotes.`;
+  • Escape special characters properly (e.g. newlines \\n, quotes \\", backslashes \\\\).
+  • For JavaScript code in nodes: escape ALL quotes and newlines. Use \\n for line breaks, \\" for quotes.
+  • For HTTP request bodies: ensure proper JSON string escaping.
+  • Test your JSON mentality: each property must end with comma (except last) or closing brace.
+  • The final answer MUST be a single JSON object, nothing before or after.`;
       }
 
       // Construire le contexte enrichi avec les workflows d'exemple
@@ -606,12 +606,11 @@ ${baseWorkflow ?
           // Tentatives de réparation courantes
           console.log('🔧 Tentative de réparation du JSON...');
           
-          // 1. Supprimer les virgules en trop avant }
+          // Améliorations pour la réparation JSON
           jsonText = jsonText.replace(/,\s*}/g, '}');
           jsonText = jsonText.replace(/,\s*]/g, ']');
-          
-          // 2. Ajouter des virgules manquantes (très basique)
-          // Cette partie pourrait être étendue selon les erreurs observées
+          // Nouveau: fixer les guillemets non échappés dans le code
+          jsonText = jsonText.replace(/"code":\s*"([^"]*)"([^"]*)"([^"]*)"/g, '"code": "$1\\"$2\\"$3"');
           
           const repairedResponse = JSON.parse(jsonText);
           console.log('✅ JSON réparé avec succès !');
