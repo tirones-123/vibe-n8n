@@ -54,23 +54,20 @@ class FirebaseService {
   }
 
   // Get or create user with default quota
-  // signInProvider allows us to detect anonymous sign-in for the free trial
-  async getOrCreateUser(uid, email = null, emailVerified = true, signInProvider = null) {
+  async getOrCreateUser(uid, email = null, emailVerified = true) {
     try {
       const userRef = this.db.collection('users').doc(uid);
       const userDoc = await userRef.get();
 
       if (!userDoc.exists) {
-        // Detect anonymous auth to create a TRIAL plan (20 000 tokens, no email verification required)
-        const isAnonymous = signInProvider === 'anonymous';
-
+        // Create new user - tokens conditionnels selon vérification email
         const newUser = {
           uid,
           email,
-          plan: isAnonymous ? 'TRIAL' : 'FREE',
-          email_verified: isAnonymous ? false : emailVerified,
-          // Anonymous trial: 20k tokens, otherwise FREE rules
-          remaining_tokens: isAnonymous ? 20000 : (emailVerified ? 70000 : 0),
+          plan: 'FREE',
+          email_verified: emailVerified,
+          // Si email non vérifié, 0 tokens pour bloquer l'usage
+          remaining_tokens: emailVerified ? 70000 : 0,
           this_month_usage_tokens: 0,
           this_month_usage_usd: 0,
           total_tokens_used: 0,
@@ -86,10 +83,8 @@ class FirebaseService {
         };
 
         await userRef.set(newUser);
-
-        if (isAnonymous) {
-          console.log(`📝 Created new TRIAL (anonymous) user: ${uid} with 20,000 tokens`);
-        } else if (emailVerified) {
+        
+        if (emailVerified) {
           console.log(`📝 Created new FREE user with verified email: ${uid}`);
         } else {
           console.log(`📝 Created new user pending email verification: ${uid}`);
@@ -307,14 +302,6 @@ class FirebaseService {
 
       const userData = userDoc.data();
       
-      // Special handling for TRIAL plan (20 000 tokens total)
-      if (userData.plan === 'TRIAL') {
-        if (userData.remaining_tokens >= estimatedTokens) {
-          return { allowed: true, userData };
-        }
-        return { allowed: false, reason: 'TRIAL_EXPIRED', userData };
-      }
-
       // Check basic token quota
       if (userData.remaining_tokens >= estimatedTokens) {
         return { allowed: true, userData };
@@ -337,7 +324,7 @@ class FirebaseService {
         };
       }
 
-      // Determine blocking reason (FREE or PRO)
+      // Determine blocking reason
       const reason = userData.plan === 'FREE' ? 'FREE_LIMIT_EXCEEDED' : 'PRO_LIMIT_EXCEEDED';
       return { allowed: false, reason, userData };
 

@@ -26,16 +26,13 @@ export async function verifyFirebaseAuth(req, res, next) {
     const decodedToken = await firebaseService.verifyIdToken(idToken);
     
     // NOUVEAU: Vérifier que l'email est vérifié (sauf pour Google qui est auto-vérifié)
-    const signInProvider = decodedToken.firebase?.sign_in_provider || null;
-    const isGoogleAuth = signInProvider === 'google.com';
-    const isAnonymousAuth = signInProvider === 'anonymous';
+    const isGoogleAuth = decodedToken.firebase?.sign_in_provider === 'google.com';
     
     // Get or create user in our database FIRST
     const user = await firebaseService.getOrCreateUser(
       decodedToken.uid, 
       decodedToken.email,
-      decodedToken.email_verified || isGoogleAuth,  // Google est toujours considéré comme vérifié
-      signInProvider
+      decodedToken.email_verified || isGoogleAuth  // Google est toujours considéré comme vérifié
     );
     
     // 🔄 ACTIVATION AUTOMATIQUE : Vérifier le VRAI statut email avec Firebase Admin
@@ -51,7 +48,7 @@ export async function verifyFirebaseAuth(req, res, next) {
     }
     
     // MAINTENANT vérifier que l'email est vérifié (utiliser le statut serveur, pas le token client)
-    if (!isGoogleAuth && !isAnonymousAuth && !serverEmailVerified) {
+    if (!isGoogleAuth && !serverEmailVerified) {
       return res.status(403).json({
         error: 'Email verification required',
         code: 'EMAIL_NOT_VERIFIED',
@@ -129,11 +126,6 @@ export async function checkTokenQuota(estimatedTokens = 10000) {
           case 'USAGE_LIMIT_EXCEEDED':
             errorResponse.message = 'Budget usage-based épuisé. Augmenter la limite ?';
             errorResponse.action = 'increase_usage_limit';
-            break;
-
-          case 'TRIAL_EXPIRED':
-            errorResponse.message = 'Please create an account to continue.';
-            errorResponse.action = 'create_account';
             break;
           
           default:
