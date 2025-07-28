@@ -496,6 +496,14 @@ ${baseWorkflow ?
         await fs.mkdir(debugDir, { recursive: true });
         await fs.writeFile(path.join(debugDir, 'claude-raw-response.txt'), generatedText);
         console.log('💾 Debug: Full response saved to debug/claude-raw-response.txt');
+        
+        // 🆕 NOUVEAU : Log du contenu pour Railway
+        console.log('\n📄 === CLAUDE RAW RESPONSE (first 2000 chars) ===');
+        console.log(generatedText.substring(0, 2000));
+        if (generatedText.length > 2000) {
+          console.log(`... (truncated, total: ${generatedText.length} chars)`);
+        }
+        console.log('📄 === END RAW RESPONSE ===\n');
       } catch (e) {
         console.log('⚠️ Debug: Cannot save response:', e.message);
       }
@@ -508,12 +516,18 @@ ${baseWorkflow ?
         
         // Sauvegarder la réponse brute pour debug
         try {
-          // Créer le dossier debug s'il n'existe pas
           const debugDir = path.join(process.cwd(), 'debug');
           await fs.mkdir(debugDir, { recursive: true });
-          
           await fs.writeFile(path.join(debugDir, 'claude-extracted-json.txt'), jsonText);
           console.log('💾 Debug: Extracted JSON saved to debug/claude-extracted-json.txt');
+          
+          // 🆕 NOUVEAU : Log du JSON extrait pour Railway
+          console.log('\n📄 === EXTRACTED JSON (first 1500 chars) ===');
+          console.log(jsonText.substring(0, 1500));
+          if (jsonText.length > 1500) {
+            console.log(`... (truncated, total: ${jsonText.length} chars)`);
+          }
+          console.log('📄 === END EXTRACTED JSON ===\n');
         } catch (e) {
           console.log('⚠️ Debug: Cannot save extracted JSON:', e.message);
         }
