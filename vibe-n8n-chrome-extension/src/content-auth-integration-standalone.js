@@ -386,6 +386,22 @@ class ContentAuthIntegration {
     try {
       console.log('🔍 Vérification de l\'authentification Firebase...');
       
+      // NEW: Check if anonymous trial is available first
+      const anonymousTrialAvailable = await chrome.runtime.sendMessage({
+        type: 'check-anonymous-trial'
+      });
+      
+      console.log('🎭 Anonymous trial check:', anonymousTrialAvailable);
+      
+      if (anonymousTrialAvailable && !anonymousTrialAvailable.used) {
+        console.log('🎭 Anonymous trial available - allowing request');
+        return {
+          allowed: true,
+          reason: 'ANONYMOUS_TRIAL',
+          method: 'anonymous'
+        };
+      }
+      
       // Vérifier l'état actuel de l'utilisateur Firebase
       const currentUser = await chrome.runtime.sendMessage({
         type: 'firebase-get-user'
@@ -410,7 +426,7 @@ class ContentAuthIntegration {
       }
 
       if (!user) {
-        console.log('❌ Utilisateur non authentifié');
+        console.log('❌ Utilisateur non authentifié et pas de trial anonyme disponible');
         return { 
           allowed: false, 
           reason: 'NOT_AUTHENTICATED',

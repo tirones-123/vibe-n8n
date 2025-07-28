@@ -528,6 +528,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }));
     return true; // Async response
   }
+
+  if (request.type === 'check-anonymous-trial') {
+    console.log('🎭 Check anonymous trial availability');
+    hasUsedAnonymousTrial()
+      .then(used => {
+        sendResponse({ 
+          available: true,
+          used: used,
+          tokens: used ? 0 : 20000
+        });
+      })
+      .catch(error => {
+        console.log('🎭 Error checking anonymous trial:', error);
+        sendResponse({ 
+          available: true, // Default to allowing trial on error
+          used: false,
+          tokens: 20000
+        });
+      });
+    return true; // Async response
+  }
   
   console.log('⚠️ Unknown message type:', request.type);
   sendResponse({ error: 'Unknown message type', serviceWorkerActive: true });
