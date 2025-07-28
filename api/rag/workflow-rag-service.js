@@ -737,6 +737,10 @@ ${baseWorkflow ?
           jsonText = jsonText.replace(/,\s*]/g, ']');
           // Nouveau: fixer les guillemets non échappés dans le code
           jsonText = jsonText.replace(/"code":\s*"([^"]*)"([^"]*)"([^"]*)"/g, '"code": "$1\\"$2\\"$3"');
+          // Nouveau: fixer les ] erronés après les connections
+          jsonText = jsonText.replace(/(\}\s*)\]\s*\}/g, '$1}');
+          // Nouveau: fixer les virgules manquantes avant les fermetures
+          jsonText = jsonText.replace(/(\})\s*(\])/g, '$1,$2');
           
           const repairedResponse = JSON.parse(jsonText);
           console.log('✅ JSON réparé avec succès !');
