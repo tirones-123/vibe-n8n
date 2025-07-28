@@ -713,13 +713,19 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     
     // NEW: Check if user can try anonymous mode first
     const hasTriedAnonymous = await hasUsedAnonymousTrial();
+    console.log('🎭 Anonymous trial check result:', hasTriedAnonymous);
     
-    if (!hasTriedAnonymous) {
+    // TEMPORARY DEBUG: Force anonymous mode for testing
+    const forceAnonymous = true; // Set to false after testing
+    console.log('🐛 DEBUG: Force anonymous mode enabled for testing');
+    
+    if (!hasTriedAnonymous || forceAnonymous) {
       // Try anonymous mode first for new users
       authToken = generateAnonymousToken();
       authMethod = 'ANONYMOUS';
       isAnonymousAttempt = true;
       console.log('🎭 First-time user: trying anonymous mode with token:', authToken.substring(0, 20) + '...');
+      console.log('🎭 Anonymous token full format check:', authToken.startsWith('ANONYMOUS_') ? '✅ Valid format' : '❌ Invalid format');
     } else {
       // FIREBASE AUTH OBLIGATOIRE - For users who already tried anonymous
       console.log('🔧 Firebase Auth required (anonymous trial already used)...');
@@ -1455,10 +1461,11 @@ function generateAnonymousToken() {
 async function hasUsedAnonymousTrial() {
   try {
     const result = await chrome.storage.local.get(['anonymousTrialUsed']);
+    console.log('🎭 Storage check result:', result);
     return result.anonymousTrialUsed === true;
   } catch (error) {
-    console.log('Could not check anonymous trial status:', error);
-    return false;
+    console.log('🎭 Could not check anonymous trial status:', error);
+    return false; // Default to allowing trial on error
   }
 }
 

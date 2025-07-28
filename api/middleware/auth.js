@@ -235,7 +235,7 @@ export async function verifyAuthOrAllowAnonymous(req, res, next) {
         uid: `anonymous_${clientId}`,
         email: 'anonymous@first-try.com',
         plan: 'ANONYMOUS',
-        remaining_tokens: 15000, // One free request (enough for simple workflow)
+        remaining_tokens: 20000, // One free request (generous quota for complex workflow)
         isAnonymous: true,
         clientId: clientId
       };

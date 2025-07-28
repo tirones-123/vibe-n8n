@@ -115,7 +115,7 @@ export default async function handler(req, res) {
         uid: `anonymous_${clientId}`,
         email: 'anonymous@first-try.com',
         plan: 'ANONYMOUS',
-        remaining_tokens: 15000, // One free request
+        remaining_tokens: 20000, // One free request
         isAnonymous: true,
         clientId: clientId
       };
@@ -210,8 +210,11 @@ export default async function handler(req, res) {
     // Special handling for anonymous users
     if (req.user.isAnonymous) {
       const estimatedTokens = 10000;
+      console.log(`🎭 Anonymous user ${req.user.clientId} quota check: ${estimatedTokens} needed, ${req.user.remaining_tokens} available`);
+      
       if (estimatedTokens > req.user.remaining_tokens) {
         requestStats.tokenQuotaBlocked++;
+        console.log(`🎭 Anonymous quota exceeded for ${req.user.clientId}`);
         
         return res.status(429).json({
           error: 'Anonymous quota exceeded',
@@ -232,7 +235,7 @@ export default async function handler(req, res) {
         });
       }
       
-      console.log(`🎭 Anonymous user ${req.user.clientId} using ${estimatedTokens} tokens (${req.user.remaining_tokens} remaining)`);
+      console.log(`🎭 Anonymous user ${req.user.clientId} quota check passed - proceeding with generation`);
     }
     // Regular Firebase users
     else if (servicesReady.firebase) {
