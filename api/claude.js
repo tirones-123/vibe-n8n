@@ -499,27 +499,32 @@ export default async function handler(req, res) {
             tokensUsed: result.tokensUsed.input
           });
 
-          await firebaseService.updateUserTokens(
-            req.user.uid, 
-            result.tokensUsed.input, 
-            result.tokensUsed.output || 0
-          );
+          // Update user tokens only for real Firebase users, not anonymous
+          if (!req.user.isAnonymous && servicesReady.firebase) {
+            await firebaseService.updateUserTokens(
+              req.user.uid, 
+              result.tokensUsed.input, 
+              result.tokensUsed.output || 0
+            );
 
-          // ---------- NEW: immediate charge if spending limit reached ----------
-          if (req.user.usage_based_enabled && req.user.plan === 'PRO') {
-            const freshUser = await firebaseService.getOrCreateUser(req.user.uid);
-            const limit = freshUser.usage_limit_usd || 0;
-            const usageUsd = freshUser.this_month_usage_usd || 0;
-            if (limit > 0 && usageUsd >= limit) {
-              console.log(`💳 User ${req.user.uid} reached spending limit $${limit}. Charging now...`);
-              await stripeService.chargeUsageNow(freshUser.stripe_customer_id, usageUsd, 'Pay-as-you-go usage');
-              await firebaseService.incrementPaidUsage(req.user.uid, usageUsd);
-              await firebaseService.resetUsageBudget(req.user.uid);
+            // ---------- immediate charge if spending limit reached ----------
+            if (req.user.usage_based_enabled && req.user.plan === 'PRO') {
+              const freshUser = await firebaseService.getOrCreateUser(req.user.uid);
+              const limit = freshUser.usage_limit_usd || 0;
+              const usageUsd = freshUser.this_month_usage_usd || 0;
+              if (limit > 0 && usageUsd >= limit) {
+                console.log(`💳 User ${req.user.uid} reached spending limit $${limit}. Charging now...`);
+                await stripeService.chargeUsageNow(freshUser.stripe_customer_id, usageUsd, 'Pay-as-you-go usage');
+                await firebaseService.incrementPaidUsage(req.user.uid, usageUsd);
+                await firebaseService.resetUsageBudget(req.user.uid);
+              }
             }
+          } else if (req.user.isAnonymous) {
+            console.log(`🎭 Anonymous user ${req.user.clientId} - skipping token update and billing`);
           }
 
-          // Report to Stripe if PRO user with usage-based billing
-          if (servicesReady.stripe && req.user.plan === 'PRO' && req.user.stripe_customer_id) {
+          // Report to Stripe if PRO user with usage-based billing (skip for anonymous)
+          if (!req.user.isAnonymous && servicesReady.stripe && req.user.plan === 'PRO' && req.user.stripe_customer_id) {
             const updatedUser = await firebaseService.getOrCreateUser(req.user.uid);
             
             if (updatedUser.remaining_tokens === 0 && updatedUser.usage_based_enabled) {
@@ -528,8 +533,9 @@ export default async function handler(req, res) {
             }
           }
 
-          // Log usage event for analytics
-          await firebaseService.logUsageEvent(req.user.uid, 'workflow_generation', {
+          // Log usage event for analytics (skip for anonymous to avoid Firebase errors)
+          if (!req.user.isAnonymous && servicesReady.firebase) {
+            await firebaseService.logUsageEvent(req.user.uid, 'workflow_generation', {
             user_prompt: prompt.length > 2000 ? prompt.substring(0, 2000) + '...[truncated]' : prompt, // Store ORIGINAL user prompt (not RAG-enriched prompt sent to Claude)
             prompt_length: prompt.length,
             input_tokens: result.tokensUsed.input,
@@ -544,9 +550,12 @@ export default async function handler(req, res) {
             session_id: sessionState.id,
             has_base_workflow: !!baseWorkflow,
             base_workflow_nodes: baseWorkflow?.nodes?.length || 0
-          });
+            });
 
-          console.log(`📊 [${sessionState.id}] Usage reported for user ${req.user.uid}`);
+            console.log(`📊 [${sessionState.id}] Usage reported for user ${req.user.uid}`);
+          } else if (req.user.isAnonymous) {
+            console.log(`🎭 Anonymous user ${req.user.clientId} - skipping usage event logging`);
+          }
         } catch (usageError) {
           console.error(`❌ Usage reporting error:`, usageError.message);
           // Don't fail the request for usage reporting errors

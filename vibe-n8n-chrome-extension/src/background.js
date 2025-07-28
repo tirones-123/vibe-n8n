@@ -736,11 +736,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     const hasTriedAnonymous = await hasUsedAnonymousTrial();
     console.log('🎭 Anonymous trial check result:', hasTriedAnonymous);
     
-    // TEMPORARY DEBUG: Force anonymous mode for testing
-    const forceAnonymous = true; // Set to false after testing
-    console.log('🐛 DEBUG: Force anonymous mode enabled for testing');
-    
-    if (!hasTriedAnonymous || forceAnonymous) {
+    if (!hasTriedAnonymous) {
       // Try anonymous mode first for new users
       authToken = generateAnonymousToken();
       authMethod = 'ANONYMOUS';
