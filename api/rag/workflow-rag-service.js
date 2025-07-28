@@ -524,6 +524,77 @@ ${baseWorkflow ?
         // Tentative de parsing
         const parsedResponse = JSON.parse(jsonText);
 
+        // 🆕 LOG DU JSON FINAL PARSÉ AVEC SUCCÈS
+        console.log('\n🎯 === JSON PARSING SUCCESS ===');
+        const responseSize = JSON.stringify(parsedResponse).length;
+        console.log(`📏 Final JSON size: ${(responseSize / 1024).toFixed(1)}KB`);
+        
+        if (parsedResponse.workflow && parsedResponse.explanation) {
+          console.log('📋 Structure: workflow + explanation');
+          console.log(`📊 Workflow nodes: ${parsedResponse.workflow.nodes?.length || 0}`);
+          console.log(`📝 Explanation summary: "${parsedResponse.explanation.summary}"`);
+          
+          // Log du workflow de manière intelligente (tronqué si trop gros)
+          if (responseSize < 5120) { // < 5KB : log complet
+            console.log('📄 Complete generated workflow:');
+            console.log(JSON.stringify(parsedResponse.workflow, null, 2));
+          } else { // > 5KB : log structure seulement
+            console.log('📄 Workflow structure (truncated - too large for logs):');
+            const truncatedWorkflow = {
+              name: parsedResponse.workflow.name,
+              nodes: parsedResponse.workflow.nodes?.slice(0, 3).map(n => ({
+                name: n.name,
+                type: n.type,
+                id: n.id
+              })) || [],
+              connections: Object.keys(parsedResponse.workflow.connections || {}),
+              totalNodes: parsedResponse.workflow.nodes?.length || 0,
+              totalConnections: Object.keys(parsedResponse.workflow.connections || {}).length
+            };
+            console.log(JSON.stringify(truncatedWorkflow, null, 2));
+            console.log(`... (${parsedResponse.workflow.nodes?.length - 3 || 0} more nodes)`);
+          }
+        } else if (parsedResponse.nodes) {
+          console.log('📋 Structure: legacy workflow format');
+          console.log(`📊 Workflow nodes: ${parsedResponse.nodes?.length || 0}`);
+          
+          // Log du workflow de manière intelligente
+          if (responseSize < 5120) { // < 5KB : log complet
+            console.log('📄 Complete generated workflow:');
+            console.log(JSON.stringify(parsedResponse, null, 2));
+          } else { // > 5KB : log structure seulement
+            console.log('📄 Workflow structure (truncated - too large for logs):');
+            const truncatedWorkflow = {
+              name: parsedResponse.name,
+              nodes: parsedResponse.nodes?.slice(0, 3).map(n => ({
+                name: n.name,
+                type: n.type,
+                id: n.id
+              })) || [],
+              connections: Object.keys(parsedResponse.connections || {}),
+              totalNodes: parsedResponse.nodes?.length || 0,
+              totalConnections: Object.keys(parsedResponse.connections || {}).length
+            };
+            console.log(JSON.stringify(truncatedWorkflow, null, 2));
+            console.log(`... (${parsedResponse.nodes?.length - 3 || 0} more nodes)`);
+          }
+        } else {
+          console.log('❓ Structure: unknown format');
+          console.log('📄 Raw parsed response:');
+          console.log(JSON.stringify(parsedResponse, null, 2));
+        }
+        
+        // Sauvegarder le JSON final pour debug
+        try {
+          const debugDir = path.join(process.cwd(), 'debug');
+          await fs.mkdir(debugDir, { recursive: true });
+          await fs.writeFile(path.join(debugDir, 'claude-final-parsed.json'), JSON.stringify(parsedResponse, null, 2));
+          console.log('💾 Debug: Final parsed JSON saved to debug/claude-final-parsed.json');
+        } catch (e) {
+          console.log('⚠️ Debug: Cannot save final parsed JSON:', e.message);
+        }
+        console.log('🎯 === END JSON PARSING ===\n');
+
         // Vérifier si on a la nouvelle structure avec workflow + explanation
         if (parsedResponse.workflow && parsedResponse.explanation) {
           // Nouvelle structure avec explication
