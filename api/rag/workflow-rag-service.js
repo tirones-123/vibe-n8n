@@ -350,6 +350,10 @@ When you output JSON it must ALWAYS be strictly valid:
   3. Escape every newline inside string values with \\n.
   4. Do not split property names across lines.
   5. Ensure no trailing commas.
+  6. NEVER mix properties from different objects - each object must be complete and self-contained.
+  7. Ensure every opening brace { has a matching closing brace }.
+  8. Verify that array elements are properly separated by commas and enclosed in brackets.
+  9. Double-check that nested objects maintain proper structure without property bleeding.
 `;
       } else {
         // Mode création d'un nouveau workflow
@@ -390,6 +394,10 @@ When you output JSON it must ALWAYS be strictly valid:
   3. Escape every newline inside string values with \\n.
   4. Do not split property names across lines.
   5. Ensure no trailing commas.
+  6. NEVER mix properties from different objects - each object must be complete and self-contained.
+  7. Ensure every opening brace { has a matching closing brace }.
+  8. Verify that array elements are properly separated by commas and enclosed in brackets.
+  9. Double-check that nested objects maintain proper structure without property bleeding.
 `;
       }
 
