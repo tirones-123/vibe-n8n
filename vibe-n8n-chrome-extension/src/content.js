@@ -4262,33 +4262,6 @@ async function checkSavedDomains(currentHostname) {
         updateCodeStatus('email-verification-required');
         break;
         
-      case 'ANONYMOUS_TRIAL_COMPLETED':
-        console.log('🎭 Anonymous trial completed successfully');
-        if (lastMessage) {
-          updateChatMessage(lastMessage, 
-            '🎉 **Congratulations! Your first workflow was generated successfully!**\n\n' +
-            '**What you just experienced:**\n' +
-            '• AI-powered workflow generation\n' +
-            '• Real-time streaming responses\n' +
-            '• Production-ready n8n workflows\n\n' +
-            '**Sign up now to unlock:**\n' +
-            '• 🚀 70,000 free tokens per month\n' +
-            '• 💫 Unlimited workflow generation\n' +
-            '• 🔄 Workflow improvement mode\n' +
-            '• 💾 Save and share workflows\n\n' +
-            '*Ready to create amazing automations? Click the 🔐 button to sign up!*', 
-            false
-          );
-        }
-        updateCodeStatus('trial-completed');
-        // Show auth modal automatically after a delay
-        setTimeout(() => {
-          if (contentAuthIntegration && contentAuthIntegration.showSimpleAuthModal) {
-            contentAuthIntegration.showSimpleAuthModal();
-          }
-        }, 3000);
-        break;
-        
       case 'WORKFLOW_GENERATION_START':
         if (lastMessage) {
           updateChatMessage(lastMessage, message.message, true);
@@ -4335,11 +4308,8 @@ async function checkSavedDomains(currentHostname) {
           // Reset UI state
           resetUIState();
           
-          // Update chat message (special handling for anonymous users)
-          let finalMessage = message.wasAnonymous ? 
-            '🎉 Your first workflow generated successfully!' :
-            '✅ Workflow generated successfully!';
-          
+          // Update chat message
+          let finalMessage = '✅ Workflow generated successfully!';
           if (message.explanation) {
             const { summary, flow, nodes: nodeDesc, notes } = message.explanation;
             if (summary) {
@@ -4352,11 +4322,6 @@ async function checkSavedDomains(currentHostname) {
               finalMessage += `\n\n📝 Notes:\n${notes}`;
             }
           }
-          
-          if (message.wasAnonymous) {
-            finalMessage += '\n\n🎯 **This was your free trial!**\nSign up to get 70,000 tokens and unlimited workflows.';
-          }
-          
           finalMessage += '\n\n🔄 Importing to n8n editor...';
           
           if (lastMessage) {
@@ -4382,20 +4347,8 @@ async function checkSavedDomains(currentHostname) {
             
             setTimeout(() => {
               if (lastMessage) {
-                  let successMessage = '';
-                  if (message.wasAnonymous) {
-                    successMessage = '\n\n🎉 **Trial complete!** Ready to unlock unlimited workflows? Click 🔐 to sign up!';
-                  }
+                  const successMessage = '';
                   updateChatMessage(lastMessage, finalMessage.replace('🔄 Importing to n8n editor...', successMessage).replace('🗑️ Auto-replacing workflow in editor...', successMessage), false);
-                  
-                  // Show signup prompt for anonymous users after successful import
-                  if (message.wasAnonymous) {
-                    setTimeout(() => {
-                      if (contentAuthIntegration && contentAuthIntegration.showSimpleAuthModal) {
-                        contentAuthIntegration.showSimpleAuthModal();
-                      }
-                    }, 2000);
-                  }
               }
             }, 500);
           }, importDelay);

@@ -1,7 +1,7 @@
 import { createWorkflowRAGService } from './rag/workflow-rag-service.js';
 import firebaseService from './services/firebase-service.js';
 import stripeService from './services/stripe-service.js';
-import { verifyAuth, checkTokenQuota, verifyAuthOrAllowAnonymous, checkTokenQuotaOrAnonymous } from './middleware/auth.js';
+import { verifyAuth, checkTokenQuota } from './middleware/auth.js';
 
 // Services initialization status
 let servicesInitialized = false;
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
   const servicesReady = await initializeServicesIfNeeded();
   console.log('🔧 Services initialization result:', servicesReady);
 
-  // Manual authentication logic to avoid middleware timing issues (with anonymous support)
+  // Manual authentication logic to avoid middleware timing issues
   const authHeader = req.headers.authorization;
   const authMethod = req.headers['x-auth-method'] || 'UNKNOWN';
   
@@ -105,31 +105,8 @@ export default async function handler(req, res) {
 
   const token = authHeader.substring(7);
   
-  // Check if it's an anonymous first-time user
-  if (token.startsWith('ANONYMOUS_')) {
-    const clientId = token.substring(10); // Remove 'ANONYMOUS_' prefix
-    
-    // Validate the anonymous token format
-    if (clientId && clientId.length >= 20 && /^[a-f0-9-]+$/i.test(clientId)) {
-      req.user = {
-        uid: `anonymous_${clientId}`,
-        email: 'anonymous@first-try.com',
-        plan: 'ANONYMOUS',
-        remaining_tokens: 20000, // One free request
-        isAnonymous: true,
-        clientId: clientId
-      };
-      
-      console.log('🎭 Anonymous first-time user allowed:', clientId.substring(0, 8) + '...');
-    } else {
-      return res.status(401).json({
-        error: 'Invalid anonymous token format',
-        code: 'INVALID_ANONYMOUS_TOKEN'
-      });
-    }
-  }
   // Check if it's the legacy API key
-  else if (token === process.env.BACKEND_API_KEY) {
+  if (token === process.env.BACKEND_API_KEY) {
     // Legacy API key authentication
     req.user = {
       uid: 'system',
@@ -205,97 +182,64 @@ export default async function handler(req, res) {
     }
   }
 
-  // Check token quota before processing (with anonymous support)
-  if (!req.user.isSystem) {
-    // Special handling for anonymous users
-    if (req.user.isAnonymous) {
-      const estimatedTokens = 10000;
-      console.log(`🎭 Anonymous user ${req.user.clientId} quota check: ${estimatedTokens} needed, ${req.user.remaining_tokens} available`);
-      
-      if (estimatedTokens > req.user.remaining_tokens) {
+  // Check token quota before processing (only if not system user)
+  if (!req.user.isSystem && servicesReady.firebase) {
+    try {
+      const { allowed, reason, userData } = await firebaseService.canUserMakeRequest(
+        req.user.uid, 
+        10000
+      );
+
+      if (!allowed) {
         requestStats.tokenQuotaBlocked++;
-        console.log(`🎭 Anonymous quota exceeded for ${req.user.clientId}`);
         
-        return res.status(429).json({
-          error: 'Anonymous quota exceeded',
-          code: 'ANONYMOUS_LIMIT_EXCEEDED',
-          message: '🎉 You\'ve tried our AI assistant! Sign up to get 70,000 free tokens and unlimited workflow generation.',
-          action: 'signup_required',
+        let errorResponse = {
+          error: 'Quota exceeded',
+          code: reason,
           user: {
-            plan: 'ANONYMOUS',
-            remaining_tokens: 0,
-            tried_tokens: estimatedTokens
-          },
-          signup_benefits: [
-            '70,000 free tokens per month',
-            'Access to all workflow types',
-            'Real-time streaming responses',
-            'Save and share workflows'
-          ]
-        });
-      }
-      
-      console.log(`🎭 Anonymous user ${req.user.clientId} quota check passed - proceeding with generation`);
-    }
-    // Regular Firebase users
-    else if (servicesReady.firebase) {
-      try {
-        const { allowed, reason, userData } = await firebaseService.canUserMakeRequest(
-          req.user.uid, 
-          10000
-        );
-
-        if (!allowed) {
-          requestStats.tokenQuotaBlocked++;
-          
-          let errorResponse = {
-            error: 'Quota exceeded',
-            code: reason,
-            user: {
-              plan: userData?.plan,
-              remaining_tokens: userData?.remaining_tokens,
-              usage_based_enabled: userData?.usage_based_enabled,
-              usage_limit_usd: userData?.usage_limit_usd,
-              this_month_usage_usd: userData?.this_month_usage_usd
-            }
-          };
-
-          // Customize error message based on reason
-          switch (reason) {
-            case 'FREE_LIMIT_EXCEEDED':
-              errorResponse.message = 'You have reached the free limit. Upgrade to Pro to continue.';
-              errorResponse.action = 'upgrade_to_pro';
-              break;
-            
-            case 'PRO_LIMIT_EXCEEDED':
-              errorResponse.message = 'Pro quota reached. Enable Usage-Based Spending?';
-              errorResponse.action = 'enable_usage_based';
-              errorResponse.options = [20, 50, 100]; // USD spending limits
-              break;
-            
-            case 'USAGE_LIMIT_EXCEEDED':
-              errorResponse.message = 'Usage-based budget exhausted. Increase the limit?';
-              errorResponse.action = 'increase_usage_limit';
-              break;
-            
-            default:
-              errorResponse.message = 'Insufficient quota for this request.';
+            plan: userData?.plan,
+            remaining_tokens: userData?.remaining_tokens,
+            usage_based_enabled: userData?.usage_based_enabled,
+            usage_limit_usd: userData?.usage_limit_usd,
+            this_month_usage_usd: userData?.this_month_usage_usd
           }
+        };
 
-          return res.status(429).json(errorResponse);
+        // Customize error message based on reason
+        switch (reason) {
+          case 'FREE_LIMIT_EXCEEDED':
+            errorResponse.message = 'You have reached the free limit. Upgrade to Pro to continue.';
+            errorResponse.action = 'upgrade_to_pro';
+            break;
+          
+          case 'PRO_LIMIT_EXCEEDED':
+            errorResponse.message = 'Pro quota reached. Enable Usage-Based Spending?';
+            errorResponse.action = 'enable_usage_based';
+            errorResponse.options = [20, 50, 100]; // USD spending limits
+            break;
+          
+          case 'USAGE_LIMIT_EXCEEDED':
+            errorResponse.message = 'Usage-based budget exhausted. Increase the limit?';
+            errorResponse.action = 'increase_usage_limit';
+            break;
+          
+          default:
+            errorResponse.message = 'Insufficient quota for this request.';
         }
 
-        // Attach updated user data to request
-        req.user = { ...req.user, ...userData };
-        console.log('✅ Quota check passed for user plan:', req.user.plan);
-        
-      } catch (quotaError) {
-        console.error('❌ Token quota check error:', quotaError);
-        return res.status(500).json({
-          error: 'Error checking token quota',
-          code: 'QUOTA_CHECK_ERROR'
-        });
+        return res.status(429).json(errorResponse);
       }
+
+      // Attach updated user data to request
+      req.user = { ...req.user, ...userData };
+      console.log('✅ Quota check passed for user plan:', req.user.plan);
+      
+    } catch (quotaError) {
+      console.error('❌ Token quota check error:', quotaError);
+      return res.status(500).json({
+        error: 'Error checking token quota',
+        code: 'QUOTA_CHECK_ERROR'
+      });
     }
   }
 
@@ -499,32 +443,27 @@ export default async function handler(req, res) {
             tokensUsed: result.tokensUsed.input
           });
 
-          // Update user tokens only for real Firebase users, not anonymous
-          if (!req.user.isAnonymous && servicesReady.firebase) {
-            await firebaseService.updateUserTokens(
-              req.user.uid, 
-              result.tokensUsed.input, 
-              result.tokensUsed.output || 0
-            );
+          await firebaseService.updateUserTokens(
+            req.user.uid, 
+            result.tokensUsed.input, 
+            result.tokensUsed.output || 0
+          );
 
-            // ---------- immediate charge if spending limit reached ----------
-            if (req.user.usage_based_enabled && req.user.plan === 'PRO') {
-              const freshUser = await firebaseService.getOrCreateUser(req.user.uid);
-              const limit = freshUser.usage_limit_usd || 0;
-              const usageUsd = freshUser.this_month_usage_usd || 0;
-              if (limit > 0 && usageUsd >= limit) {
-                console.log(`💳 User ${req.user.uid} reached spending limit $${limit}. Charging now...`);
-                await stripeService.chargeUsageNow(freshUser.stripe_customer_id, usageUsd, 'Pay-as-you-go usage');
-                await firebaseService.incrementPaidUsage(req.user.uid, usageUsd);
-                await firebaseService.resetUsageBudget(req.user.uid);
-              }
+          // ---------- NEW: immediate charge if spending limit reached ----------
+          if (req.user.usage_based_enabled && req.user.plan === 'PRO') {
+            const freshUser = await firebaseService.getOrCreateUser(req.user.uid);
+            const limit = freshUser.usage_limit_usd || 0;
+            const usageUsd = freshUser.this_month_usage_usd || 0;
+            if (limit > 0 && usageUsd >= limit) {
+              console.log(`💳 User ${req.user.uid} reached spending limit $${limit}. Charging now...`);
+              await stripeService.chargeUsageNow(freshUser.stripe_customer_id, usageUsd, 'Pay-as-you-go usage');
+              await firebaseService.incrementPaidUsage(req.user.uid, usageUsd);
+              await firebaseService.resetUsageBudget(req.user.uid);
             }
-          } else if (req.user.isAnonymous) {
-            console.log(`🎭 Anonymous user ${req.user.clientId} - skipping token update and billing`);
           }
 
-          // Report to Stripe if PRO user with usage-based billing (skip for anonymous)
-          if (!req.user.isAnonymous && servicesReady.stripe && req.user.plan === 'PRO' && req.user.stripe_customer_id) {
+          // Report to Stripe if PRO user with usage-based billing
+          if (servicesReady.stripe && req.user.plan === 'PRO' && req.user.stripe_customer_id) {
             const updatedUser = await firebaseService.getOrCreateUser(req.user.uid);
             
             if (updatedUser.remaining_tokens === 0 && updatedUser.usage_based_enabled) {
@@ -533,29 +472,18 @@ export default async function handler(req, res) {
             }
           }
 
-          // Log usage event for analytics (skip for anonymous to avoid Firebase errors)
-          if (!req.user.isAnonymous && servicesReady.firebase) {
-            await firebaseService.logUsageEvent(req.user.uid, 'workflow_generation', {
-            user_prompt: prompt.length > 2000 ? prompt.substring(0, 2000) + '...[truncated]' : prompt, // Store ORIGINAL user prompt (not RAG-enriched prompt sent to Claude)
-            prompt_length: prompt.length,
+          // Log usage event for analytics
+          await firebaseService.logUsageEvent(req.user.uid, 'workflow_generation', {
             input_tokens: result.tokensUsed.input,
             output_tokens: result.tokensUsed.output || 0,
             workflow_size: sessionState.workflowSize,
             mode: sessionState.mode,
             duration: duration,
             ai_context_sources: result.similarWorkflows || [],
-            ai_context_files: result.similarWorkflowFiles || [],
-            user_plan: req.user.plan || 'unknown',
-            is_anonymous: req.user.isAnonymous || false,
-            session_id: sessionState.id,
-            has_base_workflow: !!baseWorkflow,
-            base_workflow_nodes: baseWorkflow?.nodes?.length || 0
-            });
+            ai_context_files: result.similarWorkflowFiles || []
+          });
 
-            console.log(`📊 [${sessionState.id}] Usage reported for user ${req.user.uid}`);
-          } else if (req.user.isAnonymous) {
-            console.log(`🎭 Anonymous user ${req.user.clientId} - skipping usage event logging`);
-          }
+          console.log(`📊 [${sessionState.id}] Usage reported for user ${req.user.uid}`);
         } catch (usageError) {
           console.error(`❌ Usage reporting error:`, usageError.message);
           // Don't fail the request for usage reporting errors
