@@ -27,12 +27,14 @@ export async function verifyFirebaseAuth(req, res, next) {
     
     // NOUVEAU: Vérifier que l'email est vérifié (sauf pour Google qui est auto-vérifié)
     const isGoogleAuth = decodedToken.firebase?.sign_in_provider === 'google.com';
+    const isAnonymousAuth = decodedToken.firebase?.sign_in_provider === 'anonymous';
     
     // Get or create user in our database FIRST
     const user = await firebaseService.getOrCreateUser(
       decodedToken.uid, 
       decodedToken.email,
-      decodedToken.email_verified || isGoogleAuth  // Google est toujours considéré comme vérifié
+      decodedToken.email_verified || isGoogleAuth,  // Google est toujours considéré comme vérifié
+      isAnonymousAuth  // Nouveau paramètre pour utilisateurs anonymes
     );
     
     // 🔄 ACTIVATION AUTOMATIQUE : Vérifier le VRAI statut email avec Firebase Admin
@@ -48,7 +50,8 @@ export async function verifyFirebaseAuth(req, res, next) {
     }
     
     // MAINTENANT vérifier que l'email est vérifié (utiliser le statut serveur, pas le token client)
-    if (!isGoogleAuth && !serverEmailVerified) {
+    // Exception: les utilisateurs anonymes n'ont pas besoin de vérification d'email
+    if (!isGoogleAuth && !isAnonymousAuth && !serverEmailVerified) {
       return res.status(403).json({
         error: 'Email verification required',
         code: 'EMAIL_NOT_VERIFIED',

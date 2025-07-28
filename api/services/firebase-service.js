@@ -54,20 +54,20 @@ class FirebaseService {
   }
 
   // Get or create user with default quota
-  async getOrCreateUser(uid, email = null, emailVerified = true) {
+  async getOrCreateUser(uid, email = null, emailVerified = true, isAnonymous = false) {
     try {
       const userRef = this.db.collection('users').doc(uid);
       const userDoc = await userRef.get();
 
       if (!userDoc.exists) {
-        // Create new user - tokens conditionnels selon vérification email
+        // Create new user - gestion spéciale pour utilisateurs anonymes
         const newUser = {
           uid,
           email,
-          plan: 'FREE',
-          email_verified: emailVerified,
-          // Si email non vérifié, 0 tokens pour bloquer l'usage
-          remaining_tokens: emailVerified ? 70000 : 0,
+          plan: isAnonymous ? 'ANONYMOUS' : 'FREE',
+          email_verified: isAnonymous ? false : emailVerified,
+          // Tokens conditionnels selon le type d'utilisateur
+          remaining_tokens: isAnonymous ? 1 : (emailVerified ? 70000 : 0),
           this_month_usage_tokens: 0,
           this_month_usage_usd: 0,
           total_tokens_used: 0,
@@ -79,12 +79,16 @@ class FirebaseService {
           usage_limit_usd: 0,
           created_at: admin.firestore.FieldValue.serverTimestamp(),
           updated_at: admin.firestore.FieldValue.serverTimestamp(),
-          last_reset_at: admin.firestore.FieldValue.serverTimestamp()
+          last_reset_at: admin.firestore.FieldValue.serverTimestamp(),
+          // Marqueur spécial pour utilisateurs anonymes
+          is_anonymous: isAnonymous
         };
 
         await userRef.set(newUser);
         
-        if (emailVerified) {
+        if (isAnonymous) {
+          console.log(`🎁 Created new ANONYMOUS user for free trial: ${uid}`);
+        } else if (emailVerified) {
           console.log(`📝 Created new FREE user with verified email: ${uid}`);
         } else {
           console.log(`📝 Created new user pending email verification: ${uid}`);

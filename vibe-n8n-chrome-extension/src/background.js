@@ -122,25 +122,50 @@ async function firebaseSignUpWithEmail(email, password) {
 }
 
 async function firebaseSignInWithGoogle() {
-  console.log('🔐 firebaseSignInWithGoogle called');
+  console.log('🔥 Starting Google sign-in process...');
   
-  // --- NEW: ensure the Google authentication popup appears in front ---
+  // Focus window to ensure popup is visible
+  const focusListener = (createdWindow) => {
+    chrome.windows.update(createdWindow.id, { focused: true });
+  };
+  
+  chrome.windows.onCreated.addListener(focusListener);
+
   try {
-    const focusListener = (createdWindow) => {
-      // Bring the newly created window (usually the Google auth popup) to the foreground
-      chrome.windows.update(createdWindow.id, { focused: true });
-      // Remove the listener after the first window to avoid focusing all new windows
-      chrome.windows.onCreated.removeListener(focusListener);
-    };
-    chrome.windows.onCreated.addListener(focusListener);
-  } catch (err) {
-    console.warn('⚠️ Unable to set focus on auth window:', err);
+    await setupOffscreenDocument('/firebase-auth-web-extension.html');
+    return await sendToOffscreen({
+      type: 'firebase-google-auth'
+    });
+  } finally {
+    chrome.windows.onCreated.removeListener(focusListener);
   }
+}
+
+// Firebase Anonymous Sign-In (pour requête gratuite)
+async function firebaseSignInAnonymously() {
+  console.log('🔥 Starting anonymous sign-in for free trial...');
   
-  return sendToOffscreen({
-    type: 'firebase-auth-signin-google',
-    target: 'offscreen'
-  });
+  try {
+    await setupOffscreenDocument('/firebase-auth-web-extension.html');
+    const result = await sendToOffscreen({
+      type: 'firebase-anonymous-auth'
+    });
+    
+    if (result && result.success) {
+      console.log('✅ Anonymous user created:', result.user?.uid);
+      // Marquer comme utilisateur anonyme pour la première requête gratuite
+      await chrome.storage.local.set({
+        'n8n_anonymous_user': true,
+        'n8n_anonymous_uid': result.user?.uid,
+        'n8n_free_trial_used': false
+      });
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('❌ Anonymous auth failed:', error);
+    throw error;
+  }
 }
 
 async function firebaseSignOut() {
@@ -700,42 +725,80 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   try {
     console.log('🌐 Tentative de fetch vers:', CONFIG.API_URL);
     
-    // FIREBASE AUTH OBLIGATOIRE - Pas de fallback legacy pour l'extension Chrome
     let authToken = null;
     let authMethod = 'FIREBASE';
+    let isAnonymousUser = false;
     
-    console.log('🔧 Firebase Auth obligatoire pour extension Chrome...');
-    
-    try {
-      console.log('🔥 Getting Firebase token (required)...');
-      const firebaseToken = await firebaseGetIdToken();
-      console.log('🎫 firebaseGetIdToken result:', typeof firebaseToken, firebaseToken ? '✅ Token received' : '❌ No token');
+    // Vérifier si c'est une première visite et si free trial est activé
+    if (CONFIG.FEATURES.FREE_TRIAL_REQUEST) {
+      const storage = await chrome.storage.local.get(['n8n_free_trial_used', 'n8n_anonymous_user']);
       
-      if (firebaseToken && typeof firebaseToken === 'string' && firebaseToken.length > 50) {
-        authToken = firebaseToken;
-        console.log('✅ Using Firebase authentication token (length:', firebaseToken.length, ')');
-        console.log('🔤 Token preview:', firebaseToken.substring(0, 50) + '...');
-      } else {
-        console.error('❌ Firebase token invalid or empty - Extension requires Firebase Auth');
-        console.log('🔍 Token details:', { type: typeof firebaseToken, length: firebaseToken?.length });
+      if (!storage.n8n_free_trial_used) {
+        console.log('🎁 Free trial available - checking for anonymous auth...');
+        
+        try {
+          // Essayer d'obtenir un token Firebase normal d'abord
+          const firebaseToken = await firebaseGetIdToken();
+          
+          if (firebaseToken && typeof firebaseToken === 'string' && firebaseToken.length > 50) {
+            authToken = firebaseToken;
+            console.log('✅ Using existing Firebase token for free trial');
+          } else {
+            // Pas de token normal, créer un utilisateur anonyme
+            console.log('🔥 Creating anonymous user for free trial...');
+            const anonymousResult = await firebaseSignInAnonymously();
+            
+            if (anonymousResult && anonymousResult.success) {
+              const anonymousToken = await firebaseGetIdToken();
+              if (anonymousToken) {
+                authToken = anonymousToken;
+                authMethod = 'FIREBASE_ANONYMOUS';
+                isAnonymousUser = true;
+                console.log('✅ Using anonymous Firebase token for free trial');
+              }
+            }
+          }
+        } catch (error) {
+          console.log('⚠️ Anonymous auth failed, falling back to required auth:', error);
+        }
+      }
+    }
+    
+    // Si pas de token (free trial échoué ou non applicable), auth normale requise
+    if (!authToken) {
+      console.log('🔧 Firebase Auth obligatoire pour extension Chrome...');
+      
+      try {
+        console.log('🔥 Getting Firebase token (required)...');
+        const firebaseToken = await firebaseGetIdToken();
+        console.log('🎫 firebaseGetIdToken result:', typeof firebaseToken, firebaseToken ? '✅ Token received' : '❌ No token');
+        
+        if (firebaseToken && typeof firebaseToken === 'string' && firebaseToken.length > 50) {
+          authToken = firebaseToken;
+          console.log('✅ Using Firebase authentication token (length:', firebaseToken.length, ')');
+          console.log('🔤 Token preview:', firebaseToken.substring(0, 50) + '...');
+        } else {
+          console.error('❌ Firebase token invalid or empty - Extension requires Firebase Auth');
+          console.log('🔍 Token details:', { type: typeof firebaseToken, length: firebaseToken?.length });
+          
+          // Envoyer une erreur pour déclencher l'auth modal
+          chrome.tabs.sendMessage(tabId, {
+            type: 'FIREBASE_AUTH_REQUIRED',
+            error: 'Firebase authentication required. Please sign in to continue.'
+          });
+          return;
+        }
+      } catch (firebaseError) {
+        console.error('❌ Firebase auth failed - Extension requires authentication:', firebaseError);
+        console.log('🔍 Error details:', firebaseError.message, firebaseError.stack);
         
         // Envoyer une erreur pour déclencher l'auth modal
         chrome.tabs.sendMessage(tabId, {
           type: 'FIREBASE_AUTH_REQUIRED',
-          error: 'Firebase authentication required. Please sign in to continue.'
+          error: 'Authentication failed: ' + firebaseError.message
         });
         return;
       }
-    } catch (firebaseError) {
-      console.error('❌ Firebase auth failed - Extension requires authentication:', firebaseError);
-      console.log('🔍 Error details:', firebaseError.message, firebaseError.stack);
-      
-      // Envoyer une erreur pour déclencher l'auth modal
-      chrome.tabs.sendMessage(tabId, {
-        type: 'FIREBASE_AUTH_REQUIRED',
-        error: 'Authentication failed: ' + firebaseError.message
-      });
-      return;
     }
     
     if (!authToken) {
@@ -859,7 +922,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
               eventCount++;
               lastEventTime = Date.now();
               console.log('📡 Événement reçu:', data.type, '| Data:', JSON.stringify(data).substring(0, 200) + '...');
-              await processWorkflowRAGResponse(data, tabId);
+              await processWorkflowRAGResponse(data, tabId, isAnonymousUser);
             } catch (e) {
               // Ignorer les erreurs de parsing
               console.log('⚠️ Parse error:', e.message, 'Line:', line);
@@ -1067,7 +1130,7 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
       if (line.startsWith('data: ')) {
         try {
           const data = JSON.parse(line.slice(6));
-          await processWorkflowRAGResponse(data, tabId);
+          await processWorkflowRAGResponse(data, tabId, false);
         } catch (e) {
           // Ignorer les erreurs de parsing
           console.log('⚠️ Parse error:', e.message);
@@ -1094,7 +1157,7 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
 /**
  * Traite la réponse du backend workflow RAG
  */
-async function processWorkflowRAGResponse(data, tabId) {
+async function processWorkflowRAGResponse(data, tabId, isAnonymousUser = false) {
   console.log('📨 Réponse workflow RAG:', data.type);
   const send = (payload) => safeSendMessage(tabId, payload);
 
@@ -1167,6 +1230,24 @@ async function processWorkflowRAGResponse(data, tabId) {
       if (data.data.success && data.data.workflow) {
         console.log('✅ Workflow généré avec succès');
         
+        // Marquer le free trial comme utilisé si c'était un utilisateur anonyme
+        if (isAnonymousUser && CONFIG.FEATURES.FREE_TRIAL_REQUEST) {
+          try {
+            await chrome.storage.local.set({
+              'n8n_free_trial_used': true
+            });
+            console.log('🎁 Free trial marqué comme utilisé');
+            
+            // Envoyer un message pour demander l'authentification après succès
+            send({
+              type: 'FREE_TRIAL_COMPLETE',
+              message: 'Great! Your first workflow has been generated. Sign in to create unlimited workflows.'
+            });
+          } catch (error) {
+            console.warn('⚠️ Erreur marquage free trial:', error);
+          }
+        }
+        
         // Envoyer le workflow complet et l'explication
         send({
           type: 'WORKFLOW_COMPLETE',
@@ -1195,6 +1276,24 @@ async function processWorkflowRAGResponse(data, tabId) {
           const workflowData = JSON.parse(decompressedData);
           
           console.log('✅ Workflow décompressé avec succès via service worker');
+          
+          // Marquer le free trial comme utilisé si c'était un utilisateur anonyme
+          if (isAnonymousUser && CONFIG.FEATURES.FREE_TRIAL_REQUEST) {
+            try {
+              await chrome.storage.local.set({
+                'n8n_free_trial_used': true
+              });
+              console.log('🎁 Free trial marqué comme utilisé (compressed)');
+              
+              // Envoyer un message pour demander l'authentification après succès
+              send({
+                type: 'FREE_TRIAL_COMPLETE',
+                message: 'Great! Your first workflow has been generated. Sign in to create unlimited workflows.'
+              });
+            } catch (error) {
+              console.warn('⚠️ Erreur marquage free trial:', error);
+            }
+          }
           
           // Envoyer le workflow décompressé
           send({

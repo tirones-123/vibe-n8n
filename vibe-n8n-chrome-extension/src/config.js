@@ -55,7 +55,9 @@ const CONFIG = {
     // Système d'explication détaillée
     WORKFLOW_EXPLANATION: true,
     // Popups de quota intelligents
-    QUOTA_MANAGEMENT: true
+    QUOTA_MANAGEMENT: true,
+    // Requête gratuite avant authentification (Firebase Anonymous)
+    FREE_TRIAL_REQUEST: true
   },
   
   // ===== ENDPOINTS API =====

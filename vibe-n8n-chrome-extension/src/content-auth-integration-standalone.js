@@ -386,6 +386,20 @@ class ContentAuthIntegration {
     try {
       console.log('🔍 Vérification de l\'authentification Firebase...');
       
+      // Vérifier si le free trial est activé et disponible
+      if (CONFIG.FEATURES.FREE_TRIAL_REQUEST) {
+        const storage = await chrome.storage.local.get(['n8n_free_trial_used']);
+        if (!storage.n8n_free_trial_used) {
+          console.log('🎁 Free trial available - allowing request without auth');
+          return {
+            allowed: true,
+            reason: 'FREE_TRIAL_AVAILABLE',
+            method: 'anonymous',
+            isFreeTrial: true
+          };
+        }
+      }
+      
       // Vérifier l'état actuel de l'utilisateur Firebase
       const currentUser = await chrome.runtime.sendMessage({
         type: 'firebase-get-user'
