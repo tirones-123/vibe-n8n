@@ -345,6 +345,10 @@ When you output JSON it must ALWAYS be strictly valid:
   • For JavaScript code in nodes: escape ALL quotes and newlines. Use \\n for line breaks, \\" for quotes.
   • For HTTP request bodies: ensure proper JSON string escaping.
   • Test your JSON mentality: each property must end with comma (except last) or closing brace.
+  • Pay special attention to connections object structure: it should be an object with node names as keys, not an array.
+  • Connections structure must be: "connections": { "NodeName": { "main": [[{...}]] } }
+  • Always validate that every opening brace { has a corresponding closing brace }
+  • Always validate that every opening bracket [ has a corresponding closing bracket ]
   • The final answer MUST be a single JSON object, nothing before or after.`;
       } else {
         // Mode création d'un nouveau workflow
@@ -380,6 +384,10 @@ When you output JSON it must ALWAYS be strictly valid:
   • For JavaScript code in nodes: escape ALL quotes and newlines. Use \\n for line breaks, \\" for quotes.
   • For HTTP request bodies: ensure proper JSON string escaping.
   • Test your JSON mentality: each property must end with comma (except last) or closing brace.
+  • Pay special attention to connections object structure: it should be an object with node names as keys, not an array.
+  • Connections structure must be: "connections": { "NodeName": { "main": [[{...}]] } }
+  • Always validate that every opening brace { has a corresponding closing brace }
+  • Always validate that every opening bracket [ has a corresponding closing bracket ]
   • The final answer MUST be a single JSON object, nothing before or after.`;
       }
 
