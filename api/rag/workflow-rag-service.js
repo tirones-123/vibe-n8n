@@ -342,19 +342,7 @@ When you output JSON it must ALWAYS be strictly valid:
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
   • Escape special characters properly (e.g. newlines \n).
-  • The final answer MUST be a single JSON object, nothing before or after.
-
-  VALID JSON CHECKLIST (MANDATORY BEFORE SENDING ANSWER):
-  1. Parse your answer with JSON.parse; if it fails, fix and re-validate.
-  2. Never include ';' inside JSON or after any value.
-  3. Escape every newline inside string values with \\n.
-  4. Do not split property names across lines.
-  5. Ensure no trailing commas.
-  6. NEVER mix properties from different objects - each object must be complete and self-contained.
-  7. Ensure every opening brace { has a matching closing brace }.
-  8. Verify that array elements are properly separated by commas and enclosed in brackets.
-  9. Double-check that nested objects maintain proper structure without property bleeding.
-`;
+  • The final answer MUST be a single JSON object, nothing before or after.`;
       } else {
         // Mode création d'un nouveau workflow
         systemPrompt = `You are an n8n workflow expert.
@@ -386,19 +374,7 @@ When you output JSON it must ALWAYS be strictly valid:
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
   • Escape special characters properly (e.g. newlines \n).
-  • The final answer MUST be a single JSON object, nothing before or after.
-
-  VALID JSON CHECKLIST (MANDATORY BEFORE SENDING ANSWER):
-  1. Parse your answer with JSON.parse; if it fails, fix and re-validate.
-  2. Never include ';' inside JSON or after any value.
-  3. Escape every newline inside string values with \\n.
-  4. Do not split property names across lines.
-  5. Ensure no trailing commas.
-  6. NEVER mix properties from different objects - each object must be complete and self-contained.
-  7. Ensure every opening brace { has a matching closing brace }.
-  8. Verify that array elements are properly separated by commas and enclosed in brackets.
-  9. Double-check that nested objects maintain proper structure without property bleeding.
-`;
+  • The final answer MUST be a single JSON object, nothing before or after.`;
       }
 
       // Construire le contexte enrichi avec les workflows d'exemple
@@ -514,13 +490,6 @@ ${baseWorkflow ?
         await fs.mkdir(debugDir, { recursive: true });
         await fs.writeFile(path.join(debugDir, 'claude-raw-response.txt'), generatedText);
         console.log('💾 Debug: Full response saved to debug/claude-raw-response.txt');
-        // NEW: Log the full Claude response in chunks to avoid truncation in Railway logs
-        const chunkSize = 1000; // Prevent Railway truncation by splitting into smaller logs
-        console.log(`📄 === Begin Claude Full Response (${generatedText.length} chars) ===`);
-        for (let i = 0; i < generatedText.length; i += chunkSize) {
-          console.log(generatedText.slice(i, i + chunkSize));
-        }
-        console.log('📄 === End Claude Full Response ===');
       } catch (e) {
         console.log('⚠️ Debug: Cannot save response:', e.message);
       }
