@@ -4,6 +4,9 @@
  * + Firebase Auth via Offscreen Document (méthode officielle)
  */
 
+// Import CONFIG
+importScripts('/src/config.js');
+
 // FIREBASE OFFSCREEN DOCUMENT MANAGEMENT
 // Basé sur https://firebase.google.com/docs/auth/web/chrome-extension
 const OFFSCREEN_DOCUMENT_PATH = '/offscreen.html';
@@ -710,8 +713,8 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   console.log('📏 Request body size:', requestBodySize, 'chars (', (requestBodySize / 1024).toFixed(1), 'KB)');
   console.log('📦 Full request body:', JSON.stringify(requestBody));
   
-  console.log('🌐 Backend endpoint:', CONFIG.API_URL);
-  if (CONFIG.API_KEY) console.log('🔑 API key (first 20 chars):', CONFIG.API_KEY.substring(0, 20) + '...');
+  console.log('🌐 Backend endpoint:', CONFIG?.API_URL || 'https://vibe-n8n.com/api/claude');
+  if (CONFIG?.API_KEY) console.log('🔑 API key (first 20 chars):', CONFIG.API_KEY.substring(0, 20) + '...');
 
   console.log('📤 Envoi requête workflow RAG');
   console.log('📦 Payload:', JSON.stringify(requestBody));
@@ -723,14 +726,14 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   });
 
   try {
-    console.log('🌐 Tentative de fetch vers:', CONFIG.API_URL);
+    console.log('🌐 Tentative de fetch vers:', CONFIG?.API_URL || 'https://vibe-n8n.com/api/claude');
     
     let authToken = null;
     let authMethod = 'FIREBASE';
     let isAnonymousUser = false;
     
     // Vérifier si c'est une première visite et si free trial est activé
-    if (CONFIG.FEATURES.FREE_TRIAL_REQUEST) {
+    if (CONFIG?.FEATURES?.FREE_TRIAL_REQUEST) {
       const storage = await chrome.storage.local.get(['n8n_free_trial_used', 'n8n_anonymous_user']);
       
       if (!storage.n8n_free_trial_used) {
@@ -812,7 +815,7 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     
     console.log('🏁 Firebase authentication confirmed for extension');
     
-    const fetchPromise = fetch(CONFIG.API_URL, {
+    const fetchPromise = fetch(CONFIG?.API_URL || 'https://vibe-n8n.com/api/claude', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1007,7 +1010,7 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
   console.log('📏 Request body size:', requestBodySize, 'chars (', (requestBodySize / 1024).toFixed(1), 'KB)');
   console.log('📦 Request body sample (first 1000 chars):', JSON.stringify(requestBody).substring(0, 1000) + '...');
   
-  console.log('🌐 Backend endpoint:', CONFIG.API_URL);
+  console.log('🌐 Backend endpoint:', CONFIG?.API_URL || 'https://vibe-n8n.com/api/claude');
 
   console.log('📤 Envoi requête amélioration workflow RAG');
   console.log('📦 Payload size:', JSON.stringify(requestBody).length, 'chars');
@@ -1062,7 +1065,7 @@ async function handleWorkflowImprovementRequest(currentWorkflow, improvementRequ
   console.log('🏁 Firebase authentication confirmed for improvement');
 
   try {
-    const response = await fetch(CONFIG.API_URL, {
+    const response = await fetch(CONFIG?.API_URL || 'https://vibe-n8n.com/api/claude', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1231,7 +1234,7 @@ async function processWorkflowRAGResponse(data, tabId, isAnonymousUser = false) 
         console.log('✅ Workflow généré avec succès');
         
         // Marquer le free trial comme utilisé si c'était un utilisateur anonyme
-        if (isAnonymousUser && CONFIG.FEATURES.FREE_TRIAL_REQUEST) {
+        if (isAnonymousUser && CONFIG?.FEATURES?.FREE_TRIAL_REQUEST) {
           try {
             await chrome.storage.local.set({
               'n8n_free_trial_used': true
@@ -1278,7 +1281,7 @@ async function processWorkflowRAGResponse(data, tabId, isAnonymousUser = false) 
           console.log('✅ Workflow décompressé avec succès via service worker');
           
           // Marquer le free trial comme utilisé si c'était un utilisateur anonyme
-          if (isAnonymousUser && CONFIG.FEATURES.FREE_TRIAL_REQUEST) {
+          if (isAnonymousUser && CONFIG?.FEATURES?.FREE_TRIAL_REQUEST) {
             try {
               await chrome.storage.local.set({
                 'n8n_free_trial_used': true

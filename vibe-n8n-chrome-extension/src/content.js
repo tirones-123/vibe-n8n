@@ -4142,7 +4142,7 @@ async function checkSavedDomains(currentHostname) {
       btn.addEventListener('click', async () => {
         const limit = parseInt(btn.dataset.limit);
         try {
-          const response = await fetch(`${CONFIG.API_BASE_URL}/api/enable-usage-based`, {
+          const response = await fetch(`${CONFIG?.API_BASE_URL || 'https://vibe-n8n.com'}/api/enable-usage-based`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -4184,7 +4184,7 @@ async function checkSavedDomains(currentHostname) {
       btn.addEventListener('click', async () => {
         const limit = parseInt(btn.dataset.limit);
         try {
-          const response = await fetch(`${CONFIG.API_BASE_URL}/api/enable-usage-based`, {
+          const response = await fetch(`${CONFIG?.API_BASE_URL || 'https://vibe-n8n.com'}/api/enable-usage-based`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
