@@ -497,10 +497,10 @@ ${baseWorkflow ?
         await fs.writeFile(path.join(debugDir, 'claude-raw-response.txt'), generatedText);
         console.log('💾 Debug: Full response saved to debug/claude-raw-response.txt');
         
-        // 🆕 NOUVEAU : Log du contenu pour Railway
-        console.log('\n📄 === CLAUDE RAW RESPONSE (first 2000 chars) ===');
-        console.log(generatedText.substring(0, 2000));
-        if (generatedText.length > 2000) {
+        // 🆕 NOUVEAU : Log du contenu pour Railway - ÉTENDU
+        console.log('\n📄 === CLAUDE RAW RESPONSE (first 5000 chars) ===');
+        console.log(generatedText.substring(0, 5000));
+        if (generatedText.length > 5000) {
           console.log(`... (truncated, total: ${generatedText.length} chars)`);
         }
         console.log('📄 === END RAW RESPONSE ===\n');
@@ -521,10 +521,10 @@ ${baseWorkflow ?
           await fs.writeFile(path.join(debugDir, 'claude-extracted-json.txt'), jsonText);
           console.log('💾 Debug: Extracted JSON saved to debug/claude-extracted-json.txt');
           
-          // 🆕 NOUVEAU : Log du JSON extrait pour Railway
-          console.log('\n📄 === EXTRACTED JSON (first 1500 chars) ===');
-          console.log(jsonText.substring(0, 1500));
-          if (jsonText.length > 1500) {
+          // 🆕 NOUVEAU : Log du JSON extrait pour Railway - ÉTENDU
+          console.log('\n📄 === EXTRACTED JSON (first 8000 chars) ===');
+          console.log(jsonText.substring(0, 8000));
+          if (jsonText.length > 8000) {
             console.log(`... (truncated, total: ${jsonText.length} chars)`);
           }
           console.log('📄 === END EXTRACTED JSON ===\n');
@@ -679,6 +679,39 @@ ${baseWorkflow ?
       } catch (parseError) {
         console.error('❌ Failed to parse generated JSON:', parseError.message);
         console.error('📍 Error position:', parseError.message);
+        
+        // 🆕 NOUVEAU : Analyser l'erreur de parsing plus précisément
+        const errorMatch = parseError.message.match(/position (\d+)/);
+        if (errorMatch) {
+          const errorPosition = parseInt(errorMatch[1]);
+          const jsonText = generatedText.match(/\{[\s\S]*\}/)?.[0] || generatedText;
+          
+          console.log('\n🔍 === DETAILED JSON ERROR ANALYSIS ===');
+          console.log(`❌ Error at position ${errorPosition} in JSON (total length: ${jsonText.length})`);
+          
+          // Montrer le contexte autour de l'erreur (plus large)
+          const start = Math.max(0, errorPosition - 500);
+          const end = Math.min(jsonText.length, errorPosition + 500);
+          const contextBefore = jsonText.substring(start, errorPosition);
+          const errorChar = jsonText.charAt(errorPosition);
+          const contextAfter = jsonText.substring(errorPosition + 1, end);
+          
+          console.log('📄 Context around error (500 chars before/after):');
+          console.log('---BEFORE ERROR---');
+          console.log(contextBefore);
+          console.log('---ERROR CHARACTER---');
+          console.log(`"${errorChar}" (char code: ${errorChar.charCodeAt(0)})`);
+          console.log('---AFTER ERROR---');
+          console.log(contextAfter);
+          console.log('🔍 === END ERROR ANALYSIS ===\n');
+          
+          // Montrer aussi le JSON autour de la position d'erreur (pas depuis le début)
+          const chunkStart = Math.max(0, errorPosition - 1000);
+          const chunkEnd = Math.min(jsonText.length, errorPosition + 1000);
+          console.log(`\n📄 === JSON CHUNK AROUND ERROR (positions ${chunkStart}-${chunkEnd}) ===`);
+          console.log(jsonText.substring(chunkStart, chunkEnd));
+          console.log('📄 === END JSON CHUNK ===\n');
+        }
         
         if (onProgress) {
           onProgress('error', { message: 'Error parsing JSON response' });
