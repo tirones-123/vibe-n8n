@@ -341,14 +341,7 @@ When you output JSON it must ALWAYS be strictly valid:
   • Use double quotes ("") for all keys and string values.
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
-  • Escape special characters properly (e.g. newlines \\n, quotes \\", backslashes \\\\).
-  • For JavaScript code in nodes: escape ALL quotes and newlines. Use \\n for line breaks, \\" for quotes.
-  • For HTTP request bodies: ensure proper JSON string escaping.
-  • Test your JSON mentality: each property must end with comma (except last) or closing brace.
-  • Pay special attention to connections object structure: it should be an object with node names as keys, not an array.
-  • Connections structure must be: "connections": { "NodeName": { "main": [[{...}]] } }
-  • Always validate that every opening brace { has a corresponding closing brace }
-  • Always validate that every opening bracket [ has a corresponding closing bracket ]
+  • Escape special characters properly (e.g. newlines \n).
   • The final answer MUST be a single JSON object, nothing before or after.`;
       } else {
         // Mode création d'un nouveau workflow
@@ -380,14 +373,7 @@ When you output JSON it must ALWAYS be strictly valid:
   • Use double quotes ("") for all keys and string values.
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
-  • Escape special characters properly (e.g. newlines \\n, quotes \\", backslashes \\\\).
-  • For JavaScript code in nodes: escape ALL quotes and newlines. Use \\n for line breaks, \\" for quotes.
-  • For HTTP request bodies: ensure proper JSON string escaping.
-  • Test your JSON mentality: each property must end with comma (except last) or closing brace.
-  • Pay special attention to connections object structure: it should be an object with node names as keys, not an array.
-  • Connections structure must be: "connections": { "NodeName": { "main": [[{...}]] } }
-  • Always validate that every opening brace { has a corresponding closing brace }
-  • Always validate that every opening bracket [ has a corresponding closing bracket ]
+  • Escape special characters properly (e.g. newlines \n).
   • The final answer MUST be a single JSON object, nothing before or after.`;
       }
 
@@ -504,14 +490,13 @@ ${baseWorkflow ?
         await fs.mkdir(debugDir, { recursive: true });
         await fs.writeFile(path.join(debugDir, 'claude-raw-response.txt'), generatedText);
         console.log('💾 Debug: Full response saved to debug/claude-raw-response.txt');
-        
-        // 🆕 NOUVEAU : Log du contenu pour Railway - ÉTENDU
-        console.log('\n📄 === CLAUDE RAW RESPONSE (first 5000 chars) ===');
-        console.log(generatedText.substring(0, 5000));
-        if (generatedText.length > 5000) {
-          console.log(`... (truncated, total: ${generatedText.length} chars)`);
+        // NEW: Log the full Claude response in chunks to avoid truncation in Railway logs
+        const chunkSize = 1000; // Prevent Railway truncation by splitting into smaller logs
+        console.log(`📄 === Begin Claude Full Response (${generatedText.length} chars) ===`);
+        for (let i = 0; i < generatedText.length; i += chunkSize) {
+          console.log(generatedText.slice(i, i + chunkSize));
         }
-        console.log('📄 === END RAW RESPONSE ===\n');
+        console.log('📄 === End Claude Full Response ===');
       } catch (e) {
         console.log('⚠️ Debug: Cannot save response:', e.message);
       }
@@ -524,18 +509,12 @@ ${baseWorkflow ?
         
         // Sauvegarder la réponse brute pour debug
         try {
+          // Créer le dossier debug s'il n'existe pas
           const debugDir = path.join(process.cwd(), 'debug');
           await fs.mkdir(debugDir, { recursive: true });
+          
           await fs.writeFile(path.join(debugDir, 'claude-extracted-json.txt'), jsonText);
           console.log('💾 Debug: Extracted JSON saved to debug/claude-extracted-json.txt');
-          
-          // 🆕 NOUVEAU : Log du JSON extrait pour Railway - ÉTENDU
-          console.log('\n📄 === EXTRACTED JSON (first 8000 chars) ===');
-          console.log(jsonText.substring(0, 8000));
-          if (jsonText.length > 8000) {
-            console.log(`... (truncated, total: ${jsonText.length} chars)`);
-          }
-          console.log('📄 === END EXTRACTED JSON ===\n');
         } catch (e) {
           console.log('⚠️ Debug: Cannot save extracted JSON:', e.message);
         }
@@ -545,77 +524,6 @@ ${baseWorkflow ?
         
         // Tentative de parsing
         const parsedResponse = JSON.parse(jsonText);
-
-        // 🆕 LOG DU JSON FINAL PARSÉ AVEC SUCCÈS
-        console.log('\n🎯 === JSON PARSING SUCCESS ===');
-        const responseSize = JSON.stringify(parsedResponse).length;
-        console.log(`📏 Final JSON size: ${(responseSize / 1024).toFixed(1)}KB`);
-        
-        if (parsedResponse.workflow && parsedResponse.explanation) {
-          console.log('📋 Structure: workflow + explanation');
-          console.log(`📊 Workflow nodes: ${parsedResponse.workflow.nodes?.length || 0}`);
-          console.log(`📝 Explanation summary: "${parsedResponse.explanation.summary}"`);
-          
-          // Log du workflow de manière intelligente (tronqué si trop gros)
-          if (responseSize < 5120) { // < 5KB : log complet
-            console.log('📄 Complete generated workflow:');
-            console.log(JSON.stringify(parsedResponse.workflow, null, 2));
-          } else { // > 5KB : log structure seulement
-            console.log('📄 Workflow structure (truncated - too large for logs):');
-            const truncatedWorkflow = {
-              name: parsedResponse.workflow.name,
-              nodes: parsedResponse.workflow.nodes?.slice(0, 3).map(n => ({
-                name: n.name,
-                type: n.type,
-                id: n.id
-              })) || [],
-              connections: Object.keys(parsedResponse.workflow.connections || {}),
-              totalNodes: parsedResponse.workflow.nodes?.length || 0,
-              totalConnections: Object.keys(parsedResponse.workflow.connections || {}).length
-            };
-            console.log(JSON.stringify(truncatedWorkflow, null, 2));
-            console.log(`... (${parsedResponse.workflow.nodes?.length - 3 || 0} more nodes)`);
-          }
-        } else if (parsedResponse.nodes) {
-          console.log('📋 Structure: legacy workflow format');
-          console.log(`📊 Workflow nodes: ${parsedResponse.nodes?.length || 0}`);
-          
-          // Log du workflow de manière intelligente
-          if (responseSize < 5120) { // < 5KB : log complet
-            console.log('📄 Complete generated workflow:');
-            console.log(JSON.stringify(parsedResponse, null, 2));
-          } else { // > 5KB : log structure seulement
-            console.log('📄 Workflow structure (truncated - too large for logs):');
-            const truncatedWorkflow = {
-              name: parsedResponse.name,
-              nodes: parsedResponse.nodes?.slice(0, 3).map(n => ({
-                name: n.name,
-                type: n.type,
-                id: n.id
-              })) || [],
-              connections: Object.keys(parsedResponse.connections || {}),
-              totalNodes: parsedResponse.nodes?.length || 0,
-              totalConnections: Object.keys(parsedResponse.connections || {}).length
-            };
-            console.log(JSON.stringify(truncatedWorkflow, null, 2));
-            console.log(`... (${parsedResponse.nodes?.length - 3 || 0} more nodes)`);
-          }
-        } else {
-          console.log('❓ Structure: unknown format');
-          console.log('📄 Raw parsed response:');
-          console.log(JSON.stringify(parsedResponse, null, 2));
-        }
-        
-        // Sauvegarder le JSON final pour debug
-        try {
-          const debugDir = path.join(process.cwd(), 'debug');
-          await fs.mkdir(debugDir, { recursive: true });
-          await fs.writeFile(path.join(debugDir, 'claude-final-parsed.json'), JSON.stringify(parsedResponse, null, 2));
-          console.log('💾 Debug: Final parsed JSON saved to debug/claude-final-parsed.json');
-        } catch (e) {
-          console.log('⚠️ Debug: Cannot save final parsed JSON:', e.message);
-        }
-        console.log('🎯 === END JSON PARSING ===\n');
 
         // Vérifier si on a la nouvelle structure avec workflow + explanation
         if (parsedResponse.workflow && parsedResponse.explanation) {
@@ -688,39 +596,6 @@ ${baseWorkflow ?
         console.error('❌ Failed to parse generated JSON:', parseError.message);
         console.error('📍 Error position:', parseError.message);
         
-        // 🆕 NOUVEAU : Analyser l'erreur de parsing plus précisément
-        const errorMatch = parseError.message.match(/position (\d+)/);
-        if (errorMatch) {
-          const errorPosition = parseInt(errorMatch[1]);
-          const jsonText = generatedText.match(/\{[\s\S]*\}/)?.[0] || generatedText;
-          
-          console.log('\n🔍 === DETAILED JSON ERROR ANALYSIS ===');
-          console.log(`❌ Error at position ${errorPosition} in JSON (total length: ${jsonText.length})`);
-          
-          // Montrer le contexte autour de l'erreur (plus large)
-          const start = Math.max(0, errorPosition - 500);
-          const end = Math.min(jsonText.length, errorPosition + 500);
-          const contextBefore = jsonText.substring(start, errorPosition);
-          const errorChar = jsonText.charAt(errorPosition);
-          const contextAfter = jsonText.substring(errorPosition + 1, end);
-          
-          console.log('📄 Context around error (500 chars before/after):');
-          console.log('---BEFORE ERROR---');
-          console.log(contextBefore);
-          console.log('---ERROR CHARACTER---');
-          console.log(`"${errorChar}" (char code: ${errorChar.charCodeAt(0)})`);
-          console.log('---AFTER ERROR---');
-          console.log(contextAfter);
-          console.log('🔍 === END ERROR ANALYSIS ===\n');
-          
-          // Montrer aussi le JSON autour de la position d'erreur (pas depuis le début)
-          const chunkStart = Math.max(0, errorPosition - 1000);
-          const chunkEnd = Math.min(jsonText.length, errorPosition + 1000);
-          console.log(`\n📄 === JSON CHUNK AROUND ERROR (positions ${chunkStart}-${chunkEnd}) ===`);
-          console.log(jsonText.substring(chunkStart, chunkEnd));
-          console.log('📄 === END JSON CHUNK ===\n');
-        }
-        
         if (onProgress) {
           onProgress('error', { message: 'Error parsing JSON response' });
         }
@@ -732,15 +607,12 @@ ${baseWorkflow ?
           // Tentatives de réparation courantes
           console.log('🔧 Tentative de réparation du JSON...');
           
-          // Améliorations pour la réparation JSON
+          // 1. Supprimer les virgules en trop avant }
           jsonText = jsonText.replace(/,\s*}/g, '}');
           jsonText = jsonText.replace(/,\s*]/g, ']');
-          // Nouveau: fixer les guillemets non échappés dans le code
-          jsonText = jsonText.replace(/"code":\s*"([^"]*)"([^"]*)"([^"]*)"/g, '"code": "$1\\"$2\\"$3"');
-          // Nouveau: fixer les ] erronés après les connections
-          jsonText = jsonText.replace(/(\}\s*)\]\s*\}/g, '$1}');
-          // Nouveau: fixer les virgules manquantes avant les fermetures
-          jsonText = jsonText.replace(/(\})\s*(\])/g, '$1,$2');
+          
+          // 2. Ajouter des virgules manquantes (très basique)
+          // Cette partie pourrait être étendue selon les erreurs observées
           
           const repairedResponse = JSON.parse(jsonText);
           console.log('✅ JSON réparé avec succès !');
