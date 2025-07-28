@@ -527,7 +527,7 @@ export default async function handler(req, res) {
 
           // Log usage event for analytics
           await firebaseService.logUsageEvent(req.user.uid, 'workflow_generation', {
-            user_prompt: prompt.length > 2000 ? prompt.substring(0, 2000) + '...[truncated]' : prompt, // Store user prompt (max 2000 chars)
+            user_prompt: prompt.length > 2000 ? prompt.substring(0, 2000) + '...[truncated]' : prompt, // Store ORIGINAL user prompt (not RAG-enriched prompt sent to Claude)
             prompt_length: prompt.length,
             input_tokens: result.tokensUsed.input,
             output_tokens: result.tokensUsed.output || 0,
