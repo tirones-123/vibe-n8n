@@ -24,30 +24,14 @@ chrome.runtime.onMessage.addListener(handleChromeMessages);
 const FIREBASE_API_KEY = "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I";
 
 async function firebaseEmailRequest(mode, email, password) {
-  let endpoint, body;
-  
-  if (mode === 'anonymous') {
-    // Firebase Anonymous Auth
-    endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`;
-    body = {
-      returnSecureToken: true
-    };
-  } else if (mode === 'signup') {
-    endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`;
-    body = {
-      email,
-      password,
-      returnSecureToken: true
-    };
-  } else {
-    endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`;
-    body = {
-      email,
-      password,
-      returnSecureToken: true
-    };
-  }
-  
+  const endpoint = mode === 'signup'
+    ? `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`
+    : `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`;
+  const body = {
+    email,
+    password,
+    returnSecureToken: true
+  };
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -195,35 +179,6 @@ function handleChromeMessages(message, sender, sendResponse) {
       console.log('❌ Sign out error:', e);
       sendResponse({ success: false, error: { message: e.message } });
     }
-    return true;
-  }
-
-  // Firebase Anonymous Auth pour free trial
-  if (message.type === 'firebase-anonymous-auth') {
-    (async () => {
-      try {
-        console.log('🔥 Starting anonymous authentication for free trial...');
-        const result = await firebaseEmailRequest('anonymous');
-        currentUser = {
-          uid: result.localId,
-          email: null,
-          idToken: result.idToken,
-          refreshToken: result.refreshToken,
-          emailVerified: false,
-          isAnonymous: true
-        };
-        
-        console.log('✅ Anonymous user created:', currentUser.uid);
-        sendResponse({ 
-          success: true, 
-          user: currentUser,
-          isAnonymous: true
-        });
-      } catch (e) {
-        console.error('❌ Anonymous auth error:', e);
-        sendResponse({ success: false, error: { message: e.message } });
-      }
-    })();
     return true;
   }
 

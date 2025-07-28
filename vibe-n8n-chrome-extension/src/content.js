@@ -4142,7 +4142,7 @@ async function checkSavedDomains(currentHostname) {
       btn.addEventListener('click', async () => {
         const limit = parseInt(btn.dataset.limit);
         try {
-          const response = await fetch(`${CONFIG?.API_BASE_URL || 'https://vibe-n8n.com'}/api/enable-usage-based`, {
+          const response = await fetch(`${CONFIG.API_BASE_URL}/api/enable-usage-based`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -4184,7 +4184,7 @@ async function checkSavedDomains(currentHostname) {
       btn.addEventListener('click', async () => {
         const limit = parseInt(btn.dataset.limit);
         try {
-          const response = await fetch(`${CONFIG?.API_BASE_URL || 'https://vibe-n8n.com'}/api/enable-usage-based`, {
+          const response = await fetch(`${CONFIG.API_BASE_URL}/api/enable-usage-based`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -4243,28 +4243,6 @@ async function checkSavedDomains(currentHostname) {
         } else {
           alert('Firebase authentication required: ' + (message.error || 'Please sign in to continue.'));
         }
-        break;
-      
-      case 'FREE_TRIAL_COMPLETE':
-        console.log('🎁 Free trial completed successfully:', message.message);
-        // Afficher un message de succès et demander l'authentification
-        if (lastMessage) {
-          updateChatMessage(lastMessage, 
-            '🎉 **Your first workflow has been generated successfully!**\n\n' +
-            '✨ This was your free trial workflow. To create unlimited workflows:\n\n' +
-            '1. 🔐 **Sign in** with your Google account\n' +
-            '2. 🆓 **Get 70,000 free tokens** per month\n' +
-            '3. 🚀 **Create as many workflows as you need**\n\n' +
-            '*Click the sign-in button to get started!*', 
-            false
-          );
-        }
-        // Afficher le modal d'authentification après un court délai
-        setTimeout(() => {
-          if (contentAuthIntegration && contentAuthIntegration.showSimpleAuthModal) {
-            contentAuthIntegration.showSimpleAuthModal();
-          }
-        }, 2000);
         break;
       
       case 'EMAIL_NOT_VERIFIED':

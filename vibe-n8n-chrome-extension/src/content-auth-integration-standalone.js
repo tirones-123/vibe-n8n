@@ -18,46 +18,6 @@ class ContentAuthIntegration {
     this.initialized = false;
     this.authRequired = false;
     
-    // Ensure CONFIG is available with fallback
-    this.CONFIG = this.getConfig();
-  }
-  
-  // Get CONFIG with fallback for safety
-  getConfig() {
-    // Try different ways to access CONFIG
-    if (typeof CONFIG !== 'undefined') {
-      return CONFIG;
-    }
-    if (typeof window !== 'undefined' && window.CONFIG) {
-      return window.CONFIG;
-    }
-    if (typeof globalThis !== 'undefined' && globalThis.CONFIG) {
-      return globalThis.CONFIG;
-    }
-    
-    // Fallback config if CONFIG is not available
-    console.warn('⚠️ CONFIG not found, using fallback');
-    return {
-      FEATURES: {
-        FREE_TRIAL_REQUEST: false, // Safe default
-        FIREBASE_AUTH: true,
-        PRICING_SYSTEM: true,
-        SUBSCRIPTION_PLANS: true,
-        USAGE_BASED_BILLING: true,
-        RAG_WORKFLOW_GENERATION: true,
-        STREAMING_RESPONSE: true,
-        COMPLETE_WORKFLOW_GENERATION: true,
-        WORKFLOW_EXPLANATION: true,
-        QUOTA_MANAGEMENT: true
-      },
-      API_BASE_URL: 'https://vibe-n8n.com',
-      API_URL: 'https://vibe-n8n.com/api/claude'
-    };
-  }
-
-  initialize() {
-    if (this.initialized) return;
-    
     // Configuration from global window.CONFIG or fallback
     this.CONFIG = window.CONFIG || {
       API_URL: 'https://vibe-n8n.com/api/claude',
@@ -426,20 +386,6 @@ class ContentAuthIntegration {
     try {
       console.log('🔍 Vérification de l\'authentification Firebase...');
       
-      // Vérifier si le free trial est activé et disponible
-      if (this.CONFIG?.FEATURES?.FREE_TRIAL_REQUEST) {
-        const storage = await chrome.storage.local.get(['n8n_free_trial_used']);
-        if (!storage.n8n_free_trial_used) {
-          console.log('🎁 Free trial available - allowing request without auth');
-          return {
-            allowed: true,
-            reason: 'FREE_TRIAL_AVAILABLE',
-            method: 'anonymous',
-            isFreeTrial: true
-          };
-        }
-      }
-      
       // Vérifier l'état actuel de l'utilisateur Firebase
       const currentUser = await chrome.runtime.sendMessage({
         type: 'firebase-get-user'
@@ -488,7 +434,7 @@ class ContentAuthIntegration {
         console.log('🔍 Vérification des quotas avec le backend...');
         
         // Get fresh user info to check quota
-        const response = await fetch(`${this.CONFIG.API_BASE_URL}/api/me`, {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/api/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -853,7 +799,7 @@ class ContentAuthIntegration {
         throw new Error('Authentication required');
       }
       
-      const response = await fetch(`${this.CONFIG.API_BASE_URL}/api/create-checkout-session`, {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
