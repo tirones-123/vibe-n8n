@@ -527,13 +527,20 @@ export default async function handler(req, res) {
 
           // Log usage event for analytics
           await firebaseService.logUsageEvent(req.user.uid, 'workflow_generation', {
+            user_prompt: prompt.length > 2000 ? prompt.substring(0, 2000) + '...[truncated]' : prompt, // Store user prompt (max 2000 chars)
+            prompt_length: prompt.length,
             input_tokens: result.tokensUsed.input,
             output_tokens: result.tokensUsed.output || 0,
             workflow_size: sessionState.workflowSize,
             mode: sessionState.mode,
             duration: duration,
             ai_context_sources: result.similarWorkflows || [],
-            ai_context_files: result.similarWorkflowFiles || []
+            ai_context_files: result.similarWorkflowFiles || [],
+            user_plan: req.user.plan || 'unknown',
+            is_anonymous: req.user.isAnonymous || false,
+            session_id: sessionState.id,
+            has_base_workflow: !!baseWorkflow,
+            base_workflow_nodes: baseWorkflow?.nodes?.length || 0
           });
 
           console.log(`📊 [${sessionState.id}] Usage reported for user ${req.user.uid}`);
