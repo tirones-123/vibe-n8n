@@ -1,7 +1,7 @@
 import { createWorkflowRAGService } from './rag/workflow-rag-service.js';
 import firebaseService from './services/firebase-service.js';
 import stripeService from './services/stripe-service.js';
-import { verifyAuth, checkTokenQuota } from './middleware/auth.js';
+import { verifyAuth, checkTokenQuota, verifyAuthOrAllowAnonymous, checkTokenQuotaOrAnonymous } from './middleware/auth.js';
 
 // Services initialization status
 let servicesInitialized = false;
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
   const servicesReady = await initializeServicesIfNeeded();
   console.log('🔧 Services initialization result:', servicesReady);
 
-  // Manual authentication logic to avoid middleware timing issues
+  // Manual authentication logic to avoid middleware timing issues (with anonymous support)
   const authHeader = req.headers.authorization;
   const authMethod = req.headers['x-auth-method'] || 'UNKNOWN';
   
@@ -105,8 +105,31 @@ export default async function handler(req, res) {
 
   const token = authHeader.substring(7);
   
+  // Check if it's an anonymous first-time user
+  if (token.startsWith('ANONYMOUS_')) {
+    const clientId = token.substring(10); // Remove 'ANONYMOUS_' prefix
+    
+    // Validate the anonymous token format
+    if (clientId && clientId.length >= 20 && /^[a-f0-9-]+$/i.test(clientId)) {
+      req.user = {
+        uid: `anonymous_${clientId}`,
+        email: 'anonymous@first-try.com',
+        plan: 'ANONYMOUS',
+        remaining_tokens: 15000, // One free request
+        isAnonymous: true,
+        clientId: clientId
+      };
+      
+      console.log('🎭 Anonymous first-time user allowed:', clientId.substring(0, 8) + '...');
+    } else {
+      return res.status(401).json({
+        error: 'Invalid anonymous token format',
+        code: 'INVALID_ANONYMOUS_TOKEN'
+      });
+    }
+  }
   // Check if it's the legacy API key
-  if (token === process.env.BACKEND_API_KEY) {
+  else if (token === process.env.BACKEND_API_KEY) {
     // Legacy API key authentication
     req.user = {
       uid: 'system',
@@ -182,64 +205,94 @@ export default async function handler(req, res) {
     }
   }
 
-  // Check token quota before processing (only if not system user)
-  if (!req.user.isSystem && servicesReady.firebase) {
-    try {
-      const { allowed, reason, userData } = await firebaseService.canUserMakeRequest(
-        req.user.uid, 
-        10000
-      );
-
-      if (!allowed) {
+  // Check token quota before processing (with anonymous support)
+  if (!req.user.isSystem) {
+    // Special handling for anonymous users
+    if (req.user.isAnonymous) {
+      const estimatedTokens = 10000;
+      if (estimatedTokens > req.user.remaining_tokens) {
         requestStats.tokenQuotaBlocked++;
         
-        let errorResponse = {
-          error: 'Quota exceeded',
-          code: reason,
+        return res.status(429).json({
+          error: 'Anonymous quota exceeded',
+          code: 'ANONYMOUS_LIMIT_EXCEEDED',
+          message: '🎉 You\'ve tried our AI assistant! Sign up to get 70,000 free tokens and unlimited workflow generation.',
+          action: 'signup_required',
           user: {
-            plan: userData?.plan,
-            remaining_tokens: userData?.remaining_tokens,
-            usage_based_enabled: userData?.usage_based_enabled,
-            usage_limit_usd: userData?.usage_limit_usd,
-            this_month_usage_usd: userData?.this_month_usage_usd
-          }
-        };
+            plan: 'ANONYMOUS',
+            remaining_tokens: 0,
+            tried_tokens: estimatedTokens
+          },
+          signup_benefits: [
+            '70,000 free tokens per month',
+            'Access to all workflow types',
+            'Real-time streaming responses',
+            'Save and share workflows'
+          ]
+        });
+      }
+      
+      console.log(`🎭 Anonymous user ${req.user.clientId} using ${estimatedTokens} tokens (${req.user.remaining_tokens} remaining)`);
+    }
+    // Regular Firebase users
+    else if (servicesReady.firebase) {
+      try {
+        const { allowed, reason, userData } = await firebaseService.canUserMakeRequest(
+          req.user.uid, 
+          10000
+        );
 
-        // Customize error message based on reason
-        switch (reason) {
-          case 'FREE_LIMIT_EXCEEDED':
-            errorResponse.message = 'You have reached the free limit. Upgrade to Pro to continue.';
-            errorResponse.action = 'upgrade_to_pro';
-            break;
+        if (!allowed) {
+          requestStats.tokenQuotaBlocked++;
           
-          case 'PRO_LIMIT_EXCEEDED':
-            errorResponse.message = 'Pro quota reached. Enable Usage-Based Spending?';
-            errorResponse.action = 'enable_usage_based';
-            errorResponse.options = [20, 50, 100]; // USD spending limits
-            break;
-          
-          case 'USAGE_LIMIT_EXCEEDED':
-            errorResponse.message = 'Usage-based budget exhausted. Increase the limit?';
-            errorResponse.action = 'increase_usage_limit';
-            break;
-          
-          default:
-            errorResponse.message = 'Insufficient quota for this request.';
+          let errorResponse = {
+            error: 'Quota exceeded',
+            code: reason,
+            user: {
+              plan: userData?.plan,
+              remaining_tokens: userData?.remaining_tokens,
+              usage_based_enabled: userData?.usage_based_enabled,
+              usage_limit_usd: userData?.usage_limit_usd,
+              this_month_usage_usd: userData?.this_month_usage_usd
+            }
+          };
+
+          // Customize error message based on reason
+          switch (reason) {
+            case 'FREE_LIMIT_EXCEEDED':
+              errorResponse.message = 'You have reached the free limit. Upgrade to Pro to continue.';
+              errorResponse.action = 'upgrade_to_pro';
+              break;
+            
+            case 'PRO_LIMIT_EXCEEDED':
+              errorResponse.message = 'Pro quota reached. Enable Usage-Based Spending?';
+              errorResponse.action = 'enable_usage_based';
+              errorResponse.options = [20, 50, 100]; // USD spending limits
+              break;
+            
+            case 'USAGE_LIMIT_EXCEEDED':
+              errorResponse.message = 'Usage-based budget exhausted. Increase the limit?';
+              errorResponse.action = 'increase_usage_limit';
+              break;
+            
+            default:
+              errorResponse.message = 'Insufficient quota for this request.';
+          }
+
+          return res.status(429).json(errorResponse);
         }
 
-        return res.status(429).json(errorResponse);
+        // Attach updated user data to request
+        req.user = { ...req.user, ...userData };
+        console.log('✅ Quota check passed for user plan:', req.user.plan);
+        
+      } catch (quotaError) {
+        console.error('❌ Token quota check error:', quotaError);
+        return res.status(500).json({
+          error: 'Error checking token quota',
+          code: 'QUOTA_CHECK_ERROR'
+        });
       }
-
-      // Attach updated user data to request
-      req.user = { ...req.user, ...userData };
-      console.log('✅ Quota check passed for user plan:', req.user.plan);
-      
-    } catch (quotaError) {
-      console.error('❌ Token quota check error:', quotaError);
-      return res.status(500).json({
-        error: 'Error checking token quota',
-        code: 'QUOTA_CHECK_ERROR'
-      });
     }
   }
 

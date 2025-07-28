@@ -626,12 +626,19 @@ function handleWorkflowChunk(data, tabId) {
       // Nettoyer le buffer
       delete chunkBuffer[sessionId];
       
+      // Mark anonymous trial as used if this was an anonymous request
+      if (isAnonymousAttempt) {
+        console.log('🎭 Anonymous trial successful, marking as used');
+        markAnonymousTrialUsed(); // Don't await to avoid blocking
+      }
+      
       // Envoyer le workflow complet
       safeSendMessage(tabId, {
         type: 'WORKFLOW_COMPLETE',
         workflow: workflowData.workflow,
         explanation: workflowData.explanation,
-        message: `Workflow volumineux assemblé (${data.total} parties)`
+        message: `Workflow volumineux assemblé (${data.total} parties)`,
+        wasAnonymous: isAnonymousAttempt
       });
       
     } catch (error) {
@@ -700,54 +707,66 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
   try {
     console.log('🌐 Tentative de fetch vers:', CONFIG.API_URL);
     
-    // FIREBASE AUTH OBLIGATOIRE - Pas de fallback legacy pour l'extension Chrome
     let authToken = null;
     let authMethod = 'FIREBASE';
+    let isAnonymousAttempt = false;
     
-    console.log('🔧 Firebase Auth obligatoire pour extension Chrome...');
+    // NEW: Check if user can try anonymous mode first
+    const hasTriedAnonymous = await hasUsedAnonymousTrial();
     
-    try {
-      console.log('🔥 Getting Firebase token (required)...');
-      const firebaseToken = await firebaseGetIdToken();
-      console.log('🎫 firebaseGetIdToken result:', typeof firebaseToken, firebaseToken ? '✅ Token received' : '❌ No token');
+    if (!hasTriedAnonymous) {
+      // Try anonymous mode first for new users
+      authToken = generateAnonymousToken();
+      authMethod = 'ANONYMOUS';
+      isAnonymousAttempt = true;
+      console.log('🎭 First-time user: trying anonymous mode with token:', authToken.substring(0, 20) + '...');
+    } else {
+      // FIREBASE AUTH OBLIGATOIRE - For users who already tried anonymous
+      console.log('🔧 Firebase Auth required (anonymous trial already used)...');
       
-      if (firebaseToken && typeof firebaseToken === 'string' && firebaseToken.length > 50) {
-        authToken = firebaseToken;
-        console.log('✅ Using Firebase authentication token (length:', firebaseToken.length, ')');
-        console.log('🔤 Token preview:', firebaseToken.substring(0, 50) + '...');
-      } else {
-        console.error('❌ Firebase token invalid or empty - Extension requires Firebase Auth');
-        console.log('🔍 Token details:', { type: typeof firebaseToken, length: firebaseToken?.length });
+      try {
+        console.log('🔥 Getting Firebase token (required)...');
+        const firebaseToken = await firebaseGetIdToken();
+        console.log('🎫 firebaseGetIdToken result:', typeof firebaseToken, firebaseToken ? '✅ Token received' : '❌ No token');
+        
+        if (firebaseToken && typeof firebaseToken === 'string' && firebaseToken.length > 50) {
+          authToken = firebaseToken;
+          console.log('✅ Using Firebase authentication token (length:', firebaseToken.length, ')');
+          console.log('🔤 Token preview:', firebaseToken.substring(0, 50) + '...');
+        } else {
+          console.error('❌ Firebase token invalid or empty - Extension requires Firebase Auth');
+          console.log('🔍 Token details:', { type: typeof firebaseToken, length: firebaseToken?.length });
+          
+          // Envoyer une erreur pour déclencher l'auth modal
+          chrome.tabs.sendMessage(tabId, {
+            type: 'FIREBASE_AUTH_REQUIRED',
+            error: 'Firebase authentication required. Please sign in to continue.'
+          });
+          return;
+        }
+      } catch (firebaseError) {
+        console.error('❌ Firebase auth failed - Extension requires authentication:', firebaseError);
+        console.log('🔍 Error details:', firebaseError.message, firebaseError.stack);
         
         // Envoyer une erreur pour déclencher l'auth modal
         chrome.tabs.sendMessage(tabId, {
           type: 'FIREBASE_AUTH_REQUIRED',
-          error: 'Firebase authentication required. Please sign in to continue.'
+          error: 'Authentication failed: ' + firebaseError.message
         });
         return;
       }
-    } catch (firebaseError) {
-      console.error('❌ Firebase auth failed - Extension requires authentication:', firebaseError);
-      console.log('🔍 Error details:', firebaseError.message, firebaseError.stack);
       
-      // Envoyer une erreur pour déclencher l'auth modal
-      chrome.tabs.sendMessage(tabId, {
-        type: 'FIREBASE_AUTH_REQUIRED',
-        error: 'Authentication failed: ' + firebaseError.message
-      });
-      return;
+      if (!authToken) {
+        console.error('❌ No authentication token available - Extension requires Firebase Auth');
+        chrome.tabs.sendMessage(tabId, {
+          type: 'FIREBASE_AUTH_REQUIRED',
+          error: 'No authentication token available. Please sign in.'
+        });
+        return;
+      }
     }
     
-    if (!authToken) {
-      console.error('❌ No authentication token available - Extension requires Firebase Auth');
-      chrome.tabs.sendMessage(tabId, {
-        type: 'FIREBASE_AUTH_REQUIRED',
-        error: 'No authentication token available. Please sign in.'
-      });
-      return;
-    }
-    
-    console.log('🏁 Firebase authentication confirmed for extension');
+    console.log('🏁 Authentication ready:', authMethod, isAnonymousAttempt ? '(First-time trial)' : '(Authenticated user)');
     
     const fetchPromise = fetch(CONFIG.API_URL, {
       method: 'POST',
@@ -787,6 +806,19 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
         try {
           const quotaError = await response.json();
           console.error('❌ Quota exceeded:', quotaError);
+          
+          // Special handling for anonymous users
+          if (isAnonymousAttempt && quotaError.code === 'ANONYMOUS_LIMIT_EXCEEDED') {
+            console.log('🎭 Anonymous trial completed, marking as used');
+            await markAnonymousTrialUsed();
+            
+            // Send special message for anonymous trial completion
+            chrome.tabs.sendMessage(tabId, {
+              type: 'ANONYMOUS_TRIAL_COMPLETED',
+              quotaInfo: quotaError
+            });
+            return;
+          }
           
           // Send quota exceeded message to content script
           chrome.tabs.sendMessage(tabId, {
@@ -1167,12 +1199,19 @@ async function processWorkflowRAGResponse(data, tabId) {
       if (data.data.success && data.data.workflow) {
         console.log('✅ Workflow généré avec succès');
         
+        // Mark anonymous trial as used if this was an anonymous request
+        if (isAnonymousAttempt) {
+          console.log('🎭 Anonymous trial successful, marking as used');
+          markAnonymousTrialUsed(); // Don't await to avoid blocking
+        }
+        
         // Envoyer le workflow complet et l'explication
         send({
           type: 'WORKFLOW_COMPLETE',
           workflow: data.data.workflow,
           explanation: data.data.explanation,
-          message: data.data.message
+          message: data.data.message,
+          wasAnonymous: isAnonymousAttempt
         });
       } else {
         console.error('❌ Échec de génération');
@@ -1196,12 +1235,19 @@ async function processWorkflowRAGResponse(data, tabId) {
           
           console.log('✅ Workflow décompressé avec succès via service worker');
           
+          // Mark anonymous trial as used if this was an anonymous request
+          if (isAnonymousAttempt) {
+            console.log('🎭 Anonymous trial successful, marking as used');
+            markAnonymousTrialUsed(); // Don't await to avoid blocking
+          }
+          
           // Envoyer le workflow décompressé
           send({
             type: 'WORKFLOW_COMPLETE',
             workflow: workflowData.workflow,
             explanation: workflowData.explanation,
-            message: 'Workflow compressé décompressé avec succès !'
+            message: 'Workflow compressé décompressé avec succès !',
+            wasAnonymous: isAnonymousAttempt
           });
           
         } catch (error) {
@@ -1392,6 +1438,37 @@ async function executeWorkflowImport(workflow, tabId) {
       type: 'WORKFLOW_IMPORT_ERROR',
       error: `Erreur d'injection: ${error.message}`
     });
+  }
+}
+
+// NEW: Generate anonymous token for first-time users
+function generateAnonymousToken() {
+  // Generate a UUID-like string for anonymous users
+  return 'ANONYMOUS_' + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+// NEW: Check if user has used anonymous trial
+async function hasUsedAnonymousTrial() {
+  try {
+    const result = await chrome.storage.local.get(['anonymousTrialUsed']);
+    return result.anonymousTrialUsed === true;
+  } catch (error) {
+    console.log('Could not check anonymous trial status:', error);
+    return false;
+  }
+}
+
+// NEW: Mark anonymous trial as used
+async function markAnonymousTrialUsed() {
+  try {
+    await chrome.storage.local.set({ anonymousTrialUsed: true });
+    console.log('🎭 Anonymous trial marked as used');
+  } catch (error) {
+    console.log('Could not mark anonymous trial as used:', error);
   }
 }
 
