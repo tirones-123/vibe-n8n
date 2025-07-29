@@ -189,6 +189,26 @@ export class WorkflowRAGService {
    * Recherche des workflows similaires basée sur les descriptions GPT-4
    */
   async findSimilarWorkflows(description, topK = 5) {
+    // -----------------------------------------------------------------------
+    // Guardrail: prevent OpenAI embedding limit errors (8192 tokens ≈ 32 kB)
+    // -----------------------------------------------------------------------
+    const MAX_EMBEDDING_INPUT_CHARS = 32000; // ~8 k tokens at 4 chars/token
+
+    if (description && description.length > MAX_EMBEDDING_INPUT_CHARS) {
+      // Détection plus robuste d'un workflow n8n collé dans le prompt :
+      // - présence des clés "nodes" et "connections"
+      // - présence d'au moins une référence de type n8n-nodes-base.*
+      const n8nNodeRegex = /"n8n-nodes-base\.[^"]+"/;
+      const looksLikeWorkflowJson = description.includes('"nodes"') && description.includes('"connections"') && n8nNodeRegex.test(description);
+
+      if (looksLikeWorkflowJson) {
+        console.warn(`🪓 Description too large (${description.length} chars) and looks like workflow JSON – truncating to ${MAX_EMBEDDING_INPUT_CHARS} chars for embedding.`);
+        description = description.slice(0, MAX_EMBEDDING_INPUT_CHARS);
+      } else {
+        // Reject extremely long natural-language prompts
+        throw new Error('Prompt too large. Please reduce your prompt and try again.');
+      }
+    }
     try {
       // Vérifier d'abord que le répertoire existe
       try {
