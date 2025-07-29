@@ -4363,77 +4363,7 @@ async function checkSavedDomains(currentHostname) {
         break;
 
       case 'WORKFLOW_ERROR':
-        // Check if it's a Firebase token error and attempt auto-retry
-        if (message.error && typeof message.error === 'string' && 
-            (message.error.includes('INVALID_FIREBASE_TOKEN') || 
-             message.error.includes('Invalid Firebase token'))) {
-          
-          console.log('🔄 Detected Firebase token error, attempting auto-refresh and retry...');
-          
-          if (lastMessage) {
-            updateChatMessage(lastMessage, '🔄 Token expired, refreshing authentication and retrying...', true);
-          }
-          
-          // Attempt to refresh Firebase token and retry the request
-          setTimeout(async () => {
-            try {
-              console.log('🔥 Attempting to refresh Firebase token...');
-              
-              // Force refresh the Firebase token
-              const refreshedToken = await new Promise((resolve, reject) => {
-                chrome.runtime.sendMessage({ 
-                  type: 'firebase-get-token', 
-                  data: { forceRefresh: true } 
-                }, (response) => {
-                  if (chrome.runtime.lastError) {
-                    reject(new Error(chrome.runtime.lastError.message));
-                  } else {
-                    resolve(response);
-                  }
-                });
-              });
-              
-              if (refreshedToken && typeof refreshedToken === 'string' && refreshedToken.length > 50) {
-                console.log('✅ Token refreshed successfully, retrying request...');
-                
-                if (lastMessage) {
-                  updateChatMessage(lastMessage, '✅ Authentication refreshed, retrying your request...', true);
-                }
-                
-                // Retry the original request after a short delay
-                setTimeout(() => {
-                  // Get the input value that caused the original error
-                  const chatMessages = document.querySelectorAll('.ai-message.user');
-                  if (chatMessages.length > 0) {
-                    const lastUserMessage = chatMessages[chatMessages.length - 1];
-                    const originalPrompt = lastUserMessage.textContent.trim();
-                    
-                    // Simulate retrying the request
-                    const input = document.getElementById('ai-input');
-                    if (input && originalPrompt) {
-                      input.value = originalPrompt;
-                      sendMessage(); // Retry with refreshed token
-                    }
-                  } else {
-                    handleError('Please try your request again with the refreshed authentication.', lastMessage);
-                  }
-                }, 1000);
-                
-              } else {
-                console.error('❌ Failed to refresh Firebase token');
-                handleError('Authentication refresh failed. Please sign out and sign in again.', lastMessage);
-              }
-              
-            } catch (refreshError) {
-              console.error('❌ Token refresh error:', refreshError);
-              handleError('Authentication refresh failed. Please sign out and sign in again.', lastMessage);
-            }
-          }, 500);
-          
-        } else {
-          // Regular error handling for non-token errors
-          handleError(message.error, lastMessage);
-        }
+        handleError(message.error, lastMessage);
         break;
 
       case 'WORKFLOW_IMPORT_SUCCESS':
