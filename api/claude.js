@@ -479,6 +479,7 @@ export default async function handler(req, res) {
             workflow_size: sessionState.workflowSize,
             mode: sessionState.mode,
             duration: duration,
+            user_prompt: prompt, // Store the original user prompt
             ai_context_sources: result.similarWorkflows || [],
             ai_context_files: result.similarWorkflowFiles || []
           });
