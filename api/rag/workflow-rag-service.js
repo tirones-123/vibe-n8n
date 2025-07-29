@@ -342,7 +342,31 @@ When you output JSON it must ALWAYS be strictly valid:
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
   • Escape special characters properly (e.g. newlines \n).
-  • The final answer MUST be a single JSON object, nothing before or after.`;
+  • The final answer MUST be a single JSON object, nothing before or after.
+    FOT THE N8N WORKFLOW RESPOND WITH THIS EXACT JSON STRUCTURE:
+{
+  "workflow": {
+    "name": "Generated Workflow",
+    "nodes": [
+      {
+        "id": "unique-uuid",
+        "name": "Node Name", 
+        "type": "n8n-nodes-base.nodetype",
+        "position": [0, 0],
+        "parameters": {},
+        "typeVersion": 1
+      }
+    ],
+    "connections": {
+      "Node Name": {
+        "main": [[{"node": "Next Node", "type": "main", "index": 0}]]
+      }
+    }
+  },
+  "explanation": {
+    "summary": "What this workflow does",
+    "flow": "Step by step explanation"
+  }`;
       } else {
         // Mode création d'un nouveau workflow
         systemPrompt = `You are an n8n workflow expert.
@@ -374,7 +398,32 @@ When you output JSON it must ALWAYS be strictly valid:
   • Do NOT include trailing commas.
   • Do NOT include comments inside the JSON.
   • Escape special characters properly (e.g. newlines \n).
-  • The final answer MUST be a single JSON object, nothing before or after.`;
+  • The final answer MUST be a single JSON object, nothing before or after.
+  FOT THE N8N WORKFLOW RESPOND WITH THIS EXACT JSON STRUCTURE:
+{
+  "workflow": {
+    "name": "Generated Workflow",
+    "nodes": [
+      {
+        "id": "unique-uuid",
+        "name": "Node Name", 
+        "type": "n8n-nodes-base.nodetype",
+        "position": [0, 0],
+        "parameters": {},
+        "typeVersion": 1
+      }
+    ],
+    "connections": {
+      "Node Name": {
+        "main": [[{"node": "Next Node", "type": "main", "index": 0}]]
+      }
+    }
+  },
+  "explanation": {
+    "summary": "What this workflow does",
+    "flow": "Step by step explanation"
+  }
+}`;
       }
 
       // Construire le contexte enrichi avec les workflows d'exemple
