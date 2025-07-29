@@ -269,6 +269,11 @@ export class WorkflowRAGService {
       return workflows;
 
     } catch (error) {
+      // Handle OpenAI oversized prompt errors with a concise message for the client
+      if (typeof error?.message === 'string' && error.message.includes('maximum context length')) {
+        // Re-throw a cleaner error that will propagate up the stack
+        throw new Error('Prompt too large. Please reduce your prompt and try again.');
+      }
       console.error('Error in findSimilarWorkflows:', error);
       throw error;
     }
