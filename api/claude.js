@@ -176,8 +176,8 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error('❌ Firebase authentication failed:', error);
       return res.status(401).json({
-        error: 'Invalid Firebase token refresh or connect again',
-        code: 'USER_NOT_CONNECTED'
+        error: 'Invalid Firebase token refresh or connect again in the extension',
+        code: 'USER_NOT_CONNECTED_(refresh_or_disconnect_and_connect_again)'
       });
     }
   }
