@@ -176,7 +176,7 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error('❌ Firebase authentication failed:', error);
       return res.status(401).json({
-        error: 'Invalid Firebase token',
+        error: 'Invalid Firebase token please refresh the page',
         code: 'INVALID_FIREBASE_TOKEN'
       });
     }
