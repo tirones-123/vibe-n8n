@@ -458,7 +458,7 @@ ${baseWorkflow ?
       // Appeler Claude
       const response = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',  // New Claude model
-        max_tokens: 18000,
+        max_tokens: 28000,
         temperature: 0.3,
         system: systemPrompt,
         messages: [

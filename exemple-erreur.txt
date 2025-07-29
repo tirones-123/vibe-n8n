@@ -1,0 +1,410 @@
+📄 === Begin Claude Full Response (11879 chars) ===
+{
+  workflow: {
+        credentials: {}
+    nodes: [
+      {
+      },
+        id: "bc065b0f-24d8-4efd-adfc-fa4a57054d65",
+      {
+        name: "Déclencheur quotidien",
+        id: "ca66a5dc-fac7-4cab-aefb-f1fc2a6eea98",
+        type: "n8n-nodes-base.scheduleTrigger",
+        name: "Récupérer projets Product Hunt",
+        type: "n8n-nodes-base.graphql",
+        position: [
+        position: [
+          -256,
+          144,
+          96
+          96
+        ],
+        ],
+        parameters: {
+        parameters: {
+          notice: "",
+          endpoint: "https://api.producthunt.com/v2/api/graphql",
+          query: "query GetPosts($postedAfter: DateTime!) {\n  posts(first: 20, postedAfter: $postedAfter) {\n    edges {\n      node {\n        id\n        name\n        tagline\n        description\n        url\n        votesCount\n        commentsCount\n        createdAt\n        makers {\n          name\n        }\n        thumbnail {\n          url\n        }\n 
+     }\n    }\n  }\n}",
+          variables: {
+          rule: {
+            postedAfter: "={{ $json.today }}T00:00:00Z"
+            interval: [
+          },
+              {
+          requestFormat: "json",
+                field: "days",
+          responseFormat: "json",
+                daysInterval: 1,
+          headerParametersUi: {
+                triggerAtHour: 9,
+                triggerAtMinute: 0
+            parameter: [
+              }
+              {
+            ]
+                name: "Authorization",
+                value: "Bearer YOUR_PRODUCT_HUNT_API_KEY"
+          }
+              },
+        },
+        typeVersion: 1.2,
+              {
+        disabled: false,
+        credentials: {}
+      },
+                name: "Content-Type",
+      {
+        id: "435e23e9-4c4f-4ed7-bf63-3815c436f8b8",
+        name: "Définir la date",
+                value: "application/json"
+        type: "n8n-nodes-base.set",
+              },
+        position: [
+          -48,
+              {
+          96
+        ],
+        parameters: {
+          mode: "manual",
+          duplicateItem: false,
+          fields: {
+            values: [
+                name: "User-Agent",
+              {
+              
+                value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+  name: "today",
+              }
+                type: "string",
+            ]
+                value: "={{ new Date().toISOString().split('T')[0] }}"
+          }
+              }
+            ]
+        },
+          },
+        typeVersion: 1,
+          include: "all",
+          options: {}
+        disabled: false,
+        },
+        credentials: {}
+        typeVersion: 3.2,
+        disabled: false,
+      },
+      
+      {
+        id: "7ce12b0d-0e34-4f6f-84aa-bd75e0e6ba0d",
+  id: "7652743d-b71a-40b1-a7f4-7fa267b4275e",
+        name: "Éviter les doublons",
+        name: "Formater les données",
+        type: "n8n-nodes-base.removeDuplicates",
+        type: "n8n-nodes-base.set",
+       
+        position: [
+ position: [
+          736,
+          352,
+          96
+          96
+        ],
+        ],
+        parameters: {
+          mode: "manual",
+        parameters: {
+        disabled: false,
+          duplicateItem: false,
+          operation: "removeItemsSeenInPreviousExecutions",
+          fields: {
+          logic: "removeItemsWithAlreadySeenKeyValues",
+            values: [
+              {
+        credentials: {}
+          dedupeValue: "={{ $json.data.posts.edges.map(edge => edge.node.id).join(',') }}",
+                name: "Nom du projet",
+          },
+          options: {}
+      },
+                type: "string",
+          columns: {
+                value: "={{ $json.project.node.name }}"
+      {
+            value: {
+              },
+              Nom du projet: "={{ $json['Nom du projet'] }}",
+        id: "6e24cdf3-11d8-4da3-bf07-75cbe221a29e",
+              {
+              Description: "={{ $json['Description'] }}",
+                name: "Description",
+        name: "Ajouter au spreadsheet",
+              URL: "={{ $json['URL'] }}",
+                type: "string",
+              Votes: "={{ $json['Votes'] }}",
+        type: "n8n-nodes-base.googleSheets",
+        },
+              Commentaires: "={{ $json['Commentaires'] }}",
+        position: [
+                value: "={{ $json.project.node.tagline || $json.project.node.description }}"
+              Créateurs: "={{ $json['Créateurs'] }}",
+        typeVersion: 2,
+          944,
+              Date de création: "={{ $json['Date de création'] }}"
+              },
+          96
+        disabled: false,
+        
+        ],
+    },
+              {
+        credentials: {}
+        "paramete
+            schema: [
+      },
+              {
+rs": {
+      {
+                id: "Nom du projet",
+          authentication: "serviceAccount",
+                type: "string",
+        id: "c724ddb9-7e30-40f7-a891-801044ac5aca",
+          resource: "sheet",
+                display: true,
+        name: "Séparer les projets",
+          operation: "appendOrUpdate",
+                required: false,
+                name: "URL",
+        type: "n8n-nodes-base.itemLists",
+                displayName: "Nom du projet",
+          documentId: {
+                defaultMatch: false,
+        position: [
+            __rl: true,
+                canBeUsedToMatch: true
+          544,
+                type: "string",
+            mode: "list",
+              },
+          96
+                value: "={{ $json.project.node.url }}"
+              {
+            value: "demo",
+        ],
+                id: "Description",
+              },
+            cachedResultUrl: "demo",
+        parameters: {
+                type: "string",
+              {
+                display: true,
+            cachedResultName: "Projets Product Hunt"
+          resource: "itemList",
+                name: "Votes",
+          operation: "splitOutItems",
+          },
+                type: "number",
+          fieldToSplitOut: "data.posts.edges",
+          sheetName: {
+                value: "={{ $json.project.node.votesCount }}"
+            __rl: true,
+          include: "noOtherFields",
+            
+  },
+            mode: "list",
+          options: {
+              {
+            value: "gid=0",
+                name: "Commentaires",
+            cachedResultUrl: "demo",
+                type: "number",
+                value: "={{ $json.project.node.commentsCount }}"
+            cachedResultName: "Sheet1"
+            destinationFieldName: "project"
+              },
+          }
+              {
+        },
+                name: "Créateurs",
+        typeVersion: 1,
+        disabled: false,
+                type: "string",
+        credentials: {}
+                required: false,
+      },
+                value: "={{ $json.project.node.makers.map(maker => maker.name).join(', ') }}"
+      {
+              },
+                displayName: "Description",
+              {
+                defaultMatch: false,
+                name: "Date de création",
+                canBeUsedToMatch: true
+              },
+              {
+                id: "URL",
+                type: "string",
+                display: true,
+                required: false,
+                type: "string",
+                displayName: "URL",
+                defaultMatch: false,
+                value: "={{ new Date($json.project.node.createdAt).toLocaleDateString('fr-FR') }}"
+                canBeUsedToMatch: true
+              }
+              },
+            ]
+              {
+          },
+                id: "Votes",
+          include: "none",
+                type: "string",
+          options: {}
+      
+        },
+          display: true,
+        typeVersion: 3.2,
+                required: false,
+                displayName: "Votes",
+                defaultMatch: false,
+                canBeUsedToMatch: true
+              },
+              {
+                id: "Commentaires",
+                type: "string",
+            }
+                display: true,
+                required: false,
+          ]
+                displayName: "Commentaires",
+        ]
+                defaultMatch: false,
+      },
+                canBeUsedToMatch: true
+      Récupérer projets Product Hunt: {
+              },
+              {
+        main: [
+                id: "Créateurs",
+                type: "string",
+   
+       [
+            {
+                display: true,
+                required: false,
+              node: "Éviter les doublons",
+                displayName: "Créateurs",
+              type: "main",
+                defaultMatch: false,
+              index: 0
+                canBeUsedToMatch: true
+              },
+              {
+                id: "Date de création",
+                type: "string",
+                display: true,
+            }
+                required: false,
+          ]
+                displayName: "Date de créatio
+        ]
+      },
+n",
+      Éviter les doublons: {
+                defaultMatch: false,
+        main: [
+                canBeUsedToMatch: true
+          [
+              }
+            {
+            ],
+              node: "Séparer les projets",
+            mappingMode: "autoMapInputData",
+              type: "main",
+            matchingColumns: [
+              index: 0
+              "Nom du projet"
+            }
+            ],
+            attemptToConvertTypes: false,
+          ]
+            convertFieldsToString: false
+        ]
+          },
+      },
+      Séparer les projets: {
+        main: [
+          [
+            {
+              node: "Formater les données",
+              type: "main",
+          options: {}
+        },
+        typeVersion: 4.5,
+              index: 0
+        disabled: false,
+            }
+        credentials: {}
+          ]
+        ]
+      }
+    ],
+      },
+    connections: {
+      Déclencheur quotidien: {
+        main: [
+          [
+            {
+              node: "Définir la date",
+              type: "main",
+              index: 0
+            }
+          ]
+        ]
+      },
+      Formater les données: {
+        main: [
+          [
+            {
+      Définir la date: {
+              node: "Ajouter au spreadsheet",
+        main: [
+              type: "main",
+          [
+            {
+              index: 0
+            }
+              node: "Récupérer projets Product Hunt",
+          ]
+              type: "main",
+        ]
+              index: 0
+      ]
+    },
+    name: "My workflow",
+    active: false,
+    settings: {
+      executionOrder: "v1"
+    },
+    id: "q87gUilfV0mGeKGp",
+    createdAt: -1,
+    upd
+atedAt: -1
+  },
+  explanation: {
+    summary: "Fixed the Product Hunt API error by replacing the HTTP Request node with a GraphQL node and properly configuring the query with variables",
+    changes: "1. Replaced HTTP Request node with GraphQL node to properly handle Product Hunt's GraphQL API\n2. Added proper GraphQL query with variables for filtering posts by date\n3. Fixed the 'Définir la date' node to properly set the date variable\n4. Updated the 'Formater les données' node to correctly map the GraphQL response structure\n5. Fixed the workflow connections to ensure proper data flow",
+    notes: "You need to replace 'YOUR_PRODUCT_HUNT_API_KEY' with your actual Product Hunt API key. The GraphQL node is specifically designed for GraphQL APIs and handles the query structure properly, which was causing the 400 error with the generic HTTP Request node."
+  }
+}
+📄 === End Claude Full Response ===
+💾 Debug: Extracted JSON saved to debug/claude-extracted-json.txt
+❌ Failed to parse generated JSON: Expected ',' or '}' after property value in JSON at position 10830 (line 370 column 7)
+📍 Error position: Expected ',' or '}' after property value in JSON at position 10830 (line 370 column 7)
+❌ [session_1753743703281_evu4ma14a] Error: Error parsing JSON response
+📡 SSE [session_1753743703281_evu4ma14a] error: Error parsing JSON response
+🔧 Tentative de réparation du JSON...
+⚠️ Tentative de parsing unsafe via Function()
+❌ Impossible de réparer le JSON: Expected ',' or '}' after property value in JSON at position 10830 (line 370 column 7)
+❌ Parsing unsafe échoué: Unexpected token ']'
+
+📈 === SESSION COMPLETE session_1753743703281_evu4ma14a

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vibe n8n - AI assistant for n8n ",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AI workflow creator for n8n",
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'",
@@ -32,10 +32,6 @@
     "https://www.gstatic.com/*",
     "https://*.stripe.com/*",
     "https://checkout.stripe.com/*"
-  ],
-  "optional_host_permissions": [
-    "https://*/*",
-    "http://*/*"
   ],
   "background": {
     "service_worker": "src/background.js"
