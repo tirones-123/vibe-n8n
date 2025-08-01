@@ -23,6 +23,44 @@ chrome.runtime.onMessage.addListener(handleChromeMessages);
 
 const FIREBASE_API_KEY = "AIzaSyDPB8tHayuvKuhimMQPbJBBLvukFLJIZ8I";
 
+// ===== NEW: Session persistence using chrome.storage.local =====
+const STORAGE_KEY = 'n8n_ai_refresh_token';
+
+// Restore previous session (if any) on load
+(async function restoreSession() {
+  try {
+    const data = await chrome.storage.local.get(STORAGE_KEY);
+    const saved = data[STORAGE_KEY];
+    if (saved && saved.refreshToken) {
+      console.log('🔄 Trying to restore Firebase session from storage...');
+      const formBody = new URLSearchParams();
+      formBody.set('grant_type', 'refresh_token');
+      formBody.set('refresh_token', saved.refreshToken);
+      const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formBody.toString()
+      });
+      if (res.ok) {
+        const tok = await res.json();
+        currentUser = {
+          uid: tok.user_id,
+          email: saved.email || null,
+          idToken: tok.id_token,
+          refreshToken: tok.refresh_token,
+          // We don\'t know emailVerified here; assume true to avoid forcing re-login
+          emailVerified: true
+        };
+        console.log('✅ Firebase session restored successfully');
+      } else {
+        console.warn('⚠️ Could not restore session:', res.status);
+      }
+    }
+  } catch (e) {
+    console.warn('⚠️ Error restoring session:', e.message);
+  }
+})();
+
 async function firebaseEmailRequest(mode, email, password) {
   const endpoint = mode === 'signup'
     ? `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`
@@ -137,6 +175,11 @@ function handleChromeMessages(message, sender, sendResponse) {
     try {
       console.log('🚪 Offscreen: Sign out requested');
       currentUser = null;
+      chrome.storage.local.remove(STORAGE_KEY).then(() => {
+        console.log('🗑️ Session token removed from storage');
+      }).catch(e => {
+        console.warn('⚠️ Failed to remove session token:', e.message);
+      });
       
       // First, try to sign out from the iframe Firebase auth
       function handleSignOutMessage({data, origin}) {
@@ -189,13 +232,21 @@ function handleChromeMessages(message, sender, sendResponse) {
     (async () => {
       try {
         const result = await firebaseEmailRequest(mode, email, password);
-        currentUser = {
-          uid: result.localId,
-          email: result.email,
-          idToken: result.idToken,
-          refreshToken: result.refreshToken,
-          emailVerified: false  // Pour les nouveaux comptes email/password
-        };
+                  currentUser = {
+           uid: result.localId,
+           email: result.email,
+           idToken: result.idToken,
+           refreshToken: result.refreshToken,
+           emailVerified: !!result.emailVerified
+         };
+
+         // Persist refresh token to storage for automatic session restore
+         try {
+           await chrome.storage.local.set({ [STORAGE_KEY]: { refreshToken: result.refreshToken, email: result.email } });
+           console.log('💾 Refresh token saved to storage');
+         } catch (e) {
+           console.warn('⚠️ Failed to save refresh token:', e.message);
+         }
         
         // Si c'est un signup, créer immédiatement l'utilisateur dans la base de données
         if (mode === 'signup') {

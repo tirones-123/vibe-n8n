@@ -707,6 +707,21 @@ async function handleWorkflowRAGRequest(prompt, tabId) {
     console.log('🔧 Firebase Auth obligatoire pour extension Chrome...');
     
     try {
+      console.log('👤 Checking current Firebase user info...');
+      let currentUser = null;
+      try {
+        currentUser = await firebaseGetCurrentUser();
+      } catch (e) {
+        console.warn('⚠️ Unable to get current user info:', e.message);
+      }
+
+      // 1) Force reload if email not verified (user just clicked the link)
+      if (currentUser && currentUser.email && !currentUser.emailVerified) {
+        console.log('🔄 Email not yet verified in cached token → forcing token refresh');
+        // Reload user data and force fresh ID token
+        await firebaseGetIdToken(true);
+      }
+
       console.log('🔥 Getting Firebase token (required)...');
       const firebaseToken = await firebaseGetIdToken();
       console.log('🎫 firebaseGetIdToken result:', typeof firebaseToken, firebaseToken ? '✅ Token received' : '❌ No token');
