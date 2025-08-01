@@ -170,6 +170,18 @@ Authorization: Bearer FIREBASE_ID_TOKEN
 - **Metadata** : node types, complexity, categories
 - **Pinecone index** : Ultra-fast vector search
 
+## ⚠️ Firebase Dynamic Links Migration (August 2025)
+
+**Important**: Firebase Dynamic Links was shut down on August 25, 2025. This project has been updated to handle this change:
+
+- ✅ **Email verification** now uses Firebase REST API (`sendOobCode`) directly in the Chrome extension
+- ✅ **Authentication flows** are unaffected and continue to work normally  
+- ❌ **Deprecated endpoint** `/api/send-verification-email` has been disabled (returns 410)
+
+The Chrome extension handles email verification client-side and does not require any backend changes for this functionality.
+
+For more information: [Firebase Dynamic Links Migration FAQ](https://firebase.google.com/support/dynamic-links-faq)
+
 ## 🔐 Authentication & Pricing
 
 ### Available plans
