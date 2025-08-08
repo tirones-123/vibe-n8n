@@ -3755,7 +3755,11 @@ async function checkSavedDomains(currentHostname) {
       // ===== FIREBASE AUTH =====
       if (!contentAuthIntegration) {
         console.error('💀 ERREUR CRITIQUE: contentAuthIntegration non disponible');
-        handleError('Authentication system unavailable. Please reload the page.', assistantMessage);
+        // Show a clearer guidance for users when the domain is not enabled yet
+        handleError(
+          'Domain not enabled for the extension. Click the extension icon → "Enable on this domain", accept the permission prompt (HTTPS required), then reload the page.',
+          assistantMessage
+        );
         return;
       }
 

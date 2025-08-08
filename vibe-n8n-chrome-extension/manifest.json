@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vibe n8n - AI assistant for n8n ",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "AI workflow creator for n8n",
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'",
@@ -14,6 +14,10 @@
     "tabs",
     "storage",
     "offscreen"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ],
   "host_permissions": [
     "https://vibe-n8n-production.up.railway.app/*",

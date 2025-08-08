@@ -331,9 +331,18 @@ function performAutoInjection(tabId, hostname) {
         func: () => { window.n8nAIAutoActivation = true; }
       });
 
-      // Injecter le content script et les styles
+      // Injecter la configuration et l'intégration auth AVANT le contenu principal
+      await chrome.scripting.executeScript({ target: { tabId }, files: ['src/config.js'] });
+      await chrome.scripting.executeScript({ target: { tabId }, files: ['src/content-auth-integration-standalone.js'] });
+
+      // Puis injecter le content script et les styles requis
       await chrome.scripting.executeScript({ target: { tabId }, files: ['src/content.js'] });
       await chrome.scripting.insertCSS({ target: { tabId }, files: ['styles/panel.css'] });
+      try {
+        await chrome.scripting.insertCSS({ target: { tabId }, files: ['styles/auth.css'] });
+      } catch (_) {
+        // auth.css may be optional; ignore failures
+      }
 
       console.log('✅ Auto-injection successful for:', hostname);
     } catch (injectionError) {
